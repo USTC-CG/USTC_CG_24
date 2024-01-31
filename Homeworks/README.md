@@ -3,6 +3,7 @@
 ## 前置技能
 
 - 学习 GitHub 来管理和维护代码：查看 [GitHub 简易说明](../Softwares/Github.md)，学习 Git，GitHub 和 GitHub Desktop，并 **private fork** USTC_CG，以后在其上完成作业
+- 下载VS Code编辑器来查看与编写代码（[官方网站](https://code.visualstudio.com/)），VS Code有着强大的插件生态，如用于查看Markdown文档、一键CMake构建与编译、Github Copilot代码补全等插件
 <!-- - 下载 Typora（[下载链接](https://www.typora.io/windows/typora-setup-x64.exe?)）以便在本地查看和编辑 markdown (\*.md) 文件 -->
 - 下载 Vistual Studio Comunity 2022，学习使用 VS 2022 来构建 C++ 项目、编译、运行、调试等
 - 下载 CMake（[下载链接](https://github.com/Kitware/CMake/releases/download/v3.28.2/cmake-3.28.2-windows-x86_64.msi)），学会如何用 CMake 搭建项目，生成 VS 解决方案，然后编译、安装、运行

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
 
 project(C2Cpp VERSION 1.0)
 message(STATUS "[Project] ${PROJECT_NAME}")
