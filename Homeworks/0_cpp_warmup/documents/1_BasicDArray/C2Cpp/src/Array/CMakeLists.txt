@@ -1,0 +1,1 @@
+AddExeWithFile(Array)  # you can find its definition in cmake/helper.cmake

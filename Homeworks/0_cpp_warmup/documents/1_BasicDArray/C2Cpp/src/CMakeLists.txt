@@ -1,0 +1,8 @@
+add_subdirectory(Array)
+add_subdirectory(Array0)
+add_subdirectory(Array1.0)
+add_subdirectory(Array1.1)
+add_subdirectory(Array2)
+add_subdirectory(Array3)
+add_subdirectory(Array4)
+add_subdirectory(Array5)
