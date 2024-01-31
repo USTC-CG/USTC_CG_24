@@ -6,6 +6,7 @@ CMake是一个跨平台的安装（编译）工具，可以用简单的语句来
 ![](./images/cmake-plugin.png)
 
 在使用上十分简单：用vscode打开目标文件夹（通常是有CMakeLists.txt的根目标），然后ctrl+shift+p打开命令菜单，输入`CMake:build`,如下图：
+
 ![](./images/cmake-use.png)
 
 CMake插件就会自动构建并编译当前项目，得到可执行文件。

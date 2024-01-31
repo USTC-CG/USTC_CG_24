@@ -1,7 +1,8 @@
 # 0. C++ 课前热身练习
 
 > 预备：
-> - 用 CMake 搭建项目 [C2Cpp](documents/1_BasicDArray/C2Cpp)，生成 VS 解决方案，然后编译，安装，运行。（如何使用CMake请看[CMake使用入门](../../Softwares/CMake.md)）
+> - 用 CMake 搭建项目 [C2Cpp](documents/1_BasicDArray/C2Cpp)，生成 VS 解决方案，然后编译，安装，运行。
+**（如何在VSCode中一键使用CMake构建与编译请看[CMake使用入门](../../Softwares/CMake.md)）**
 >
 > 作业步骤：
 > - 查看[文档](documents/)，内含多个小教程
