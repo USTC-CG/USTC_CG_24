@@ -1,0 +1,1 @@
+AddExeWithFile(3_TemplateDArray)

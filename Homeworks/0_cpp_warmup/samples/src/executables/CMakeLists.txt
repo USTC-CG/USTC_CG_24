@@ -1,0 +1,4 @@
+add_subdirectory(1_BasicDArray)
+add_subdirectory(2_EfficientDArray)
+add_subdirectory(4_list_Polynomial)
+add_subdirectory(5_map_Polynomial)
