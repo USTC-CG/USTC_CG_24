@@ -5,7 +5,11 @@ CMake是一个跨平台的安装（编译）工具，可以用简单的语句来
 本次作业我们推荐使用VS Code的官方CMake插件:
 ![](./images/cmake-plugin.png)
 
-在使用上十分简单：用vscode打开目标文件夹（通常是有CMakeLists.txt的根目标），然后ctrl+shift+p打开命令菜单，输入`CMake:build`,如下图：
+在使用上十分简单：用vscode打开目标文件夹（通常是有CMakeLists.txt的根目标），如果是第一次打开该文件右下角会跳出选项：“是否需要配置当前文件夹？”选择是之后会出现如下界面（该界面也可以通过使用ctrl+shift+p打开命令菜单，输入`CMake:Select a Kit`调出）：
+
+![](./images/cmake-configure.png)
+
+选择amd64后，使用ctrl+shift+p打开命令菜单，输入`CMake:build`,如下图：
 
 ![](./images/cmake-use.png)
 
