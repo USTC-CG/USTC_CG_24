@@ -9,3 +9,12 @@ function(AddExeWithFile exe_name)
 
   add_executable(${exe_name} ${SOURCE} ${HEADER})
 endfunction()
+
+#----------------------------------------------------------
+
+function(PrintAllVariables)
+  get_cmake_property(_variableNames VARIABLES)
+  foreach(_variableName ${_variableNames})
+      message(STATUS "${_variableName}=${${_variableName}}")
+  endforeach()
+endfunction()
