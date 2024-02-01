@@ -56,8 +56,8 @@ Github Desktop是GitHub的客户端（桌面端）软件 ，它与GitHub进行�
   git fetch upstream
   ```
 
-- 在 GitHub Desktop 中，点击菜单栏的 `branch->merge into current branch`，弹出的窗口中选择 other branches 的 `upstream/master` 
+- 在 GitHub Desktop 中，点击菜单栏的 `branch->merge into current branch`，弹出的窗口中选择 other branches 的 `upstream/main` 
 
-- 如果没有冲突，则可点击下边的 "Merge `upstream/master` into `master`“；否则，merge 时需要解决相应冲突才能 merge 成功
+- 如果没有冲突，则可点击下边的 "Merge `upstream/main` into `main`“；否则，merge 时需要解决相应冲突才能 merge 成功
 
 
