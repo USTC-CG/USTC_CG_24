@@ -23,7 +23,7 @@ Charles Simonyi is credited with first discussing Hungarian Notation. It is a va
 | struct name or abbrev | declaring an instance of a struct    | `SPoint pointLeft;`</br>`SPoint ptLeft; // or abbrev. (be consistent)` |
 | class name or abbrev  | declaring an instance of a class     | `CPerson personFound;`</br>`CPerson perFound; // or abbrev. (be consistent)` |
 
-**The following table contains letters that go before the above prefixes.** 
+**The following table contains letters that go before the above prefixes.**
 
 | Pre-prefix | Type                                 | Example                            |
 | ---------- | ------------------------------------ | ---------------------------------- |
@@ -35,4 +35,3 @@ Charles Simonyi is credited with first discussing Hungarian Notation. It is a va
 | `m_`       | member variable of a struct or class | `char m_cLetterGrade;`             |
 | `p`        | pointer to a single thing            | `char *pcGrade;`                   |
 | `prg`      | dynamically allocated array          | `char *prgcGrades;`                |
-
