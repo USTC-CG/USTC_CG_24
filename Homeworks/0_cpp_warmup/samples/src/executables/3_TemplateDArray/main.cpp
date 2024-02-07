@@ -17,14 +17,14 @@ int main(int argc, char** argv) {
 	a.InsertAt(0, 4.1);
 	a.Print();
 
-	DArray<double> acopy = a; // ´Ë´¦ÓÃµ½ÁË¿½±´¹¹Ôìº¯Êý
+	DArray<double> acopy = a; // æ­¤å¤„ç”¨åˆ°äº†æ‹·è´æž„é€ å‡½æ•°
 	acopy.Print();
 
-	DArray<double> acopy2(a); // ¸ÃÓï¾äµÈÍ¬ÓÚÉÏÃæµÄÓï¾ä£¬¶¼ÊÇ³õÊ¼»¯
+	DArray<double> acopy2(a); // è¯¥è¯­å¥ç­‰åŒäºŽä¸Šé¢çš„è¯­å¥ï¼Œéƒ½æ˜¯åˆå§‹åŒ–
 	acopy2.Print();
 
 	DArray<double> acopy3, acopy4;
-	acopy4 = acopy3 = a; // ´Ë´¦ÓÃµ½ÁË¸³Öµ²Ù×÷·ûºÅ"="µÄÖØÔØ
+	acopy4 = acopy3 = a; // æ­¤å¤„ç”¨åˆ°äº†èµ‹å€¼æ“ä½œç¬¦å·"="çš„é‡è½½
 	acopy3.Print();
 
 	DArray<int> b;
