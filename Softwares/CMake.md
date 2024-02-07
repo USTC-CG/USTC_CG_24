@@ -14,3 +14,7 @@ CMake是一个跨平台的安装（编译）工具，可以用简单的语句来
 ![](./images/cmake-use.png)
 
 CMake插件就会自动构建并编译当前项目，得到可执行文件。
+
+# CMake 使用实例
+
+一个使用 CMake 搭建项目的实例，可以参考 [CMake step by step](../Homeworks/0_cpp_warmup/documents/CMake_step_by_step/CMAKE_step_by_step.md)。

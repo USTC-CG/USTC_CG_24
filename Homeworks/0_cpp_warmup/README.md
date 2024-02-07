@@ -2,7 +2,7 @@
 
 > 预备：
 > - 用 CMake 搭建项目 [C2Cpp](documents/1_BasicDArray/C2Cpp)，生成 VS 解决方案，然后编译，安装，运行。
-**（如何在VSCode中一键使用CMake构建与编译请看[CMake使用入门](../../Softwares/CMake.md)）**
+**（如何在VSCode中一键使用CMake构建与编译请看[CMake使用入门](../../Softwares/CMake.md)，也可以参考 [CMake step by step](../0_cpp_warmup/documents/CMake_step_by_step/CMAKE_step_by_step.md) 配置本项目）**
 >
 > 作业步骤：
 > - 查看[文档](documents/)，内含多个小教程
