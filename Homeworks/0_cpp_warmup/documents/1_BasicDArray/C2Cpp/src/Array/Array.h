@@ -13,7 +13,7 @@ private:
 private:
 	void	Init();		// initilize the array
 	void	Free();		// free the array
-	inline	int	InvalidateIndex(int nIndex);	// judge the validate of an index
+	inline	int	InvalidateIndex(int nIndex);	// judge the validity of an index
 
 public:
 	Array();			// default constructor
