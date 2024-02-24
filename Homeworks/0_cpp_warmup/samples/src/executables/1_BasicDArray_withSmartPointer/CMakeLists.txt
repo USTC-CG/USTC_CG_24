@@ -1,0 +1,2 @@
+AddExeWithFile(1_BasicDArray_withSmartPointer)
+set_target_properties(1_BasicDArray_withSmartPointer PROPERTIES ${OUTPUT_PROP})
