@@ -35,6 +35,76 @@ void UseSmartPointer()
 + `shared_ptr`
 + `weak_ptr`
 
+相比于`1_BasicDArray`，使用了智能指针后，程序的前后对比：
+
+1. Operator= 
+
+    Old:
+    ```C++
+    // overload operator '='
+    DArray& DArray::operator = (const DArray& arr) {
+        delete[] m_pData;
+
+        m_nSize = arr.m_nSize;
+        m_pData = new double[m_nSize];
+
+        for (int i = 0; i < m_nSize; i++)
+            m_pData[i] = arr[i];
+
+        return *this;
+    }
+    ```
+
+    New:
+    ```C++
+    DArray& DArray::operator = (const DArray& arr) {
+
+        m_nSize = arr.m_nSize;
+        // Use reset to automatically release the original memory
+        m_pData.reset(new double[m_nSize]);
+
+        for (int i = 0; i < m_nSize; i++)
+            m_pData[i] = arr[i];
+
+        return *this;
+    }
+    ```
+
+2. PushBack
+   Old:
+   ```C++
+    void DArray::PushBack(double dValue) {
+        double* pTemp = new double[static_cast<size_t>(m_nSize) + 1];
+
+        for (int i = 0; i < m_nSize; i++)
+            pTemp[i] = m_pData[i];
+
+        pTemp[m_nSize] = dValue;
+
+        delete[] m_pData;
+        m_pData = pTemp;
+        m_nSize++;
+    }
+   ```
+
+   New:
+   ```C++
+    void DArray::PushBack(double dValue) {
+	std::unique_ptr<double[]> pTemp(new double[static_cast<size_t>(m_nSize) + 1]);
+
+	for (int i = 0; i < m_nSize; i++)
+		pTemp[i] = m_pData[i];
+
+	pTemp[m_nSize] = dValue;
+
+	// The original array pointed by smart pointer m_pData will be automatically released
+    // and pTemp will be nullptr
+	m_pData = std::move(pTemp);
+	m_nSize++;
+    }
+   ```
+
+
 想了解更多关于智能指针的信息以及更多的好处，请阅读下面的参考资料。
 
 
