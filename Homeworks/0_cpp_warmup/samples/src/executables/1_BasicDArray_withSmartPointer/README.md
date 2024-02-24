@@ -71,6 +71,7 @@ void UseSmartPointer()
     ```
 
 2. PushBack
+
    Old:
    ```C++
     void DArray::PushBack(double dValue) {
@@ -109,6 +110,6 @@ void UseSmartPointer()
 
 
 ## 参考资料
-1. 详细的介绍：[GeeksForGeeks: smart points](https://www.geeksforgeeks.org/smart-pointers-cpp/)
+1. 详细的介绍：[GeeksForGeeks: smart pointers](https://www.geeksforgeeks.org/smart-pointers-cpp/)
 2. 简洁的介绍：[智能指针（现代 C++）](https://learn.microsoft.com/zh-cn/cpp/cpp/smart-pointers-modern-cpp?view=msvc-170)
 3. API手册：[cppreference: unique_ptr](https://en.cppreference.com/w/cpp/memory/unique_ptr)
