@@ -1,0 +1,9 @@
+[submodule "Framework2D/third_party/imgui"]
+	path = Framework2D/third_party/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "Framework2D/third_party/glfw"]
+	path = Framework2D/third_party/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Framework2D/third_party/ImGuiFileDialog"]
+	path = Framework2D/third_party/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git
