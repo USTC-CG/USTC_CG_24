@@ -22,6 +22,14 @@
 - Visual Studio 2022
 - CMake 版本 3.14 以上
 
+Step 0:
+获取third_party中的子仓库：
+
+```
+git submodule update --init --recursive
+```
+如遇到网络问题可以多次执行此命令。
+
 可以根据热身训练中的 CMake 配置教程配置本项目：
 
 Step 1: 首先确保 VS Code 中安装了必要的 C++ 、CMake 扩展（C/C++, C/C++ Extension Pack, CMake Tools 等）。
