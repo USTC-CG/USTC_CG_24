@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "view/cmpt_canvas.h"
-#include "view/cmpt_image.h"
+#include "view/comp_canvas.h"
+#include "view/comp_image.h"
 #include "view/window.h"
 
 namespace USTC_CG

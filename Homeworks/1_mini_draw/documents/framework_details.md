@@ -8,8 +8,8 @@
 view/
 ├── window.h        // 窗口类，OpenGL 和 ImGui 上下文初始化的封装
 ├── component.h     // UI 组件的抽象类
-├── cmpt_canvas.h   // 实现绘图功能的组件类，继承自 Component 类
-├── cmpt_image.h    // 实现图像可视化的组件类，继承自 Component 类（与 MiniDraw 无关）
+├── comp_canvas.h   // 实现绘图功能的组件类，继承自 Component 类
+├── comp_image.h    // 实现图像可视化的组件类，继承自 Component 类（与 MiniDraw 无关）
 └── shapes/         // 该文件夹下包含了用于绘图的各种形状类
     ├── shape.h         // 抽象父类
     ├── line.h          // 直线段，继承自 Shape 类
@@ -547,4 +547,4 @@ if (draw_status_)
 }
 ```
 
-这一部分 Canvas 功能可以从整体的 draw 函数中独立出来，单独封装到一个类当中，Canvas 功能的最终实现请参考 [cmpt_canvas.h](../../../Framework2D/include/view/cmpt_canvas.h)。
+这一部分 Canvas 功能可以从整体的 draw 函数中独立出来，单独封装到一个类当中，Canvas 功能的最终实现请参考 [comp_canvas.h](../../../Framework2D/include/view/comp_canvas.h)。

@@ -1,4 +1,4 @@
-#include "view/cmpt_image.h"
+#include "view/comp_image.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "iostream"
 #include "stb_image.h"
