@@ -8,92 +8,116 @@
 
 namespace USTC_CG
 {
-Window::Window(const std::string& window_name) : name(window_name)
+Window::Window(const std::string& window_name) : name_(window_name)
 {
-    init_glfw();
-    window = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
-    if (window == nullptr)
-        throw std::runtime_error("Failed to create window!");
-    init_gui();
+    if (!init_glfw())
+    {  // Initialize GLFW and check for failure
+        throw std::runtime_error("Failed to initialize GLFW!");
+    }
+
+    window_ =
+        glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
+    if (window_ == nullptr)
+    {
+        glfwTerminate();  // Ensure GLFW is cleaned up before throwing
+        throw std::runtime_error("Failed to create GLFW window!");
+    }
+
+    if (!init_gui())
+    {  // Initialize the GUI and check for failure
+        glfwDestroyWindow(window_);
+        glfwTerminate();
+        throw std::runtime_error("Failed to initialize GUI!");
+    }
 }
 
 Window::~Window()
 {
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    exit_gui();
+    ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(window_);
     glfwTerminate();
 }
 
 bool Window::init()
 {
+    // Placeholder for additional initialization if needed.
     return true;
 }
 
 void Window::run()
 {
-    glfwShowWindow(window);
+    glfwShowWindow(window_);
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window_))
     {
-        if (!glfwGetWindowAttrib(window, GLFW_VISIBLE) ||
-            glfwGetWindowAttrib(window, GLFW_ICONIFIED))
+        if (!glfwGetWindowAttrib(window_, GLFW_VISIBLE) ||
+            glfwGetWindowAttrib(window_, GLFW_ICONIFIED))
             glfwWaitEvents();
         else
+        {
             glfwPollEvents();
-        render();
+            render();
+        }
     }
 }
 
 void Window::draw()
 {
-    static bool show_demo_window = true;
-    ImGui::ShowDemoWindow(&show_demo_window);
+    // Placeholder for custom draw logic, should be overridden in derived
+    // classes.
+    ImGui::ShowDemoWindow();
 }
 
-void Window::init_glfw()
+bool Window::init_glfw()
 {
     glfwSetErrorCallback(
         [](int error, const char* desc)
         { fprintf(stderr, "GLFW Error %d: %s\n", error, desc); });
+
     if (!glfwInit())
-        throw std::runtime_error("Failed to initialize GLFW!");
+    {
+        return false;
+    }
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    return true;
 }
 
-void Window::init_gui()
+bool Window::init_gui()
 {
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwMakeContextCurrent(window_);
+    glfwSwapInterval(1);  // Enable vsync
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        throw std::runtime_error("Failed to load GL!");
+    {
+        return false;
+    }
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
+    (void)io; 
     // - fontsize
     float xscale, yscale;
-    glfwGetWindowContentScale(window, &xscale, &yscale);
+    glfwGetWindowContentScale(window_, &xscale, &yscale);
     io.FontGlobalScale = xscale;
     // - style
     ImGui::StyleColorsDark();
 
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window_, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-}
 
-void Window::exit_gui()
-{
-    glfwMakeContextCurrent(window);
-
-    ImGui_ImplOpenGL3_Shutdown();
-
-    ImGui::DestroyContext();
+    return true;
 }
 
 void Window::render()
@@ -101,15 +125,19 @@ void Window::render()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
     draw();
+
     ImGui::Render();
 
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
-    glClearColor(0, 0, 0, 1);
+    glfwGetFramebufferSize(window_, &width_, &height_);
+    glViewport(0, 0, width_, height_);
+    glClearColor(0.35f, 0.45f, 0.50f, 1.00f);
     glClear(GL_COLOR_BUFFER_BIT);
+
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    glfwSwapBuffers(window);
+
+    glfwSwapBuffers(window_);
 }
 
 }  // namespace USTC_CG

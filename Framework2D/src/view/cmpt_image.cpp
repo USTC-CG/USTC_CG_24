@@ -6,13 +6,13 @@
 namespace USTC_CG
 {
 Image::Image(const std::string& label, const std::string& filename)
-    : filename(filename),
+    : filename_(filename),
       Component(label)
 {
-    glGenTextures(1, &tex_id);
-    image_data =
-        stbi_load(filename.c_str(), &image_width, &image_height, NULL, 4);
-    if (image_data == nullptr)
+    glGenTextures(1, &tex_id_);
+    image_data_ =
+        stbi_load(filename.c_str(), &image_width_, &image_height_, NULL, 4);
+    if (image_data_ == nullptr)
         std::cout << "Failed to load image from file " << filename << std::endl;
     else
         load_gltexture();
@@ -20,9 +20,9 @@ Image::Image(const std::string& label, const std::string& filename)
 
 Image::~Image()
 {
-    if (image_data)
-      stbi_image_free(image_data);
-    glDeleteTextures(1, &tex_id);
+    if (image_data_)
+        stbi_image_free(image_data_);
+    glDeleteTextures(1, &tex_id_);
 }
 
 void Image::draw()
@@ -32,17 +32,17 @@ void Image::draw()
 
 void Image::set_position(const ImVec2& pos)
 {
-    position = pos;
+    position_ = pos;
 }
 
-const ImVec2 Image::get_image_size()
+ImVec2 Image::get_image_size() const
 {
-    return ImVec2((float)image_width, (float)image_height);
+    return ImVec2((float)image_width_, (float)image_height_);
 }
 
 void Image::load_gltexture()
 {
-    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id_);
 
     // Setup filtering parameters for display
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -53,21 +53,22 @@ void Image::load_gltexture()
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        image_width,
-        image_height,
+        image_width_,
+        image_height_,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
-        image_data);
+        image_data_);
 }
+
 void Image::draw_image()
 {
     auto draw_list = ImGui::GetWindowDrawList();
-    if (image_data)
+    if (image_data_)
     {
-      ImVec2 p_min = position;
-      ImVec2 p_max = ImVec2(p_min.x + image_width, p_min.y + image_height);
-      draw_list->AddImage((void*)(intptr_t)tex_id, p_min, p_max);
+        ImVec2 p_min = position_;
+        ImVec2 p_max = ImVec2(p_min.x + image_width_, p_min.y + image_height_);
+        draw_list->AddImage((void*)(intptr_t)tex_id_, p_min, p_max);
     }
 }
 }  // namespace USTC_CG

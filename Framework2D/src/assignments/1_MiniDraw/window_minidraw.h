@@ -18,8 +18,8 @@ class MiniDraw : public Window
    private:
     void draw_canvas();
 
-    std::shared_ptr<Canvas> p_canvas = nullptr;
+    std::shared_ptr<Canvas> p_canvas_ = nullptr;
 
-    bool flag_show_canvas_view = true;
+    bool flag_show_canvas_view_ = true;
 };
 }  // namespace USTC_CG

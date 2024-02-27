@@ -4,16 +4,19 @@
 
 namespace USTC_CG
 {
+
 class Component
 {
    public:
-    Component(const std::string& label);
-    Component() = default;
+    explicit Component(const std::string& label) : label_(label)
+    {
+    }
     virtual ~Component() = default;
 
     virtual void draw() = 0;
 
    protected:
-    const std::string label = "";
+    std::string label_;
 };
+
 }  // namespace USTC_CG

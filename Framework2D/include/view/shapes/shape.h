@@ -1,39 +1,43 @@
 #pragma once
 
-#include "imgui.h"
-
 namespace USTC_CG
 {
 class Shape
 {
    public:
-    enum Type
+    // Draw Settings
+    struct Config
     {
-        kDefault = 0,
-        kLine = 1,
-        kRect = 2,
-        kEllipse = 3,
-        kPolygon = 4,
-    };
-
-    // Settings for ImGUI draw call
-    struct Settings
-    {
-        // Bias to translate the positions in canvas to the screen
-        ImVec2 bias = ImVec2(0.f, 0.f);
-        ImU32 line_color = IM_COL32(255, 0, 0, 255);
+        // Offset to convert canvas position to screen position
+        float bias[2] = { 0.f, 0.f };
+        // Line color in RGBA format
+        unsigned char line_color[4] = { 255, 0, 0, 255 };
         float line_thickness = 2.0f;
     };
 
    public:
-    Shape();
-    virtual ~Shape();
+    virtual ~Shape() = default;
 
-    virtual void draw(const Settings& settings) = 0;
-    void set_start(const ImVec2& s);
-    void set_end(const ImVec2& e);
-
-   protected:
-    ImVec2 start_point, end_point;
+    /**
+     * Draws the shape on the screen.
+     * This is a pure virtual function that must be implemented by all derived
+     * classes.
+     *
+     * @param config The configuration settings for drawing, including line
+     * color, thickness, and bias.
+     *               - line_color defines the color of the shape's outline.
+     *               - line_thickness determines how thick the outline will be.
+     *               - bias is used to adjust the shape's position on the
+     * screen.
+     */
+    virtual void draw(const Config& config) const = 0;
+    /**
+     * Updates the state of the shape.
+     * This function allows for dynamic modification of the shape, in response
+     * to user interactions like dragging.
+     *
+     * @param x, y Dragging point. e.g. end point of a line.
+     */
+    virtual void update(float x, float y) = 0;
 };
 }  // namespace USTC_CG
