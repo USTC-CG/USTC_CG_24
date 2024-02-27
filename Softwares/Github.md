@@ -48,13 +48,29 @@ Github Desktop是GitHub的客户端（桌面端）软件 ，它与GitHub进行�
   git remote set-url --push upstream DISABLE
   ```
 
-### 2. 从 USTC_CG_24 拉取更新
+### 2. 从 USTC_CG_24 拉取更新 
+
+**助教会在此仓库发布作业框架、文档的更新，**
 
 - 在库的本地根目录执行
 
-  ```bash
-  git fetch upstream
-  ```
+```bash
+git fetch upstream
+```
+
+  之后进行获取分支的合并。
+
+合并方式有以下两种：
+
+#### 命令行方式
+
+```bash
+git merge upstream/main
+```
+
+然后可以使用visual studio code编辑器来解决冲突。
+
+#### Github Desktop 方式
 
 - 在 GitHub Desktop 中，点击菜单栏的 `branch->merge into current branch`，弹出的窗口中选择 other branches 的 `upstream/main` 
 

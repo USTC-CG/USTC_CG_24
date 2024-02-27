@@ -23,8 +23,9 @@
 - CMake 版本 3.14 以上
 
 Step 0:
-获取third_party中的子仓库：
+如果还没有将此仓库获取到本地，请参考[简易说明](../../../Softwares/Github.md)
 
+获取third_party中的子仓库：
 ```
 git submodule update --init --recursive
 ```
