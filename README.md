@@ -27,7 +27,7 @@
 
 - Git：[官网](https://git-scm.com/)，[下载链接](https://git-scm.com/download/win)，[简易说明](Softwares/Github.md) 
 - GitHub Desktop：[官网](https://desktop.github.com/)，[下载链接](https://central.github.com/deployments/desktop/desktop/latest/win32)，[官方文档](https://help.github.com/en/desktop)，[简易说明](Softwares/Github.md) 
-- Vistual Studio Community 2022: [官网](https://visualstudio.microsoft.com/zh-hans/vs/) 
+- Visual Studio Community 2022: [官网](https://visualstudio.microsoft.com/zh-hans/vs/) 
 - CMake 3.27+：[官网](https://cmake.org/), [官方教程](https://cmake.org/cmake/help/latest/guide/tutorial/index.html)，[官方文档](https://cmake.org/documentation/) 
 
 ## 3. 辅助资料
