@@ -1,6 +1,18 @@
 # ImGui 程序框架具体实现
 
-[TOC]
+- [ImGui 程序框架具体实现](#imgui-程序框架具体实现)
+  - [主要任务](#主要任务)
+  - [1. MiniDraw 功能实现](#1-minidraw-功能实现)
+    - [Step 1: 创建一个基本 Hello world 窗口](#step-1-创建一个基本-hello-world-窗口)
+    - [Step 2: 定制化窗口，在窗口中添加按钮等功能](#step-2-定制化窗口在窗口中添加按钮等功能)
+    - [Step 3: 利用 ImGui 的函数进行图形绘制](#step-3-利用-imgui-的函数进行图形绘制)
+    - [Step 4: 鼠标交互](#step-4-鼠标交互)
+    - [Step 5: 存储数据](#step-5-存储数据)
+  - [2.更多图形元素](#2更多图形元素)
+  - [3. 继承与多态](#3-继承与多态)
+    - [3.1 继承](#31-继承)
+    - [3.2 多态](#32-多态)
+
 
 我们主要关注 [view/](../../../Framework2D/include/view/) 以及 [1_MiniDraw/](../../../Framework2D/src/assignments/1_MiniDraw/) 中的相关类及其实现
 
