@@ -1,8 +1,10 @@
 # ImGui 程序框架具体实现
 
+[TOC]
+
 我们主要关注 [view/](../../../Framework2D/include/view/) 以及 [1_MiniDraw/](../../../Framework2D/src/assignments/1_MiniDraw/) 中的相关类及其实现
 
-其文件结构如下
+[view/](../../../Framework2D/include/view/) 文件结构如下
 
 ```
 view/
@@ -16,6 +18,15 @@ view/
     ├── rect.h          // 矩形线框，继承自 Shape 类
     └── ...             // 可以实现更多...
 ```
+
+## 主要任务
+
+本次作业的**主要任务**就是
+- 在 [shapes/](../../../Framework2D/include/view/shapes/) 中补充更多图形的实现；
+- 扩充 [view/comp_canvas.h](../../../Framework2D/include/view/) 及 [view/comp_canvas.cpp](../../../Framework2D/src/view/comp_canvas.cpp) 中的绘图功能；
+- 完善 [1_MiniDraw/window_minidraw.cpp](../../../Framework2D/src/assignments/1_MiniDraw/window_minidraw.cpp) 中的图形界面。
+
+下面的内容主要是介绍框架中有关本次作业的核心功能实现。
 
 ## 1. MiniDraw 功能实现
 
