@@ -4,7 +4,6 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-set_target_properties(glfw update_mappings PROPERTIES ${OUTPUT_DIR})
 set_target_properties(glfw update_mappings PROPERTIES FOLDER "third_party/GLFW3")
 
 # glad
@@ -16,7 +15,6 @@ add_library(glad ${source})
 target_include_directories(glad
   PUBLIC "${glad_SOURCE_DIR}/include"
 )
-set_target_properties(glad PROPERTIES ${OUTPUT_DIR})
 set_target_properties(glad PROPERTIES FOLDER "third_party")
 
 # imgui
@@ -38,5 +36,4 @@ target_include_directories(imgui
     PUBLIC "${imgui_file_SOURCE_DIR}"
 )
 target_link_libraries(imgui PUBLIC glfw)
-set_target_properties(imgui PROPERTIES ${OUTPUT_DIR})
 set_target_properties(imgui PROPERTIES FOLDER "third_party")

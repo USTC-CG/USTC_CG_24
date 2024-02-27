@@ -6,7 +6,6 @@ file(GLOB source
   "${INCLUDE_DIR}/view/shapes/*.h"
 )
 add_library(${PROJECT_NAME} ${source})
-set_target_properties(${PROJECT_NAME} PROPERTIES ${OUTPUT_DIR})
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad imgui)
 target_include_directories(${PROJECT_NAME} 
   PUBLIC ${INCLUDE_DIR} 

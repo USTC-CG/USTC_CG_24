@@ -5,5 +5,5 @@ file(GLOB source
 )
 add_executable(${PROJECT_NAME} ${source})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(${PROJECT_NAME} PROPERTIES ${OUTPUT_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 target_link_libraries(${PROJECT_NAME} PUBLIC view) 

@@ -3,7 +3,7 @@ file(GLOB source
   "${CMAKE_CURRENT_SOURCE_DIR}/demo_hello_world.cpp"
 )
 add_executable(${PROJECT_NAME} ${source})
-set_target_properties(${PROJECT_NAME} PROPERTIES ${OUTPUT_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 target_link_libraries(${PROJECT_NAME} PUBLIC view) 
 
 project(demo)
@@ -13,5 +13,5 @@ file(GLOB source
   "${CMAKE_CURRENT_SOURCE_DIR}/window_demo.h"
 )
 add_executable(${PROJECT_NAME} ${source})
-set_target_properties(${PROJECT_NAME} PROPERTIES ${OUTPUT_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 target_link_libraries(${PROJECT_NAME} PUBLIC view) 
