@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(
-  "USTC_CG_2024_Image"
+  "USTC_CG_2024_Framework2D"
   VERSION 1.0
   LANGUAGES C CXX
 )
