@@ -15,6 +15,13 @@ CMake是一个跨平台的安装（编译）工具，可以用简单的语句来
 
 CMake插件就会自动构建并编译当前项目，得到可执行文件。
 
+## 插件选项（从作业4后开始为必须）：
+
+1. `Ctrl+.` 打开设置
+2. 搜索 cmake build type
+3. 勾选 `Cmake: Set Build Type On Multi Config`选项
+
+
 # CMake 使用实例
 
 一个使用 CMake 搭建项目的实例，可以参考 [CMake step by step](../Homeworks/0_cpp_warmup/documents/CMake_step_by_step/CMAKE_step_by_step.md)。

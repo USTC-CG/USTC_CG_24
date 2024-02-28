@@ -1,4 +1,4 @@
-#include "view/cmpt_canvas.h"
+#include "view/comp_canvas.h"
 
 #include <cmath>
 #include <iostream>

@@ -1,21 +1,44 @@
 # ImGui 程序框架具体实现
 
-我们主要关注 [view/](../../../Framework2D/include/view/) 中的相关类及其实现
+- [ImGui 程序框架具体实现](#imgui-程序框架具体实现)
+  - [主要任务](#主要任务)
+  - [1. MiniDraw 功能实现](#1-minidraw-功能实现)
+    - [Step 1: 创建一个基本 Hello world 窗口](#step-1-创建一个基本-hello-world-窗口)
+    - [Step 2: 定制化窗口，在窗口中添加按钮等功能](#step-2-定制化窗口在窗口中添加按钮等功能)
+    - [Step 3: 利用 ImGui 的函数进行图形绘制](#step-3-利用-imgui-的函数进行图形绘制)
+    - [Step 4: 鼠标交互](#step-4-鼠标交互)
+    - [Step 5: 存储数据](#step-5-存储数据)
+  - [2.更多图形元素](#2更多图形元素)
+  - [3. 继承与多态](#3-继承与多态)
+    - [3.1 继承](#31-继承)
+    - [3.2 多态](#32-多态)
 
-其文件结构如下
+
+我们主要关注 [view/](../../../Framework2D/include/view/) 以及 [1_MiniDraw/](../../../Framework2D/src/assignments/1_MiniDraw/) 中的相关类及其实现
+
+[view/](../../../Framework2D/include/view/) 文件结构如下
 
 ```
 view/
 ├── window.h        // 窗口类，OpenGL 和 ImGui 上下文初始化的封装
 ├── component.h     // UI 组件的抽象类
-├── cmpt_canvas.h   // 实现绘图功能的组件类，继承自 Component 类
-├── cmpt_image.h    // 实现图像可视化的组件类，继承自 Component 类（与 MiniDraw 无关）
+├── comp_canvas.h   // 实现绘图功能的组件类，继承自 Component 类
+├── comp_image.h    // 实现图像可视化的组件类，继承自 Component 类（与 MiniDraw 无关）
 └── shapes/         // 该文件夹下包含了用于绘图的各种形状类
     ├── shape.h         // 抽象父类
     ├── line.h          // 直线段，继承自 Shape 类
     ├── rect.h          // 矩形线框，继承自 Shape 类
     └── ...             // 可以实现更多...
 ```
+
+## 主要任务
+
+本次作业的**主要任务**就是
+- 在 [shapes/](../../../Framework2D/include/view/shapes/) 中补充更多图形的实现；
+- 扩充 [view/comp_canvas.h](../../../Framework2D/include/view/) 及 [view/comp_canvas.cpp](../../../Framework2D/src/view/comp_canvas.cpp) 中的绘图功能；
+- 完善 [1_MiniDraw/window_minidraw.cpp](../../../Framework2D/src/assignments/1_MiniDraw/window_minidraw.cpp) 中的图形界面。
+
+下面的内容主要是介绍框架中有关本次作业的核心功能实现。
 
 ## 1. MiniDraw 功能实现
 
@@ -51,7 +74,7 @@ int main()
 
 这个窗口默认绘制了一个 ImGui 的 DemoWindow，其中包含了 ImGui 的帮助文档和可以实现的各种功能和效果，其代码实现可以查阅 `ImGui::ShowDemoWindow()` 函数，可供模仿学习。
 
-![](figs/demo_hw.png)
+<div align=center><img width = 75% src ="figs/demo_hw.png"/></div align>
 
 ### Step 2: 定制化窗口，在窗口中添加按钮等功能
 
@@ -98,7 +121,7 @@ void MiniDraw::draw()
 }
 ```
 
-![](figs/t_0.png)
+<div align=center><img width = 75% src ="figs/t_0.png"/></div align>
 
 可以设置该窗口的若干显示属性，例如 `ImGuiWindowFlags_NoDecoration` 可以去掉上方的标签栏：
 
@@ -113,7 +136,7 @@ void MiniDraw::draw()
 }
 ```
 
-![](figs/t_1.png)
+<div align=center><img width = 75% src ="figs/t_1.png"/></div align>
 
 通过调用 `ImGui::SetNextWindowPos()` 函数与 `ImGui::SetNextWindowSize()`函数，可以设置窗口的（左上角）位置以及大小。这里获取视窗大小，并且用它来设置窗口的属性，将窗口铺满整个屏幕：
 ```cpp
@@ -130,7 +153,7 @@ void MiniDraw::draw()
     ImGui::End();
 }
 ```
-![](figs/t_2.png)
+<div align=center><img width = 75% src ="figs/t_2.png"/></div align>
 
 最后，使用 `ImGui::Button()` 可以添加按钮，例如这里添加了名称为 `"Line"` 和 `"Rect"` 的两个按钮，在单击后输出相应的字符串：
 
@@ -159,9 +182,11 @@ void MiniDraw::draw()
 
 ```
 
-![](figs/t_3.png)
+<div align=center><img width = 75% src ="figs/t_3.png"/></div align>
 
 ### Step 3: 利用 ImGui 的函数进行图形绘制
+
+我们继续定制化 `draw()` 函数中的内容。
 
 ImGui 提供了丰富的基本图形绘制函数，可以查看 `imgui.h` 文件的 `ImDrawList` 结构体。例如，调用 `AddLine(const ImVec2&, const ImVec2&, ImU32, float)` 函数可以绘制一条直线段，通过依次指定线段的起点、终点、颜色和粗细；调用 `AddRect(const ImVec2&, const ImVec2&, ImU32)` 可以绘制左上角顶点和右下角顶点确定的矩形线框，等等。
 
@@ -188,7 +213,7 @@ void MiniDraw::draw()
     ImGui::End();
 }
 ```
-![](figs/t_4.png)
+<div align=center><img width = 75% src ="figs/t_4.png"/></div align>
 
 ### Step 4: 鼠标交互
 
@@ -215,28 +240,27 @@ bool is_hovered = ImGui::IsItemHovered();
 
 为了实现鼠标绘制线段的交互，我们记录如下的变量，这些变量不是临时的，需要实时维护，因此需要设置为静态变量，或者作为类的属性写在 `MiniDraw` 类中：
 ```cpp
-static ImVec2 start_point, end_point;  // 线段的起点和终点
-static bool draw_status = false;       // 是否处于绘制状态
+ImVec2 start_point_, end_point_;  // 线段的起点和终点
+bool draw_status_ = false;       // 是否处于绘制状态
 ```
 
 通过获取鼠标交互，修改上述变量
 ```cpp
 // 获取鼠标位置
 ImGuiIO& io = ImGui::GetIO();
-// 鼠标在画布中的相对位置
-const ImVec2 mouse_pos_in_canvas(
-    io.MousePos.x - canvas_min.x, io.MousePos.y - canvas_min.y);
+// 鼠标在屏幕上的位置
+const ImVec2 mouse_pos = io.MousePose;
 
-if (is_hovered && !draw_status && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+if (is_hovered && !draw_status_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 {
     // 鼠标左键在画布中单击时，开始绘制，并记录起点和终点
-    draw_status = true;
-    start_point = end_point = mouse_pos_in_canvas;
+    draw_status_ = true;
+    start_point_ = end_point_ = mouse_pos;
 }
 if (draw_status)
 {
     // 绘制过程中，更新线段的终点
-    end_point = mouse_pos_in_canvas;
+    end_point_ = mouse_pos;
     // 鼠标左键松开，停止绘制
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
         draw_status = false;
@@ -246,7 +270,7 @@ if (draw_status)
 通过 `AddLine()` 函数绘制直线段
 
 ```cpp
-draw_list->AddLine(start_point, end_point, IM_COL32(255, 0, 0, 255), 2.0f);
+draw_list->AddLine(start_point_, end_point_, IM_COL32(255, 0, 0, 255), 2.0f);
 ```
 
 整体的 `MiniDraw::draw()` 函数如下：
@@ -265,25 +289,25 @@ void MiniDraw::draw()
         // 鼠标交互
         ImGuiIO& io = ImGui::GetIO();
         const ImVec2 mouse_pos = io.MousePos;
-        if (is_hovered && !draw_status && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (is_hovered && !draw_status_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
             draw_status = true;
-            start_point = end_point = mouse_pos;
+            start_point_ = end_point_ = mouse_pos;
         }
-        if (draw_status)
+        if (draw_status_)
         {
-            end_point = mouse_pos;
+            end_point_ = mouse_pos;
             if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                draw_status = false;
+                draw_status_ = false;
         }
         // 线段绘制
-        draw_list->AddLine(start_point, end_point, IM_COL32(255, 0, 0, 255), 2.0f);
+        draw_list->AddLine(start_point_, end_point_, IM_COL32(255, 0, 0, 255), 2.0f);
     }
     ImGui::End();
 }
 ```
 
-![](figs/t_5.png)
+<div align=center><img width = 75% src ="figs/t_5.png"/></div align>
 
 至此 MiniDraw 有了鼠标绘制功能，但是只能画一条线，因为没有**存储数据**。
 
@@ -296,7 +320,7 @@ class Line
 {
 public:
     Line(void);
-    Line(int start_point_x, int start_point_y, int end_point_x, int end_point_y)
+    Line(float start_point_x, float start_point_y, float end_point_x, float end_point_y)
     {
         start_point_x_ = start_point_x;
         start_point_y_ = start_point_y;
@@ -309,7 +333,7 @@ public:
     void draw();
 
 private:
-    int start_point_x_, start_point_y_, end_point_x_, end_point_y_;
+    float start_point_x_, start_point_y_, end_point_x_, end_point_y_;
 };
 ```
 
@@ -329,7 +353,7 @@ void Line::draw()
 在 `MiniDraw` 类中维护一个线段列表，使用 vector 容器：
 
 ```cpp
-std::vector<std::shared_ptr<Line>> line_list;
+std::vector<std::shared_ptr<Line>> line_list_;
 ```
 
 修改鼠标交互函数和绘制函数
@@ -337,41 +361,42 @@ std::vector<std::shared_ptr<Line>> line_list;
 ```cpp
 // 获取鼠标位置
 ImGuiIO& io = ImGui::GetIO();
-// 鼠标在画布中的相对位置
-const ImVec2 mouse_pos_in_canvas(
-    io.MousePos.x - canvas_min.x, io.MousePos.y - canvas_min.y);
+const ImVec2 mouse_pos = io.MousePos;
 
-if (is_hovered && !draw_status && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+if (is_hovered && !draw_status_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 {
     // 鼠标左键在画布中单击时，开始绘制，并记录起点和终点
-    draw_status = true;
-    start_point = end_point = mouse_pos_in_canvas;
+    draw_status_ = true;
+    start_point_ = end_point_ = mouse_pos;
 }
-if (draw_status)
+if (draw_status_)
 {
     // 绘制过程中，更新线段的终点
     end_point = mouse_pos_in_canvas;
     // 鼠标左键松开，停止绘制，更新线段列表
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
     {
-        draw_status = false;
-        std::shared_ptr<Line> p_line = 
-            std::make_shared<Line>(start_point.x, start_point.y, end_point.x, end_point.y);
-        line_list.push_back(p_line);
+        draw_status_ = false;
+        // 新增：把当前线段添加到线段列表当中
+        // 这里用到了智能指针 std::shared_ptr，下面这句话的含义类似于
+        // Line* = new Line(start_point_.x, start_point_.y, end_point_.x, end_point_.y)
+        std::shared_ptr<Line> p_line = std::make_shared<Line>(start_point_.x, start_point_.y, end_point_.x, end_point_.y);
+        line_list_.push_back(p_line);
     }
 }
 
 // 线段绘制
 // 绘制历史线段
-for (const auto& p_line : line_list)
+for (const auto& p_line : line_list_)
 {
     p_line->draw();
 }
 // 绘制当前线段
-draw_list->AddLine(start_point, end_point, IM_COL32(255, 0, 0, 255), 2.0f);
+if (draw_status_)
+    draw_list->AddLine(start_point_, end_point_, IM_COL32(255, 0, 0, 255), 2.0f);
 ```
 
-![](figs/t_6.png)
+<div align=center><img width = 75% src ="figs/t_6.png"/></div align>
 
 这样就可以绘制多条线段了。
 
@@ -418,8 +443,8 @@ private:
 然后在函数外部添加记录矩形的数组
 
 ```cpp
-std::vector<std::shared_ptr<Line>> line_list;
-std::vector<std::shared_ptr<Rect>> rect_list;
+std::vector<std::shared_ptr<Line>> line_list_;
+std::vector<std::shared_ptr<Rect>> rect_list_;
 ```
 
 然而这是好做法吗？
@@ -445,7 +470,7 @@ class Shape
     // 否则当用父类指针指向子类的实例并删除该实例时，将只会调用父类的析构函数
     // 而不调用子类的析构函数。会造成内存泄漏
     virtual ~Shape();
-    virtual void draw(const Settings& settings) = 0;
+    virtual void draw(const Config& config) = 0;
 };
 
 class Line : public Shape { /*...*/ };
@@ -456,8 +481,8 @@ class Rect : public Shape { /*...*/ };
 在 `MiniDraw` 类中用父类指针存储数据
 
 ```cpp
-std::vector<std::shared_ptr<Shape>> shape_list;
-ShapeType shape_type;
+std::vector<std::shared_ptr<Shape>> shape_list_;
+ShapeType shape_type_;
 
 enum ShapeType // 推荐用枚举类代表图元类型
 {
@@ -491,20 +516,23 @@ if (ImGui::Button("Rect"))
 if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 {
     std::shared_ptr<Shape> p_shape;
-
-    switch (figure_type)
+    
+    // 把当前形状添加到形状列表当中
+    switch (shape_type_)
     {
     case kDefault:
         break;
     case kLine:
-        p_shape = std::make_shared<Line>(start_point.x, start_point.y, end_point.x, end_point.y);
-        shape_list.push_back(p_shape);
-        draw_status = false;
+        // p_shape = new Line(start_point_.x, start_point_.y, end_point_.x, end_point_.y)
+        p_shape = std::make_shared<Line>(start_point_.x, start_point_.y, end_point_.x, end_point_.y);
+        draw_status_ = false;
+        shape_list_.push_back(current_shape_);
         break;
     case kRect:
-        p_shape = std::make_shared<Rect>(start_point.x, start_point.y, end_point.x, end_point.y);
-        shape_list.push_back(p_shape);
-        draw_status = false;
+        // p_shape = new Rect(start_point_.x, start_point_.y, end_point_.x, end_point_.y)
+        p_shape = std::make_shared<Rect>(start_point_.x, start_point_.y, end_point_.x, end_point_.y);
+        draw_status_ = false;
+        shape_list_.push_back(current_shape_);
         break;
     default:
         break;
@@ -514,11 +542,32 @@ if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 
 ### 3.2 多态
 
-不同的形状作为 `Shape` 类型的子类对于 `draw()` 函数有不同的实现，但是方便的是，对于 `shape_list` 中的对象，可以统一调用 `draw()` 函数对它们进行绘制
+不同的形状作为 `Shape` 类型的子类对于 `draw()` 函数有不同的实现，但是方便的是，对于 `shape_list_` 中的对象，可以统一调用 `draw()` 函数对它们进行绘制
 
 ```cpp
-for (const auto& p_shape : shape_list)
+// 绘制 shape_list_ 中的对象
+for (const auto& p_shape : shape_list_)
 {
     p_shape->draw();
 }
+// 绘制当前对象
+if (draw_status_)
+{
+    switch (shape_type_)
+    {
+    case kDefault:
+        break;
+    case kLine:
+        draw_list->AddLine(start_point_, end_point_, IM_COL32(255, 0, 0, 255), 2.0f);
+        break;
+    case kRect:
+        draw_list->AddRect(
+            start_point_, end_point_, IM_COL32(255, 0, 0, 255), 0.f, ImDrawFlags_None, 2.0f);
+        break;
+    default:
+        break;
+    }
+}
 ```
+
+这一部分 Canvas 功能可以从整体的 draw 函数中独立出来，单独封装到一个类当中，Canvas 功能的最终实现请参考 [comp_canvas.h](../../../Framework2D/include/view/comp_canvas.h)。

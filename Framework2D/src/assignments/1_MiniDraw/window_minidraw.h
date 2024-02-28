@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "view/window.h"
-#include "view/cmpt_canvas.h"
+#include "view/comp_canvas.h"
 
 namespace USTC_CG
 {
