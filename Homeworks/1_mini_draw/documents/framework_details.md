@@ -38,15 +38,17 @@ view/
 - 扩充 [view/comp_canvas.h](../../../Framework2D/include/view/) 及 [view/comp_canvas.cpp](../../../Framework2D/src/view/comp_canvas.cpp) 中的绘图功能；
 - 完善 [1_MiniDraw/window_minidraw.cpp](../../../Framework2D/src/assignments/1_MiniDraw/window_minidraw.cpp) 中的图形界面。
 
-下面的内容主要是介绍框架中有关本次作业的核心功能实现。
+下面的内容主要是介绍框架中有关本次作业的核心功能实现。这部分的实现（直线、矩形的绘制）在代码框架中已经给出了一个更完善的版本，可以直接使用代码框架进行作业内容的编写，下面的内容**仅需阅读参考**即可。关于作业内容的引导可以参考 [MiniDraw Step-by-Step](../documents/minidraw_step_by_step.md)。
+
+如果感兴趣，你可以在 [assignments/](../../../Framework2D/src/assignments/) 目录下新建一个文件夹，仿照 [assignments/1_MiniDraw/CMakeLists.txt](../../../Framework2D/src/assignments/1_MiniDraw/CMakeLists.txt) 在该文件夹下添加 `CMakeLists.txt`，构建一个自己的项目，根据下面的介绍一步一步实现基本的画图功能。
 
 ## 1. MiniDraw 功能实现
 
 ### Step 1: 创建一个基本 Hello world 窗口
 
-该部分的实现参考 [demo_hello_world.cpp](../../../Framework2D/src/demo/demo_hello_world.cpp)。
+该部分的实现参考 [demo_hello_world.cpp](../../../Framework2D/src/demo/demo_hello_world.cpp)。如果你已经配置成功，可以运行 `demo_hello_world.exe` 查看结果。 
 
-包含绘制窗口初始化的头文件 `window.h`，通过以下方式就可以构建一个名称为 `'Hello World'` 的默认窗口：创建 `USTC_CG::Window` 类型的变量 `w` > 初始化窗口 `w.init()` > 运行窗口 `w.run()`。 
+在 `main()` 函数中包含绘制窗口初始化的头文件 `window.h`，通过以下方式就可以构建一个名称为 `'Hello World'` 的默认窗口：创建 `USTC_CG::Window` 类型的变量 `w` > 初始化窗口 `w.init()` > 运行窗口 `w.run()`。 
 
 ```cpp
 #include <stdexcept>
@@ -80,7 +82,7 @@ int main()
 
 该部分的实现可直接参考作业代码 [1_MiniDraw/](../../../Framework2D/src/assignments/1_MiniDraw/)。
 
-定制化窗口，可以从前面的 `Window` 类派生一个子类，见 [window_mini_draw.h](../../../Framework2D/src/assignments/1_MiniDraw/window_minidraw.h) 中的 `MiniDraw` 类：
+定制化窗口，可以新建一个头文件，从前面的 `Window` 类派生一个子类，例如 [window_mini_draw.h](../../../Framework2D/src/assignments/1_MiniDraw/window_minidraw.h) 中的 `MiniDraw` 类：
 
 ```cpp
 #pragma once
@@ -120,6 +122,8 @@ void MiniDraw::draw()
     ImGui::End();
 }
 ```
+
+使用这个 `Window` 类的子类，我们一样可以在 `main()` 函数中新建一个窗口，不过这个窗口不会调用原来的默认绘制函数，而是调用它自己的绘制函数。
 
 <div align=center><img width = 75% src ="figs/t_0.png"/></div align>
 
