@@ -10,6 +10,7 @@
 
 - 请确保已经按照 [ImGui 程序框架配置说明](framework_introduction.md) 配置成功框架代码，这个时候应该可以运行成功 `1_MiniDraw` 项目，已经实现了 `Line` 和 `Rectangle` 的绘制；
 - 善用 VS Code 的全局搜索功能，快捷键 `Ctrl+Shift+F`，例如你可以使用这个功能全局搜索 `HW1_TODO` 的提示，帮助快速定位到关键部分。
+- **符合项目要求的结构设计、实现方法有很多，你不一定要严格按照下面的提示来实现，如果你有更好的想法，请务必实现它，并且在报告文件中详细描述。**
 
 ## 1. 添加椭圆绘制功能
 
@@ -35,7 +36,7 @@ void AddEllipse(const ImVec2& center, float radius_x, float radius_y, ImU32 col,
 
 为了实现椭圆形状的动态更新，可以仿照 `Line` 和 `Rect` 类写一个 `update(float x, float y)` 函数，它用传入的二维鼠标位置更新椭圆内存储的数据。
 
-**思考：`Class Ellipse` 是如何体现类的继承的。**
+> **思考：`Class Ellipse` 是如何体现类的继承的。**
 
 ### Step 3: 在 `comp_canvas.cpp` 中实现鼠标绘制椭圆
 
@@ -50,7 +51,7 @@ void AddEllipse(const ImVec2& center, float radius_x, float radius_y, ImU32 col,
 
 至此，椭圆的绘制程序就完成了。
 
-**思考：`Class Ellipse` 是如何体现类的多态的。**
+> **思考：`Class Ellipse` 是如何体现类的多态的。**
 
 ## 2. 添加多边形绘制功能
 
@@ -60,7 +61,7 @@ void AddEllipse(const ImVec2& center, float radius_x, float radius_y, ImU32 col,
 
 ### Step 2: 实现多边形图形类 `Class Polygon`
 
-**思考：多边形的数据应该如何存储？**
+> **思考：多边形的数据应该如何存储？**
 
 对于多边形，实现 `update(float x, float y)` 函数可以用于为其添加顶点，绘制函数 `draw()` 可以将其分解为多段直线绘制。
 
@@ -70,7 +71,7 @@ void AddEllipse(const ImVec2& center, float radius_x, float radius_y, ImU32 col,
 
 相应地要修改 `mouse_click_event()`, `mouse_move_event()`, `mouse_release_event()` 中的中多边形相关的逻辑。
 
-**Freehand 图形的绘制事实上和多边形较为类似，实现思路是一致的。**
+> **Freehand 图形的绘制事实上和多边形较为类似，实现思路是一致的。**
 
 
 
