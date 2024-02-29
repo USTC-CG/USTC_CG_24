@@ -115,7 +115,12 @@ bool Window::init_gui()
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
+#if defined(__APPLE__)
+    ImGui_ImplOpenGL3_Init("#version 110");
+#else
     ImGui_ImplOpenGL3_Init("#version 130");
+#endif
+    
 
     return true;
 }
