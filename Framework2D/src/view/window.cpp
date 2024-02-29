@@ -116,7 +116,7 @@ bool Window::init_gui()
 
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
 #if defined(__APPLE__)
-    ImGui_ImplOpenGL3_Init("#version 110");
+    ImGui_ImplOpenGL3_Init("#version 100");
 #else
     ImGui_ImplOpenGL3_Init("#version 130");
 #endif
