@@ -1,0 +1,11 @@
+compilation_database_dir: ./build
+output_directory: diagrams
+diagrams:
+  1_MiniDraw:
+    type: class
+    glob:
+      - ./src/assignments/1_MiniDraw/main.cpp
+    using_namespace: USTC_CG
+    include:
+      namespaces:
+        - USTC_CG
