@@ -1,8 +1,8 @@
 #include "window_warping.h"
 
-#include <iostream>
-
 #include <ImGuiFileDialog.h>
+
+#include <iostream>
 
 namespace USTC_CG
 {
@@ -24,7 +24,8 @@ void ImageWarping::draw()
     if (ImGui::Begin(
             "ImageEditor",
             &flag_show_main_view_,
-            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground))
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
+                ImGuiWindowFlags_NoBringToFrontOnFocus))
     {
         if (p_image_)
             draw_image();
@@ -43,19 +44,23 @@ void ImageWarping::draw_toolbar()
             }
             ImGui::EndMenu();
         }
-        if (ImGui::Button("Invert") && p_image_)
+        if (ImGui::MenuItem("Invert") && p_image_)
         {
             p_image_->invert();
         }
-        if (ImGui::Button("Mirror") && p_image_)
+        if (ImGui::MenuItem("Mirror") && p_image_)
         {
             p_image_->mirror(true, false);
         }
-        if (ImGui::Button("GrayScale") && p_image_)
+        if (ImGui::MenuItem("GrayScale") && p_image_)
         {
             p_image_->gray_scale();
         }
-        if (ImGui::Button("Restore") && p_image_)
+        if (ImGui::MenuItem("Warping") && p_image_)
+        {
+            p_image_->warping();
+        }
+        if (ImGui::MenuItem("Restore") && p_image_)
         {
             p_image_->restore();
         }
@@ -80,7 +85,10 @@ void ImageWarping::draw_open_image_file_dialog()
     config.path = ".";
     ImGuiFileDialog::Instance()->OpenDialog(
         "ChooseImageOpenFileDlg", "Choose Image File", ".png,.jpg", config);
-    if (ImGuiFileDialog::Instance()->Display("ChooseImageOpenFileDlg"))
+    ImVec2 main_size = ImGui::GetMainViewport()->WorkSize;
+    ImVec2 dlg_size(main_size.x / 2, main_size.y / 2);
+    if (ImGuiFileDialog::Instance()->Display(
+            "ChooseImageOpenFileDlg", ImGuiWindowFlags_NoCollapse, dlg_size))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
         {

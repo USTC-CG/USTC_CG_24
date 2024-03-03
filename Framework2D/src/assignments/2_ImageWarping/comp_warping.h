@@ -14,6 +14,7 @@ class CompWarping : public ImageEditor
     void invert();
     void mirror(bool is_horizontal, bool is_vertical);
     void gray_scale();
+    void warping();
     void restore();
 
    private:
