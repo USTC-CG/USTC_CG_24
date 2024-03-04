@@ -19,6 +19,7 @@ class ImageWarping : public Window
     void draw_toolbar();
     void draw_image();
     void draw_open_image_file_dialog();
+    void draw_save_image_file_dialog();
 
     std::shared_ptr<CompWarping> p_image_ = nullptr;
 

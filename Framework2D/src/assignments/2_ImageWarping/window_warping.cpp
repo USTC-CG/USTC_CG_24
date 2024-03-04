@@ -17,6 +17,8 @@ void ImageWarping::draw()
     draw_toolbar();
     if (flag_open_file_dialog_)
         draw_open_image_file_dialog();
+    if (flag_save_file_dialog_ && p_image_)
+        draw_save_image_file_dialog();
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -41,6 +43,10 @@ void ImageWarping::draw_toolbar()
             if (ImGui::MenuItem("Open Image File.."))
             {
                 flag_open_file_dialog_ = true;
+            }
+            if (ImGui::MenuItem("Save As.."))
+            {
+                flag_save_file_dialog_ = true;
             }
             ImGui::EndMenu();
         }
@@ -111,6 +117,30 @@ void ImageWarping::draw_open_image_file_dialog()
         }
         ImGuiFileDialog::Instance()->Close();
         flag_open_file_dialog_ = false;
+    }
+}
+void ImageWarping::draw_save_image_file_dialog()
+{
+    IGFD::FileDialogConfig config;
+    config.path = DATA_PATH;
+    config.flags = ImGuiFileDialogFlags_Modal;
+    ImGuiFileDialog::Instance()->OpenDialog(
+        "ChooseImageSaveFileDlg", "Save Image As...", ".png", config);
+    ImVec2 main_size = ImGui::GetMainViewport()->WorkSize;
+    ImVec2 dlg_size(main_size.x / 2, main_size.y / 2);
+    if (ImGuiFileDialog::Instance()->Display(
+            "ChooseImageSaveFileDlg", ImGuiWindowFlags_NoCollapse, dlg_size))
+    {
+        if (ImGuiFileDialog::Instance()->IsOk())
+        {
+            std::string filePathName =
+                ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string label = filePathName;
+            if (p_image_)
+                p_image_->save_to_disk(filePathName);
+        }
+        ImGuiFileDialog::Instance()->Close();
+        flag_save_file_dialog_ = false;
     }
 }
 }  // namespace USTC_CG

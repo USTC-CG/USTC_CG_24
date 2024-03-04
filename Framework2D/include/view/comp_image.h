@@ -33,6 +33,8 @@ class ImageEditor : public Component
 
     void update();
 
+    void save_to_disk(const std::string& filename);
+
    private:
     // Draws the loaded image.
     void draw_image();

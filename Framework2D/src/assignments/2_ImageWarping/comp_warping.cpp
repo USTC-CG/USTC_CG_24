@@ -175,11 +175,12 @@ void CompWarping::select_points()
     if (is_hovered_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
         draw_status_ = true;
-        start_ = end_ = io.MousePos;
+        start_ = end_ =
+            ImVec2(io.MousePos.x - position_.x, io.MousePos.y - position_.y);
     }
     if (draw_status_)
     {
-        end_ = io.MousePos;
+        end_ = ImVec2(io.MousePos.x - position_.x, io.MousePos.y - position_.y);
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
         {
             start_points_.push_back(start_);
@@ -191,23 +192,20 @@ void CompWarping::select_points()
     auto draw_list = ImGui::GetWindowDrawList();
     for (size_t i = 0; i < start_points_.size(); ++i)
     {
-        draw_list->AddLine(
-            start_points_[i], end_points_[i], IM_COL32(255, 0, 0, 255), 2.0f);
+        ImVec2 s(
+            start_points_[i].x + position_.x, start_points_[i].y + position_.y);
+        ImVec2 e(
+            end_points_[i].x + position_.x, end_points_[i].y + position_.y);
+        draw_list->AddLine(s, e, IM_COL32(255, 0, 0, 255), 2.0f);
+        draw_list->AddCircleFilled(s, 4.0f, IM_COL32(0, 0, 255, 255));
+        draw_list->AddCircleFilled(e, 4.0f, IM_COL32(0, 255, 0, 255));
     }
     if (draw_status_)
     {
-        draw_list->AddLine(start_, end_, IM_COL32(255, 0, 0, 255), 2.0f);
-    }
-    for (size_t i = 0; i < start_points_.size(); ++i)
-    {
-        draw_list->AddCircleFilled(
-            start_points_[i], 4.0f, IM_COL32(0, 0, 255, 255));
-        draw_list->AddCircleFilled(
-            end_points_[i], 4.0f, IM_COL32(0, 255, 0, 255));
-    }
-    if (draw_status_)
-    {
-        draw_list->AddCircleFilled(start_, 4.0f, IM_COL32(0, 0, 255, 255));
+        ImVec2 s(start_.x + position_.x, start_.y + position_.y);
+        ImVec2 e(end_.x + position_.x, end_.y + position_.y);
+        draw_list->AddLine(s, e, IM_COL32(255, 0, 0, 255), 2.0f);
+        draw_list->AddCircleFilled(s, 4.0f, IM_COL32(0, 0, 255, 255));
     }
 }
 void CompWarping::init_selections()

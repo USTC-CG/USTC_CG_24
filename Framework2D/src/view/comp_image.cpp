@@ -5,6 +5,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "iostream"
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 namespace USTC_CG
 {
@@ -25,7 +27,8 @@ ImageEditor::ImageEditor(const std::string& label, const std::string& filename)
         std::cout << "Successfully load image from file " << filename
                   << std::endl;
         std::unique_ptr<unsigned char[]> tmp(image_data);
-        data_ = std::make_shared<Image>(image_width_, image_height_, 4, std::move(tmp));
+        data_ = std::make_shared<Image>(
+            image_width_, image_height_, 4, std::move(tmp));
     }
     load_gltexture();
 }
@@ -53,6 +56,20 @@ ImVec2 ImageEditor::get_image_size() const
 void ImageEditor::update()
 {
     load_gltexture();
+}
+
+void ImageEditor::save_to_disk(const std::string& filename)
+{
+    if (data_)
+    {
+        stbi_write_png(
+            filename.c_str(),
+            data_->width(),
+            data_->height(),
+            data_->channels(),
+            data_->data(),
+            data_->width() * data_->channels());
+    }
 }
 
 void ImageEditor::load_gltexture()
