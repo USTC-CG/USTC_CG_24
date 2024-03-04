@@ -22,7 +22,7 @@ class Demo : public Window
 
    private:
     std::shared_ptr<Canvas> p_canvas_ = nullptr;
-    std::shared_ptr<Image> p_image_ = nullptr;
+    std::shared_ptr<ImageEditor> p_image_ = nullptr;
 
     bool flag_show_main_view_ = true;
     bool flag_open_file_dialog_ = false;

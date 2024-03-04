@@ -8,18 +8,19 @@
 #include <vector>
 
 #include "imgui.h"
+#include "view/image.h"
 #include "view/component.h"
 
 namespace USTC_CG
 {
 
 // Represents an image component that can be rendered within a GUI.
-class Image : public Component
+class ImageEditor : public Component
 {
    public:
     // Constructs an Image component with a given label and image file.
-    explicit Image(const std::string& label, const std::string& filename);
-    ~Image();  // Destructor to manage resources.
+    explicit ImageEditor(const std::string& label, const std::string& filename);
+    virtual ~ImageEditor();  // Destructor to manage resources.
 
     // Renders the image component.
     void draw() override;
@@ -30,6 +31,10 @@ class Image : public Component
     // Retrieves the size (width, height) of the loaded image.
     ImVec2 get_image_size() const;
 
+    void update();
+
+    void save_to_disk(const std::string& filename);
+
    private:
     // Draws the loaded image.
     void draw_image();
@@ -39,7 +44,7 @@ class Image : public Component
 
    protected:
     std::string filename_;                 // Path to the image file.
-    unsigned char* image_data_ = nullptr;  // Raw pixel data of the image.
+    std::shared_ptr<Image> data_;          // Raw pixel data of the image.
     GLuint tex_id_ = 0;                    // OpenGL texture identifier.
 
     ImVec2 position_ = ImVec2(0.0f, 0.0f);  // Position of the image in the GUI.
