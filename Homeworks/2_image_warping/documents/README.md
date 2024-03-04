@@ -6,11 +6,12 @@
 
 ## 学习过程
 
-- 根据 [ImGui 程序框架配置说明](framework_introduction.md) 配置作业项目代码，把 `1_ImageWarping` 项目跑通；
-- 参考[CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中的图像处理函数 `invert()`， `mirror()`，`gray_scale()` 等，学习基本的图像处理操作
-- [CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中实现了一个简单的 `warping()` 函数，做到了图像的“鱼眼”变形，仿照这个函数，实现作业中的 `IDW` 和 `RBF` 图像变形方法。具体而言，你需要：
-  - 为用户界面提供选点交互
+- 根据 [ImGui 程序框架配置说明](framework_introduction.md) 配置作业项目代码，把 `2_ImageWarping` 项目跑通；
+- 参考[CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中的图像处理函数 `invert()`， `mirror()`，`gray_scale()` 等，学习基本的图像处理操作；
+- [CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中实现了一个简单的 `warping()` 函数，做到了图像的“鱼眼”变形，仿照这个函数，实现作业中的 `IDW` 和 `RBF` 图像变形方法。我们在待实现的变形方法 `warping()` 处标明了 `HW2_TODO`。具体而言，你需要：
+  - 为用户界面提供选点交互（可以使用框架中实现的交互）
   - 实现两种图像变形功能，从代码的复用性以及 C++ 的 **封装**、**继承**、**多态**的角度，思考：**如何对 warping 功能进行抽象和封装更加合适？**
+  - 你可以直接在目录 [2_ImageWarping/](../../../Framework2D/src/assignments/2_ImageWarping/) 下添加算法需要的 `.h` 文件和 `.cpp` 文件。
 
 ## 测试图片及报告范例
 
@@ -55,7 +56,7 @@
 - 强烈推荐使用 Eigen 库来求解线性方程组，Eigen 库是强大的数学算法库，是计算机图形学必须使用的算法库
 - 我们提供了 Eigen 库的使用示例：[eigen_example](eigen_example/) 
 
-> [eigen_example](eigen_example/) 演示的添加依赖的方式重点掌握，另外为了保证项目的简洁性，不要将依赖部分加到 git 版本管理中，使用 [.gitignore](../../../.gitignore) 忽略掉 [eigen_example/include/_deps/](eigen_example/include/_deps/) 
+> [eigen_example](eigen_example/) 演示的添加依赖的方式重点掌握，另外为了保证项目的简洁性，不要将依赖部分加到 git 版本管理中，使用 [.gitignore](../../../.gitignore) 忽略掉 [eigen_example/src/_deps/](eigen_example/src/_deps/) 
 
 
 ### 补洞（Optional）
@@ -68,7 +69,7 @@
 
 若你需要用搜索最近点的任务（在补洞的任务中），建议学习使用如下的库：
 
-[ANN: A Library for Approximate Nearest Neighbor Searching](http://www.cs.umd.edu/~mount/ANN/) 
+- [Annoy(Approximate Nearest Neighbors Oh Yeah)](https://github.com/spotify/annoy)
 
 我们提供了测试项目 [ann_example](ann_example/) 
 
