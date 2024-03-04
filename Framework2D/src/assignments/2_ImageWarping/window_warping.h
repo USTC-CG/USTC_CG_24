@@ -24,5 +24,6 @@ class ImageWarping : public Window
 
     bool flag_show_main_view_ = true;
     bool flag_open_file_dialog_ = false;
+    bool flag_save_file_dialog_ = false;
 };
 }  // namespace USTC_CG

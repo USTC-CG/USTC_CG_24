@@ -125,6 +125,7 @@ class Image
         {
             throw std::out_of_range("Pixel coordinates out of bounds");
         }
+        // Allow 3 channel input when channels.size()==4 (RGB -> RGBA)
         size_t channels_reset = channels_;
         if (values.size() == 3 && static_cast<size_t>(channels_) == 4)
             channels_reset = 3;

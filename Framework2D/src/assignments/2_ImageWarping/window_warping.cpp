@@ -44,6 +44,7 @@ void ImageWarping::draw_toolbar()
             }
             ImGui::EndMenu();
         }
+        ImGui::Separator();
         if (ImGui::MenuItem("Invert") && p_image_)
         {
             p_image_->invert();
@@ -56,10 +57,20 @@ void ImageWarping::draw_toolbar()
         {
             p_image_->gray_scale();
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Select Points") && p_image_)
+        {
+            p_image_->init_selections();
+            p_image_->enable_selecting(true);
+        }
         if (ImGui::MenuItem("Warping") && p_image_)
         {
+            p_image_->enable_selecting(false);
             p_image_->warping();
+            p_image_->init_selections();
         }
+        // HW2_TODO: You can add more interactions for IDW, RBF, etc.
+        ImGui::Separator();
         if (ImGui::MenuItem("Restore") && p_image_)
         {
             p_image_->restore();
@@ -82,7 +93,8 @@ void ImageWarping::draw_image()
 void ImageWarping::draw_open_image_file_dialog()
 {
     IGFD::FileDialogConfig config;
-    config.path = ".";
+    config.path = DATA_PATH;
+    config.flags = ImGuiFileDialogFlags_Modal;
     ImGuiFileDialog::Instance()->OpenDialog(
         "ChooseImageOpenFileDlg", "Choose Image File", ".png,.jpg", config);
     ImVec2 main_size = ImGui::GetMainViewport()->WorkSize;
