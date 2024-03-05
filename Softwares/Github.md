@@ -141,3 +141,5 @@ git commit -a
 git diff --check
 ```
 
+> 如果你使用的是 Github Desktop 或者 Sourcetree 等图形界面，它们应该内置了方便的冲突解决功能，可以搜索相关教程自行了解。
+
