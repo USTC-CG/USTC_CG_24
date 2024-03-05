@@ -29,12 +29,16 @@ class Canvas : public Component
         kRect = 2,
         kEllipse = 3,
         kPolygon = 4,
+        kFreehand = 5
     };
 
     // Shape type setters.
     void set_default();
     void set_line();
     void set_rect();
+    void set_ellipse();
+    void set_polygon();
+    void set_freehand();
 
     // Clears all shapes from the canvas.
     void clear_shape_list();
@@ -54,6 +58,7 @@ class Canvas : public Component
     void mouse_click_event();
     void mouse_move_event();
     void mouse_release_event();
+    void mouse_click_r_event();
 
     // Calculates mouse's relative position in the canvas.
     ImVec2 mouse_pos_in_canvas() const;

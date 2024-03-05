@@ -2,6 +2,15 @@
 
 namespace USTC_CG
 {
+
+class point
+{
+   public:
+    float x, y;
+    point(float x, float y) : x(x), y(y)
+    {
+    }
+};
 class Shape
 {
    public:
@@ -13,9 +22,26 @@ class Shape
         // Line color in RGBA format
         unsigned char line_color[4] = { 255, 0, 0, 255 };
         float line_thickness = 2.0f;
+        // Ellipse color in RGBA format
+        unsigned char Ellipse_color[4] = { 255, 0, 0, 255 };
+        float Ellipse_thickness = 2.0f;
+
+        // polygon color in RGBA format
+        unsigned char polygon_color[4] = { 255, 0, 0, 255 };
+        float polygon_thickness = 2.0f;
+        // the index of the line in polygon
+        int index = 1;
+    };
+    Config config;
+    // for polygon
+    virtual void set_index(int index){};
+
+    virtual void add_point(float x, float y){};
+    virtual int get_index()
+    {
+        return 1;
     };
 
-   public:
     virtual ~Shape() = default;
 
     /**
