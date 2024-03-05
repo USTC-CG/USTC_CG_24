@@ -128,3 +128,16 @@ Automatic merge failed; fix conflicts and then commit the result.
 - 如果全部采用传入的更改，就相当于放弃原来自己的修改，和上游仓库的版本保持一致。
 - 如果打算保留自己对这部分文件的一些修改，你需要谨慎处理冲突，否则程序可能会出错。
 
+解决完冲突以后，再 commit 这一次 merge
+```bash
+git commit -a
+```
+
+以上就成功合并 `upstream/main` 分支到本地分支了。
+
+也可以用下面的命令定位到冲突文件：
+
+```bash
+git diff --check
+```
+
