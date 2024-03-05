@@ -6,7 +6,7 @@
 
 ## 学习过程
 
-- 根据 [ImGui 程序框架配置说明](framework_introduction.md) 配置作业项目代码，把 `2_ImageWarping` 项目跑通；
+- 根据 [ImGui 程序框架配置说明](../../1_mini_draw/documents/framework_introduction.md) 配置作业项目代码，把 `2_ImageWarping` 项目跑通；
 - 参考[CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中的图像处理函数 `invert()`， `mirror()`，`gray_scale()` 等，学习基本的图像处理操作；
 - [CompWarping.cpp](../../../Framework2D/src/assignments/2_ImageWarping/comp_warping.cpp) 中实现了一个简单的 `warping()` 函数，做到了图像的“鱼眼”变形，仿照这个函数，实现作业中的 `IDW` 和 `RBF` 图像变形方法。我们在待实现的变形方法 `warping()` 处标明了 `HW2_TODO`。具体而言，你需要：
   - 为用户界面提供选点交互（可以使用框架中实现的交互）
