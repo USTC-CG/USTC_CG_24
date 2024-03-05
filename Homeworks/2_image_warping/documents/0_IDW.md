@@ -55,5 +55,5 @@ $$
 
 ## 参考文献
 
-[^IDW]: Ruprecht D, Muller H. [**Image warping with scattered data interpolation**](https://pdfs.semanticscholar.org/5a9e/2604064d08f2a8b7dcef4cd4e9a2ce2a88c2.pdf)[J]. IEEE Computer Graphics and Applications, 1995, 15(2): 37-43.
+[^IDW]: Ruprecht D, Muller H. [**Image warping with scattered data interpolation**](https://ieeexplore.ieee.org/document/365004)[J]. IEEE Computer Graphics and Applications, 1995, 15(2): 37-43.
 

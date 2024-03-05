@@ -43,5 +43,5 @@ $$
 
 ## 参考文献
 
-[^RBF]: Arad N, Reisfeld D. [**Image warping using few anchor points and radial functions**](https://pdfs.semanticscholar.org/5a9e/2604064d08f2a8b7dcef4cd4e9a2ce2a88c2.pdf )[C]//Computer graphics forum. Edinburgh, UK: Blackwell Science Ltd, 1995, 14(1): 35-46.
+[^RBF]: Arad N, Reisfeld D. [**Image warping using few anchor points and radial functions**](https://onlinelibrary.wiley.com/doi/10.1111/1467-8659.1410035 )[C]//Computer graphics forum. Edinburgh, UK: Blackwell Science Ltd, 1995, 14(1): 35-46.
 
