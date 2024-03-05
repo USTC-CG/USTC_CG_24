@@ -2,56 +2,55 @@
 
 ## 问题描述
 
-给定 $n$ 对控制点 $(\mathbf{p} _ i,\mathbf{q _ i})$，$\mathbf{p} _ i,\mathbf{q} _ i\in\mathbb{R}^2$，$i=1,\dots,n$ 
+给定 $n$ 对控制点 $(\boldsymbol{p}_i, \boldsymbol{q}_i)$ ，其中 $\boldsymbol{p}_i,\boldsymbol{q}_i\in\mathbb{R}^2$ ， $i=1, 2, \cdots,n$ ，
 
-得到一个函数 $\mathbf{f}:\mathbb{R}^2\to\mathbb{R}^2$，满足插值条件，即 $\mathbf{f}(\mathbf{p} _ i)=\mathbf{q} _ i,i=1,\dots,n$ 
+希望得到一个函数 $f : \mathbb{R}^2\to\mathbb{R}^2$ ，满足插值条件：
+
+$$
+f(\boldsymbol{p}_i) = \boldsymbol{q}_i, \quad \text{for } i = 1, 2, \cdots, n.
+$$
 
 ## 算法原理
 
-局部插值函数 $\mathbf{f} _ i(\mathbf{p}):\mathbb{R}^2\to\mathbb{R}^2$ 满足 $f _ i(\mathbf{p} _ i)=\mathbf{q} _ i$，具体为
+假设所求的插值函数 $f$ 具有如下加权平均的形式
 
 $$
-\mathbf{f} _ i(\mathbf{p})=\mathbf{q} _ i+\mathbf{D} _ i(\mathbf{p}-\mathbf{q} _ i)
-$$
-其中 $\mathbf{D} _ i:\mathbb{R}^2\to\mathbb{R}^2$，满足 $\mathbf{D} _ i(\mathbf{0})=\mathbf{0}$ 
-
-可选 $\mathbf{D} _ i$ 为线性变换
-
-插值函数为
-
-$$
-\mathbf{f}(\mathbf{x})=\sum _ {i=1}^n w _ i(\mathbf{x})\mathbf{f} _ i(\mathbf{x})
+f(\boldsymbol{p})=\sum_{i=1}^n w_i(\boldsymbol{p})f_i(\boldsymbol{p}),
 $$
 
-其中 $w _ i:\mathbb{R}^2\to\mathbb{R}$，为
+其中每个 $f_i$ 是点 $\boldsymbol{p}_i$ 处的局部近似（local approximation），满足在 $(\boldsymbol{p}_i, \boldsymbol{q}_i)$ 处的插值性质；权重函数 $w_i$ 满足非负性和归一性
 
 $$
-w _ i(\mathbf{x})=\frac{\sigma _ i(\mathbf{x})}{\sum _ {j=1}^n \sigma _ j(\mathbf{p})}
+\sum_{i=1}^n w_i = 1, \text{and } \ w_i \geq 0, \text{ for } i = 1, 2, \cdots, n,
 $$
 
+且在 $\boldsymbol{p}_i$ 处 $w_i(\boldsymbol{p}_i) = 1$.
+
+对于任意的 $i$，
+
+- 权重 $w_i: \mathbb{R}^2\to\mathbb{R}$ 形如
+
+  $$w_i(\boldsymbol{p}) = \dfrac{\sigma_i(\boldsymbol{p})}{\displaystyle\sum_{j=1}^n\sigma_j(\boldsymbol{p})},$$
+
+  可选 $\sigma_i(\boldsymbol{p}) = \dfrac{1}{\Vert\boldsymbol{p} - \boldsymbol{p}_i\Vert^\mu}$ ， $\mu > 1$. 
+
+- 映射 $f_i: \mathbb{R}^2\to\mathbb{R}^2$ 形如 
+  
+  $$f_i(\boldsymbol{p})=\boldsymbol{q}_i+\boldsymbol{D}_i(\boldsymbol{p}-\boldsymbol{p}_i),$$
+  
+  其中 $\boldsymbol{D} _ i:\mathbb{R}^2\to\mathbb{R}^2$ ，满足 $\boldsymbol{D} _ i(\boldsymbol{0})=\boldsymbol{0}$ . 可选 $\boldsymbol{D} _ i$ 为线性变换，即 $\boldsymbol{D}_i \in \mathbb{R}^{2\times 2}$ .
+
+简单地，可直接取 $\boldsymbol{D}_i=\boldsymbol{0}$，此时
+
 $$
-\sigma _ i(\mathbf{x})=\frac{1}{\Vert\mathbf{x}-\mathbf{x} _ i\Vert^\mu}
+f(\boldsymbol{p})=\sum_{i=1}^n w_i(\boldsymbol{p})\boldsymbol{q}_i.
 $$
 
-其中 $\mu>1$ 
-
-显然 $0\le w _ i(\pmb{x})\le 1$，且 $\sum _ {i=1}^n w _ i(\mathbf{x})=1$ 
-
-简单地，可直接取 $\mathbf{D} _ i=\mathbf{0}$，此时 $\mathbf{f}(\mathbf{x})=\sum _ {i=1}^n w _ i(\mathbf{x})\mathbf{q} _ i$ 
-
-定义能量
+也可以对每个 $i$ 求更精确的 $\boldsymbol{D}_i$，通过最小化下面的能量
 
 $$
-\begin{aligned}
-E _ i(\mathbf{D} _ i)
-=&\sum _ {j=1,j\neq i}^n w _ {ij}\left\Vert\mathbf{q} _ i+\left(\begin{array}{c}d _ {i,11} & d _ {i,12}\newline d _ {i,21} & d _ {i,22}\end{array}\right)(\mathbf{p} _ j-\mathbf{p} _ i)-\mathbf{q} _ j\right\Vert^2\newline
-=&\sum _ {j=1,j\neq i}^n w _ {ij}(
-(d _ {i,11}(p _ {j,1}-p _ {i,1})+d _ {i,12}(p _ {j,2}-p _ {i,2})+q _ {i,1}-q _ {j,1})^2+\newline
-&(d _ {i,21}(p _ {j,1}-p _ {i,1})+d _ {i,22}(p _ {j,2}-p _ {i,2})+q _ {i,2}-q _ {j,2})^2)
-\end{aligned}
+E_i(\boldsymbol{D} _ i) = \sum _ {j=1, j\neq i}^n \sigma_i(\boldsymbol{p}_j)\left\Vert\boldsymbol{q}_i+\boldsymbol{D}_i(\boldsymbol{p}_j-\boldsymbol{p}_i) - \boldsymbol{q}_j\right\Vert^2.
 $$
-
-最小化该能量可求得 $\mathbf{D} _ i=\left(\begin{array}{c}d _ {i,11} & d _ {i,12}\newline d _ {i,21} & d _ {i,22}\end{array}\right)$ 
 
 ## 参考文献
 
