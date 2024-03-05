@@ -73,7 +73,7 @@ std::vector<ImVec2> start_points_, end_points_;
 ### Eigen库
 
 - 实现RBF方法需要求解线性方程组，你可以自己实现，也可以从网上找其他程序或库来用
-- 强烈推荐使用 Eigen 库来求解线性方程组，Eigen 库是强大的数学算法库，是计算机图形学必须使用的算法库
+- 强烈推荐使用 Eigen 库来求解线性方程组，Eigen 库是强大的数学算法库，是计算机图形学必须了解的算法库
 - 我们提供了 Eigen 库的使用示例：[eigen_example](eigen_example/) 
 
 > [eigen_example](eigen_example/) 演示的添加依赖的方式重点掌握，另外为了保证项目的简洁性，不要将依赖部分加到 git 版本管理中，使用 [.gitignore](../../../.gitignore) 忽略掉 [eigen_example/src/_deps/](eigen_example/src/_deps/) 
