@@ -18,7 +18,7 @@
 - 每次作业须通过CES-Alpha系统来完成：[作业提交系统](https://cn.ces-alpha.org/course/register/CG2024/)- 作业提交系统的使用可详细查看：[作业提交系统说明](https://rec.ustc.edu.cn/share/ffe2ccc0-bfcd-11ee-975e-e7adc994d6f4)
 
 ### (3) 提交要求
-每次作业仅须提交一个压缩包(zip 或 rar 格式），文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：
+每次作业仅须提交一个压缩包(zip 或 rar 格式)，文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：
 - 代码 project 的整个文件夹：须删除一些不必要的文件，比如bin、lib、build等
 - 实验报告
 - 可选：演示视频等其他辅助说明材料
@@ -45,3 +45,5 @@
 0. C++ 课前热身练习 [->](./0_cpp_warmup/) 
 
 1. 画图小程序 MiniDraw [->](./1_mini_draw/)
+
+2. 图像变形 ImageWarping [->](./2_image_warping/)

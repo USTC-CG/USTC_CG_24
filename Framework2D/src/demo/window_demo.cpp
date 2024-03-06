@@ -78,7 +78,7 @@ void Demo::draw_open_image_file_dialog()
             std::string filePathName =
                 ImGuiFileDialog::Instance()->GetFilePathName();
             std::string label = filePathName;
-            p_image_ = std::make_shared<Image>(label, filePathName);
+            p_image_ = std::make_shared<ImageEditor>(label, filePathName);
             p_canvas_->clear_shape_list();
         }
         ImGuiFileDialog::Instance()->Close();

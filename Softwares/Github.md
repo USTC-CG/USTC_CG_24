@@ -76,4 +76,70 @@ git merge upstream/main
 
 - 如果没有冲突，则可点击下边的 "Merge `upstream/main` into `main`“；否则，merge 时需要解决相应冲突才能 merge 成功
 
+## 冲突解决
+
+有时候，本地分支和被合并的分支之间会存在冲突，这个时候不能正常合并分支，下面是一个例子：
+
+执行 merge 命令
+```bash
+git merge upstream/main
+```
+后，有可能会报错：
+```
+error: Your local changes to the following files would be overwritten by merge:
+        Framework2D/src/view/comp_image.cpp
+Please commit your changes or stash them before you merge.
+Aborting
+Updating e961128..deba33f
+```
+
+这是因为本地对 `Framework2D/src/view/comp_image.cpp` 文件进行了修改，但是并未提交这个修改到本地仓库中，直接 merge 会导致自己对这个文件的修改丢失。
+
+因此，需要首先把自己的修改提交，输入
+
+```bash
+git commit -a -m "Your discription to the commit"
+```
+
+然后执行
+```bash
+git merge upstream/main
+```
+
+此时有可能会出现下面的输出
+```
+Auto-merging Framework2D/src/view/comp_image.cpp
+CONFLICT (content): Merge conflict in Framework2D/src/view/comp_image.cpp
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+这是因为本地的 `Framework2D/src/view/comp_image.cpp` 和上游仓库更新的 `Framework2D/src/view/comp_image.cpp` 存在**冲突**。用 vscode 打开这个冲突的文件，会发现用 
+```
+<<<<<<
+// 本地代码 
+======
+// merge 传入的更改代码
+>>>>>>
+```
+框起来的代码段，例如：
+<div align=center><img width = 75% src ="ps_images/conflict.png"/></div align>
+
+解决这部分冲突，你可以直接点击上方的 `采用传入的更改`，或者根据你自己的理解进行修正。
+- 如果全部采用传入的更改，就相当于放弃原来自己的修改，和上游仓库的版本保持一致。
+- 如果打算保留自己对这部分文件的一些修改，你需要谨慎处理冲突，否则程序可能会出错。
+
+解决完冲突以后，再 commit 这一次 merge
+```bash
+git commit -a
+```
+
+以上就成功合并 `upstream/main` 分支到本地分支了。
+
+也可以用下面的命令定位到冲突文件：
+
+```bash
+git diff --check
+```
+
+> 如果你使用的是 Github Desktop 或者 Sourcetree 等图形界面，它们应该内置了方便的冲突解决功能，可以搜索相关教程自行了解。
 

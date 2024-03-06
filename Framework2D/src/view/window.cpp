@@ -4,7 +4,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <format>
+#include <iostream>
 
 namespace USTC_CG
 {
@@ -115,7 +115,13 @@ bool Window::init_gui()
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
+#if defined(__APPLE__)
+    std::cout << "Using Apple: Supported OpenGL version = " << glGetString(GL_VERSION) << std::endl;
+    ImGui_ImplOpenGL3_Init("#version 100");
+#else
     ImGui_ImplOpenGL3_Init("#version 130");
+#endif
+    
 
     return true;
 }
