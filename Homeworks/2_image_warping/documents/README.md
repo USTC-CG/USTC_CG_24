@@ -1,6 +1,6 @@
 # 作业说明
 
-> 旧版资料：https://pan.baidu.com/s/151e-R8tEKmI3die5rBVBAA
+> 旧版资料：https://rec.ustc.edu.cn/share/fe136800-dc93-11ee-a2ce-ad2c97024b07
 >
 > **只须看其 demo 目录的可执行程序及操作演示** 
 
@@ -18,7 +18,7 @@
 
 <div align=center><img width = 50% src ="../data/test.png"/></div align>
 
-- 作业实验报告范例：[示例参考](http://pan.baidu.com/s/1i3mi2yT) 
+- 作业实验报告范例：[示例参考](https://rec.ustc.edu.cn/share/97ce81a0-dc93-11ee-8634-cbdc421a711c) 
 
 ### 其他测试图片
 

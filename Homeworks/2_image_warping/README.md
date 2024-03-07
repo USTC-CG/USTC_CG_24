@@ -21,7 +21,7 @@
     - 数学变换与图像无关（类的**解耦**）
   - 封装、继承、多态
 - 白缝填补（optional）
-- 作业实验报告范例：[示例参考](http://pan.baidu.com/s/1i3mi2yT)
+- 作业实验报告范例：[示例参考](https://rec.ustc.edu.cn/share/97ce81a0-dc93-11ee-8634-cbdc421a711c)
 
 ## 目的
 
