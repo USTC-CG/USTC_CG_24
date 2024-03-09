@@ -214,6 +214,11 @@ void CompWarping::init_selections()
     end_points_.clear();
 }
 
+std::pair<int, int> Warping::warping_f(int x, int y, int width, int height)
+{
+    return { x, y };
+}
+
 std::pair<int, int>
 CompWarping::fisheye_warping(int x, int y, int width, int height)
 {
