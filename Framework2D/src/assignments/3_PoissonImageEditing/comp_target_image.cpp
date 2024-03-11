@@ -82,7 +82,7 @@ void CompTargetImage::clone()
     // The implementation of different types of cloning
     // HW3_TODO: In this function, you should at least implement the "seamless"
     // cloning labeled by `clone_type_ ==kSeamless`.
-    // 
+    //
     // The realtime updating (update when the mouse is moving) is only available
     // when the checkboard is selected. It is required to improve the efficiency
     // of your seamless cloning to achieve realtime editing. (Use decomposition
@@ -101,9 +101,11 @@ void CompTargetImage::clone()
                 for (int j = 0; j < mask->height(); ++j)
                 {
                     int tar_x =
-                        mouse_position_.x + i - source_image_->get_position().x;
+                        static_cast<int>(mouse_position_.x) + i -
+                        static_cast<int>(source_image_->get_position().x);
                     int tar_y =
-                        mouse_position_.y + j - source_image_->get_position().y;
+                        static_cast<int>(mouse_position_.y) + j -
+                        static_cast<int>(source_image_->get_position().y);
                     if (0 <= tar_x && tar_x < image_width_ && 0 <= tar_y &&
                         tar_y < image_height_ && mask->get_pixel(i, j)[0] > 0)
                     {
@@ -128,9 +130,11 @@ void CompTargetImage::clone()
                 for (int j = 0; j < mask->height(); ++j)
                 {
                     int tar_x =
-                        mouse_position_.x + i - source_image_->get_position().x;
+                        static_cast<int>(mouse_position_.x) + i -
+                        static_cast<int>(source_image_->get_position().x);
                     int tar_y =
-                        mouse_position_.y + j - source_image_->get_position().y;
+                        static_cast<int>(mouse_position_.y) + j -
+                        static_cast<int>(source_image_->get_position().y);
                     if (0 <= tar_x && tar_x < image_width_ && 0 <= tar_y &&
                         tar_y < image_height_ && mask->get_pixel(i, j)[0] > 0)
                     {

@@ -1,5 +1,6 @@
 #include "comp_source_image.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace USTC_CG
@@ -49,12 +50,19 @@ void CompSourceImage::select_region()
     if (is_hovered_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
         draw_status_ = true;
-        start_ = end_ =
-            ImVec2(io.MousePos.x - position_.x, io.MousePos.y - position_.y);
+        start_ = end_ = ImVec2(
+            std::clamp<float>(
+                io.MousePos.x - position_.x, 0, (float)image_width_),
+            std::clamp<float>(
+                io.MousePos.y - position_.y, 0, (float)image_height_));
     }
     if (draw_status_)
     {
-        end_ = ImVec2(io.MousePos.x - position_.x, io.MousePos.y - position_.y);
+        end_ = ImVec2(
+            std::clamp<float>(
+                io.MousePos.x - position_.x, 0, (float)image_width_),
+            std::clamp<float>(
+                io.MousePos.y - position_.y, 0, (float)image_height_));
         if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
         {
             draw_status_ = false;
