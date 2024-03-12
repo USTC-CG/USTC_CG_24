@@ -152,6 +152,8 @@ void WindowPoisson::draw_open_target_image_file_dialog()
                 ImGuiFileDialog::Instance()->GetFilePathName();
             std::string label = filePathName;
             p_target_ = std::make_shared<CompTargetImage>(label, filePathName);
+            if (p_source_)
+                p_target_->set_source(p_source_);
         }
         ImGuiFileDialog::Instance()->Close();
         flag_open_target_file_dialog_ = false;
