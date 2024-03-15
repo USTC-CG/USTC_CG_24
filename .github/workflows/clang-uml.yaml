@@ -29,6 +29,7 @@ jobs:
           # iterate over ./*.puml, use plantuml to generate .png
           for f in ./*.puml; do
             plantuml $f
+            plantuml -svg $f
           done
           # zip the diagrams
           zip -r diagrams.zip .
