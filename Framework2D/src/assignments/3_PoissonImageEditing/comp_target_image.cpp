@@ -87,6 +87,9 @@ void CompTargetImage::clone()
     // when the checkboard is selected. It is required to improve the efficiency
     // of your seamless cloning to achieve realtime editing. (Use decomposition
     // of sparse matrix before solve the linear system)
+    if (data_ == nullptr || source_image_ == nullptr ||
+        source_image_->get_region() == nullptr)
+        return;
     std::shared_ptr<Image> mask = source_image_->get_region();
 
     switch (clone_type_)
