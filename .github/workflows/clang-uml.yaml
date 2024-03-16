@@ -1,0 +1,42 @@
+name: Build clang-uml files
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          # Currently supported Ubuntu versions are Focal, Jammy and Mantic
+          sudo add-apt-repository ppa:bkryza/clang-uml
+          sudo apt update
+          sudo apt install clang-uml cmake ninja-build graphviz plantuml mesa-utils libxrandr-dev libxinerama-dev libwayland-dev libxkbcommon-dev xorg-dev freeglut3-dev -y
+      - name: Generate clang-uml diagrams
+        run: |
+          git submodule update --init --recursive
+          cd Framework2D
+          mkdir -p build
+          cd build
+          cmake ..
+          cd ..
+          clang-uml
+          cd diagrams
+          # iterate over ./*.puml, use plantuml to generate .png
+          for f in ./*.puml; do
+            plantuml $f
+            plantuml -svg $f
+          done
+          # zip the diagrams
+          zip -r diagrams.zip .
+          mv diagrams.zip ../..
+      - name: Upload diagrams
+        uses: actions/upload-artifact@v2
+        with:
+          name: diagrams
+          path: diagrams.zip
+
