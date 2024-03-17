@@ -75,6 +75,13 @@ void ImageWarping::draw_toolbar()
         if (ImGui::MenuItem("Fisheye_warping") && p_image_)
         {
             p_image_->enable_selecting(false);
+            p_image_->my_warping = std::make_shared<Warping_Fisheye>(
+                p_image_->start_points_,
+                p_image_->end_points_,
+                p_image_->start_,
+                p_image_->end_,
+                p_image_->flag_enable_selecting_points_,
+                p_image_->draw_status_);
             p_image_->warping();
             p_image_->init_selections();
         }

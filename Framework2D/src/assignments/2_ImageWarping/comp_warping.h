@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Eigen/Dense>
+
 #include "view/comp_image.h"
 
 namespace USTC_CG
@@ -36,37 +38,108 @@ class Warping
 
 class Warping_IDW : public Warping
 {
-    // Store the original image data
-    // std::shared_ptr<Image> back_up_;
-    // The selected point couples for image warping
-    // std::vector<ImVec2> start_points_, end_points_;
+   public:
+    Warping_IDW(
+        std::vector<ImVec2> start_points_,
+        std::vector<ImVec2> end_points_,
 
-    // ImVec2 start_, end_;
-    // bool flag_enable_selecting_points_ = false;
-    // bool draw_status_ = false;
+        ImVec2 start_,
+        ImVec2 end_,
+        bool flag_enable_selecting_points_ = false,
+        bool draw_status_ = false)
+        : Warping(
+              start_points_,
+              end_points_,
+              start_,
+              end_,
+              flag_enable_selecting_points_,
+              draw_status_)
+    {
+    }
 
-    std::pair<int, int> warping_f(int x, int y, int width, int height);
+    std::pair<int, int> warping_f(int x, int y, int width, int height) override;
     // void restore() override;
-
-   private:
 };
 
 class Warping_RBF : public Warping
 {
-    // Store the original image data
-    // std::shared_ptr<Image> back_up_;
-    // The selected point couples for image warping
-    // std::vector<ImVec2> start_points_, end_points_;
+   public:
+    Warping_RBF(
+        std::vector<ImVec2> start_points_,
+        std::vector<ImVec2> end_points_,
 
-    // ImVec2 start_, end_;
-    // bool flag_enable_selecting_points_ = false;
-    // bool draw_status_ = false;
+        ImVec2 start_,
+        ImVec2 end_,
+        bool flag_enable_selecting_points_ = false,
+        bool draw_status_ = false)
+        : Warping(
+              start_points_,
+              end_points_,
+              start_,
+              end_,
+              flag_enable_selecting_points_,
+              draw_status_)
+    {
+    }
 
-    std::pair<int, int> warping_f(int x, int y, int width, int height);
+    float phi(float x_0, float y_0, float x_1, float y_1, float r_1);
+
+    std::pair<int, int> warping_f(int x, int y, int width, int height) override;
     // void restore() override;
 
    private:
 };
+
+class Warping_Fisheye : public Warping
+{
+   public:
+    Warping_Fisheye(
+        std::vector<ImVec2> start_points_,
+        std::vector<ImVec2> end_points_,
+
+        ImVec2 start_,
+        ImVec2 end_,
+        bool flag_enable_selecting_points_ = false,
+        bool draw_status_ = false)
+        : Warping(
+              start_points_,
+              end_points_,
+              start_,
+              end_,
+              flag_enable_selecting_points_,
+              draw_status_)
+    {
+    }
+
+    std::pair<int, int> warping_f(int x, int y, int width, int height) override;
+    // void restore() override;
+};
+
+class Warping_NN : public Warping
+{
+   public:
+    Warping_NN(
+        std::vector<ImVec2> start_points_,
+        std::vector<ImVec2> end_points_,
+
+        ImVec2 start_,
+        ImVec2 end_,
+        bool flag_enable_selecting_points_ = false,
+        bool draw_status_ = false)
+        : Warping(
+              start_points_,
+              end_points_,
+              start_,
+              end_,
+              flag_enable_selecting_points_,
+              draw_status_)
+    {
+    }
+
+    std::pair<int, int> warping_f(int x, int y, int width, int height) override;
+    // void restore() override;
+};
+
 // Image component for warping and other functions
 class CompWarping : public ImageEditor
 {
@@ -111,8 +184,6 @@ class CompWarping : public ImageEditor
     bool draw_status_ = false;
 
    private:
-    // A simple "fish-eye" warping function
-    std::pair<int, int> fisheye_warping(int x, int y, int width, int height);
 };
 
 }  // namespace USTC_CG
