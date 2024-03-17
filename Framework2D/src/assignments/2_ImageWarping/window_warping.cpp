@@ -4,8 +4,11 @@
 
 #include <iostream>
 
+#include "comp_warping.h"
+
 namespace USTC_CG
 {
+
 ImageWarping::ImageWarping(const std::string& window_name) : Window(window_name)
 {
 }
@@ -69,12 +72,46 @@ void ImageWarping::draw_toolbar()
             p_image_->init_selections();
             p_image_->enable_selecting(true);
         }
-        if (ImGui::MenuItem("Warping") && p_image_)
+        if (ImGui::MenuItem("Fisheye_warping") && p_image_)
         {
             p_image_->enable_selecting(false);
+            p_image_->my_warping = std::make_shared<Warping_Fisheye>(
+                p_image_->start_points_,
+                p_image_->end_points_,
+                p_image_->start_,
+                p_image_->end_,
+                p_image_->flag_enable_selecting_points_,
+                p_image_->draw_status_);
             p_image_->warping();
             p_image_->init_selections();
         }
+        if (ImGui::MenuItem("IDW_warping") && p_image_)
+        {
+            p_image_->enable_selecting(false);
+            p_image_->my_warping = std::make_shared<Warping_IDW>(
+                p_image_->start_points_,
+                p_image_->end_points_,
+                p_image_->start_,
+                p_image_->end_,
+                p_image_->flag_enable_selecting_points_,
+                p_image_->draw_status_);
+            p_image_->warping();
+            p_image_->init_selections();
+        }
+        if (ImGui::MenuItem("RBF_warping") && p_image_)
+        {
+            p_image_->enable_selecting(false);
+            p_image_->my_warping = std::make_shared<Warping_RBF>(
+                p_image_->start_points_,
+                p_image_->end_points_,
+                p_image_->start_,
+                p_image_->end_,
+                p_image_->flag_enable_selecting_points_,
+                p_image_->draw_status_);
+            p_image_->warping();
+            p_image_->init_selections();
+        }
+
         // HW2_TODO: You can add more interactions for IDW, RBF, etc.
         ImGui::Separator();
         if (ImGui::MenuItem("Restore") && p_image_)
@@ -113,6 +150,7 @@ void ImageWarping::draw_open_image_file_dialog()
             std::string filePathName =
                 ImGuiFileDialog::Instance()->GetFilePathName();
             std::string label = filePathName;
+
             p_image_ = std::make_shared<CompWarping>(label, filePathName);
         }
         ImGuiFileDialog::Instance()->Close();
