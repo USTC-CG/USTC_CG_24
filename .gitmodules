@@ -7,3 +7,18 @@
 [submodule "Framework2D/third_party/ImGuiFileDialog"]
 	path = Framework2D/third_party/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
+[submodule "Framework3D/external/eigen"]
+	path = Framework3D/external/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "Framework3D/external/glfw"]
+	path = Framework3D/external/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Framework3D/external/googletest"]
+	path = Framework3D/external/googletest
+	url = https://github.com/google/googletest.git
+[submodule "Framework3D/external/imgui"]
+	path = Framework3D/external/imgui
+	url = https://github.com/thedmd/imgui.git
+[submodule "Framework3D/external/OpenMesh"]
+	path = Framework3D/external/OpenMesh
+	url = https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git
