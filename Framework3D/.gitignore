@@ -1,0 +1,9 @@
+SDK/
+Binaries/
+build/
+.vs/
+.vscode/
+out/
+CMakeSettings.json
+.VSCodeCounter/
+SDK.zip
