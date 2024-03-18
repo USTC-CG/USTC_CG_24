@@ -191,6 +191,7 @@ static void node_register()
 
     strcpy(ntype.ui_name, "write_usd");
     strcpy_s(ntype.id_name, "geom_write_usd");
+    ntype.ALWAYS_REQUIRED = true;
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

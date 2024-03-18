@@ -24,17 +24,22 @@ struct RuntimeOutputState {
 // robustness.
 
 struct EagerNodeTreeExecutor : public NodeTreeExecutor {
+    void compile(NodeTree* tree);
     void execute_tree(NodeTree* tree) override;
 
    private:
     ExeParams prepare_params(NodeTree* tree, Node* node);
-    void execute_node(NodeTree* tree, Node* node);
+    bool execute_node(NodeTree* tree, Node* node);
     void forward_output_to_input(Node* node);
     void clear();
 
     std::vector<RuntimeInputState> input_states;
     std::vector<RuntimeOutputState> output_states;
     std::map<NodeSocket*, size_t> index_cache;
+    std::vector<Node*> nodes_to_execute;
+    std::vector<NodeSocket*> input_of_nodes_to_execute;
+    std::vector<NodeSocket*> output_of_nodes_to_execute;
+    ptrdiff_t nodes_to_execute_count;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

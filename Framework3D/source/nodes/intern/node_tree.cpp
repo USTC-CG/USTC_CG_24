@@ -419,6 +419,8 @@ void NodeTree::ensure_topology_cache()
 
     update_toposort(
         *this, ToposortDirection::LeftToRight, toposort_left_to_right, has_available_link_cycle);
+    update_toposort(
+        *this, ToposortDirection::RightToLeft, toposort_right_to_left, has_available_link_cycle);
 }
 
 void NodeTree::refresh_node_socket(

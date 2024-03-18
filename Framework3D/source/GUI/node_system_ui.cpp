@@ -112,7 +112,6 @@ struct NodeSystemImpl {
     void UpdateTouch();
     Node* FindNode(NodeId id);
     bool CanCreateLink(NodeSocket* a, NodeSocket* b);
-    void BuildNode(Node* node);
 
     std::unique_ptr<NodeSystemExecution> node_system_execution_;
     static const int m_PinIconSize = 24;
@@ -320,6 +319,12 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             if (!isSimple) {
                 ImColor color;
                 memcpy(&color, node->Color, sizeof(ImColor));
+                if (node->MISSING_INPUT) {
+                    color = ImColor(255, 206, 69, 255);
+                }
+                if (!node->REQUIRED) {
+                    color = ImColor(84, 57, 56, 255);
+                }
                 builder.Header(color);
                 ImGui::Spring(0);
                 ImGui::TextUnformatted(node->ui_name.c_str());
@@ -808,19 +813,6 @@ bool NodeSystemImpl::CanCreateLink(NodeSocket* a, NodeSocket* b)
     return node_system_execution_->CanCreateLink(a, b);
 }
 
-void NodeSystemImpl::BuildNode(Node* node)
-{
-    for (auto& input : node->inputs) {
-        input->Node = node;
-        input->in_out = PinKind::Input;
-    }
-
-    for (auto& output : node->outputs) {
-        output->Node = node;
-        output->in_out = PinKind::Output;
-    }
-}
-
 inline ImGuiWindowFlags GetWindowFlags()
 {
     return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus;
@@ -1149,12 +1141,12 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
             node->override_left_pane_info();
     }
 
-    //if (nodeCount == 1) {
-    //    auto node = FindNode(selectedNodes[0]);
-    //    for (int output_id = 0; output_id < node->outputs.size(); ++output_id) {
-    //        auto output_socket = node->outputs[output_id];
-    //    }
-    //}
+    // if (nodeCount == 1) {
+    //     auto node = FindNode(selectedNodes[0]);
+    //     for (int output_id = 0; output_id < node->outputs.size(); ++output_id) {
+    //         auto output_socket = node->outputs[output_id];
+    //     }
+    // }
     for (int i = 0; i < linkCount; ++i)
         ImGui::Text("Link (%p)", selectedLinks[i].AsPointer());
     ImGui::Unindent();

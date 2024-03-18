@@ -42,6 +42,7 @@ struct NodeTypeInfo {
     float color[4];
     NodeDeclareFunction declare;
     ExecFunction node_execute;
+    bool ALWAYS_REQUIRED = false;
 
     std::unique_ptr<NodeDeclaration> static_declaration;
 };
@@ -61,6 +62,9 @@ struct Node {
     Operator* operator_;
 
     NodeTypeInfo* typeinfo;
+
+    bool REQUIRED = false;
+    bool MISSING_INPUT = false;
 
     std::function<void()> node_widget = nullptr;
     std::function<void()> override_left_pane_info = nullptr;
