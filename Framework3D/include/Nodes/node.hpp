@@ -65,6 +65,7 @@ struct Node {
 
     bool REQUIRED = false;
     bool MISSING_INPUT = false;
+    std::string execution_failed = {};
 
     std::function<void()> node_widget = nullptr;
     std::function<void()> override_left_pane_info = nullptr;

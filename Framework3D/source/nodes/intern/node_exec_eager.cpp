@@ -52,8 +52,10 @@ bool EagerNodeTreeExecutor::execute_node(NodeTree* tree, Node* node)
     auto typeinfo = node->typeinfo;
     try {
         typeinfo->node_execute(params);
+        node->execution_failed = {};
     }
     catch (std::runtime_error(err)) {
+        node->execution_failed = err.what();
         return false;
     }
     return true;
