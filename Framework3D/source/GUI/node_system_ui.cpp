@@ -333,7 +333,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 ImGui::Spring(0);
                 ImGui::TextUnformatted(node->ui_name.c_str());
                 if (!node->execution_failed.empty()) {
-                    ImGui::TextUnformatted(node->execution_failed.c_str());
+                    ImGui::TextUnformatted((": " + node->execution_failed).c_str());
                 }
                 ImGui::Spring(1);
                 ImGui::Dummy(ImVec2(0, 28));
