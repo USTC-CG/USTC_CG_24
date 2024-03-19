@@ -65,7 +65,6 @@ struct Node {
     bool MISSING_INPUT = false;
     std::string execution_failed = {};
 
-    std::function<void()> node_widget = nullptr;
     std::function<void()> override_left_pane_info = nullptr;
 
     bool has_available_linked_inputs = false;

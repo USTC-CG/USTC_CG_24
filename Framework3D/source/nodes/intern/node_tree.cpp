@@ -112,6 +112,7 @@ NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSo
         link->fromsock = tosock;
         link->tonode = fromnode;
         link->tosock = fromsock;
+        std::swap(link->StartPinID, link->EndPinID);
     }
     auto bare_ptr = link.get();
     links.push_back(std::move(link));

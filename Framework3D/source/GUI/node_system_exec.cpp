@@ -9,7 +9,8 @@ namespace ed = ax::NodeEditor;
 
 NodeSystemExecution::NodeSystemExecution()
 {
-    register_all();
+    static std::once_flag register_flag;
+    std::call_once(register_flag, register_all);
     node_tree = std::make_unique<NodeTree>();
     executor = std::make_unique<EagerNodeTreeExecutor>();
 }
