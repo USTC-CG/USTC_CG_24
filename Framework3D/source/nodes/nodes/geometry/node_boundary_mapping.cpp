@@ -46,8 +46,9 @@ static void node_map_boundary_to_circle_exec(ExeParams params)
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
-        return;
+        throw std::runtime_error("Input does not contain a mesh");
     }
+    throw std::runtime_error("Not implemented");
 
     /* ----------------------------- Preprocess -------------------------------
     ** Create a halfedge structure (using OpenMesh) for the input mesh. The
@@ -112,8 +113,9 @@ static void node_map_boundary_to_square_exec(ExeParams params)
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
-        return;
+        throw std::runtime_error("Input does not contain a mesh");
     }
+    throw std::runtime_error("Not implemented");
 
     /* ----------------------------- Preprocess -------------------------------
     ** Create a halfedge structure (using OpenMesh) for the input mesh.
