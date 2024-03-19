@@ -8,8 +8,6 @@
 /*
 ** @brief HW4_TutteParameterization
 **
-** <This is a simple template for assignment code skeleton>
-**
 ** This file presents the basic framework of a "node", which processes inputs
 ** received from the left and outputs specific variables for downstream nodes to
 ** use.
@@ -41,7 +39,7 @@ static void node_min_surf_exec(ExeParams params)
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
-        return;
+        throw std::runtime_error("Minimal Surface: Need Geometry Input.");
     }
 
     /* ----------------------------- Preprocess -------------------------------
@@ -94,8 +92,7 @@ static void node_min_surf_exec(ExeParams params)
     ** Convert the minimal surface mesh from the halfedge structure back to
     ** GOperandBase format as the node's output.
     */
-    auto operand_base =
-        openmesh_to_operand(halfedge_mesh.get());
+    auto operand_base = openmesh_to_operand(halfedge_mesh.get());
 
     // Set the output of the nodes
     params.set_output("Output", std::move(*operand_base));

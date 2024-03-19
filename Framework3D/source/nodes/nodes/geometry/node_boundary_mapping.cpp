@@ -46,7 +46,7 @@ static void node_map_boundary_to_circle_exec(ExeParams params)
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
-        return;
+        throw std::runtime_error("Boundary Mapping: Need Geometry Input.");
     }
 
     /* ----------------------------- Preprocess -------------------------------

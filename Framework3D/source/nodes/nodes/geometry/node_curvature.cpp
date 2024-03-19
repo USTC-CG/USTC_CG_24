@@ -33,7 +33,7 @@ static void node_curvature_exec(ExeParams params)
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
         // throw std::runtime_error("CurvatureNode: Input doesn't contain a mesh.");
-        return;
+        throw std::runtime_error("Curvature: Need Geometry Input.");
     }
 
     // This is the halfedge mesh we get
@@ -67,7 +67,7 @@ static void node_curvature_exec(ExeParams params)
         for (const auto& halfedge_handle : vertex_handle.outgoing_halfedges()) {
             // vertex_handle, v1, v2 forms a face near v
             const auto& v1 = halfedge_handle.to();
-            const auto& v2 = halfedge_handle.opp().next().to();
+            const auto& v2 = halfedge_handle.prev().opp().to();
             const auto& vec1 = halfedge_mesh->point(v1) - position;
             const auto& vec2 = halfedge_mesh->point(v2) - position;
             // The area formed by vec1 and vec2:
