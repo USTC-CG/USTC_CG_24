@@ -101,9 +101,9 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     lights[0].SetAmbient(GfVec4f(0, 0, 0, 0));
     lights[0].SetDiffuse(GfVec4f(1.0f) * 3);
     GlfSimpleMaterial material;
-    float kA = 1.0f;
-    float kS = 1.0f;
-    float shiness = 32.f;
+    float kA = 0.0f;
+    float kS = 0.0f;
+    float shiness = 0.f;
 
     material.SetDiffuse(GfVec4f(kA, kA, kA, 1.0f));
     material.SetSpecular(GfVec4f(kS, kS, kS, 1.0f));

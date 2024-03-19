@@ -25,6 +25,7 @@ GOperandComponentHandle MeshComponent::copy(GOperandBase* operand) const
     ret->faceVertexIndices = this->faceVertexIndices;
     ret->texcoordsArray = this->texcoordsArray;
     ret->normals = this->normals;
+    ret->displayColor = this->displayColor;
     return ret;
 }
 

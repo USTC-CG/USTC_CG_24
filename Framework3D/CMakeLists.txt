@@ -32,13 +32,13 @@ else()
   set(SDK_FOLDER "Release")
 endif()
 
-message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}. Selecting SDK from ${SDK_FOLDER}")
+message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}. Selecting SDK from ${SDK_FOLDER}") 
 
 set(pxr_DIR SDK/${SDK_FOLDER}/OpenUSD)
 set(TBB_DIR SDK/${SDK_FOLDER}/tbb/lib/cmake/tbb)
 set(MaterialX_DIR SDK/${SDK_FOLDER}/MaterialX/lib/cmake/MaterialX)
 set(Imath_DIR SDK/${SDK_FOLDER}/Imath/lib/cmake/Imath)
-set(EMBREE_DIR SDK/common/embree/lib/cmake/embree-4.3.1)
+set(EMBREE_DIR SDK/common/embree/lib/cmake/embree-4.3.1) 
 
 find_package(Python3 COMPONENTS Development Interpreter REQUIRED)
 set_target_properties(Python3::Python PROPERTIES MAP_IMPORTED_CONFIG_DEBUG ";RELEASE")

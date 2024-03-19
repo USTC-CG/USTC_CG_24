@@ -325,9 +325,16 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 if (!node->REQUIRED) {
                     color = ImColor(84, 57, 56, 255);
                 }
+
+                if (!node->execution_failed.empty()) {
+                    color = ImColor(255, 0, 0, 255);
+                }
                 builder.Header(color);
                 ImGui::Spring(0);
                 ImGui::TextUnformatted(node->ui_name.c_str());
+                if (!node->execution_failed.empty()) {
+                    ImGui::TextUnformatted(node->execution_failed.c_str());
+                }
                 ImGui::Spring(1);
                 ImGui::Dummy(ImVec2(0, 28));
                 ImGui::Spring(0);

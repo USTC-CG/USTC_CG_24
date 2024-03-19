@@ -5,10 +5,10 @@
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 
-#include "GCore/Components/XformComponent.h"
-#include "GCore/GlobalUsdStage.h"
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/XformComponent.h"
+#include "GCore/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -77,8 +77,9 @@ static void node_exec(ExeParams params)
                 usdgeom.CreateNormalsAttr().Set(mesh->normals, time);
             }
 
+            auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
+
             if (mesh->texcoordsArray.size() > 0) {
-                auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
                 pxr::UsdGeomPrimvar primvar = PrimVarAPI.CreatePrimvar(
                     pxr::TfToken("st"), pxr::SdfValueTypeNames->TexCoord2fArray);
                 primvar.Set(mesh->texcoordsArray, time);
@@ -90,6 +91,13 @@ static void node_exec(ExeParams params)
                 else {
                     primvar.SetInterpolation(pxr::UsdGeomTokens->faceVarying);
                 }
+            }
+
+            if (mesh->displayColor.size()) {
+                pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
+                    pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+                colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+                colorPrimvar.Set(mesh->displayColor);
             }
         }
 

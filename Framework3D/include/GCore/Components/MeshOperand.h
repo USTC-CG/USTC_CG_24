@@ -19,6 +19,7 @@ struct USTC_CG_API MeshComponent : public GOperandComponent {
 
     pxr::VtArray<pxr::GfVec3f> normals;
     pxr::VtArray<pxr::GfVec2f> texcoordsArray;
+    pxr::VtArray<pxr::GfVec3f> displayColor;
 
     GOperandComponentHandle copy(GOperandBase* operand) const override;
 };

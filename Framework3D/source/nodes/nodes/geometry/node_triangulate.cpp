@@ -12,6 +12,8 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+    // Left empty.
+    throw std::runtime_error("Not implemented!");
 }
 
 
