@@ -3,9 +3,9 @@
 
 #include <cmath>
 
+#include "GCore/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
-#include "GCore/GlobalUsdStage.h"
 #include "pxr/base/gf/camera.h"
 #include "pxr/imaging/glf/drawTarget.h"
 #include "pxr/pxr.h"
@@ -18,7 +18,6 @@ using namespace pxr;
 
 class UsdviewEngineImpl {
    public:
-
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
         renderer_ = std::make_unique<UsdImagingGLEngine>();
@@ -30,11 +29,6 @@ class UsdviewEngineImpl {
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
         free_camera_.SetProjection(proj);
 
-        GfMatrix4d t{ 1.0f };
-        auto position = GfVec3d(0, 0, radius_);
-        t.SetLookAt(position, GfVec3d(0, 0, 0), GfVec3d{ 0, 1, 0 });
-        free_camera_.SetTransform(t.GetInverse());
-
         azimuth_ = 0.f;
         elevation_ = 0.f;
     }
@@ -44,7 +38,6 @@ class UsdviewEngineImpl {
 
    private:
     ThirdPersonCamera free_camera_;
-    float radius_ = 10.0;
     ImVec2 top_left_;
     float elevation_, azimuth_;
 
@@ -62,9 +55,7 @@ class UsdviewEngineImpl {
 void UsdviewEngineImpl::OnFrame(float delta_time)
 {
     // Update the camera when mouse is in the subwindow
-    if (is_hovered_) {
-        CameraCallback(delta_time);
-    }
+    CameraCallback(delta_time);
 
     auto frustum = free_camera_.GetFrustum();
 
@@ -132,8 +123,16 @@ void UsdviewEngineImpl::OnResize(int x, int y)
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
 {
     ImGuiIO& io = ImGui::GetIO();
+
+    if (is_hovered_) {
+        for (int i = 0; i < 5; ++i) {
+            if (io.MouseClicked[i]) {
+                free_camera_.MouseButtonUpdate(i);
+            }
+        }
+    }
     for (int i = 0; i < 5; ++i) {
-        if (io.MouseClicked[i] || io.MouseReleased[i]) {
+        if (io.MouseReleased[i]) {
             free_camera_.MouseButtonUpdate(i);
         }
     }
