@@ -30,10 +30,23 @@ static void node_func_color_map_exec(ExeParams params)
     pxr::VtArray<pxr::GfVec3f> colors(input.size());
 
     for (size_t i = 0; i < input.size(); ++i) {
-        float normalizedValue = (input[i] - min) / range;
-        normalizedValue = std::pow(normalizedValue - 0.5, 2) * 4;
-        normalizedValue = std::max(0.0f, std::min(normalizedValue, 1.0f));
-        pxr::GfVec3f color(normalizedValue, 1 - normalizedValue, 0);
+        float normalizedValue;
+        if (input[i] <= 0) {
+            float minToZeroRange = 0 - min;
+            normalizedValue = (input[i] - min) / minToZeroRange * 0.5;
+        }
+        else {
+            float zeroToMaxRange = max - 0;
+            normalizedValue = 0.5 + (input[i] / zeroToMaxRange) * 0.5;
+        }
+
+        pxr::GfVec3f color(1 - normalizedValue, normalizedValue, 0);
+        if (normalizedValue <= 0.5) {
+            color = pxr::GfVec3f(2 * (0.5 - normalizedValue), 1 - 2 * (0.5 - normalizedValue), 0);
+        }
+        else {
+            color = pxr::GfVec3f(2 * (1 - normalizedValue), 2 * (normalizedValue - 0.5), 0);
+        }
         colors[i] = color;
     }
 
