@@ -74,7 +74,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     auto cam_pos = frustum.GetPosition();
     lights[0].SetPosition(GfVec4f{ float(cam_pos[0]), float(cam_pos[1]), float(cam_pos[2]), 1.0f });
     lights[0].SetAmbient(GfVec4f(0, 0, 0, 0));
-    lights[0].SetDiffuse(GfVec4f(1.0f) * 3);
+    lights[0].SetDiffuse(GfVec4f(1.0f) * 1.9);
     GlfSimpleMaterial material;
     float kA = 0.0f;
     float kS = 0.0f;
