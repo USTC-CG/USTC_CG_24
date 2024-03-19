@@ -28,6 +28,9 @@ class UsdviewEngineImpl {
 
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
         free_camera_.SetProjection(proj);
+
+        free_camera_.SetMinDistance(0.1f);
+        free_camera_.SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
     }
 
     void OnFrame(float delta_time);
