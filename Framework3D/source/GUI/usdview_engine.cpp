@@ -153,6 +153,7 @@ void UsdviewEngine::render()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
+    ImGui::SetNextWindowSize({800,600});
     ImGui::Begin("UsdView Engine", nullptr, GetWindowFlags());
     auto size = ImGui::GetContentRegionAvail();
 

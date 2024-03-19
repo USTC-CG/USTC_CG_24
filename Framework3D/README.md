@@ -45,6 +45,33 @@ clone (recursive) https://github.com/Jerry-Shen0527/USTC_CG_2024_Dependencies
 python.exe configure.py
 ```
 
+# Usage (Kick Start for HW4)
+
+构建并执行 `engine_test.exe`
+
+你将看到
+
+![alt text](images/hw4_kick_start/image.png)
+
+对其进行摆放，在节点系统中单击右键，放置如图节点：
+
+![alt text](images/hw4_kick_start/image-1.png)
+
+你应该看到如图所示的结果。添加首个节点后可以点击Zoom to Content，来将节点居中（首次启动时会有一个初始缩放数值，并不能看到你添加的节点。后续使用将有正常的初始值。）
+
+节点和渲染窗口都可用左右键进行交互。
+
+读取输入网格：
+![alt text](images/hw4_kick_start/image-2.png)
+
+HW4 极小曲面
+![alt text](images/hw4_kick_start/image-3.png)
+
+HW4 参数化 （不完整，请按照理解完成节点图连接）
+![alt text](images/hw4_kick_start/image-5.png)
+
+实现节点时，移除节点中的"not implemeted"的throw，即可以正常执行。
+
 # Trouble Shoot
 1. vscode在Release模式下无法找到SDK.
 
@@ -55,3 +82,5 @@ python.exe configure.py
 ![alt text](images/image.png)
 
 检查Python版本是否为3.10，如果不是，将排在3.10之前的设法移除（修改环境变量，或将排在前面的临时改名为python_bak.exe）。
+
+3. 对于使用双显卡笔记本的同学，如果渲染窗口没有渲染结果且Debug Console有关于GL的报错输出，请分别测试两个显卡的运行结果，通常有一个可以正常执行。

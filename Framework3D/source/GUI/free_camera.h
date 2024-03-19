@@ -53,7 +53,7 @@ class ThirdPersonCamera : public pxr::GfCamera {
     float m_MinDistance = 0.f;
     float m_MaxDistance = std::numeric_limits<float>::max();
 
-    float m_Yaw = 0.f;
+    float m_Yaw = 90.f;
     float m_Pitch = 0.f;
 
     float m_DeltaYaw = 0.f;
