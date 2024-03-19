@@ -57,8 +57,6 @@ struct Node {
     NodeType Type;
     float Size[2];
 
-    std::string State;
-    std::string SavedState;
     Operator* operator_;
 
     NodeTypeInfo* typeinfo;
