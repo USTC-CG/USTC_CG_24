@@ -1,19 +1,16 @@
 // My resharper is not working well with the _MSC_VER_ macro.
 #include "GUI/usdview_engine.h"
 
-#include <pxr\base\gf\quatd.h>
-
 #include <cmath>
 
-#include "GCore/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
+#include "GCore/GlobalUsdStage.h"
 #include "pxr/base/gf/camera.h"
 #include "pxr/imaging/glf/drawTarget.h"
 #include "pxr/pxr.h"
 #include "pxr/usd/usd/primRange.h"
 #include "pxr/usd/usd/stage.h"
-#include "pxr/usd/usdGeom/camera.h"
 #include "pxr/usdImaging/usdImagingGL/engine.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -21,6 +18,7 @@ using namespace pxr;
 
 class UsdviewEngineImpl {
    public:
+
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
         renderer_ = std::make_unique<UsdImagingGLEngine>();
@@ -59,13 +57,6 @@ class UsdviewEngineImpl {
     GfVec2i renderBufferSize_;
 
     bool CameraCallback(float delta_time);
-    void AdjustCameraFov(float fovAdjustment);
-    // void UpdateCameraRotation(float deltaX, float deltaY);
-    void UpdateCameraRotation(
-        float lastMouseX,
-        float lastMouseY,
-        float currentMouseX,
-        float currentMouseY);
 };
 
 void UsdviewEngineImpl::OnFrame(float delta_time)
@@ -155,99 +146,7 @@ bool UsdviewEngineImpl::CameraCallback(float delta_time)
 
     free_camera_.Animate(delta_time);
 
-    // if (fovAdjustment != 0.0f) {
-    //     AdjustCameraFov(fovAdjustment);
-    // }
-    // static bool status = false;
-    // static ImVec2 pos = io.MousePos;
-    // if (!status && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-    //     pos = io.MousePos;
-    //     status = true;
-    // }
-    // if (status) {
-    //     float delta_x = io.MousePos.x - pos.x;
-    //     float delta_y = io.MousePos.y - pos.y;
-    //     UpdateCameraRotation(
-    //         pos.x - top_left_.x,
-    //         pos.y - top_left_.y,
-    //         io.MousePos.x - top_left_.x,
-    //         io.MousePos.y - top_left_.y);
-    //     pos = io.MousePos;
-    //     if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-    //         status = false;
-    // }
     return false;
-}
-
-void UsdviewEngineImpl::AdjustCameraFov(float fovAdjustment)
-{
-    float currentFocalLength = free_camera_.GetFocalLength();
-
-    double horizontalAperture = 36.0;
-
-    double currentFovRadians = 2.0 * atan(horizontalAperture / (2.0 * currentFocalLength));
-
-    double currentFovDegrees = currentFovRadians * 180.0 / M_PI;
-
-    double newFovDegrees = std::max(1.0, std::min(179.0, currentFovDegrees + fovAdjustment));
-
-    double newFovRadians = newFovDegrees * M_PI / 180.0;
-    double newFocalLength = horizontalAperture / (2.0 * tan(newFovRadians / 2.0));
-
-    free_camera_.SetFocalLength(newFocalLength);
-}
-
-inline GfVec3d MapToTrackball(
-    float mouseX,
-    float mouseY,
-    float trackballRadius,
-    float screenWidth,
-    float screenHeight)
-{
-    float x = (2.0f * mouseX - screenWidth) / screenWidth;
-    float y = (screenHeight - 2.0f * mouseY) / screenHeight;
-    float z2 = trackballRadius * trackballRadius - x * x - y * y;
-    float z = z2 > 0 ? sqrt(z2) : 0;
-
-    return GfVec3d(x, y, z).GetNormalized();
-}
-
-void UsdviewEngineImpl::UpdateCameraRotation(
-    float lastMouseX,
-    float lastMouseY,
-    float currentMouseX,
-    float currentMouseY)
-{
-    // float screenWidth = width_;
-    // float screenHeight = height_;
-    // float trackballRadius = 1.0f;
-    // float sensitivity = 2.0f;
-
-    // GfVec3d lastPos =
-    //     MapToTrackball(lastMouseX, lastMouseY, trackballRadius, screenWidth, screenHeight);
-    // GfVec3d currentPos =
-    //     MapToTrackball(currentMouseX, currentMouseY, trackballRadius, screenWidth, screenHeight);
-
-    // GfVec3d axis = GfCross(currentPos, lastPos).GetNormalized();
-    // if (axis.GetLength() < 1e-7) {
-    //     return;
-    // }
-
-    // float dot = std::max(-1.0, std::min(1.0, GfDot(lastPos, currentPos)));
-    // float angle = acos(dot) * sensitivity;
-
-    // GfQuatd rotationQuat = GfRotation(axis, GfRadiansToDegrees(angle)).GetQuat();
-
-    // GfMatrix4d cameraMatrix = free_camera_.GetTransform();
-    // GfVec3d cameraPosition = cameraMatrix.ExtractTranslation();
-    // GfVec3d lookAtPoint(0, 0, 0);
-    // GfVec3d upVector(0, 1, 0);
-
-    // GfMatrix4d rotationMatrix(GfRotation(rotationQuat.GetInverse()), GfVec3d(0, 0, 0));
-    // GfVec3d newPosition = rotationMatrix.TransformAffine(cameraPosition);
-
-    // free_camera_.SetTransform(
-    //     GfMatrix4d().SetLookAt(newPosition, lookAtPoint, upVector).GetInverse());
 }
 
 inline ImGuiWindowFlags GetWindowFlags()
