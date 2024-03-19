@@ -4,7 +4,7 @@ The assignments for the computer graphics course for 2024，Spring.
 # Build
 首先执行git系列操作
 ```
-git fetch
+git fetch upstream
 git merge upstream/main
 git submodule update --init --recursive
 ```
