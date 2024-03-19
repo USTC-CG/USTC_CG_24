@@ -47,9 +47,11 @@ python.exe configure.py
 
 # Trouble Shoot
 1. vscode在Release模式下无法找到SDK.
+
 ![alt text](images/image3.png)
 
 2. Python version mismatch
+
 ![alt text](images/image.png)
 
 检查Python版本是否为3.10，如果不是，将排在3.10之前的设法移除（修改环境变量，或将排在前面的临时改名为python_bak.exe）。
