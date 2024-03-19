@@ -28,6 +28,20 @@ static void node_min_surf_declare(NodeDeclarationBuilder& b)
     // Input-1: Original 3D mesh with boundary
     b.add_input<decl::Geometry>("Input");
 
+    /*
+    ** NOTE: You can add more inputs or outputs if necessary. For example, in some cases,
+    ** additional information (e.g. other mesh geometry, other parameters) is required to perform
+    ** the computation.
+    **
+    ** Be sure that the input/outputs do not share the same name. You can add one geometry as
+    **
+    **                b.add_input<decl::Geometry>("Input");
+    **
+    ** Or maybe you need a value buffer like:
+    **
+    **                b.add_input<decl::Float1Buffer>("Weights");
+    */
+
     // Output-1: Minimal surface with fixed boundary
     b.add_output<decl::Geometry>("Output");
 }
@@ -87,6 +101,7 @@ static void node_min_surf_exec(ExeParams params)
     ** minimal surface mesh given fixed boundary conditions using the Laplace
     ** equation. The specific implementation details may vary based on the mesh
     ** representation and numerical methods used.
+    **
     */
 
     /* ----------------------------- Postprocess ------------------------------

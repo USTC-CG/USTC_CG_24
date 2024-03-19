@@ -12,7 +12,7 @@
 
 ## 要求
 
-- 实现论文 [Floater1997](https://www.cs.jhu.edu/~misha/Fall09/Floater97.pdf) 中介绍的 Tutte 网格参数化方法
+- 实现论文 [Floater1997](https://www.cs.jhu.edu/~misha/Fall09/Floater97.pdf) 中介绍的 Tutte 网格参数化方法，主要原理见[作业课件](https://rec.ustc.edu.cn/share/c55d42a0-bfcd-11ee-b7db-eb3ed86abde8)
   - 边界固定，构建并求解稀疏方程组得到**极小曲面**
   - 边界映射到平面凸多边形，求解稀疏方程组得到**曲面参数化**
 - 尝试多种（2~3种）权重设置
