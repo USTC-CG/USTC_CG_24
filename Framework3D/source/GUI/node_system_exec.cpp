@@ -9,7 +9,8 @@ namespace ed = ax::NodeEditor;
 
 NodeSystemExecution::NodeSystemExecution()
 {
-    register_all();
+    static std::once_flag register_flag;
+    std::call_once(register_flag, register_all);
     node_tree = std::make_unique<NodeTree>();
     executor = std::make_unique<EagerNodeTreeExecutor>();
 }
@@ -36,13 +37,9 @@ Node* NodeSystemExecution::create_node_menu()
                     ImGui::Text("Output %i:", i);
                 }
                 ImGui::Indent();
-                ImGui::Text(
-                    "directly_linked_links %i",
-                    socket->directly_linked_links.size());
+                ImGui::Text("directly_linked_links %i", socket->directly_linked_links.size());
 
-                ImGui::Text(
-                    "directly_linked_sockets %i",
-                    socket->directly_linked_sockets.size());
+                ImGui::Text("directly_linked_sockets %i", socket->directly_linked_sockets.size());
                 ImGui::Unindent();
             };
 
@@ -107,11 +104,8 @@ void NodeSystemExecution::show_debug_info()
     ImGui::Text("Socket count: %i", node_tree->sockets.size());
     ImGui::Text("Link count: %i", node_tree->links.size());
     ImGui::Text("Topology left to right:");
-    for (size_t i = 0; i < node_tree->get_toposort_right_to_left().size();
-         i++) {
-        ImGui::Text(
-            "%i,%s",
-            i, node_tree->get_toposort_right_to_left()[i]->typeinfo->ui_name);
+    for (size_t i = 0; i < node_tree->get_toposort_left_to_right().size(); i++) {
+        ImGui::Text("%i,%s", i, node_tree->get_toposort_left_to_right()[i]->typeinfo->ui_name);
     }
 
     if (node_tree->has_available_link_cycle) {

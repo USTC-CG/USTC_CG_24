@@ -1,7 +1,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
-#include "geom_node_base.h"
+#include "func_node_base.h"
 
 namespace USTC_CG::node_buffer_decompose {
 static constexpr std::string socket_name(int i)
@@ -64,10 +64,10 @@ static void node_register()
 #define NodeRegister(size, suffix)                                                       \
     static NodeTypeInfo ntype_buffer##size##suffix;                                      \
                                                                                          \
-    strcpy(ntype_buffer##size##suffix.ui_name, "Decompose buffer" #size #suffix);        \
-    strcpy_s(ntype_buffer##size##suffix.id_name, "geom_buffer_decompose" #size #suffix); \
+    strcpy(ntype_buffer##size##suffix.ui_name, "Decompose Buffer" #size #suffix);        \
+    strcpy_s(ntype_buffer##size##suffix.id_name, "func_buffer_decompose" #size #suffix); \
                                                                                          \
-    geo_node_type_base(&ntype_buffer##size##suffix);                                     \
+    func_node_type_base(&ntype_buffer##size##suffix);                                     \
     ntype_buffer##size##suffix.node_execute = node_exec_decompose_buffer##size##suffix;  \
     ntype_buffer##size##suffix.declare = node_declare_decompose_buffer##size##suffix;    \
     nodeRegisterType(&ntype_buffer##size##suffix);

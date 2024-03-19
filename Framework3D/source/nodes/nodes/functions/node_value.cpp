@@ -1,7 +1,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
-#include "geom_node_base.h"
+#include "func_node_base.h"
 namespace USTC_CG::node_value {
 static void node_declare_int(NodeDeclarationBuilder& b)
 {
@@ -30,17 +30,17 @@ static void node_exec_float(ExeParams params)
 static void node_register()
 {
     static NodeTypeInfo ntype_value_int;
-    strcpy(ntype_value_int.ui_name, "int value");
-    strcpy_s(ntype_value_int.id_name, "geom_value_int");
-    geo_node_type_base(&ntype_value_int);
+    strcpy(ntype_value_int.ui_name, "Int Value");
+    strcpy_s(ntype_value_int.id_name, "func_value_int");
+    func_node_type_base(&ntype_value_int);
     ntype_value_int.node_execute = node_exec_int;
     ntype_value_int.declare = node_declare_int;
     nodeRegisterType(&ntype_value_int);
 
     static NodeTypeInfo ntype_value_float;
-    strcpy(ntype_value_float.ui_name, "float value");
-    strcpy_s(ntype_value_float.id_name, "geom_value_float");
-    geo_node_type_base(&ntype_value_float);
+    strcpy(ntype_value_float.ui_name, "Float Value");
+    strcpy_s(ntype_value_float.id_name, "func_value_float");
+    func_node_type_base(&ntype_value_float);
     ntype_value_float.node_execute = node_exec_float;
     ntype_value_float.declare = node_declare_float;
     nodeRegisterType(&ntype_value_float);

@@ -3,9 +3,9 @@
 
 #include <cmath>
 
+#include "GCore/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
-#include "GCore/GlobalUsdStage.h"
 #include "pxr/base/gf/camera.h"
 #include "pxr/imaging/glf/drawTarget.h"
 #include "pxr/pxr.h"
@@ -18,7 +18,6 @@ using namespace pxr;
 
 class UsdviewEngineImpl {
    public:
-
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
         renderer_ = std::make_unique<UsdImagingGLEngine>();
@@ -30,13 +29,8 @@ class UsdviewEngineImpl {
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
         free_camera_.SetProjection(proj);
 
-        GfMatrix4d t{ 1.0f };
-        auto position = GfVec3d(0, 0, radius_);
-        t.SetLookAt(position, GfVec3d(0, 0, 0), GfVec3d{ 0, 1, 0 });
-        free_camera_.SetTransform(t.GetInverse());
-
-        azimuth_ = 0.f;
-        elevation_ = 0.f;
+        free_camera_.SetMinDistance(0.1f);
+        free_camera_.SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
     }
 
     void OnFrame(float delta_time);
@@ -44,27 +38,17 @@ class UsdviewEngineImpl {
 
    private:
     ThirdPersonCamera free_camera_;
-    float radius_ = 10.0;
-    ImVec2 top_left_;
-    float elevation_, azimuth_;
-
     bool is_hovered_ = false;
-    bool is_rotating_ = false;
-
     std::unique_ptr<UsdImagingGLEngine> renderer_;
-
     UsdImagingGLRenderParams _renderParams;
     GfVec2i renderBufferSize_;
-
     bool CameraCallback(float delta_time);
 };
 
 void UsdviewEngineImpl::OnFrame(float delta_time)
 {
     // Update the camera when mouse is in the subwindow
-    if (is_hovered_) {
-        CameraCallback(delta_time);
-    }
+    CameraCallback(delta_time);
 
     auto frustum = free_camera_.GetFrustum();
 
@@ -95,7 +79,6 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     float kA = 0.0f;
     float kS = 0.0f;
     float shiness = 0.f;
-
     material.SetDiffuse(GfVec4f(kA, kA, kA, 1.0f));
     material.SetSpecular(GfVec4f(kS, kS, kS, 1.0f));
     material.SetShininess(shiness);
@@ -103,13 +86,9 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     renderer_->SetLightingState(lights, material, sceneAmbient);
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
-
     renderer_->Render(root, _renderParams);
 
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
-
-    top_left_ = ImGui::GetCursorScreenPos();
-
     ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
 
     is_hovered_ = ImGui::IsItemHovered();
@@ -132,17 +111,24 @@ void UsdviewEngineImpl::OnResize(int x, int y)
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
 {
     ImGuiIO& io = ImGui::GetIO();
+
+    if (is_hovered_) {
+        for (int i = 0; i < 5; ++i) {
+            if (io.MouseClicked[i]) {
+                free_camera_.MouseButtonUpdate(i);
+            }
+        }
+        float fovAdjustment = io.MouseWheel * 5.0f;
+        if (fovAdjustment != 0) {
+            free_camera_.MouseScrollUpdate(fovAdjustment);
+        }
+    }
     for (int i = 0; i < 5; ++i) {
-        if (io.MouseClicked[i] || io.MouseReleased[i]) {
+        if (io.MouseReleased[i]) {
             free_camera_.MouseButtonUpdate(i);
         }
     }
     free_camera_.MousePosUpdate(io.MousePos.x, io.MousePos.y);
-
-    float fovAdjustment = io.MouseWheel * 5.0f;
-    if (fovAdjustment != 0) {
-        free_camera_.MouseScrollUpdate(fovAdjustment);
-    }
 
     free_camera_.Animate(delta_time);
 

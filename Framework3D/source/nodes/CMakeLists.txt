@@ -39,16 +39,8 @@ function(add_node_discovery
   add_library(${lib_name} STATIC ${output_file})
 endfunction()
 
-file(GLOB UTILS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/nodes/geometry/utils/*.h)
-file(GLOB UTILS_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/nodes/geometry/utils/*.cpp)
 file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
 file(GLOB_RECURSE NODE_FILES ${CMAKE_CURRENT_LIST_DIR}/nodes/*.cpp)
-message("Collected Nodes: ${NODE_FILES}")
-
-source_group("Utils" FILES 
-  ${UTILS_HEADERS} 
-  ${UTILS_SOURCES}
-)
 
 add_node_discovery(
   nodes_generated
@@ -57,7 +49,7 @@ add_node_discovery(
   register_nodes 
 )
 
-add_library(nodes STATIC "${CPP_FILES}" "${ALGORITHM_HEADERS}" "${UTILS_HEADERS}")
+add_library(nodes STATIC "${CPP_FILES}")
 
 target_link_libraries(nodes_generated nodes)
 target_link_libraries(nodes nodes_generated)

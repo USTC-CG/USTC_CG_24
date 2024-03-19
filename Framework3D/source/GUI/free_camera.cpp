@@ -98,7 +98,7 @@ void ThirdPersonCamera::AnimateTranslation(const pxr::GfMatrix3f& viewMatrix)
     if ((m_MousePos == m_MousePosPrev))
         return;
 
-    if (mouseButtonState[MouseButtons::Middle]) {
+    if (mouseButtonState[MouseButtons::Right]) {
         pxr::GfVec4f oldClipPos = pxr::GfVec4f(0.f, 0.f, m_Distance, 1.f) * m_ProjectionMatrix;
         oldClipPos /= oldClipPos[3];
         oldClipPos[0] = 1.f - 2.f * m_MousePosPrev[0] / m_ViewportSize[0];

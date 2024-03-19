@@ -48,7 +48,7 @@ class ThirdPersonCamera : public pxr::GfCamera {
     pxr::GfVec2f m_MousePosPrev = pxr::GfVec2f(0.f);
 
     pxr::GfVec3f m_TargetPos = pxr::GfVec3f(0.f);
-    float m_Distance = 30.f;
+    float m_Distance = 10.f;
 
     float m_MinDistance = 0.f;
     float m_MaxDistance = std::numeric_limits<float>::max();

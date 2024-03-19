@@ -1,8 +1,4 @@
-#include <pxr/usd/usdShade/material.h>
-
-#include "GCore/GlobalUsdStage.h"
 #include "GCore/Components/MaterialComponent.h"
-#include "GCore/Components/MeshOperand.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"

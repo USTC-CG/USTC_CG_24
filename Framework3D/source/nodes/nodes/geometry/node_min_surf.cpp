@@ -41,6 +41,7 @@ static void node_min_surf_exec(ExeParams params)
     if (!input.get_component<MeshComponent>()) {
         throw std::runtime_error("Minimal Surface: Need Geometry Input.");
     }
+    throw std::runtime_error("Not implemented");
 
     /* ----------------------------- Preprocess -------------------------------
     ** Create a halfedge structure (using OpenMesh) for the input mesh. The

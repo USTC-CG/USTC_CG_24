@@ -75,6 +75,8 @@ class NodeSystemExecution {
 
     bool CanCreateLink(NodeSocket* a, NodeSocket* b);
 
+    std::string filename = "Blueprints.json";
+
    private:
     bool required_execution = true;
 
