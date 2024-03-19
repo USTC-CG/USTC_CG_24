@@ -308,12 +308,7 @@ static void toposort_from_start_node(
                 item.link_index = 0;
                 continue;
             }
-            NodeLink& link = *linked_links[item.link_index];
-            // if (!link.is_available()) {
-            //     /* Ignore unavailable links. */
-            //     item.link_index++;
-            //     continue;
-            // }
+
             NodeSocket& linked_socket = *socket.directly_linked_sockets[item.link_index];
             Node& linked_node = *linked_socket.Node;
             if (handle_linked_node(linked_node)) {
@@ -324,35 +319,6 @@ static void toposort_from_start_node(
             break;
         }
 
-        // if (!pushed_node) {
-        //     /* Some nodes are internally linked without an explicit
-        //     `bNodeLink`.
-        //      * The toposort should still order them correctly and find
-        //      cycles.
-        //      */
-        //     const Vector<const Node*> implicitly_linked_nodes =
-        //         (direction == ToposortDirection::LeftToRight)
-        //             ? get_implicit_origin_nodes(ntree, node)
-        //             : get_implicit_target_nodes(ntree, node);
-        //     while (true) {
-        //         if (item.implicit_link_index ==
-        //             implicitly_linked_nodes.size()) {
-        //             /* All implicitly linked nodes have already been visited.
-        //             */ break;
-        //         }
-        //         const bNode& linked_node =
-        //             *implicitly_linked_nodes[item.implicit_link_index];
-        //         if (handle_linked_node(const_cast<bNode&>(linked_node))) {
-        //             /* The implicitly linked node has already been visited.
-        //             */ item.implicit_link_index++; continue;
-        //         }
-        //         break;
-        //     }
-        // }
-
-        /* If no other element has been pushed, the current node can be pushed
-         * to the sorted list.
-         */
         if (!pushed_node) {
             ToposortNodeState& node_state = node_states[&node];
             node_state.is_done = true;
