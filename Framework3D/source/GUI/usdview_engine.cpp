@@ -28,9 +28,6 @@ class UsdviewEngineImpl {
 
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
         free_camera_.SetProjection(proj);
-
-        azimuth_ = 0.f;
-        elevation_ = 0.f;
     }
 
     void OnFrame(float delta_time);
@@ -38,17 +35,10 @@ class UsdviewEngineImpl {
 
    private:
     ThirdPersonCamera free_camera_;
-    ImVec2 top_left_;
-    float elevation_, azimuth_;
-
     bool is_hovered_ = false;
-    bool is_rotating_ = false;
-
     std::unique_ptr<UsdImagingGLEngine> renderer_;
-
     UsdImagingGLRenderParams _renderParams;
     GfVec2i renderBufferSize_;
-
     bool CameraCallback(float delta_time);
 };
 
@@ -86,7 +76,6 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     float kA = 0.0f;
     float kS = 0.0f;
     float shiness = 0.f;
-
     material.SetDiffuse(GfVec4f(kA, kA, kA, 1.0f));
     material.SetSpecular(GfVec4f(kS, kS, kS, 1.0f));
     material.SetShininess(shiness);
@@ -94,13 +83,9 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     renderer_->SetLightingState(lights, material, sceneAmbient);
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
-
     renderer_->Render(root, _renderParams);
 
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
-
-    top_left_ = ImGui::GetCursorScreenPos();
-
     ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
 
     is_hovered_ = ImGui::IsItemHovered();
@@ -130,6 +115,10 @@ bool UsdviewEngineImpl::CameraCallback(float delta_time)
                 free_camera_.MouseButtonUpdate(i);
             }
         }
+        float fovAdjustment = io.MouseWheel * 5.0f;
+        if (fovAdjustment != 0) {
+            free_camera_.MouseScrollUpdate(fovAdjustment);
+        }
     }
     for (int i = 0; i < 5; ++i) {
         if (io.MouseReleased[i]) {
@@ -137,11 +126,6 @@ bool UsdviewEngineImpl::CameraCallback(float delta_time)
         }
     }
     free_camera_.MousePosUpdate(io.MousePos.x, io.MousePos.y);
-
-    float fovAdjustment = io.MouseWheel * 5.0f;
-    if (fovAdjustment != 0) {
-        free_camera_.MouseScrollUpdate(fovAdjustment);
-    }
 
     free_camera_.Animate(delta_time);
 
