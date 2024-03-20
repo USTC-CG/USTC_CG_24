@@ -79,6 +79,8 @@ HW4 参数化 （不完整，请按照理解完成节点图连接）
 
 ![alt text](images/c3be37d50ecefccb00a6332d16870819.png)
 
+且代码中不能出现中文变量和注释。稍后助教会对此限制进行改进。
+
 2. vscode在Release模式下无法找到SDK.
 
 ![alt text](images/image3.png)
