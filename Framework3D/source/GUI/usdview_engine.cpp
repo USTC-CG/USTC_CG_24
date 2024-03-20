@@ -18,39 +18,72 @@ using namespace pxr;
 
 class UsdviewEngineImpl {
    public:
+    enum class CamType { First, Third };
+    struct Status {
+        CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
+    } engine_status;
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
         renderer_ = std::make_unique<UsdImagingGLEngine>();
         renderer_->SetEnablePresentation(true);
+        free_camera_ = std::make_unique<FirstPersonCamera>();
 
         auto plugins = renderer_->GetRendererPlugins();
         renderer_->SetRendererPlugin(plugins[0]);
 
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
-        free_camera_.SetProjection(proj);
+        free_camera_->SetProjection(proj);
 
-        free_camera_.SetMinDistance(0.1f);
-        free_camera_.SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
+        free_camera_->SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
     }
 
+    void DrawMenuBar();
     void OnFrame(float delta_time);
     void OnResize(int x, int y);
 
    private:
-    ThirdPersonCamera free_camera_;
+    std::unique_ptr<FreeCamera> free_camera_;
     bool is_hovered_ = false;
     std::unique_ptr<UsdImagingGLEngine> renderer_;
     UsdImagingGLRenderParams _renderParams;
     GfVec2i renderBufferSize_;
+    bool is_active_;
     bool CameraCallback(float delta_time);
 };
 
+void UsdviewEngineImpl::DrawMenuBar()
+{
+    ImGui::BeginMenuBar();
+    if (ImGui::BeginMenu("Free Camera")) {
+        if (ImGui::BeginMenu("Free Camera Type")) {
+            if (ImGui::MenuItem(
+                    "First Personal", 0, this->engine_status.cam_type == CamType::First)) {
+                if (engine_status.cam_type != CamType::First) {
+                    free_camera_ = std::make_unique<FirstPersonCamera>();
+                    engine_status.cam_type = CamType::First;
+                }
+            }
+            if (ImGui::MenuItem(
+                    "Third Personal", 0, this->engine_status.cam_type == CamType::Third)) {
+                if (engine_status.cam_type != CamType::Third) {
+                    free_camera_ = std::make_unique<ThirdPersonCamera>();
+                    engine_status.cam_type = CamType::Third;
+                }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+}
+
 void UsdviewEngineImpl::OnFrame(float delta_time)
 {
+    DrawMenuBar();
     // Update the camera when mouse is in the subwindow
     CameraCallback(delta_time);
 
-    auto frustum = free_camera_.GetFrustum();
+    auto frustum = free_camera_->GetFrustum();
 
     GfMatrix4d projectionMatrix = frustum.ComputeProjectionMatrix();
     GfMatrix4d viewMatrix = frustum.ComputeViewMatrix();
@@ -66,8 +99,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
 
     _renderParams.clearColor = GfVec4f(0.2f, 0.2f, 0.2f, 1.f);
 
-    for (int i = 0; i < free_camera_.GetClippingPlanes().size(); ++i) {
-        _renderParams.clipPlanes[i] = free_camera_.GetClippingPlanes()[i];
+    for (int i = 0; i < free_camera_->GetClippingPlanes().size(); ++i) {
+        _renderParams.clipPlanes[i] = free_camera_->GetClippingPlanes()[i];
     }
 
     GlfSimpleLightVector lights(1);
@@ -91,6 +124,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
     ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
 
+    is_active_ = ImGui::IsWindowFocused();
+
     is_hovered_ = ImGui::IsItemHovered();
 }
 
@@ -103,41 +138,39 @@ void UsdviewEngineImpl::OnResize(int x, int y)
         GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
 
     GfCamera::Projection proj = GfCamera::Projection::Perspective;
-    free_camera_.SetProjection(proj);
+    free_camera_->SetProjection(proj);
 
-    free_camera_.m_ViewportSize = renderBufferSize_;
+    free_camera_->m_ViewportSize = renderBufferSize_;
 }
 
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
 {
     ImGuiIO& io = ImGui::GetIO();
+    if (is_active_) {
+        free_camera_->KeyboardUpdate();
+    }
 
     if (is_hovered_) {
         for (int i = 0; i < 5; ++i) {
             if (io.MouseClicked[i]) {
-                free_camera_.MouseButtonUpdate(i);
+                free_camera_->MouseButtonUpdate(i);
             }
         }
         float fovAdjustment = io.MouseWheel * 5.0f;
         if (fovAdjustment != 0) {
-            free_camera_.MouseScrollUpdate(fovAdjustment);
+            free_camera_->MouseScrollUpdate(fovAdjustment);
         }
     }
     for (int i = 0; i < 5; ++i) {
         if (io.MouseReleased[i]) {
-            free_camera_.MouseButtonUpdate(i);
+            free_camera_->MouseButtonUpdate(i);
         }
     }
-    free_camera_.MousePosUpdate(io.MousePos.x, io.MousePos.y);
+    free_camera_->MousePosUpdate(io.MousePos.x, io.MousePos.y);
 
-    free_camera_.Animate(delta_time);
+    free_camera_->Animate(delta_time);
 
     return false;
-}
-
-inline ImGuiWindowFlags GetWindowFlags()
-{
-    return ImGuiWindowFlags_NoDecoration;
 }
 
 UsdviewEngine::UsdviewEngine(pxr::UsdStageRefPtr root_stage)
@@ -153,8 +186,8 @@ void UsdviewEngine::render()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    ImGui::SetNextWindowSize({800,600});
-    ImGui::Begin("UsdView Engine", nullptr, GetWindowFlags());
+    ImGui::SetNextWindowSize({ 800, 600 });
+    ImGui::Begin("UsdView Engine", nullptr, ImGuiWindowFlags_MenuBar);
     auto size = ImGui::GetContentRegionAvail();
 
     impl_->OnResize(size.x, size.y);

@@ -16,18 +16,228 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
 constexpr float PI_f = M_PI;
-void ThirdPersonCamera::KeyboardUpdate(int key, int action)
+
+FirstPersonCamera::FirstPersonCamera()
 {
-    if (keyboardMap.find(key) == keyboardMap.end()) {
-        return;
+    // UpdateWorldToView();
+    SetTransform(pxr::GfMatrix4d()
+                     .SetLookAt(m_CameraPos, m_CameraPos + m_CameraDir, m_CameraUp)
+                     .GetInverse());
+}
+
+void FirstPersonCamera::KeyboardUpdate()
+{
+    for (auto&& key : this->keyboardMap) {
+        auto cameraKey = key.second;
+        if (ImGui::IsKeyPressed(ImGuiKey(key.first)) || ImGui::IsKeyDown(ImGuiKey(key.first))) {
+            keyboardState[cameraKey] = true;
+        }
+        else {
+            keyboardState[cameraKey] = false;
+        }
+    }
+}
+
+void FirstPersonCamera::MousePosUpdate(double xpos, double ypos)
+{
+    mousePos = { float(xpos), float(ypos) };
+}
+
+void FirstPersonCamera::MouseButtonUpdate(int button)
+{
+    const bool pressed = ImGui::IsMouseDown(button);
+
+    switch (button) {
+        case ImGuiMouseButton_Left: mouseButtonState[MouseButtons::Left] = pressed; break;
+        case ImGuiMouseButton_Middle: mouseButtonState[MouseButtons::Middle] = pressed; break;
+        case ImGuiMouseButton_Right: mouseButtonState[MouseButtons::Right] = pressed; break;
+        default: break;
+    }
+}
+
+std::pair<bool, pxr::GfVec3f> FirstPersonCamera::AnimateTranslation(float deltaT)
+{
+    bool cameraDirty = false;
+    float moveStep = deltaT * m_MoveSpeed;
+    pxr::GfVec3f cameraMoveVec = pxr::GfVec3f(0.f);
+
+    if (keyboardState[KeyboardControls::SpeedUp])
+        moveStep *= 3.f;
+
+    if (keyboardState[KeyboardControls::SlowDown])
+        moveStep *= .1f;
+
+    if (keyboardState[KeyboardControls::MoveForward]) {
+        cameraDirty = true;
+        cameraMoveVec += m_CameraDir * moveStep;
     }
 
-    auto cameraKey = keyboardMap.at(key);
-    if (action == ImGui::IsKeyPressed(ImGuiKey(key))) {
-        keyboardState[cameraKey] = true;
+    if (keyboardState[KeyboardControls::MoveBackward]) {
+        cameraDirty = true;
+        cameraMoveVec += -m_CameraDir * moveStep;
+    }
+
+    if (keyboardState[KeyboardControls::MoveLeft]) {
+        cameraDirty = true;
+        cameraMoveVec += -m_CameraRight * moveStep;
+    }
+
+    if (keyboardState[KeyboardControls::MoveRight]) {
+        cameraDirty = true;
+        cameraMoveVec += m_CameraRight * moveStep;
+    }
+
+    if (keyboardState[KeyboardControls::MoveUp]) {
+        cameraDirty = true;
+        cameraMoveVec += m_CameraUp * moveStep;
+    }
+
+    if (keyboardState[KeyboardControls::MoveDown]) {
+        cameraDirty = true;
+        cameraMoveVec += -m_CameraUp * moveStep;
+    }
+    return std::make_pair(cameraDirty, cameraMoveVec);
+}
+
+void FirstPersonCamera::UpdateCamera(pxr::GfVec3f cameraMoveVec, pxr::GfMatrix4f cameraRotation)
+{
+    m_CameraPos += cameraMoveVec;
+    m_CameraDir = cameraRotation.TransformAffine(m_CameraDir).GetNormalized();
+    m_CameraUp = cameraRotation.TransformAffine(m_CameraUp).GetNormalized();
+    m_CameraRight = pxr::GfCross(m_CameraDir, m_CameraUp).GetNormalized();
+
+    // UpdateWorldToView();
+    SetTransform(pxr::GfMatrix4d()
+                     .SetLookAt(m_CameraPos, m_CameraPos + m_CameraDir, m_CameraUp)
+                     .GetInverse());
+}
+
+std::pair<bool, pxr::GfMatrix4f> FirstPersonCamera::AnimateRoll(pxr::GfMatrix4f initialRotation)
+{
+    bool cameraDirty = false;
+    pxr::GfMatrix4f cameraRotation = initialRotation;
+    if (keyboardState[KeyboardControls::RollLeft] || keyboardState[KeyboardControls::RollRight]) {
+        float roll = float(keyboardState[KeyboardControls::RollLeft]) * -m_RotateSpeed * 2.0f +
+                     float(keyboardState[KeyboardControls::RollRight]) * m_RotateSpeed * 2.0f;
+
+        cameraRotation =
+            cameraRotation * pxr::GfMatrix4f(pxr::GfRotation(m_CameraDir, roll), { 0, 0, 0 });
+        cameraDirty = true;
+    }
+    return std::make_pair(cameraDirty, cameraRotation);
+}
+
+void FirstPersonCamera::Animate(float deltaT)
+{
+    // track mouse delta
+    pxr::GfVec2f mouseMove = mousePos - mousePosPrev;
+    mousePosPrev = mousePos;
+
+    bool cameraDirty = false;
+    pxr::GfMatrix4f cameraRotation;
+    cameraRotation.SetIdentity();
+
+    // handle mouse rotation first
+    // this will affect the movement vectors in the world matrix, which we use below
+    if (mouseButtonState[MouseButtons::Left] && (mouseMove[0] != 0 || mouseMove[1] != 0)) {
+        float yaw = m_RotateSpeed * mouseMove[0];
+        float pitch = m_RotateSpeed * mouseMove[1];
+
+        cameraRotation =
+            pxr::GfMatrix4f(pxr::GfRotation(pxr::GfVec3f(0.f, 0.f, 1.f), -yaw), { 0, 0, 0 });
+        cameraRotation =
+            cameraRotation * pxr::GfMatrix4f(pxr::GfRotation(m_CameraRight, pitch), { 0, 0, 0 });
+
+        cameraDirty = true;
+    }
+
+    // handle keyboard roll next
+    auto rollResult = AnimateRoll(cameraRotation);
+    cameraDirty |= rollResult.first;
+    cameraRotation = rollResult.second;
+
+    // handle translation
+    auto translateResult = AnimateTranslation(deltaT);
+    cameraDirty |= translateResult.first;
+    const pxr::GfVec3f& cameraMoveVec = translateResult.second;
+
+    if (cameraDirty) {
+        UpdateCamera(cameraMoveVec, cameraRotation);
+    }
+}
+
+void FirstPersonCamera::AnimateSmooth(float deltaT)
+{
+    const float c_DampeningRate = 7.5f;
+    float dampenWeight = exp(-c_DampeningRate * deltaT);
+
+    pxr::GfVec2f mouseMove{ 0, 0 };
+    if (mouseButtonState[MouseButtons::Left]) {
+        if (!isMoving) {
+            isMoving = true;
+            mousePosPrev = mousePos;
+        }
+
+        mousePosDamp[0] = pxr::GfLerp(mousePos[0], mousePosPrev[0], dampenWeight);
+        mousePosDamp[1] = pxr::GfLerp(mousePos[1], mousePosPrev[1], dampenWeight);
+
+        // track mouse delta
+        mouseMove = mousePosDamp - mousePosPrev;
+        mousePosPrev = mousePosDamp;
     }
     else {
-        keyboardState[cameraKey] = false;
+        isMoving = false;
+    }
+
+    bool cameraDirty = false;
+    pxr::GfMatrix4f cameraRotation;
+    cameraRotation.SetIdentity();
+
+    // handle mouse rotation first
+    // this will affect the movement vectors in the world matrix, which we use below
+    if (mouseMove[0] || mouseMove[1]) {
+        float yaw = m_RotateSpeed * mouseMove[0];
+        float pitch = m_RotateSpeed * mouseMove[1];
+
+        cameraRotation =
+            pxr::GfMatrix4f(pxr::GfRotation(pxr::GfVec3f(0.f, 0.f, 1.f), -yaw), { 0, 0, 0 });
+        cameraRotation =
+            cameraRotation * pxr::GfMatrix4f(pxr::GfRotation(m_CameraRight, pitch), { 0, 0, 0 });
+
+        cameraDirty = true;
+    }
+
+    // handle keyboard roll next
+    auto rollResult = AnimateRoll(cameraRotation);
+    cameraDirty |= rollResult.first;
+    cameraRotation = rollResult.second;
+
+    // handle translation
+    auto translateResult = AnimateTranslation(deltaT);
+    cameraDirty |= translateResult.first;
+    const pxr::GfVec3f& cameraMoveVec = translateResult.second;
+
+    if (cameraDirty) {
+        UpdateCamera(cameraMoveVec, cameraRotation);
+    }
+}
+
+void FirstPersonCamera::MouseScrollUpdate(double offset)
+{
+    float scrollFactor = 1.15f;
+    m_MoveSpeed *= (offset > 0 ? scrollFactor : 1.0f / scrollFactor);
+}
+
+void ThirdPersonCamera::KeyboardUpdate()
+{
+    for (auto&& key : this->keyboardMap) {
+        auto cameraKey = key.second;
+        if (ImGui::IsKeyPressed(ImGuiKey(key.first))) {
+            keyboardState[cameraKey] = true;
+        }
+        else {
+            keyboardState[cameraKey] = false;
+        }
     }
 }
 
