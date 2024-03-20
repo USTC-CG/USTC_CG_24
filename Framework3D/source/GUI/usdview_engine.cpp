@@ -55,7 +55,7 @@ void UsdviewEngineImpl::DrawMenuBar()
 {
     ImGui::BeginMenuBar();
     if (ImGui::BeginMenu("Free Camera")) {
-        if (ImGui::BeginMenu("Free Camera Type")) {
+        if (ImGui::BeginMenu("Camera Type")) {
             if (ImGui::MenuItem(
                     "First Personal", 0, this->engine_status.cam_type == CamType::First)) {
                 if (engine_status.cam_type != CamType::First) {
