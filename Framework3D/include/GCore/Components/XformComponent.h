@@ -16,7 +16,7 @@ class USTC_CG_API XformComponent : public GOperandComponent {
     {
     }
 
-    std::vector<pxr::GfVec3d> translation;
+    std::vector<pxr::GfVec3f> translation;
     std::vector<pxr::GfVec3f> scale;
     std::vector<pxr::GfVec3f> rotation;
 };

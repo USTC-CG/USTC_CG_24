@@ -50,7 +50,7 @@ static void node_exec(ExeParams params)
         geometry.attach_component(xform);
     }
 
-    xform->translation.push_back(pxr::GfVec3d(t_x, t_y, t_z));
+    xform->translation.push_back(pxr::GfVec3f(t_x, t_y, t_z));
     xform->scale.push_back(pxr::GfVec3f(s_x, s_y, s_z));
     xform->rotation.push_back(pxr::GfVec3f(r_x, r_y, r_z));
 

@@ -13,6 +13,8 @@
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "geom_node_base.h"
+#include "pxr/base/gf/matrix4d.h"
+#include "pxr/base/gf/rotation.h"
 
 namespace USTC_CG::node_write_usd {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -106,16 +108,28 @@ static void node_exec(ExeParams params)
             // Transform
             assert(xform_component->translation.size() == xform_component->rotation.size());
 
+            pxr::GfMatrix4d final_transform;
+            final_transform.SetIdentity();
+
             for (int i = 0; i < xform_component->translation.size(); ++i) {
-                auto rotation = usdgeom.AddRotateXYZOp();
-                rotation.Set(xform_component->rotation[i]);
+                pxr::GfMatrix4d t;
+                t.SetTranslate(xform_component->translation[i]);
+                pxr::GfMatrix4d s;
+                s.SetScale(xform_component->scale[i]);
 
-                auto scale = usdgeom.AddScaleOp();
-                scale.Set(xform_component->scale[i]);
+                pxr::GfMatrix4d r_x;
+                r_x.SetRotate(pxr::GfRotation{ { 1, 0, 0 }, xform_component->rotation[i][0] });
+                pxr::GfMatrix4d r_y;
+                r_y.SetRotate(pxr::GfRotation{ { 0, 1, 0 }, xform_component->rotation[i][1] });
+                pxr::GfMatrix4d r_z;
+                r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 }, xform_component->rotation[i][2] });
 
-                auto translate = usdgeom.AddTranslateOp();
-                translate.Set(xform_component->translation[i]);
+                auto transform = r_x * r_y * r_z * s * t;
+                final_transform = final_transform * transform;
             }
+
+            auto xform_op = usdgeom.AddTransformOp();
+            xform_op.Set(final_transform);
         }
 
         // Material and Texture
