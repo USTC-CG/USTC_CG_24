@@ -73,20 +73,21 @@ HW4 参数化 （不完整，请按照理解完成节点图连接）
 实现节点时，移除节点中的"not implemeted"的throw，即可以正常执行。
 
 # Trouble Shoot
-1. vscode在Release模式下无法找到SDK.
+1. 添加新节点时编译错误：
+
+- 由于注册节点时使用了简易的代码生成机制，添加新节点时对于namespace行的要求比较严格，需要大括号和namespace声明在同一行，且需要中间有空格，类似这样
+
+![alt text](images/c3be37d50ecefccb00a6332d16870819.png)
+
+2. vscode在Release模式下无法找到SDK.
 
 ![alt text](images/image3.png)
 
-2. Python version mismatch
+3. Python version mismatch
 
 ![alt text](images/image.png)
 
 检查Python版本是否为3.10，如果不是，将排在3.10之前的设法移除（修改环境变量，或将排在前面的临时改名为python_bak.exe）。
 
-3. 对于使用双显卡笔记本的同学，如果渲染窗口没有渲染结果且Debug Console有关于GL的报错输出，请分别测试两个显卡的运行结果，通常有一个可以正常执行。
+4. 对于使用双显卡笔记本的同学，如果渲染窗口没有渲染结果且Debug Console有关于GL的报错输出，请分别测试两个显卡的运行结果，通常有一个可以正常执行。
 
-4. 添加新节点时编译错误：
-
-- 由于注册节点时使用了简易的代码生成机制，添加新节点时对于namespace行的要求比较严格，需要大括号和namespace声明在同一行，且需要中间有空格，类似这样
-
-![alt text](images/c3be37d50ecefccb00a6332d16870819.png)
