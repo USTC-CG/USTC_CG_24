@@ -42,7 +42,7 @@ static void node_curvature_exec(ExeParams params)
     // One can use the function n_vertices(), n_faces(), n_halfedges() to get the numbers of items
     pxr::VtArray<float> rst(halfedge_mesh->n_vertices());
 
-    // For each vertex, we compute the Gauss curvature��
+    // For each vertex, we compute the Gauss curvature
     // First, we need to iterate through all the vertices:
     // - OpenMesh uses "handles" to represent each
     // - The following iteration visit all the "VertexHandles"
@@ -75,11 +75,11 @@ static void node_curvature_exec(ExeParams params)
             // The angle between vec1 and vec2:
             float cos = vec1.dot(vec2) / (vec1.norm() * vec2.norm());
             float theta = acosf(cos);
-            // Assemble the sumations
+            // Assemble the summations
             area_v += area / 3.0f;
             theta_sum += theta;
         }
-        // Finaly we come to the Gauss curvature of this vertex
+        // Finally we come to the Gauss curvature of this vertex
         float K = (2 * M_PI - theta_sum) / area_v;
         // Use vertex_handle.idx() to get the index of the vertex
         rst[vertex_handle.idx()] = K;
