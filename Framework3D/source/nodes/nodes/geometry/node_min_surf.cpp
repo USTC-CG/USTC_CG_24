@@ -19,7 +19,7 @@
 ** eventually allows placing this node in the GUI interface.
 **
 ** Your task is to fill in the required logic at the specified locations
-** within this template, espacially in node_exec.
+** within this template, especially in node_exec.
 */
 
 namespace USTC_CG::node_min_surf {

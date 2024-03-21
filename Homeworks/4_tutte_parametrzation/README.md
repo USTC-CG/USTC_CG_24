@@ -7,7 +7,7 @@
 
 ## 作业递交
 
-- 递交内容：程序代码及实验报告 
+- 递交内容：程序代码、实验报告及 `Blueprints.json` 文件，见[提交文件格式](#提交文件格式)
 - 递交时间：2024年3月24日（周日）晚
 
 ## 要求
@@ -41,3 +41,38 @@
 ### (2) 作业项目 `Framework2D` [->](../../Framework2D/) 
 
 作业的基础代码框架
+
+## 提交文件格式
+
+文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：
+
+```
+ID_姓名_Homework*/
+├── data/                         // 测试模型和纹理
+│   ├── xxx.usda
+│   ├── yyy.usda
+│   ├── zzz.png
+│   └── ...  
+├── utils/                        // 辅助代码文件
+│   ├── some_algorithm.h
+│   ├── some_algorithm.cpp
+│   └── ...  
+├── nodes/                        // 你实现or修改的节点文件
+│   ├── node_your_implementation.cpp
+│   ├── node_your_other_implementation.cpp
+│   └── ...  
+├── Blueprints.json               // 节点连接信息
+├── report.pdf                    // 实验报告
+└── ...                           // 其他补充文件
+
+```
+
+### 注意事项
+
+- 导入数据（网格和纹理）时使用相对路径，将你的数据放在可执行文件目录下，直接通过 `FilePath = 'xxx.usda'` 或者 `FilePath = 'zzz.png'` 访问；
+- 在 `node_your_implementation.cpp` 等文件中使用
+  ```cpp
+  #include "utils/some_algorithm.h"
+  ```
+  包含你的辅助代码；
+- 如果除了添加 `utils/` 和 `node_your_implementation.cpp`，你还**对框架有其他修改**，就**打包上传所有代码**。
