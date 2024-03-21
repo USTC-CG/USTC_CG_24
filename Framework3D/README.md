@@ -45,6 +45,14 @@ clone (recursive) https://github.com/Jerry-Shen0527/USTC_CG_2024_Dependencies
 python.exe configure.py
 ```
 
+# Remark
+
+- 由于注册节点时使用了简易的代码生成机制，添加新节点时对于namespace行的要求比较严格，需要大括号和namespace声明在同一行，需要中间有空格，且代码中不能出现中文变量和注释。类似这样
+
+![alt text](images/c3be37d50ecefccb00a6332d16870819.png)
+
+- 稍后助教会对此限制进行改进。
+
 # Usage (Kick Start for HW4)
 
 构建并执行 `engine_test.exe`
