@@ -12,6 +12,8 @@ project(
 
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 set(BUILD_SHARED_LIBS ON)
+# On mac, the cpp standard should >= 20
+set(CMAKE_CXX_STANDARD 20)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
