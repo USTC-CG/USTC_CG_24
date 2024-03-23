@@ -28,11 +28,12 @@ set(OUTPUT_DIR
   RUNTIME_OUTPUT_DIRECTORY_RELEASE        "${OUT_BINARY_DIR}"
 )
 
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  set(SDK_FOLDER ${CMAKE_BUILD_TYPE})
-else()
-  set(SDK_FOLDER "Release")
-endif()
+# if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+#   set(SDK_FOLDER ${CMAKE_BUILD_TYPE})
+# else()
+#   set(SDK_FOLDER "Release")
+# endif()
+set(SDK_FOLDER "Release")
 
 message("CMAKE_BUILD_TYPE is ${CMAKE_BUILD_TYPE}. Selecting SDK from ${SDK_FOLDER}") 
 
