@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+
 #include "GCore/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
@@ -22,13 +23,11 @@ class UsdviewEngineImpl {
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
     } engine_status;
-    unsigned fbo = 0;
-    unsigned tex = 0;
+
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
-
         GarchGLApiLoad();
-        glGenFramebuffers(1,&fbo);
+        glGenFramebuffers(1, &fbo);
 
         renderer_ = std::make_unique<UsdImagingGLEngine>();
         renderer_->SetEnablePresentation(true);
@@ -37,12 +36,8 @@ class UsdviewEngineImpl {
         auto plugins = renderer_->GetRendererPlugins();
         renderer_->SetRendererPlugin(plugins[0]);
         auto name = renderer_->GetRendererDisplayName(plugins[0]);
-        std::cout << name << std::endl;
-        GfCamera::Projection proj = GfCamera::Projection::Perspective;
-        free_camera_->SetProjection(proj);
-
+        free_camera_->SetProjection(GfCamera::Projection::Perspective);
         free_camera_->SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
-
     }
 
     void DrawMenuBar();
@@ -50,6 +45,8 @@ class UsdviewEngineImpl {
     void OnResize(int x, int y);
 
    private:
+    unsigned fbo = 0;
+    unsigned tex = 0;
     std::unique_ptr<FreeCamera> free_camera_;
     bool is_hovered_ = false;
     std::unique_ptr<UsdImagingGLEngine> renderer_;
@@ -129,8 +126,11 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
     renderer_->Render(root, _renderParams);
 
-    auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
-    renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"),pxr::VtValue(fbo));
+    renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"), pxr::VtValue(fbo));
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
     ImGui::Image(ImTextureID(tex), ImGui::GetContentRegionAvail());
 
     is_active_ = ImGui::IsWindowFocused();
@@ -140,31 +140,30 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
 
 void UsdviewEngineImpl::OnResize(int x, int y)
 {
-    std::cout<<glGenFramebuffers<<std::endl;
+    if (renderBufferSize_[0] != x || renderBufferSize_[1] != y) {
+        if (tex) {
+            glDeleteTextures(1, &tex);
+        }
+        glGenTextures(1, &tex);
 
-        glGenTextures(1,&tex);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glBindFramebuffer(GL_FRAMEBUFFER,fbo);
-        glBindTexture(GL_TEXTURE_2D,tex);
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,x,y,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,tex,0);
-        glBindTexture(GL_TEXTURE_2D,0);
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
-
-    renderBufferSize_[0] = x;
-    renderBufferSize_[1] = y;
-    renderer_->SetRenderBufferSize(renderBufferSize_);
-    renderer_->SetRenderViewport(
-        GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
-
-    GfCamera::Projection proj = GfCamera::Projection::Perspective;
-    free_camera_->SetProjection(proj);
-
-    free_camera_->m_ViewportSize = renderBufferSize_;
+        renderBufferSize_[0] = x;
+        renderBufferSize_[1] = y;
+        renderer_->SetRenderBufferSize(renderBufferSize_);
+        renderer_->SetRenderViewport(
+            GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
+        free_camera_->m_ViewportSize = renderBufferSize_;
+    }
 }
 
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
