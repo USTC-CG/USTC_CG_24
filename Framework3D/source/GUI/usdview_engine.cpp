@@ -129,13 +129,11 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"), pxr::VtValue(fbo));
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
+    ImGui::BeginChild("ViewPort", ImGui::GetContentRegionAvail(), 0, ImGuiWindowFlags_NoMove);
     ImGui::Image(ImTextureID(tex), ImGui::GetContentRegionAvail());
-
     is_active_ = ImGui::IsWindowFocused();
-
     is_hovered_ = ImGui::IsItemHovered();
+    ImGui::EndChild();
 }
 
 void UsdviewEngineImpl::OnResize(int x, int y)
