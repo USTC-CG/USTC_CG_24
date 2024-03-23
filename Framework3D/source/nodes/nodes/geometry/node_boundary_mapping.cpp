@@ -71,11 +71,14 @@ static void node_map_boundary_to_circle_exec(ExeParams params)
     **    between vertices when mapped to a square.
     **
     ** 3. Sequentially assign each boundary vertex a new position along the square's
-    **    perimeter, maintaining the calculated spacing to ensure even distribution.
+    **    perimeter, maintaining the calculated spacing to ensure proper distribution.
     **
     ** 4. Keep the interior vertices' positions unchanged during this process.
     **
     ** Note: How to distribute the points on the circle?
+    **
+    ** Note: It would be better to normalize the boundary to a unit circle in [0,1]x[0,1] for
+    ** texture mapping.
     */
 
     /* ----------------------------- Postprocess ------------------------------
@@ -131,6 +134,9 @@ static void node_map_boundary_to_square_exec(ExeParams params)
     ** (omitted)
     **
     ** Note: Can you perserve the 4 corners of the square after boundary mapping?
+    **
+    ** Note: It would be better to normalize the boundary to a unit circle in [0,1]x[0,1] for
+    ** texture mapping.
     */
 
     /* ----------------------------- Postprocess ------------------------------

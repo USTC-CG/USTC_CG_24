@@ -25,8 +25,5 @@ function(UCG_ADD_TEST)
   )
 endfunction(UCG_ADD_TEST)
 
-add_subdirectory(GCore)
-add_subdirectory(SCore)
 add_subdirectory(RCore)
 add_subdirectory(GUI)
-add_subdirectory(nodes)
