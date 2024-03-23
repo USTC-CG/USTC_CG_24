@@ -2,7 +2,7 @@
 #include "GUI/usdview_engine.h"
 
 #include <cmath>
-
+#include <iostream>
 #include "GCore/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
@@ -22,19 +22,27 @@ class UsdviewEngineImpl {
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
     } engine_status;
+    unsigned fbo = 0;
+    unsigned tex = 0;
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
+
+        GarchGLApiLoad();
+        glGenFramebuffers(1,&fbo);
+
         renderer_ = std::make_unique<UsdImagingGLEngine>();
         renderer_->SetEnablePresentation(true);
         free_camera_ = std::make_unique<FirstPersonCamera>();
 
         auto plugins = renderer_->GetRendererPlugins();
         renderer_->SetRendererPlugin(plugins[0]);
-
+        auto name = renderer_->GetRendererDisplayName(plugins[0]);
+        std::cout << name << std::endl;
         GfCamera::Projection proj = GfCamera::Projection::Perspective;
         free_camera_->SetProjection(proj);
 
         free_camera_->SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
+
     }
 
     void DrawMenuBar();
@@ -122,7 +130,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     renderer_->Render(root, _renderParams);
 
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
-    ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
+    renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"),pxr::VtValue(fbo));
+    ImGui::Image(ImTextureID(tex), ImGui::GetContentRegionAvail());
 
     is_active_ = ImGui::IsWindowFocused();
 
@@ -131,6 +140,21 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
 
 void UsdviewEngineImpl::OnResize(int x, int y)
 {
+    std::cout<<glGenFramebuffers<<std::endl;
+
+        glGenTextures(1,&tex);
+
+        glBindFramebuffer(GL_FRAMEBUFFER,fbo);
+        glBindTexture(GL_TEXTURE_2D,tex);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,x,y,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,tex,0);
+        glBindTexture(GL_TEXTURE_2D,0);
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+
     renderBufferSize_[0] = x;
     renderBufferSize_[1] = y;
     renderer_->SetRenderBufferSize(renderBufferSize_);

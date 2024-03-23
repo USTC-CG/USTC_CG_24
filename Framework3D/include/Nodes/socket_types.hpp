@@ -1,4 +1,5 @@
 #pragma once
+
 namespace decl {
 class GeometryBuilder;
 
@@ -58,7 +59,8 @@ class Int : public SocketDeclaration {
     void update_default_value(NodeSocket* socket) const override;
 
     using Builder = IntBuilder;
-    using DefaultValueType = bNodeSocketValue;
+    // TODO: Throw error on mac.
+    // using DefaultValueType = bNodeSocketValue;
 
     int soft_min = std::numeric_limits<int>::min();
     int soft_max = std::numeric_limits<int>::max();

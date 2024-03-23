@@ -2,6 +2,7 @@
 
 
 #include<type_traits>
+#include <algorithm> // for std::move
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

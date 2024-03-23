@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <random>
-
+#include <boost/functional/hash.hpp>
 #include "config.h"
 #include "context.h"
 #include "pxr/pxr.h"
