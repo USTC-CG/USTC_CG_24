@@ -112,19 +112,31 @@ def process_SDK(target):
     os.makedirs("./Binaries/" + target + "/", exist_ok=True)
     if os.name == "nt":
         tbb_lib = "tbb/bin"
+        folders_list = [
+            "OpenUSD/bin",
+            "OpenUSD/bin",
+            "OpenUSD/lib",
+            tbb_lib,
+            "MaterialX/bin",
+            "openvdb/bin",
+            "c-blosc/bin",
+            "zlib/bin",
+            "Imath/bin",
+        ]
     else:
         tbb_lib = "tbb/lib"  # TODO: fix
-    folders_list = [
-        "OpenUSD/bin",
-        "OpenUSD/lib",
-        "OpenUSD/lib",
-        tbb_lib,
-        "MaterialX/lib",
-        "openvdb/lib",
-        "c-blosc/lib",
-        "zlib/lib",
-        "Imath/lib",
-    ]
+        folders_list = [
+            "OpenUSD/bin",
+            "OpenUSD/lib",
+            "OpenUSD/lib",
+            tbb_lib,
+            "MaterialX/lib",
+            "openvdb/lib",
+            "c-blosc/lib",
+            "zlib/lib",
+            "Imath/lib",
+        ]
+
     if os.name == "nt":
         folders_list.append("boost/lib64-msvc-14.3")
     for folder in folders_list:
@@ -132,7 +144,10 @@ def process_SDK(target):
     copytree_to_binaries("OpenUSD/plugin/usd", "usd", target=target)
 
     copytree_common_to_binaries("embree/bin", target=target)
-    copytree_common_to_binaries("slang/bin/macosx-aarch64/release", target=target)
+    if os.name == "nt":
+        copytree_common_to_binaries("slang/bin/windows-x64/release", target=target)
+    else:
+        copytree_common_to_binaries("slang/bin/macosx-aarch64/release", target=target)
 
     fix_usd_path(target=target)
     if os.name == "nt":
@@ -140,5 +155,5 @@ def process_SDK(target):
 
 
 if __name__ == "__main__":
-    # process_SDK("Debug")
+    process_SDK("Debug")
     process_SDK("Release")
