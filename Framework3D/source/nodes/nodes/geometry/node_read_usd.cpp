@@ -36,7 +36,7 @@ static void node_exec(ExeParams params)
         time = pxr::UsdTimeCode::Default();
     }
 
-    auto stage = pxr::UsdStage::Open(file_name);
+    auto stage = pxr::UsdStage::Open(file_name.c_str());
 
     if (stage) {
         // Here 'c_str' call is necessary since prim_path
