@@ -42,7 +42,7 @@ set(MaterialX_DIR SDK/${SDK_FOLDER}/MaterialX/lib/cmake/MaterialX)
 set(Imath_DIR SDK/${SDK_FOLDER}/Imath/lib/cmake/Imath)
 set(EMBREE_DIR SDK/common/embree/lib/cmake/embree-4.3.1) 
 
-find_package(Python3 COMPONENTS Development Interpreter REQUIRED)
+find_package(Python3 3.10 EXACT COMPONENTS Development Interpreter REQUIRED)
 set_target_properties(Python3::Python PROPERTIES MAP_IMPORTED_CONFIG_DEBUG ";RELEASE")
 
 find_package(pxr REQUIRED)
