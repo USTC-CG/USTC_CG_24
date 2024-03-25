@@ -13,12 +13,13 @@ class USTC_CG_API UsdFileViewer {
     explicit UsdFileViewer();
 
     void set_stage(pxr::UsdStageRefPtr root_stage);
-    void BuildUI();
+    void ShowFileTree();
 
     ~UsdFileViewer();
     void render();
+    void ShowPrimInfo();
 
-   protected:
+protected:
     std::unique_ptr<UsdFileViewerImpl> impl_;
 };
 USTC_CG_NAMESPACE_CLOSE_SCOPE
