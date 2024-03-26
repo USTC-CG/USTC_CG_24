@@ -1,4 +1,4 @@
-# 4. 曲面参数化 Tutte Parameterzation
+# 5. ARAP参数化 ARAP Parameterzation
 
 > 作业步骤：
 > - 查看[文档](documents/README.md)，内含多个小教程，请先阅读 [documents/README.md](documents/README.md)，其中包含了所有文档的阅读引导
@@ -8,26 +8,25 @@
 ## 作业递交
 
 - 递交内容：程序代码、实验报告及 `Blueprints.json` 文件，见[提交文件格式](#提交文件格式)
-- 递交时间：2024年3月24日（周日）晚
+- 递交时间：2024年4月2日（周二）晚
 
 ## 要求
 
-- 实现论文 [Floater1997](https://www.cs.jhu.edu/~misha/Fall09/Floater97.pdf) 中介绍的 Tutte 网格参数化方法，主要原理见[作业课件](https://rec.ustc.edu.cn/share/c55d42a0-bfcd-11ee-b7db-eb3ed86abde8)
-  - 边界固定，构建并求解稀疏方程组得到**极小曲面**
-  - 边界映射到平面凸多边形，求解稀疏方程组得到**曲面参数化**
-- 尝试多种（2~3种）权重设置
-  - Uniform weights
-  - Cotangent weights
-  - Floater weights (Shape-preserving)（Optional）
+- 实现论文 [A Local/Global Approach to Mesh Parameterization](https://cs.harvard.edu/~sjg/papers/arap.pdf) 中介绍的 ARAP (As-rigid-as-possible) 网格参数化方法，主要原理见[作业课件](https://rec.ustc.edu.cn/share/c55d42a0-bfcd-11ee-b7db-eb3ed86abde8)
+
+- （Optional）实现论文中的另外两种参数化
+  - ASAP（As-similar-as-possible）参数化算法
+  - Hybrid 参数化算法
 - 使用测试纹理和网格检验实验结果
 
 
 ## 目的
 
-- 熟悉网格数据结构，了解基本操作方法（访问邻域、访问边界）（参考示例）
-- 了解纹理映射，对参数化结果进行可视化
-- 了解节点编程思想
-- 巩固使用大型稀疏线性方程组的求解
+- 对各种参数化算法（作业4、作业5）进行比较
+- 了解非线性优化
+- 继续学习网格数据结构和编程
+- 巩固大型稀疏线性方程组的求解方法
+- 理解并实现（二阶）矩阵的 SVD 分解
 
 
 ## 提供的材料
