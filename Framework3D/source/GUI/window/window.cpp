@@ -117,7 +117,11 @@ bool Window::init_glfw()
         return false;
     }
 
+    
+
 #ifdef __APPLE__
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
@@ -139,12 +143,22 @@ bool Window::init_gui()
     //  - fontsize
     float xscale, yscale;
     glfwGetWindowContentScale(window_, &xscale, &yscale);
-    io.FontGlobalScale = xscale;
     // - style
     ImGui::StyleColorsDark();
 
+    io.DisplayFramebufferScale.x = xscale;
+    io.DisplayFramebufferScale.x = yscale;
+
+
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
+    #ifdef __APPLE__
+    ImGui_ImplOpenGL3_Init("#version 410");
+    #else
+    io.FontGlobalScale = xscale;
     ImGui_ImplOpenGL3_Init("#version 130");
+    #endif
+
+
 
     return true;
 }

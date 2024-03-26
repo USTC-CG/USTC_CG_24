@@ -31,3 +31,9 @@
 #    define USTC_CG_EXTERN extern
 #  endif
 #endif
+
+
+#ifdef __APPLE__
+#define strcpy_s strcpy
+#endif
+#include <string.h>
