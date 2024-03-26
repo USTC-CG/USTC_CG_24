@@ -27,8 +27,7 @@ class GeometryBuilder : public SocketDeclarationBuilder<Geometry> { };
         NodeSocket* build(NodeTree* ntree, Node* node) const override; \
         using Builder = Type##Size##BufferBuilder;                     \
     };                                                                 \
-    class Type##Size##BufferBuilder                                    \
-        : public SocketDeclarationBuilder<Type##Size##Buffer> { }
+    class Type##Size##BufferBuilder : public SocketDeclarationBuilder<Type##Size##Buffer> { }
 
 BufferBuilder(Float, 1);
 BufferBuilder(Float, 2);
@@ -60,8 +59,8 @@ class Int : public SocketDeclaration {
     using Builder = IntBuilder;
     using DefaultValueType = bNodeSocketValue;
 
-    int soft_min = std::numeric_limits<int>::min();
-    int soft_max = std::numeric_limits<int>::max();
+    int soft_min = INT_MIN / 2;
+    int soft_max = INT_MAX / 2;
     int default_value_ = 0;
 };
 
@@ -101,8 +100,8 @@ class Float : public SocketDeclaration {
 
     using Builder = FloatBuilder;
 
-    float soft_min = std::numeric_limits<float>::min();
-    float soft_max = std::numeric_limits<float>::max();
+    float soft_min = -FLT_MAX / 2.0f;
+    float soft_max = FLT_MAX / 2.0f;
     float default_value_ = 0;
 };
 
