@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "GUI/node_system.h"
 #include "GUI/usdview_engine.h"
 #include "GUI/window/window.h"

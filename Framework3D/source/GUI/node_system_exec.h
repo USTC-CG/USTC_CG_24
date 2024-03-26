@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GCore/GOP.h"
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"

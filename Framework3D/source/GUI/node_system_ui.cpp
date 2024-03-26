@@ -19,7 +19,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/id.hpp"
 #include "Nodes/node.hpp"
 #include "Nodes/pin.hpp"

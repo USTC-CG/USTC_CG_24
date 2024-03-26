@@ -1,4 +1,4 @@
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 pxr::UsdStageRefPtr GlobalUsdStage::global_usd_stage =

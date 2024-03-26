@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"
 #include "pxr/base/gf/camera.h"

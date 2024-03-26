@@ -8,7 +8,7 @@
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
 #include "GCore/Components/XformComponent.h"
-#include "GCore/GlobalUsdStage.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
