@@ -124,9 +124,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
     ImGui::BeginChild("Render View Port", ImGui::GetContentRegionAvail(),0,ImGuiWindowFlags_NoMove);
     ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
-    ImGui::EndChild();
-
     is_active_ = ImGui::IsWindowFocused();
+    ImGui::EndChild();
 
     is_hovered_ = ImGui::IsItemHovered();
 }
