@@ -34,11 +34,11 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-/// \class HdEmbreeInstancer
+/// \class Hd_USTC_CG_GL_Instancer
 ///
-/// HdEmbree implements instancing by adding prototype geometry to the BVH
-/// multiple times within HdEmbreeMesh::Sync(). The only instance-varying
-/// attribute that HdEmbree supports is transform, so the natural
+/// Hd_USTC_CG_GL_ implements instancing by adding prototype geometry to the BVH
+/// multiple times within Hd_USTC_CG_GL_Mesh::Sync(). The only instance-varying
+/// attribute that Hd_USTC_CG_GL_ supports is transform, so the natural
 /// accessor to instancer data is ComputeInstanceTransforms(),
 /// which returns a list of transforms to apply to the given prototype
 /// (one instance per transform).
@@ -47,16 +47,16 @@ PXR_NAMESPACE_OPEN_SCOPE
 /// cartesian product of the transform arrays at each nesting level, to
 /// create a flattened transform array.
 ///
-class HdEmbreeInstancer : public HdInstancer
+class Hd_USTC_CG_GL_Instancer : public HdInstancer
 {
 public:
     /// Constructor.
     ///   \param delegate The scene delegate backing this instancer's data.
     ///   \param id The unique id of this instancer.
-    HdEmbreeInstancer(HdSceneDelegate* delegate, SdfPath const& id);
+    Hd_USTC_CG_GL_Instancer(HdSceneDelegate* delegate, SdfPath const& id);
 
     /// Destructor.
-    ~HdEmbreeInstancer();
+    ~Hd_USTC_CG_GL_Instancer();
 
     /// Computes all instance transforms for the provided prototype id,
     /// taking into account the scene delegate's instancerTransform and the
@@ -70,7 +70,7 @@ public:
 
     /// Updates cached primvar data from the scene delegate.
     ///   \param sceneDelegate The scene delegate for this prim.
-    ///   \param renderParam The hdEmbree render param.
+    ///   \param renderParam The hd_USTC_CG_GL_ render param.
     ///   \param dirtyBits The dirty bits for this instancer.
     void Sync(
         HdSceneDelegate* sceneDelegate,

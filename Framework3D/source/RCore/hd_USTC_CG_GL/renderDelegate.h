@@ -37,7 +37,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 // Also: HdRenderSettingsTokens->convergedSamplesPerPixel
 
 TF_DECLARE_PUBLIC_TOKENS(
-    HdEmbreeRenderSettingsTokens,
+    Hd_USTC_CG_GL_RenderSettingsTokens,
     HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 ///
@@ -109,9 +109,9 @@ private:
     // A version counter for edits to _scene.
     std::atomic<int> _sceneVersion;
 
-    // A shared HdEmbreeRenderParam object that stores top-level embree state;
+    // A shared Hd_USTC_CG_GL_RenderParam object that stores top-level embree state;
     // passed to prims during Sync().
-    std::shared_ptr<HdEmbreeRenderParam> _renderParam;
+    std::shared_ptr<Hd_USTC_CG_GL_RenderParam> _renderParam;
 
     // A background render thread for running the actual renders in. The
     // render thread object manages synchronization between the scene data

@@ -35,14 +35,14 @@
 #include "pxr/base/tf/staticTokens.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-HdEmbreeInstancer::HdEmbreeInstancer(
+Hd_USTC_CG_GL_Instancer::Hd_USTC_CG_GL_Instancer(
     HdSceneDelegate* delegate,
     const SdfPath& id)
     : HdInstancer(delegate, id)
 {
 }
 
-HdEmbreeInstancer::~HdEmbreeInstancer()
+Hd_USTC_CG_GL_Instancer::~Hd_USTC_CG_GL_Instancer()
 {
     TF_FOR_ALL(it, _primvarMap)
     {
@@ -52,7 +52,7 @@ HdEmbreeInstancer::~HdEmbreeInstancer()
 }
 
 void
-HdEmbreeInstancer::Sync(
+Hd_USTC_CG_GL_Instancer::Sync(
     HdSceneDelegate* delegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -66,7 +66,7 @@ HdEmbreeInstancer::Sync(
 }
 
 void
-HdEmbreeInstancer::_SyncPrimvars(
+Hd_USTC_CG_GL_Instancer::_SyncPrimvars(
     HdSceneDelegate* delegate,
     HdDirtyBits dirtyBits)
 {
@@ -97,7 +97,7 @@ HdEmbreeInstancer::_SyncPrimvars(
 }
 
 VtMatrix4dArray
-HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
+Hd_USTC_CG_GL_Instancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
 {
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
@@ -140,7 +140,7 @@ HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     // "hydra:instanceTranslations" holds a translation vector for each index.
     if (_primvarMap.count(instanceTranslationsToken) > 0)
     {
-        HdEmbreeBufferSampler
+        Hd_USTC_CG_GL_BufferSampler
             sampler(*_primvarMap[instanceTranslationsToken]);
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
@@ -158,7 +158,7 @@ HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     // format for each index.
     if (_primvarMap.count(instanceRotationsToken) > 0)
     {
-        HdEmbreeBufferSampler sampler(*_primvarMap[instanceRotationsToken]);
+        Hd_USTC_CG_GL_BufferSampler sampler(*_primvarMap[instanceRotationsToken]);
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
             GfVec4f quat;
@@ -179,7 +179,7 @@ HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     // "hydra:instanceScales" holds an axis-aligned scale vector for each index.
     if (_primvarMap.count(instanceScalesToken) > 0)
     {
-        HdEmbreeBufferSampler sampler(*_primvarMap[instanceScalesToken]);
+        Hd_USTC_CG_GL_BufferSampler sampler(*_primvarMap[instanceScalesToken]);
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
             GfVec3f scale;
@@ -195,7 +195,7 @@ HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     // "hydra:instanceTransforms" holds a 4x4 transform matrix for each index.
     if (_primvarMap.count(instanceTransformsToken) > 0)
     {
-        HdEmbreeBufferSampler
+        Hd_USTC_CG_GL_BufferSampler
             sampler(*_primvarMap[instanceTransformsToken]);
         for (size_t i = 0; i < instanceIndices.size(); ++i)
         {
@@ -225,7 +225,7 @@ HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     //     parentXf * xf
     // }
     VtMatrix4dArray parentTransforms =
-        static_cast<HdEmbreeInstancer*>(parentInstancer)->
+        static_cast<Hd_USTC_CG_GL_Instancer*>(parentInstancer)->
         ComputeInstanceTransforms(GetId());
 
     VtMatrix4dArray final(parentTransforms.size() * transforms.size());

@@ -39,7 +39,7 @@
 #include "rendererEmbree.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-TF_DEFINE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DEFINE_PUBLIC_TOKENS(Hd_USTC_CG_GL_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 const TfTokenVector Hd_USTC_CG_GL_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
     HdPrimTypeTokens->mesh,
@@ -81,27 +81,29 @@ void Hd_USTC_CG_GL_RenderDelegate::_Initialize()
     // Initialize the settings and settings descriptors.
     _settingDescriptors.resize(4);
     _settingDescriptors[0] = { "Enable Scene Colors",
-                               HdEmbreeRenderSettingsTokens->enableSceneColors,
-                               VtValue(HdEmbreeConfig::GetInstance().useFaceColors) };
-    _settingDescriptors[1] = { "Enable Ambient Occlusion",
-                               HdEmbreeRenderSettingsTokens->enableAmbientOcclusion,
-                               VtValue(HdEmbreeConfig::GetInstance().ambientOcclusionSamples > 0) };
+                               Hd_USTC_CG_GL_RenderSettingsTokens->enableSceneColors,
+                               VtValue(Hd_USTC_CG_GL_Config::GetInstance().useFaceColors) };
+    _settingDescriptors[1] = {
+        "Enable Ambient Occlusion",
+        Hd_USTC_CG_GL_RenderSettingsTokens->enableAmbientOcclusion,
+        VtValue(Hd_USTC_CG_GL_Config::GetInstance().ambientOcclusionSamples > 0)
+    };
     _settingDescriptors[2] = { "Ambient Occlusion Samples",
-                               HdEmbreeRenderSettingsTokens->ambientOcclusionSamples,
+                               Hd_USTC_CG_GL_RenderSettingsTokens->ambientOcclusionSamples,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().ambientOcclusionSamples)) };
+                                   Hd_USTC_CG_GL_Config::GetInstance().ambientOcclusionSamples)) };
     _settingDescriptors[3] = { "Samples To Convergence",
                                HdRenderSettingsTokens->convergedSamplesPerPixel,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().samplesToConvergence)) };
+                                   Hd_USTC_CG_GL_Config::GetInstance().samplesToConvergence)) };
     _PopulateDefaultSettings(_settingDescriptors);
 
-    _renderParam = std::make_shared<HdEmbreeRenderParam>(&_renderThread, &_sceneVersion);
+    _renderParam = std::make_shared<Hd_USTC_CG_GL_RenderParam>(&_renderThread, &_sceneVersion);
 
-    _renderer = std::make_shared<Hd_USTC_CG_GL_Renderer_Embree>();
+    _renderer = std::make_shared<Hd_USTC_CG_GL_Renderer_USTC_CG_GL>();
 
     // Set the background render thread's rendering entrypoint to
-    // HdEmbreeRenderer::Render.
+    // Hd_USTC_CG_GL_Renderer::Render.
     _renderThread.SetRenderCallback(std::bind(_RenderCallback, _renderer.get(), &_renderThread));
     _renderThread.StartThread();
 
@@ -117,20 +119,20 @@ void Hd_USTC_CG_GL_RenderDelegate::_Initialize()
 HdAovDescriptor Hd_USTC_CG_GL_RenderDelegate::GetDefaultAovDescriptor(const TfToken& name) const
 {
     if (name == HdAovTokens->color) {
-        return HdAovDescriptor(HdFormatUNorm8Vec4, true, VtValue(GfVec4f(0.0f)));
+        return HdAovDescriptor(HdFormatFloat32Vec4, false, VtValue(GfVec4f(0.0f)));
     }
     if (name == HdAovTokens->normal || name == HdAovTokens->Neye) {
-        return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(-1.0f)));
+        return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(0.0f)));
     }
     if (name == HdAovTokens->depth) {
-        return HdAovDescriptor(HdFormatFloat32, false, VtValue(1.0f));
+        return HdAovDescriptor(HdFormatFloat32, false, VtValue(0.0f));
     }
     if (name == HdAovTokens->cameraDepth) {
         return HdAovDescriptor(HdFormatFloat32, false, VtValue(0.0f));
     }
     if (name == HdAovTokens->primId || name == HdAovTokens->instanceId ||
         name == HdAovTokens->elementId) {
-        return HdAovDescriptor(HdFormatInt32, false, VtValue(-1));
+        return HdAovDescriptor(HdFormatInt32, false, VtValue(0));
     }
     HdParsedAovToken aovId(name);
     if (aovId.isPrimvar) {
@@ -278,7 +280,7 @@ HdInstancer* Hd_USTC_CG_GL_RenderDelegate::CreateInstancer(
     HdSceneDelegate* delegate,
     const SdfPath& id)
 {
-    return new HdEmbreeInstancer(delegate, id);
+    return new Hd_USTC_CG_GL_Instancer(delegate, id);
 }
 
 void Hd_USTC_CG_GL_RenderDelegate::DestroyInstancer(HdInstancer* instancer)

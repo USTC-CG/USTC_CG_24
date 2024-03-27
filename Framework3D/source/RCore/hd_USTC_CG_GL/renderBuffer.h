@@ -24,31 +24,30 @@
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 
-#include "pxr/pxr.h"
+#include <iostream>
+
 #include "pxr/imaging/hd/renderBuffer.h"
+#include "pxr/pxr.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-class Hd_USTC_CG_GL_RenderBuffer : public HdRenderBuffer
-{
-public:
+class Hd_USTC_CG_GL_RenderBuffer : public HdRenderBuffer {
+   public:
     Hd_USTC_CG_GL_RenderBuffer(SdfPath const& id);
     ~Hd_USTC_CG_GL_RenderBuffer() override;
 
     /// Get allocation information from the scene delegate.
-    /// Note: Embree overrides this only to stop the render thread before
+    /// Note: _USTC_CG_GL_ overrides this only to stop the render thread before
     /// potential re-allocation.
     ///   \param sceneDelegate The scene delegate backing this render buffer.
     ///   \param renderParam   The renderer-global render param.
     ///   \param dirtyBits     The invalidation state for this render buffer.
-    void Sync(
-        HdSceneDelegate* sceneDelegate,
-        HdRenderParam* renderParam,
-        HdDirtyBits* dirtyBits) override;
+    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
+        override;
 
     /// Deallocate before deletion.
     ///   \param renderParam   The renderer-global render param.
-    /// Note: Embree overrides this only to stop the render thread before
+    /// Note: _USTC_CG_GL_ overrides this only to stop the render thread before
     /// potential deallocation.
     void Finalize(HdRenderParam* renderParam) override;
 
@@ -60,10 +59,7 @@ public:
     ///   \param multisampled Whether the buffer is multisampled.
     ///   \return             True if the buffer was successfully allocated,
     ///                       false with a warning otherwise.
-    bool Allocate(
-        GfVec3i const& dimensions,
-        HdFormat format,
-        bool multiSampled) override;
+    bool Allocate(GfVec3i const& dimensions, HdFormat format, bool multiSampled) override;
 
     /// Accessor for buffer width.
     ///   \return The width of the currently allocated buffer.
@@ -106,14 +102,14 @@ public:
     ///   \return The address of the buffer.
     void* Map() override
     {
-        _mappers++;
+        ++_mappers;
         return _buffer.data();
     }
 
     /// Unmap the buffer.
     void Unmap() override
     {
-        _mappers--;
+        --_mappers;
     }
 
     /// Return whether any clients have this buffer mapped currently.
@@ -151,7 +147,7 @@ public:
     /// remainder will be taken as 0.
     ///   \param pixel         What index to write
     ///   \param numComponents The arity of the value to write.
-    ///   \param value         A float-valued vector to write. 
+    ///   \param value         A float-valued vector to write.
     void Write(GfVec3i const& pixel, size_t numComponents, float const* value);
 
     /// Write an int, vec2i, vec3i, or vec4i to the renderbuffer.
@@ -160,7 +156,7 @@ public:
     /// remainder will be taken as 0.
     ///   \param pixel         What index to write
     ///   \param numComponents The arity of the value to write.
-    ///   \param value         An int-valued vector to write. 
+    ///   \param value         An int-valued vector to write.
     void Write(GfVec3i const& pixel, size_t numComponents, int const* value);
 
     /// Clear the renderbuffer with a float, vec2f, vec3f, or vec4f.
@@ -168,7 +164,7 @@ public:
     /// be silently discarded; if not enough are provided for the buffer, the
     /// remainder will be taken as 0.
     ///   \param numComponents The arity of the value to write.
-    ///   \param value         A float-valued vector to write. 
+    ///   \param value         A float-valued vector to write.
     void Clear(size_t numComponents, float const* value);
 
     /// Clear the renderbuffer with an int, vec2i, vec3i, or vec4i.
@@ -176,10 +172,10 @@ public:
     /// be silently discarded; if not enough are provided for the buffer, the
     /// remainder will be taken as 0.
     ///   \param numComponents The arity of the value to write.
-    ///   \param value         An int-valued vector to write. 
+    ///   \param value         An int-valued vector to write.
     void Clear(size_t numComponents, int const* value);
 
-private:
+   private:
     // Calculate the needed buffer size, given the allocation parameters.
     static size_t _GetBufferSize(GfVec2i const& dims, HdFormat format);
 
@@ -215,4 +211,4 @@ private:
 
 PXR_NAMESPACE_CLOSE_SCOPE
 
-#endif // PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
+#endif  // PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H

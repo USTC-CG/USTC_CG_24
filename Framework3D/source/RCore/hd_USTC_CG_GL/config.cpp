@@ -31,7 +31,7 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 // Instantiate the config singleton.
-TF_INSTANTIATE_SINGLETON(HdEmbreeConfig);
+TF_INSTANTIATE_SINGLETON(Hd_USTC_CG_GL_Config);
 
 // Each configuration variable has an associated environment variable.
 // The environment variable macro takes the variable name, a default value,
@@ -55,12 +55,12 @@ TF_DEFINE_ENV_SETTING(
 TF_DEFINE_ENV_SETTING(
     HDEMBREE_JITTER_CAMERA,
     1,
-    "Should HdEmbree jitter camera rays while rendering? (values >0 are true)");
+    "Should Hd_USTC_CG_GL_ jitter camera rays while rendering? (values >0 are true)");
 
 TF_DEFINE_ENV_SETTING(
     HDEMBREE_USE_FACE_COLORS,
     1,
-    "Should HdEmbree use face colors while rendering? (values > 0 are true)");
+    "Should Hd_USTC_CG_GL_ use face colors while rendering? (values > 0 are true)");
 
 TF_DEFINE_ENV_SETTING(
     HDEMBREE_CAMERA_LIGHT_INTENSITY,
@@ -70,9 +70,9 @@ TF_DEFINE_ENV_SETTING(
 TF_DEFINE_ENV_SETTING(
     HDEMBREE_PRINT_CONFIGURATION,
     0,
-    "Should HdEmbree print configuration on startup? (values > 0 are true)");
+    "Should Hd_USTC_CG_GL_ print configuration on startup? (values > 0 are true)");
 
-HdEmbreeConfig::HdEmbreeConfig()
+Hd_USTC_CG_GL_Config::Hd_USTC_CG_GL_Config()
 {
     // Read in values from the environment, clamping them to valid ranges.
     samplesToConvergence = std::max(
@@ -94,7 +94,7 @@ HdEmbreeConfig::HdEmbreeConfig()
     if (TfGetEnvSetting(HDEMBREE_PRINT_CONFIGURATION) > 0)
     {
         std::cout
-            << "HdEmbree Configuration: \n"
+            << "Hd_USTC_CG_GL_ Configuration: \n"
             << "  samplesToConvergence       = "
             << samplesToConvergence << "\n"
             << "  tileSize                   = "
@@ -111,10 +111,10 @@ HdEmbreeConfig::HdEmbreeConfig()
 }
 
 /*static*/
-const HdEmbreeConfig&
-HdEmbreeConfig::GetInstance()
+const Hd_USTC_CG_GL_Config&
+Hd_USTC_CG_GL_Config::GetInstance()
 {
-    return TfSingleton<HdEmbreeConfig>::GetInstance();
+    return TfSingleton<Hd_USTC_CG_GL_Config>::GetInstance();
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE

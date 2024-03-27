@@ -9,7 +9,7 @@
 #include "pxr/pxr.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_GL_Renderer_Embree : public Hd_USTC_CG_GL_Renderer
+class Hd_USTC_CG_GL_Renderer_USTC_CG_GL : public Hd_USTC_CG_GL_Renderer
 {
 public:
     void Render(HdRenderThread* renderThread) override;

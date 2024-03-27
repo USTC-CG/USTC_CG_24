@@ -28,7 +28,6 @@ pxr_plugin(${PXR_PACKAGE}
         config
         sampler
         instancer
-        integrator
         camera
         light
         geometries/mesh

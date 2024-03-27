@@ -28,24 +28,24 @@
 #include "pxr/base/tf/singleton.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-/// \class HdEmbreeConfig
+/// \class Hd_USTC_CG_GL_Config
 ///
-/// This class is a singleton, holding configuration parameters for HdEmbree.
+/// This class is a singleton, holding configuration parameters for Hd_USTC_CG_GL_.
 /// Everything is provided with a default, but can be overridden using
 /// environment variables before launching a hydra process.
 ///
 /// Many of the parameters can be used to control quality/performance
-/// tradeoffs, or to alter how HdEmbree takes advantage of parallelism.
+/// tradeoffs, or to alter how Hd_USTC_CG_GL_ takes advantage of parallelism.
 ///
 /// At startup, this class will print config parameters if
 /// *HDEMBREE_PRINT_CONFIGURATION* is true. Integer values greater than zero
 /// are considered "true".
 ///
-class HdEmbreeConfig
+class Hd_USTC_CG_GL_Config
 {
 public:
     /// \brief Return the configuration singleton.
-    static const HdEmbreeConfig& GetInstance();
+    static const Hd_USTC_CG_GL_Config& GetInstance();
 
     /// How many samples do we need before a pixel is considered
     /// converged?
@@ -88,13 +88,13 @@ private:
     // The constructor initializes the config variables with their
     // default or environment-provided override, and optionally prints
     // them.
-    HdEmbreeConfig();
-    ~HdEmbreeConfig() = default;
+    Hd_USTC_CG_GL_Config();
+    ~Hd_USTC_CG_GL_Config() = default;
 
-    HdEmbreeConfig(const HdEmbreeConfig&) = delete;
-    HdEmbreeConfig& operator=(const HdEmbreeConfig&) = delete;
+    Hd_USTC_CG_GL_Config(const Hd_USTC_CG_GL_Config&) = delete;
+    Hd_USTC_CG_GL_Config& operator=(const Hd_USTC_CG_GL_Config&) = delete;
 
-    friend class TfSingleton<HdEmbreeConfig>;
+    friend class TfSingleton<Hd_USTC_CG_GL_Config>;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

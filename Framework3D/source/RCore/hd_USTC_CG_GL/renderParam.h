@@ -31,15 +31,15 @@
 PXR_NAMESPACE_OPEN_SCOPE
 
 ///
-/// \class HdEmbreeRenderParam
+/// \class Hd_USTC_CG_GL_RenderParam
 ///
 /// The render delegate can create an object of type HdRenderParam, to pass
-/// to each prim during Sync(). HdEmbree uses this class to pass top-level
+/// to each prim during Sync(). Hd_USTC_CG_GL_ uses this class to pass top-level
 /// embree state around.
 ///
-class HdEmbreeRenderParam final : public HdRenderParam {
+class Hd_USTC_CG_GL_RenderParam final : public HdRenderParam {
    public:
-    HdEmbreeRenderParam(HdRenderThread *renderThread, std::atomic<int> *sceneVersion)
+    Hd_USTC_CG_GL_RenderParam(HdRenderThread *renderThread, std::atomic<int> *sceneVersion)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion)
     {

@@ -28,7 +28,7 @@ GfRay Hd_USTC_CG_GL_Camera::generateRay(
     float x = pixel_center[0];
     float y = pixel_center[1];
     GfVec2f jitter(0.0f, 0.0f);
-    if (HdEmbreeConfig::GetInstance().jitterCamera)
+    if (Hd_USTC_CG_GL_Config::GetInstance().jitterCamera)
     {
         jitter = GfVec2f(uniform_float(), uniform_float());
     }

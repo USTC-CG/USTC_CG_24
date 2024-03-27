@@ -36,29 +36,29 @@ PXR_NAMESPACE_OPEN_SCOPE
 
 class HdRprim;
 
-/// \class HdEmbreePrototypeContext
+/// \class Hd_USTC_CG_GL_PrototypeContext
 ///
 /// A small bit of state attached to each bit of prototype geometry in embree,
-/// for the benefit of HdEmbreeRenderer::_TraceRay.
+/// for the benefit of Hd_USTC_CG_GL_Renderer::_TraceRay.
 ///
-struct HdEmbreePrototypeContext
+struct Hd_USTC_CG_GL_PrototypeContext
 {
-    /// A pointer back to the owning HdEmbree rprim.
+    /// A pointer back to the owning Hd_USTC_CG_GL_ rprim.
     HdRprim *rprim;
     /// A name-indexed map of primvar samplers.
-    TfHashMap<TfToken, HdEmbreePrimvarSampler*, TfToken::HashFunctor>
+    TfHashMap<TfToken, Hd_USTC_CG_GL_PrimvarSampler*, TfToken::HashFunctor>
         primvarMap;
     /// A copy of the primitive params for this rprim.
     VtIntArray primitiveParams;
 };
 
 ///
-/// \class HdEmbreeInstanceContext
+/// \class Hd_USTC_CG_GL_InstanceContext
 ///
 /// A small bit of state attached to each bit of instanced geometry in embree,
-/// for the benefit of HdEmbreeRenderer::_TraceRay.
+/// for the benefit of Hd_USTC_CG_GL_Renderer::_TraceRay.
 ///
-struct HdEmbreeInstanceContext
+struct Hd_USTC_CG_GL_InstanceContext
 {
     /// The object-to-world transform, for transforming normals to worldspace.
     GfMatrix4f objectToWorldMatrix;

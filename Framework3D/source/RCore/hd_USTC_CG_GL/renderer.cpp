@@ -75,6 +75,7 @@ bool Hd_USTC_CG_GL_Renderer::_ValidateAovBindings()
             TF_WARN(
                 "Unsupported attachment with Aov '%s' won't be rendered to",
                 _aovNames[i].name.GetText());
+            _aovBindingsValid = false;
         }
 
         HdFormat format = _aovBindings[i].renderBuffer->GetFormat();

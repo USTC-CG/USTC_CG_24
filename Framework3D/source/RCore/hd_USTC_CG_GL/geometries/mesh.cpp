@@ -187,7 +187,7 @@ Hd_USTC_CG_GL_Mesh::Sync(
     // faces and back faces.
     // With raytracing, this concept makes less sense, but
     // combining semantics of two HdMeshReprDesc is tricky in the general case.
-    // For now, HdEmbreeMesh only respects the first desc; this should be fixed.
+    // For now, Hd_USTC_CG_GL_Mesh only respects the first desc; this should be fixed.
     _MeshReprConfig::DescArray descs = _GetReprDesc(reprToken);
 
 }

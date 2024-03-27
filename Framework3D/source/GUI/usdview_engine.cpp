@@ -22,7 +22,7 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 0;           // 0 for 1st personal, 1 for 3rd personal
+        unsigned renderer_id = 1;           // 0 for 1st personal, 1 for 3rd personal
     } engine_status;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
@@ -35,7 +35,7 @@ class UsdviewEngineImpl {
         free_camera_ = std::make_unique<FirstPersonCamera>();
 
         auto plugins = renderer_->GetRendererPlugins();
-        renderer_->SetRendererPlugin(plugins[1]);
+        renderer_->SetRendererPlugin(plugins[engine_status.renderer_id]);
         free_camera_->SetProjection(GfCamera::Projection::Perspective);
         free_camera_->SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
     }
@@ -126,7 +126,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     _renderParams.frame = UsdTimeCode::Default();
     _renderParams.drawMode = UsdImagingGLDrawMode::DRAW_WIREFRAME_ON_SURFACE;
 
-    _renderParams.clearColor = GfVec4f(0.2f, 0.2f, 0.2f, 1.f);
+    _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
 
     for (int i = 0; i < free_camera_->GetClippingPlanes().size(); ++i) {
         _renderParams.clipPlanes[i] = free_camera_->GetClippingPlanes()[i];
