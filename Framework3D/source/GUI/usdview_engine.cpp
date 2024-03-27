@@ -22,6 +22,7 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
+        unsigned renderer_id = 0;           // 0 for 1st personal, 1 for 3rd personal
     } engine_status;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
@@ -34,14 +35,15 @@ class UsdviewEngineImpl {
         free_camera_ = std::make_unique<FirstPersonCamera>();
 
         auto plugins = renderer_->GetRendererPlugins();
-        renderer_->SetRendererPlugin(plugins[0]);
-        auto name = renderer_->GetRendererDisplayName(plugins[0]);
+        renderer_->SetRendererPlugin(plugins[1]);
         free_camera_->SetProjection(GfCamera::Projection::Perspective);
         free_camera_->SetClippingRange(pxr::GfRange1f{ 0.1f, 1000.f });
     }
 
     void DrawMenuBar();
     void OnFrame(float delta_time);
+    void refresh_platform_texture();
+    void refresh_viewport(int x, int y);
     void OnResize(int x, int y);
 
    private:
@@ -79,6 +81,28 @@ void UsdviewEngineImpl::DrawMenuBar()
         }
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Renderer")) {
+        if (ImGui::BeginMenu("Select Renderer")) {
+            auto available_renderers = renderer_->GetRendererPlugins();
+            for (unsigned i = 0; i < available_renderers.size(); ++i) {
+                if (ImGui::MenuItem(
+                        available_renderers[i].GetText(),
+                        0,
+                        this->engine_status.renderer_id == i)) {
+                    if (this->engine_status.renderer_id != i) {
+                        renderer_->SetRendererPlugin(available_renderers[i]);
+
+                        // Perform a fake resize event
+                        refresh_viewport(renderBufferSize_[0], renderBufferSize_[1]);
+                        this->engine_status.renderer_id = i;
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+
     ImGui::EndMenuBar();
 }
 
@@ -136,31 +160,51 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     ImGui::EndChild();
 }
 
+void UsdviewEngineImpl::refresh_platform_texture()
+{
+    if (tex) {
+        glDeleteTextures(1, &tex);
+    }
+    glGenTextures(1, &tex);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA8,
+        renderBufferSize_[0],
+        renderBufferSize_[1],
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void UsdviewEngineImpl::refresh_viewport(int x, int y)
+{
+    renderBufferSize_[0] = x;
+    renderBufferSize_[1] = y;
+
+    renderer_->SetRenderBufferSize(renderBufferSize_);
+    renderer_->SetRenderViewport(
+        GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
+    free_camera_->m_ViewportSize = renderBufferSize_;
+
+    refresh_platform_texture();
+}
+
 void UsdviewEngineImpl::OnResize(int x, int y)
 {
     if (renderBufferSize_[0] != x || renderBufferSize_[1] != y) {
-        if (tex) {
-            glDeleteTextures(1, &tex);
-        }
-        glGenTextures(1, &tex);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        renderBufferSize_[0] = x;
-        renderBufferSize_[1] = y;
-        renderer_->SetRenderBufferSize(renderBufferSize_);
-        renderer_->SetRenderViewport(
-            GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
-        free_camera_->m_ViewportSize = renderBufferSize_;
+        refresh_viewport(x, y);
     }
 }
 
