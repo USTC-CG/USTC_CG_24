@@ -1,5 +1,6 @@
 #include "Nodes/node_declare.hpp"
 
+#include "Nodes/geo_socket_types.hpp"
 #include "Nodes/node.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

@@ -50,7 +50,6 @@ class SocketDeclarationBuilder : public BaseSocketDeclarationBuilder {
 
     friend class NodeDeclarationBuilder;
 };
-#include "socket_types.hpp"
 
 class NodeDeclaration {
    public:

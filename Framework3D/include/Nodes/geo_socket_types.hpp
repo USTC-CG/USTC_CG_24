@@ -1,5 +1,8 @@
 #pragma once
 
+#include "USTC_CG.h"
+
+USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
 class GeometryBuilder;
 
@@ -156,3 +159,5 @@ class StringBuilder : public SocketDeclarationBuilder<String> {
 };
 
 }  // namespace decl
+
+USTC_CG_NAMESPACE_CLOSE_SCOPE
