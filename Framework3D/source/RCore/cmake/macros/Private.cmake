@@ -57,7 +57,7 @@ function(_copy_headers LIBRARY_NAME)
             add_custom_command(
                 OUTPUT ${outfile}
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${dir_to_create}
-                COMMAND ${CMAKE_COMMAND} -Dinfile=${infile} -Doutfile=${outfile} -P "${CMAKE_CURRENT_LIST_DIR}/cmake/macros/copyHeaderForBuild.cmake"
+                COMMAND ${CMAKE_COMMAND} -Dinfile=${infile} -Doutfile=${outfile} -P "${CMAKE_CURRENT_LIST_DIR}/../cmake/macros/copyHeaderForBuild.cmake"
                 MAIN_DEPENDENCY ${infile}
                 COMMENT "Copying ${f} ..."
                 VERBATIM
@@ -178,6 +178,7 @@ endfunction() # _copy_resource_files
 # Add a library target named NAME.
 function(_pxr_library NAME)
     # Argument parsing.
+    message("New pxr libraray: ${NAME}")
     set(options
     )
     set(oneValueArgs
@@ -213,7 +214,7 @@ function(_pxr_library NAME)
             ${args_PUBLIC_HEADERS}
             ${args_PRIVATE_HEADERS}
         )
-
+    
     else()
         # Building an explicitly shared library or plugin.
         add_library(${NAME}
@@ -225,8 +226,7 @@ function(_pxr_library NAME)
     endif()
     message("${NAME} links to ${args_LIBRARIES}")
     target_link_libraries(${NAME} PUBLIC ${args_LIBRARIES})
-
-    message("Public headers: ${args_PUBLIC_HEADERS}")
+    
     # Copy headers to the build directory and include from there and from
     # external packages.
     _copy_headers(${NAME}
@@ -236,7 +236,7 @@ function(_pxr_library NAME)
         PREFIX
             ${PXR_PREFIX}
     )
-
+    
     target_include_directories(${NAME}
     PRIVATE
         "${PROJECT_BINARY_DIR}/include"
@@ -244,16 +244,16 @@ function(_pxr_library NAME)
     INTERFACE
         $<INSTALL_INTERFACE:${headerInstallDir}>
     )
-
+    
     set_target_properties(${NAME} PROPERTIES ${OUTPUT_DIR})
-
+    
     set(libraryFilename "${args_PREFIX}${NAME}${args_SUFFIX}")
-
+    
     set(pluginInstallPrefix "usd")
     set(libInstallPrefix "")
-
+    
     set(pluginToLibraryPath "")
-
+    
     # Figure out the relative path from this library's plugin location
     # (in the libplug sense, which applies even to non-plugins, and is
     # where we can find external resources for the library) to the
@@ -271,14 +271,14 @@ function(_pxr_library NAME)
                 ${CMAKE_INSTALL_PREFIX}/${libInstallPrefix}/${libraryFilename})
         endif()
     endif()
-
+    
     # Install resources for the NAME library, at appropriate paths
     _copy_resource_files(
         ${NAME}
         "${pluginInstallPrefix}"
         "${pluginToLibraryPath}"
         ${args_RESOURCE_FILES})
-
+    
     target_compile_definitions(${NAME} PUBLIC NOMINMAX=1)
     string(TOUPPER ${NAME} CAPITAL_NAME)
     target_compile_definitions(${NAME} PRIVATE ${CAPITAL_NAME}_EXPORTS=1)

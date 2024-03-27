@@ -39,9 +39,10 @@ function(pxr_library NAME)
         ${ARGN}
     )
 
+
     # Expand classes into filenames.
-    _classes(${NAME} ${args_PRIVATE_CLASSES} PRIVATE)
-    _classes(${NAME} ${args_PUBLIC_CLASSES} PUBLIC)
+    _classes(${NAME} PRIVATE ${args_PRIVATE_CLASSES})
+    _classes(${NAME} PUBLIC ${args_PUBLIC_CLASSES})
 
     set(CPPFILES "${args_CPPFILES};${${NAME}_CPPFILES}")
     

@@ -21,6 +21,7 @@
 # KIND, either express or implied. See the Apache License for the specific
 # language governing permissions and limitations under the Apache License.
 #
+message("Copy from ${infile} to ${outfile}")
 file(READ ${infile} _tmp_file_content)
 file(WRITE ${outfile} "\#line 1 \"${infile}\"\n")
 file(APPEND ${outfile} "${_tmp_file_content}")

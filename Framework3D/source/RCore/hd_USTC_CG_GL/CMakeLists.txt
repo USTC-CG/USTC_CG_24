@@ -1,9 +1,9 @@
 set(PXR_PREFIX pxr/imaging)
-set(PXR_PACKAGE hd_USTC_CG)
+set(PXR_PACKAGE hd_USTC_CG_GL)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/macros)
 
-message("hd_USTC_CG at ${CMAKE_CURRENT_LIST_DIR}")
+message("hd_USTC_CG_GL at ${CMAKE_CURRENT_LIST_DIR}")
 
 include(pxrPlugin)
 
