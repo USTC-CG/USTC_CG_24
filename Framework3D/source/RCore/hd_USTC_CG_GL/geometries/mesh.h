@@ -25,15 +25,13 @@
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 
 #include "context.h"
-#include "meshSamplers.h"
-#include "embree4/rtcore.h"
 #include "pxr/pxr.h"
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/imaging/hd/mesh.h"
 #include "pxr/imaging/hd/vertexAdjacency.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-/// \class Hd_USTC_CG_Mesh
+/// \class Hd_USTC_CG_GL_Mesh
 ///
 /// This class is an example of a Hydra Rprim, or renderable object, and it
 /// gets created on a call to HdRenderIndex::InsertRprim() with a type of
@@ -52,29 +50,24 @@ PXR_NAMESPACE_OPEN_SCOPE
 /// can do the heavy work of releasing state (such as handles into the top-level
 /// scene), so that object population and existence aren't tied to each other.
 ///
-class Hd_USTC_CG_Mesh final : public HdMesh
+class Hd_USTC_CG_GL_Mesh final : public HdMesh
 {
 public:
-    HF_MALLOC_TAG_NEW("new Hd_USTC_CG_Mesh");
+    HF_MALLOC_TAG_NEW("new Hd_USTC_CG_GL_Mesh");
 
-    /// Hd_USTC_CG_Mesh constructor.
+    /// Hd_USTC_CG_GL_Mesh constructor.
     ///   \param id The scene-graph path to this mesh.
-    Hd_USTC_CG_Mesh(const SdfPath& id);
+    Hd_USTC_CG_GL_Mesh(const SdfPath& id);
 
-    /// Hd_USTC_CG_Mesh destructor.
-    ~Hd_USTC_CG_Mesh() override = default;
+    /// Hd_USTC_CG_GL_Mesh destructor.
+    ~Hd_USTC_CG_GL_Mesh() override = default;
 
     /// Inform the scene graph which state needs to be downloaded in the
     /// first Sync() call: in this case, topology and points data to build
     /// the geometry object in the scene graph.
     ///   \return The initial dirty state this mesh wants to query.
     HdDirtyBits GetInitialDirtyBitsMask() const override;
-    void _CreatePrimvarSampler(
-        const TfToken& name,
-        const VtValue& data,
-        HdInterpolation interpolation,
-        bool refined);
-
+    
     /// Pull invalidated scene data and prepare/update the renderable
     /// representation.
     ///
@@ -139,28 +132,17 @@ protected:
     void _UpdatePrimvarSources(
         HdSceneDelegate* sceneDelegate,
         HdDirtyBits dirtyBits);
-    RTCGeometry _CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice device);
-    RTCGeometry _CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device);
 
     // This class does not support copying.
-    Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
-    Hd_USTC_CG_Mesh& operator =(const Hd_USTC_CG_Mesh&) = delete;
+    Hd_USTC_CG_GL_Mesh(const Hd_USTC_CG_GL_Mesh&) = delete;
+    Hd_USTC_CG_GL_Mesh& operator =(const Hd_USTC_CG_GL_Mesh&) = delete;
 
 private:
     void _PopulateRtMesh(
         HdSceneDelegate* sceneDelegate,
-        RTCScene scene,
-        RTCDevice device,
         HdDirtyBits* dirtyBits,
         const HdMeshReprDesc& desc);
-    HdEmbreePrototypeContext* _GetPrototypeContext();
-    HdEmbreeInstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
 
-    // Cached scene data. VtArrays are reference counted, so as long as we
-    // only call const accessors keeping them around doesn't incur a buffer
-    // copy.
-
-    RTCScene _rtcMeshScene;
 
     HdMeshTopology _topology;
     GfMatrix4f _transform;
@@ -168,13 +150,7 @@ private:
     HdCullStyle _cullStyle;
     bool _doubleSided;
     bool _smoothNormals;
-    unsigned _rtcMeshId;
 
-    // Each instance of the mesh in the top-level scene is stored in
-    // _rtcInstanceIds.
-    std::vector<unsigned> _rtcInstanceIds;
-
-    std::vector<RTCGeometry> _rtcInstanceGeometries;
 
     // Derived scene data:
     // - _triangulatedIndices holds a triangulation of the source topology,
@@ -186,28 +162,12 @@ private:
     VtVec3iArray _triangulatedIndices;
     VtIntArray _trianglePrimitiveParams;
 
-    // Embree recommends after creating one should hold onto the geometry
-    //
-    //      "However, it is generally recommended to store the geometry handle
-    //       inside the application's geometry representation and look up the
-    //       geometry handle from that representation directly.""
-    //
-    // found this to be necessary in the case where multiple threads were
-    // commiting to the scene at the same time, and a geometry needed to be
-    // referenced again while other threads were committing
-    RTCGeometry _geometry;
     bool _normalsValid;
     Hd_VertexAdjacency _adjacency;
     VtVec3fArray _computedNormals;
 
     bool _adjacencyValid;
     bool _refined;
-
-    // An embree intersection filter callback, for doing backface culling.
-    static void _EmbreeCullFaces(const RTCFilterFunctionNArguments* args);
-
-    HdEmbreeRTCBufferAllocator _embreeBufferAllocator;
-
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to
     // the actual primvar buffer, and "interpolation" is the interpolation mode

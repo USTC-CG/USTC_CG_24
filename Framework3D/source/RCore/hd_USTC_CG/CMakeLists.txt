@@ -1,13 +1,7 @@
 set(PXR_PREFIX pxr/imaging)
 set(PXR_PACKAGE hd_USTC_CG)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/macros)
-
 message("hd_USTC_CG at ${CMAKE_CURRENT_LIST_DIR}")
-
-include(pxrPlugin)
-
-message("TBB_tbb_LIBRARY: ${TBB_tbb_LIBRARY}")
 
 pxr_plugin(${PXR_PACKAGE}
    LIBRARIES

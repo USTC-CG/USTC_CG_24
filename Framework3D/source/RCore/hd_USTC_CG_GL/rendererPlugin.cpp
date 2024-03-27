@@ -31,33 +31,33 @@ PXR_NAMESPACE_OPEN_SCOPE
 // Register the plugin with the renderer plugin system.
 TF_REGISTRY_FUNCTION(TfType)
 {
-    HdRendererPluginRegistry::Define<Hd_USTC_CG_RendererPlugin>();
+    HdRendererPluginRegistry::Define<Hd_USTC_CG_GL_RendererPlugin>();
 }
 
 void foo()
 {}
 
 HdRenderDelegate*
-Hd_USTC_CG_RendererPlugin::CreateRenderDelegate()
+Hd_USTC_CG_GL_RendererPlugin::CreateRenderDelegate()
 {
-    return new Hd_USTC_CG_RenderDelegate();
+    return new Hd_USTC_CG_GL_RenderDelegate();
 }
 
 HdRenderDelegate*
-Hd_USTC_CG_RendererPlugin::CreateRenderDelegate(
+Hd_USTC_CG_GL_RendererPlugin::CreateRenderDelegate(
     HdRenderSettingsMap const& settingsMap)
 {
-    return new Hd_USTC_CG_RenderDelegate(settingsMap);
+    return new Hd_USTC_CG_GL_RenderDelegate(settingsMap);
 }
 
 void
-Hd_USTC_CG_RendererPlugin::DeleteRenderDelegate(HdRenderDelegate *renderDelegate)
+Hd_USTC_CG_GL_RendererPlugin::DeleteRenderDelegate(HdRenderDelegate *renderDelegate)
 {
     delete renderDelegate;
 }
 
 bool 
-Hd_USTC_CG_RendererPlugin::IsSupported(bool /* gpuEnabled */) const
+Hd_USTC_CG_GL_RendererPlugin::IsSupported(bool /* gpuEnabled */) const
 {
     // Nothing more to check for now, we assume if the plugin loads correctly
     // it is supported.

@@ -31,7 +31,6 @@
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/base/vt/array.h"
 
-#include <embree4/rtcore.h>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -63,9 +62,7 @@ struct HdEmbreeInstanceContext
 {
     /// The object-to-world transform, for transforming normals to worldspace.
     GfMatrix4f objectToWorldMatrix;
-    /// The scene the prototype geometry lives in, for passing to
-    /// rtcInterpolate.
-    RTCScene rootScene;
+
     /// The instance id of this instance.
     int32_t instanceId;
 };

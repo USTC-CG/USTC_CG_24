@@ -2,7 +2,7 @@
 
 #include "config.h"
 PXR_NAMESPACE_OPEN_SCOPE
-void Hd_USTC_CG_Camera::Sync(
+void Hd_USTC_CG_GL_Camera::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -16,7 +16,7 @@ void Hd_USTC_CG_Camera::Sync(
     _viewMatrix = _inverseViewMatrix.GetInverse();
 }
 
-GfRay Hd_USTC_CG_Camera::generateRay(
+GfRay Hd_USTC_CG_GL_Camera::generateRay(
     GfVec2f pixel_center,
     const std::function<float()>& uniform_float) const
 {
@@ -85,7 +85,7 @@ static GfRect2i _GetDataWindow(
     }
 }
 
-void Hd_USTC_CG_Camera::update(
+void Hd_USTC_CG_GL_Camera::update(
     const HdRenderPassStateSharedPtr& renderPassState) const
 {
     _projMatrix = renderPassState->GetProjectionMatrix();
@@ -95,7 +95,7 @@ void Hd_USTC_CG_Camera::update(
     _dataWindow = _GetDataWindow(renderPassState);
 }
 
-void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const
+void Hd_USTC_CG_GL_Camera::attachFilm(Hd_USTC_CG_GL_RenderBuffer* new_film) const
 {
     film = new_film;
 }

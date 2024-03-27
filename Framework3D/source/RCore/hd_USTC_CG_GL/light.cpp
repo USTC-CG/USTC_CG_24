@@ -7,7 +7,7 @@
 #include "pxr/imaging/glf/simpleLight.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-void Hd_USTC_CG_Light::Sync(
+void Hd_USTC_CG_GL_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -181,7 +181,7 @@ void Hd_USTC_CG_Light::Sync(
     *dirtyBits = Clean;
 }
 
-HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
+HdDirtyBits Hd_USTC_CG_GL_Light::GetInitialDirtyBitsMask() const
 {
     // In the case of simple and distant lights we want to sync all dirty bits,
     // but for area lights coming from the scenegraph we just want to extract
@@ -197,7 +197,7 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
     }
 }
 
-VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
+VtValue Hd_USTC_CG_GL_Light::Get(const TfToken& token) const
 {
     VtValue val;
     TfMapLookup(_params, token, &val);

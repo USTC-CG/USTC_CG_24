@@ -29,11 +29,11 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer
+class Hd_USTC_CG_GL_RenderBuffer : public HdRenderBuffer
 {
 public:
-    Hd_USTC_CG_RenderBuffer(SdfPath const& id);
-    ~Hd_USTC_CG_RenderBuffer() override;
+    Hd_USTC_CG_GL_RenderBuffer(SdfPath const& id);
+    ~Hd_USTC_CG_GL_RenderBuffer() override;
 
     /// Get allocation information from the scene delegate.
     /// Note: Embree overrides this only to stop the render thread before

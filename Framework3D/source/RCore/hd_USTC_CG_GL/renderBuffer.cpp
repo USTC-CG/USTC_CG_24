@@ -28,7 +28,7 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-Hd_USTC_CG_RenderBuffer::Hd_USTC_CG_RenderBuffer(SdfPath const &id)
+Hd_USTC_CG_GL_RenderBuffer::Hd_USTC_CG_GL_RenderBuffer(SdfPath const &id)
     : HdRenderBuffer(id),
       _width(0),
       _height(0),
@@ -42,36 +42,26 @@ Hd_USTC_CG_RenderBuffer::Hd_USTC_CG_RenderBuffer(SdfPath const &id)
 {
 }
 
-Hd_USTC_CG_RenderBuffer::~Hd_USTC_CG_RenderBuffer() = default;
+Hd_USTC_CG_GL_RenderBuffer::~Hd_USTC_CG_GL_RenderBuffer() = default;
 
 /*virtual*/
-void Hd_USTC_CG_RenderBuffer::Sync(
+void Hd_USTC_CG_GL_RenderBuffer::Sync(
     HdSceneDelegate *sceneDelegate,
     HdRenderParam *renderParam,
     HdDirtyBits *dirtyBits)
 {
-    if (*dirtyBits & DirtyDescription)
-    {
-        // Embree has the background thread write directly into render buffers,
-        // so we need to stop the render thread before reallocating them.
-        static_cast<HdEmbreeRenderParam *>(renderParam)->AcquireSceneForEdit();
-    }
-
     HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
 }
 
 /*virtual*/
-void Hd_USTC_CG_RenderBuffer::Finalize(HdRenderParam *renderParam)
+void Hd_USTC_CG_GL_RenderBuffer::Finalize(HdRenderParam *renderParam)
 {
-    // Embree has the background thread write directly into render buffers,
-    // so we need to stop the render thread before removing them.
-    static_cast<HdEmbreeRenderParam *>(renderParam)->AcquireSceneForEdit();
 
     HdRenderBuffer::Finalize(renderParam);
 }
 
 /*virtual*/
-void Hd_USTC_CG_RenderBuffer::_Deallocate()
+void Hd_USTC_CG_GL_RenderBuffer::_Deallocate()
 {
     // If the buffer is mapped while we're doing this, there's not a great
     // recovery path...
@@ -90,13 +80,13 @@ void Hd_USTC_CG_RenderBuffer::_Deallocate()
 }
 
 /*static*/
-size_t Hd_USTC_CG_RenderBuffer::_GetBufferSize(GfVec2i const &dims, HdFormat format)
+size_t Hd_USTC_CG_GL_RenderBuffer::_GetBufferSize(GfVec2i const &dims, HdFormat format)
 {
     return dims[0] * dims[1] * HdDataSizeOfFormat(format);
 }
 
 /*static*/
-HdFormat Hd_USTC_CG_RenderBuffer::_GetSampleFormat(HdFormat format)
+HdFormat Hd_USTC_CG_GL_RenderBuffer::_GetSampleFormat(HdFormat format)
 {
     HdFormat component = HdGetComponentFormat(format);
     size_t arity = HdGetComponentCount(format);
@@ -144,7 +134,7 @@ HdFormat Hd_USTC_CG_RenderBuffer::_GetSampleFormat(HdFormat format)
 }
 
 /*virtual*/
-bool Hd_USTC_CG_RenderBuffer::Allocate(GfVec3i const &dimensions, HdFormat format, bool multiSampled)
+bool Hd_USTC_CG_GL_RenderBuffer::Allocate(GfVec3i const &dimensions, HdFormat format, bool multiSampled)
 {
     _Deallocate();
 
@@ -225,7 +215,7 @@ static void _WriteOutput(HdFormat format, uint8_t *dst, size_t valueComponents, 
     }
 }
 
-void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, float const *value)
+void Hd_USTC_CG_GL_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, float const *value)
 {
     size_t idx = pixel[1] * _width + pixel[0];
     if (_multiSampled)
@@ -243,7 +233,7 @@ void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, 
     }
 }
 
-void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, int const *value)
+void Hd_USTC_CG_GL_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, int const *value)
 {
     size_t idx = pixel[1] * _width + pixel[0];
     if (_multiSampled)
@@ -261,7 +251,7 @@ void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, 
     }
 }
 
-void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, float const *value)
+void Hd_USTC_CG_GL_RenderBuffer::Clear(size_t numComponents, float const *value)
 {
     size_t formatSize = HdDataSizeOfFormat(_format);
     for (size_t i = 0; i < _width * _height; ++i)
@@ -277,7 +267,7 @@ void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, float const *value)
     }
 }
 
-void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, int const *value)
+void Hd_USTC_CG_GL_RenderBuffer::Clear(size_t numComponents, int const *value)
 {
     size_t formatSize = HdDataSizeOfFormat(_format);
     for (size_t i = 0; i < _width * _height; ++i)
@@ -294,7 +284,7 @@ void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, int const *value)
 }
 
 /*virtual*/
-void Hd_USTC_CG_RenderBuffer::Resolve()
+void Hd_USTC_CG_GL_RenderBuffer::Resolve()
 {
     // Resolve the image buffer: find the average value per pixel by
     // dividing the summed value by the number of samples.

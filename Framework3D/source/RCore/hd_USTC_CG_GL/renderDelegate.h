@@ -41,7 +41,7 @@ TF_DECLARE_PUBLIC_TOKENS(
     HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 ///
-/// \class Hd_USTC_CG_RenderDelegate
+/// \class Hd_USTC_CG_GL_RenderDelegate
 ///
 /// Render delegates provide renderer-specific functionality to the render
 /// index, the main hydra state management structure. The render index uses
@@ -50,15 +50,15 @@ TF_DECLARE_PUBLIC_TOKENS(
 /// responsible for creating renderpasses, which know how to draw this
 /// renderer's scene primitives.
 ///
-class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate
+class Hd_USTC_CG_GL_RenderDelegate final : public HdRenderDelegate
 {
 public:
     /// Render delegate constructor. 
-    Hd_USTC_CG_RenderDelegate();
+    Hd_USTC_CG_GL_RenderDelegate();
     /// Render delegate constructor. 
-    Hd_USTC_CG_RenderDelegate(const HdRenderSettingsMap& settingsMap);
+    Hd_USTC_CG_GL_RenderDelegate(const HdRenderSettingsMap& settingsMap);
     /// Render delegate destructor.
-    ~Hd_USTC_CG_RenderDelegate() override;
+    ~Hd_USTC_CG_GL_RenderDelegate() override;
 
     /// Supported types
     const TfTokenVector& GetSupportedRprimTypes() const override;
@@ -106,12 +106,6 @@ private:
 
     void _Initialize();
 
-    // Handle for an embree "device", or library state.
-    RTCDevice _rtcDevice;
-
-    // Handle for the top-level embree scene, mirroring the Hydra scene.
-    RTCScene _rtcScene;
-
     // A version counter for edits to _scene.
     std::atomic<int> _sceneVersion;
 
@@ -125,7 +119,7 @@ private:
     HdRenderThread _renderThread;
 
     // An renderer object, to perform the actual raytracing.
-    std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
+    std::shared_ptr<Hd_USTC_CG_GL_Renderer> _renderer;
 
     /// Resource registry used in this render delegate
     static std::mutex _mutexResourceRegistry;
@@ -133,8 +127,8 @@ private:
     static HdResourceRegistrySharedPtr _resourceRegistry;
 
     // This class does not support copying.
-    Hd_USTC_CG_RenderDelegate(const Hd_USTC_CG_RenderDelegate&) = delete;
-    Hd_USTC_CG_RenderDelegate& operator =(const Hd_USTC_CG_RenderDelegate&)
+    Hd_USTC_CG_GL_RenderDelegate(const Hd_USTC_CG_GL_RenderDelegate&) = delete;
+    Hd_USTC_CG_GL_RenderDelegate& operator =(const Hd_USTC_CG_GL_RenderDelegate&)
     = delete;
 
 public:
@@ -144,9 +138,6 @@ public:
 private:
     // A list of render setting exports.
     HdRenderSettingDescriptorList _settingDescriptors;
-    // A callback that interprets embree error codes and injects them into
-    // the hydra logging system.
-    static void HandleRtcError(void* userPtr, RTCError code, const char* msg);
 };
 
 

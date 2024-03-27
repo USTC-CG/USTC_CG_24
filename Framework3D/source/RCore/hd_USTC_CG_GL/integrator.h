@@ -3,7 +3,6 @@
 
 #include "camera.h"
 #include "renderBuffer.h"
-#include "embree4/rtcore_geometry.h"
 #include "pxr/pxr.h"
 #include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/renderThread.h"
@@ -14,8 +13,8 @@ class Integrator
 {
 public:
     Integrator(
-        const Hd_USTC_CG_Camera* camera,
-        Hd_USTC_CG_RenderBuffer* render_buffer,
+        const Hd_USTC_CG_GL_Camera* camera,
+        Hd_USTC_CG_GL_RenderBuffer* render_buffer,
         HdRenderThread* render_thread)
         : camera_(camera),
           render_thread_(render_thread)
@@ -26,10 +25,9 @@ public:
     virtual ~Integrator() = default;
     virtual void Render() = 0;
 
-    RTCScene _scene;
 
 protected:
-    const Hd_USTC_CG_Camera* camera_;
+    const Hd_USTC_CG_GL_Camera* camera_;
     HdRenderThread* render_thread_;
 };
 
@@ -38,8 +36,8 @@ class SamplingIntegrator : public Integrator
 {
 public:
     SamplingIntegrator(
-        const Hd_USTC_CG_Camera* camera,
-        Hd_USTC_CG_RenderBuffer* render_buffer,
+        const Hd_USTC_CG_GL_Camera* camera,
+        Hd_USTC_CG_GL_RenderBuffer* render_buffer,
         HdRenderThread* render_thread)
         : Integrator(camera, render_buffer, render_thread)
     {

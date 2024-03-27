@@ -5,8 +5,6 @@
 #include "context.h"
 #include "integrator.h"
 #include "renderBuffer.h"
-#include "embree4/rtcore.h"
-#include "integrators/ao.h"
 #include "pxr/base/gf/vec2f.h"
 #include "pxr/base/gf/matrix3f.h"
 #include "pxr/base/work/loops.h"
@@ -15,12 +13,9 @@
 #include "pxr/imaging/hd/tokens.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-void Hd_USTC_CG_Renderer_Embree::Render(HdRenderThread* renderThread)
+void Hd_USTC_CG_GL_Renderer_Embree::Render(HdRenderThread* renderThread)
 {
     _completedSamples.store(0);
-
-    // Commit any pending changes to the scene.
-    rtcCommitScene(_scene);
 
     if (!_ValidateAovBindings())
     {
@@ -28,26 +23,16 @@ void Hd_USTC_CG_Renderer_Embree::Render(HdRenderThread* renderThread)
         // so that we will stop rendering.
         for (size_t i = 0; i < _aovBindings.size(); ++i)
         {
-            auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(
+            auto rb = static_cast<Hd_USTC_CG_GL_RenderBuffer*>(
                 _aovBindings[i].renderBuffer);
             rb->SetConverged(true);
         }
         // XXX:validation
         TF_WARN("Could not validate Aovs. Render will not complete");
-        return;
     }
-
-    auto integrator = std::make_shared<AOIntegrator>(
-        camera_,
-        static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer),
-        renderThread);
-
-    integrator->_scene = _scene;
-
-    integrator->Render();
 }
 
-void Hd_USTC_CG_Renderer_Embree::Clear()
+void Hd_USTC_CG_GL_Renderer_Embree::Clear()
 {
     if (!_ValidateAovBindings())
     {
@@ -62,7 +47,7 @@ void Hd_USTC_CG_Renderer_Embree::Clear()
         }
 
         auto rb =
-            static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+            static_cast<Hd_USTC_CG_GL_RenderBuffer*>(_aovBindings[i].renderBuffer);
 
         rb->Map();
         if (_aovNames[i].name == HdAovTokens->color)
@@ -93,7 +78,7 @@ void Hd_USTC_CG_Renderer_Embree::Clear()
 
 
 /* static */
-GfVec4f Hd_USTC_CG_Renderer_Embree::_GetClearColor(const VtValue& clearValue)
+GfVec4f Hd_USTC_CG_GL_Renderer_Embree::_GetClearColor(const VtValue& clearValue)
 {
     HdTupleType type = HdGetValueTupleType(clearValue);
     if (type.count != 1)

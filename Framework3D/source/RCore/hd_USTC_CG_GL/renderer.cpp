@@ -5,7 +5,7 @@
 #include "pxr/imaging/hd/tokens.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
-void Hd_USTC_CG_Renderer::SetAovBindings(
+void Hd_USTC_CG_GL_Renderer::SetAovBindings(
     const HdRenderPassAovBindingVector& aovBindings)
 {
     _aovBindings = aovBindings;
@@ -19,33 +19,27 @@ void Hd_USTC_CG_Renderer::SetAovBindings(
     _aovBindingsNeedValidation = true;
 }
 
-void Hd_USTC_CG_Renderer::MarkAovBuffersUnconverged()
+void Hd_USTC_CG_GL_Renderer::MarkAovBuffersUnconverged()
 {
     for (size_t i = 0; i < _aovBindings.size(); ++i)
     {
         auto rb =
-            static_cast<Hd_USTC_CG_RenderBuffer*>(
+            static_cast<Hd_USTC_CG_GL_RenderBuffer*>(
                 _aovBindings[i].renderBuffer);
         rb->SetConverged(false);
     }
 }
 
 
-void Hd_USTC_CG_Renderer::renderTimeUpdateCamera(
+void Hd_USTC_CG_GL_Renderer::renderTimeUpdateCamera(
     const HdRenderPassStateSharedPtr& renderPassState)
 {
     camera_ =
-        static_cast<const Hd_USTC_CG_Camera*>(renderPassState->GetCamera());
+        static_cast<const Hd_USTC_CG_GL_Camera*>(renderPassState->GetCamera());
     camera_->update(renderPassState);
 }
 
-void Hd_USTC_CG_Renderer::SetScene(RTCScene scene)
-{
-    _scene = scene;
-}
-
-
-bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
+bool Hd_USTC_CG_GL_Renderer::_ValidateAovBindings()
 {
     if (!_aovBindingsNeedValidation)
     {

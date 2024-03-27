@@ -1,13 +1,6 @@
 set(PXR_PREFIX pxr/imaging)
 set(PXR_PACKAGE hd_USTC_CG_GL)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/macros)
-
 message("hd_USTC_CG_GL at ${CMAKE_CURRENT_LIST_DIR}")
-
-include(pxrPlugin)
-
-message("TBB_tbb_LIBRARY: ${TBB_tbb_LIBRARY}")
 
 pxr_plugin(${PXR_PACKAGE}
    LIBRARIES
@@ -20,7 +13,6 @@ pxr_plugin(${PXR_PACKAGE}
         hd
         hdx
         ${TBB_tbb_LIBRARY}
-        embree
         usdLux
 
     INCLUDE_DIRS
@@ -39,12 +31,7 @@ pxr_plugin(${PXR_PACKAGE}
         integrator
         camera
         light
-
-        integrators/ao
-        integrators/direct
-
         geometries/mesh
-        geometries/meshSamplers
 
     RESOURCE_FILES
         plugInfo.json

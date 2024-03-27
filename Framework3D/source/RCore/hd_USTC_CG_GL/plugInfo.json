@@ -3,11 +3,11 @@
         {
             "Info": {
                 "Types": {
-                    "Hd_USTC_CG_RendererPlugin": {
+                    "Hd_USTC_CG_GL_RendererPlugin": {
                         "bases": [
                             "HdRendererPlugin"
                         ],
-                        "displayName": "USTC_CG",
+                        "displayName": "USTC_CG_GL",
                         "priority": 99
                     }
                 }
