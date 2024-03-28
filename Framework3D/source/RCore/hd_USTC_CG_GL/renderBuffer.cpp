@@ -25,6 +25,7 @@
 
 #include <iostream>
 
+#include "Windows.h"
 #include "pxr/base/gf/half.h"
 #include "renderParam.h"
 
@@ -156,9 +157,16 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_FLOAT, NULL);
-    GLfloat zeros[4] = { 0, 0, 0, 0 };
-    glClearTexImage(tex, 0, GL_RGBA, GL_FLOAT, zeros);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        _GetGLFormat(_format),
+        _width,
+        _height,
+        0,
+        _GetGLFormat(_format),
+        _GetGLType(_format),
+        NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -168,6 +176,8 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    _buffer.resize(GetbufSize(), 255);
+
     _multiSampled = multiSampled;
 
     _sampleCount.resize(_width * _height);
@@ -176,7 +186,7 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
 }
 
 template<typename T>
-static void _WriteOutput(HdFormat format, float *dst, T const *value)
+static void _WriteOutput(HdFormat format, uint8_t *dst, T const *value)
 {
     HdFormat componentFormat = HdGetComponentFormat(format);
     size_t componentCount = HdGetComponentCount(format);
@@ -202,24 +212,24 @@ static void _WriteOutput(HdFormat format, float *dst, T const *value)
 
 void Hd_USTC_CG_RenderBufferGL::Clear(const float *value)
 {
-    float buffer[4];
-
+    uint8_t buffer[16];
     _WriteOutput(_format, buffer, value);
 
     glBindTexture(GL_TEXTURE_2D, tex);
-    glClearTexImage(tex, 0, GL_RGBA, GL_FLOAT, buffer);
+    glClearTexImage(tex, 0, _GetGLFormat(_format), _GetGLType(_format), buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     assert(glGetError() == 0);
 }
 void Hd_USTC_CG_RenderBufferGL::Clear(const int *value)
 {
-    float buffer[4];
-
+    uint8_t buffer[16];
     _WriteOutput(_format, buffer, value);
 
     glBindTexture(GL_TEXTURE_2D, tex);
-    glClearTexImage(tex, 0, GL_RGBA, GL_FLOAT, buffer);
+    glClearTexImage(tex, 0, _GetGLFormat(_format), _GetGLType(_format), buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     assert(glGetError() == 0);
 }
 
@@ -304,15 +314,15 @@ GLsizei Hd_USTC_CG_RenderBufferGL::GetbufSize()
 
 void *Hd_USTC_CG_RenderBufferGL::Map()
 {
-    if (!_mappers++) {
-        _buffer.resize(GetbufSize());
-        glBindTexture(GL_TEXTURE_2D, tex);
-
-        glGetTextureImage(tex, 0, GL_RGBA, GL_FLOAT, GetbufSize(), _buffer.data());
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-    assert(glGetError() == 0);
+    glGetTextureImage(
+        tex, 0, _GetGLFormat(_format), _GetGLType(_format), GetbufSize(), _buffer.data());
+    _mappers++;
     return _buffer.data();
+}
+
+void Hd_USTC_CG_RenderBufferGL::Unmap()
+{
+    _mappers--;
 }
 
 /*virtual*/

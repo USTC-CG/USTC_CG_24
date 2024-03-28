@@ -71,23 +71,7 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
 
     void* Map() override;
 
-    void Unmap() override
-    {
-        //glBindTexture(GL_TEXTURE_2D, tex);
-        //glTexImage2D(
-        //    GL_TEXTURE_2D,
-        //    0,
-        //    _GetGLFormat(_format),
-        //    _width,
-        //    _height,
-        //    0,
-        //    _GetGLFormat(_format),
-        //    _GetGLType(_format),
-        //    _buffer.data());
-        //glBindTexture(GL_TEXTURE_2D, 0);
-
-        _mappers--;
-    }
+    void Unmap() override;
 
     bool IsMapped() const override
     {

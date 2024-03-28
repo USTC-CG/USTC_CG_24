@@ -79,7 +79,7 @@ Hd_USTC_CG_RenderPass::_Execute(
     // XXX: Add clip planes support.
 
     // Determine whether the scene has changed since the last time we rendered.
-    bool needStartRender = false;
+    bool needStartRender = true;
     int currentSceneVersion = _sceneVersion->load();
     if (_lastSceneVersion != currentSceneVersion)
     {
@@ -136,8 +136,11 @@ Hd_USTC_CG_RenderPass::_Execute(
     // Only start a new render if something in the scene has changed.
     if (needStartRender)
     {
+
         _renderer->MarkAovBuffersUnconverged();
-        _renderThread->StartRender();
+        _renderer->Clear();
+        _renderer->Render(nullptr);
+        //_renderThread->StartRender();
     }
 }
 

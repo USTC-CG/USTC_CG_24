@@ -46,10 +46,10 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
           _sceneVersion(sceneVersion)
     {
     }
+    HdRenderThread *_renderThread = nullptr;
 
    private:
     /// A handle to the global render thread.
-    HdRenderThread *_renderThread = nullptr;
     /// A version counter for edits to _scene.
     std::atomic<int> *_sceneVersion;
 };

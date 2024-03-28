@@ -30,10 +30,10 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
-        rb->SetConverged(true);
-    }
+    //for (size_t i = 0; i < _aovBindings.size(); ++i) {
+    //    auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+    //    rb->SetConverged(true);
+    //}
 }
 
 void Hd_USTC_CG_Renderer::Clear()
