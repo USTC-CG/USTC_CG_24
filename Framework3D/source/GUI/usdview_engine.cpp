@@ -122,7 +122,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
     renderer_->Render(root, _renderParams);
 
     auto texture = renderer_->GetAovTexture(HdAovTokens->color)->GetRawResource();
-    ImGui::BeginChild("Render View Port", ImGui::GetContentRegionAvail(),0,ImGuiWindowFlags_NoMove);
+    ImGui::BeginChild(
+        "Render View Port", ImGui::GetContentRegionAvail(), 0, ImGuiWindowFlags_NoMove);
     ImGui::Image(ImTextureID(texture), ImGui::GetContentRegionAvail());
     is_active_ = ImGui::IsWindowFocused();
     ImGui::EndChild();
@@ -188,15 +189,14 @@ void UsdviewEngine::render()
     auto delta_time = ImGui::GetIO().DeltaTime;
 
     ImGui::SetNextWindowSize({ 800, 600 });
-    ImGui::Begin(
-        "UsdView Engine",
-        nullptr,
-        ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("UsdView Engine", nullptr, ImGuiWindowFlags_MenuBar);
     auto size = ImGui::GetContentRegionAvail();
 
     impl_->OnResize(size.x, size.y);
 
-    impl_->OnFrame(delta_time);
+    if (size.x > 0 && size.y > 0) {
+        impl_->OnFrame(delta_time);
+    }
 
     ImGui::End();
 }
