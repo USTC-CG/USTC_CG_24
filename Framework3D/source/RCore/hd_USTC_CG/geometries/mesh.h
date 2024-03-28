@@ -76,35 +76,13 @@ public:
         HdInterpolation interpolation,
         bool refined);
 
-    /// Pull invalidated scene data and prepare/update the renderable
-    /// representation.
-    ///
-    /// This function is told which scene data to pull through the
-    /// dirtyBits parameter. The first time it's called, dirtyBits comes
-    /// from _GetInitialDirtyBits(), which provides initial dirty state,
-    /// but after that it's driven by invalidation tracking in the scene
-    /// delegate.
-    ///
-    /// The contract for this function is that the prim can only pull on scene
-    /// delegate buffers that are marked dirty. Scene delegates can and do
-    /// implement just-in-time data schemes that mean that pulling on clean
-    /// data will be at best incorrect, and at worst a crash.
-    ///
-    /// This function is called in parallel from worker threads, so it needs
-    /// to be threadsafe; calls into HdSceneDelegate are ok.
-    ///
-    /// Reprs are used by hydra for controlling per-item draw settings like
-    /// flat/smooth shaded, wireframe, refined, etc.
-    ///   \param sceneDelegate The data source for this geometry item.
-    ///   \param renderParam State.
-    ///   \param dirtyBits A specifier for which scene data has changed.
-    ///   \param reprToken A specifier for which representation to draw with.
-    ///
     void Sync(
         HdSceneDelegate* sceneDelegate,
         HdRenderParam* renderParam,
         HdDirtyBits* dirtyBits,
         const TfToken& reprToken) override;
+
+    void Finalize(HdRenderParam* renderParam) override;
 
 protected:
     // Initialize the given representation of this Rprim.
