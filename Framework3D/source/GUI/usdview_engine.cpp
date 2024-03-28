@@ -1,9 +1,6 @@
 // My resharper is not working well with the _MSC_VER_ macro.
 #include "GUI/usdview_engine.h"
 
-#include <cmath>
-#include <iostream>
-
 #include "Nodes/GlobalUsdStage.h"
 #include "free_camera.h"
 #include "imgui.h"

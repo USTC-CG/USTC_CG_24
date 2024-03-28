@@ -121,21 +121,21 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken& name) const
 {
     if (name == HdAovTokens->color) {
-        return HdAovDescriptor(HdFormatUNorm8Vec4, true, VtValue(GfVec4f(0.0f)));
+        return HdAovDescriptor(HdFormatFloat32Vec4, false, VtValue(GfVec4f(0.0f)));
     }
     if (name == HdAovTokens->normal || name == HdAovTokens->Neye) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(-1.0f)));
     }
-    if (name == HdAovTokens->depth) {
-        return HdAovDescriptor(HdFormatFloat32, false, VtValue(1.0f));
-    }
+    //if (name == HdAovTokens->depth) {
+    //    return HdAovDescriptor(HdFormatFloat32, false, VtValue(1.0f));
+    //}
     if (name == HdAovTokens->cameraDepth) {
         return HdAovDescriptor(HdFormatFloat32, false, VtValue(0.0f));
     }
-    if (name == HdAovTokens->primId || name == HdAovTokens->instanceId ||
-        name == HdAovTokens->elementId) {
-        return HdAovDescriptor(HdFormatInt32, false, VtValue(-1));
-    }
+    //if (name == HdAovTokens->primId || name == HdAovTokens->instanceId ||
+    //    name == HdAovTokens->elementId) {
+    //    return HdAovDescriptor(HdFormatInt32, false, VtValue(-1));
+    //}
     HdParsedAovToken aovId(name);
     if (aovId.isPrimvar) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(0.0f)));
@@ -252,7 +252,7 @@ HdBprim* Hd_USTC_CG_RenderDelegate::CreateBprim(const TfToken& typeId, const Sdf
             "Create bprim: type id=" + typeId.GetString() + ",prim id = " + bprimId.GetString(),
             USTC_CG::Info);
 
-        return new Hd_USTC_CG_RenderBuffer(bprimId);
+        return new Hd_USTC_CG_RenderBufferGL(bprimId);
     }
     TF_CODING_ERROR("Unknown Bprim Type %s", typeId.GetText());
     return nullptr;
@@ -261,7 +261,7 @@ HdBprim* Hd_USTC_CG_RenderDelegate::CreateBprim(const TfToken& typeId, const Sdf
 HdBprim* Hd_USTC_CG_RenderDelegate::CreateFallbackBprim(const TfToken& typeId)
 {
     if (typeId == HdPrimTypeTokens->renderBuffer) {
-        return new Hd_USTC_CG_RenderBuffer(SdfPath::EmptyPath());
+        return new Hd_USTC_CG_RenderBufferGL(SdfPath::EmptyPath());
     }
     TF_CODING_ERROR("Unknown Bprim Type %s", typeId.GetText());
     return nullptr;

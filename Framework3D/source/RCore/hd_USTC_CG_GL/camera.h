@@ -27,9 +27,9 @@ public:
 
     void update(const HdRenderPassStateSharedPtr& renderPassState) const;
 
-    void attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const;
+    void attachFilm(Hd_USTC_CG_RenderBufferGL* new_film) const;
 
-    mutable Hd_USTC_CG_RenderBuffer* film;
+    mutable Hd_USTC_CG_RenderBufferGL* film;
     mutable GfRect2i _dataWindow;
 private:
     mutable GfMatrix4d _inverseProjMatrix;

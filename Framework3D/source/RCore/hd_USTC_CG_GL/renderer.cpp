@@ -10,7 +10,6 @@ using namespace pxr;
 
 Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
 {
-
 }
 
 void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
@@ -23,7 +22,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         // We aren't going to render anything. Just mark all AOVs as converged
         // so that we will stop rendering.
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
-            auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
             rb->SetConverged(true);
         }
         // XXX:validation
@@ -32,7 +31,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
         rb->SetConverged(true);
     }
 }
@@ -48,24 +47,25 @@ void Hd_USTC_CG_Renderer::Clear()
             continue;
         }
 
-        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
 
         rb->Map();
         if (_aovNames[i].name == HdAovTokens->color) {
             GfVec4f clearColor = _GetClearColor(_aovBindings[i].clearValue);
-            rb->Clear(4, clearColor.data());
+
+            rb->Clear(clearColor.data());
         }
         else if (rb->GetFormat() == HdFormatInt32) {
             int32_t clearValue = _aovBindings[i].clearValue.Get<int32_t>();
-            rb->Clear(1, &clearValue);
+            rb->Clear(&clearValue);
         }
         else if (rb->GetFormat() == HdFormatFloat32) {
             float clearValue = _aovBindings[i].clearValue.Get<float>();
-            rb->Clear(1, &clearValue);
+            rb->Clear(&clearValue);
         }
         else if (rb->GetFormat() == HdFormatFloat32Vec3) {
             auto clearValue = _aovBindings[i].clearValue.Get<GfVec3f>();
-            rb->Clear(3, clearValue.data());
+            rb->Clear(clearValue.data());
         }  // else, _ValidateAovBindings would have already warned.
 
         rb->Unmap();
@@ -117,7 +117,7 @@ void Hd_USTC_CG_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aov
 void Hd_USTC_CG_Renderer::MarkAovBuffersUnconverged()
 {
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
         rb->SetConverged(false);
     }
 }

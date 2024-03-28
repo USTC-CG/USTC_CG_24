@@ -96,7 +96,7 @@ void Hd_USTC_CG_Camera::update(
     _dataWindow = _GetDataWindow(renderPassState);
 }
 
-void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const
+void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBufferGL* new_film) const
 {
     film = new_film;
 }

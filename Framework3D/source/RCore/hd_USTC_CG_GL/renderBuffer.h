@@ -30,10 +30,10 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer {
+class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
    public:
-    Hd_USTC_CG_RenderBuffer(const SdfPath& id);
-    ~Hd_USTC_CG_RenderBuffer() override;
+    Hd_USTC_CG_RenderBufferGL(const SdfPath& id);
+    ~Hd_USTC_CG_RenderBufferGL() override;
 
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
@@ -67,118 +67,24 @@ class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer {
         return _multiSampled;
     }
 
-    static GLenum GetGLFormat(HdFormat hd_format)
-    {
-        switch (hd_format) {
-            case HdFormatInvalid:
-            case HdFormatUNorm8: return GL_RED;
-            case HdFormatUNorm8Vec2: return GL_RG;
-            case HdFormatUNorm8Vec3: return GL_RGB;
-            case HdFormatUNorm8Vec4: return GL_RGBA;
-            case HdFormatSNorm8: return GL_RED;
-            case HdFormatSNorm8Vec2: return GL_RG;
-            case HdFormatSNorm8Vec3: return GL_RGB;
-            case HdFormatSNorm8Vec4: return GL_RGBA;
-            case HdFormatFloat16: return GL_RED;
-            case HdFormatFloat16Vec2: return GL_RG;
-            case HdFormatFloat16Vec3: return GL_RGB;
-            case HdFormatFloat16Vec4: return GL_RGBA;
-            case HdFormatFloat32: return GL_RED;
-            case HdFormatFloat32Vec2: return GL_RG;
-            case HdFormatFloat32Vec3: return GL_RGB;
-            case HdFormatFloat32Vec4: return GL_RGBA;
-            case HdFormatInt16: return GL_RED;
-            case HdFormatInt16Vec2: return GL_RG;
-            case HdFormatInt16Vec3: return GL_RGB;
-            case HdFormatInt16Vec4: return GL_RGBA;
-            case HdFormatUInt16: return GL_RED;
-            case HdFormatUInt16Vec2: return GL_RG;
-            case HdFormatUInt16Vec3: return GL_RGB;
-            case HdFormatUInt16Vec4: return GL_RGBA;
-            case HdFormatInt32: return GL_RED;
-            case HdFormatInt32Vec2: return GL_RG;
-            case HdFormatInt32Vec3: return GL_RGB;
-            case HdFormatInt32Vec4: return GL_RGBA;
-            case HdFormatFloat32UInt8:
-            case HdFormatCount:
-            default:;
-        }
-        return GL_RGBA;
-    }
+    GLsizei GetbufSize();
 
-    static GLenum GetGLType(HdFormat hd_format)
-    {
-        switch (hd_format) {
-            case HdFormatInvalid:
-            case HdFormatUNorm8:
-            case HdFormatUNorm8Vec2:
-            case HdFormatUNorm8Vec3:
-            case HdFormatUNorm8Vec4: return GL_UNSIGNED_NORMALIZED;
-            case HdFormatSNorm8:
-            case HdFormatSNorm8Vec2:
-            case HdFormatSNorm8Vec3:
-            case HdFormatSNorm8Vec4: return GL_SIGNED_NORMALIZED;
-            case HdFormatFloat16:
-            case HdFormatFloat16Vec2:
-            case HdFormatFloat16Vec3:
-            case HdFormatFloat16Vec4: return GL_HALF_FLOAT;
-            case HdFormatFloat32:
-            case HdFormatFloat32Vec2:
-            case HdFormatFloat32Vec3:
-            case HdFormatFloat32Vec4: return GL_FLOAT;
-            case HdFormatInt16:
-            case HdFormatInt16Vec2:
-            case HdFormatInt16Vec3:
-            case HdFormatInt16Vec4: return GL_INT16_NV;  // Danger
-            case HdFormatUInt16:
-            case HdFormatUInt16Vec2:
-            case HdFormatUInt16Vec3:
-            case HdFormatUInt16Vec4: return GL_INT16_NV;  // Danger
-            case HdFormatInt32:
-            case HdFormatInt32Vec2:
-            case HdFormatInt32Vec3:
-            case HdFormatInt32Vec4: return GL_INT;
-            case HdFormatFloat32UInt8:
-            case HdFormatCount:
-            default:;
-        }
-        return GL_UNSIGNED_BYTE;
-    }
-
-    GLsizei GetbufSize()
-    {
-        return _width * _height * HdDataSizeOfFormat(_format);
-    }
-
-    void* Map() override
-    {
-        if (!_mappers) {
-            _buffer.resize(GetbufSize());
-            glBindTexture(GL_TEXTURE_2D, tex);
-
-            glGetTextureImage(
-                tex, 0, GetGLFormat(_format), GetGLType(_format), GetbufSize(), _buffer.data());
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        _mappers++;
-
-        return _buffer.data();
-    }
+    void* Map() override;
 
     void Unmap() override
     {
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GetGLFormat(_format),
-            _width,
-            _height,
-            0,
-            GetGLFormat(_format),
-            GetGLType(_format),
-            _buffer.data());
-        glBindTexture(GL_TEXTURE_2D, 0);
+        //glBindTexture(GL_TEXTURE_2D, tex);
+        //glTexImage2D(
+        //    GL_TEXTURE_2D,
+        //    0,
+        //    _GetGLFormat(_format),
+        //    _width,
+        //    _height,
+        //    0,
+        //    _GetGLFormat(_format),
+        //    _GetGLType(_format),
+        //    _buffer.data());
+        //glBindTexture(GL_TEXTURE_2D, 0);
 
         _mappers--;
     }
@@ -200,10 +106,15 @@ class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer {
 
     void Resolve() override;
 
-    void Clear(size_t numComponents, const float* value);
-    void Clear(size_t numComponents, const int* value);
+    // The feed memory size must match the type
+    void Clear(const float* value);
+    void Clear(const int* value);
 
    private:
+    static GLenum _GetGLFormat(HdFormat hd_format);
+
+    static GLenum _GetGLType(HdFormat hd_format);
+
     // Calculate the needed _buffer size, given the allocation parameters.
     static size_t _GetBufferSize(const GfVec2i& dims, HdFormat format);
 
@@ -221,8 +132,8 @@ class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer {
     // Whether the _buffer is operating in multisample mode.
     bool _multiSampled;
 
-    GLuint fbo;
-    GLuint tex;
+    GLuint fbo = 0;
+    GLuint tex = 0;
 
     std::vector<uint8_t> _buffer;
 
