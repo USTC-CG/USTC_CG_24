@@ -1,4 +1,5 @@
 #pragma once
+#include "USTC_CG.h"
 
 #include "renderBuffer.h"
 #include "pxr/pxr.h"
@@ -6,7 +7,8 @@
 #include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hdx/renderSetupTask.h"
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 class Hd_USTC_CG_Camera : public HdCamera
 {
 public:
@@ -36,4 +38,4 @@ private:
     mutable GfMatrix4d _viewMatrix;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

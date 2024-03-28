@@ -4,7 +4,8 @@
 #include "embree4/rtcore.h"
 #include "pxr/base/gf/matrix3f.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 /// Fill in an RTCRay structure from the given parameters.
 static void _PopulateRay(
     RTCRay* ray,
@@ -177,4 +178,4 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     return VtValue(GfVec4f(color, color, color, 1));
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -1,7 +1,8 @@
 #include "camera.h"
 
 #include "config.h"
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 void Hd_USTC_CG_Camera::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
@@ -101,4 +102,4 @@ void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const
 }
 
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

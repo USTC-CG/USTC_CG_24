@@ -32,7 +32,8 @@
 #include "pxr/imaging/hd/mesh.h"
 #include "pxr/imaging/hd/vertexAdjacency.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 /// \class Hd_USTC_CG_Mesh
 ///
 /// This class is an example of a Hydra Rprim, or renderable object, and it
@@ -222,6 +223,6 @@ private:
     TfHashMap<TfToken, PrimvarSource, TfToken::HashFunctor> _primvarSourceMap;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #endif // EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H

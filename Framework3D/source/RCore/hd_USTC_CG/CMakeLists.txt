@@ -23,6 +23,7 @@ pxr_plugin(${PXR_PACKAGE}
     PUBLIC_CLASSES
         renderer
         rendererEmbree
+        rendererGL
         renderDelegate
         rendererPlugin
         renderPass

@@ -9,7 +9,8 @@
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 class Integrator
 {
 public:
@@ -61,4 +62,4 @@ public:
 };
 
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

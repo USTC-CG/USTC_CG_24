@@ -21,6 +21,9 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 //
+
+#include "USTC_CG.h"
+
 #include "mesh.h"
 #include"pxr/imaging/hd/extComputationUtils.h"
 #include"pxr/imaging/hd/meshUtil.h"
@@ -34,7 +37,8 @@
 #include "instancer.h"
 #include "meshSamplers.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
     : HdMesh(id),
       _rtcMeshScene(nullptr),
@@ -1061,7 +1065,7 @@ Hd_USTC_CG_Mesh::Sync(
 
     // Pull top-level embree state out of the render param.
     auto embreeRenderParam =
-        static_cast<HdEmbreeRenderParam*>(renderParam);
+        static_cast<Hd_USTC_CG_RenderParam*>(renderParam);
     RTCScene scene = embreeRenderParam->AcquireSceneForEdit();
     RTCDevice device = embreeRenderParam->GetEmbreeDevice();
 
@@ -1069,4 +1073,4 @@ Hd_USTC_CG_Mesh::Sync(
     _PopulateRtMesh(sceneDelegate, scene, device, dirtyBits, desc);
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

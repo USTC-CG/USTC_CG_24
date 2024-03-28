@@ -1,17 +1,19 @@
 #pragma once
-
+#include "USTC_CG.h"
 #include "camera.h"
-#include "embree4/rtcore_geometry.h"
-#include "pxr/pxr.h"
-#include "pxr/base/gf/matrix4d.h"
-#include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/aov.h"
 #include "pxr/imaging/hd/renderThread.h"
+#include "pxr/pxr.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_Renderer
-{
-public:
+USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_RenderParam;
+using namespace pxr;
+class Hd_USTC_CG_Renderer {
+   public:
+    explicit Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param) : render_param_(render_param)
+    {
+    }
+
     virtual ~Hd_USTC_CG_Renderer() = default;
     void SetAovBindings(const HdRenderPassAovBindingVector& aovBindings);
     virtual void Render(HdRenderThread* render_thread) = 0;
@@ -19,29 +21,22 @@ public:
 
     void MarkAovBuffersUnconverged();
 
+    void renderTimeUpdateCamera(const HdRenderPassStateSharedPtr& renderPassState);
 
-    void renderTimeUpdateCamera(
-        const HdRenderPassStateSharedPtr&
-        renderPassState);
-    void SetScene(RTCScene scene);;
-
-protected:
+   protected:
+    Hd_USTC_CG_RenderParam* render_param_;
     // The bound aovs for this renderer.
     HdRenderPassAovBindingVector _aovBindings;
     // Parsed AOV name tokens.
     HdParsedAovTokenVector _aovNames;
     // Do the aov bindings need to be re-validated?
-    bool _aovBindingsNeedValidation;
+    bool _aovBindingsNeedValidation = true;
     // Are the aov bindings valid?
-    bool _aovBindingsValid;
+    bool _aovBindingsValid = false;
 
-    RTCScene _scene;
-
-    const Hd_USTC_CG_Camera* camera_;
-
+    const Hd_USTC_CG_Camera* camera_ = nullptr;
 
     bool _ValidateAovBindings();
 };
 
-
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

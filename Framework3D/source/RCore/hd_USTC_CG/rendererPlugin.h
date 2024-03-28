@@ -23,12 +23,14 @@
 //
 #ifndef EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDERER_PLUGIN_H
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDERER_PLUGIN_H
+#include "USTC_CG.h"
 
 #include "pxr/pxr.h"
 #include "api.h"
 #include "pxr/imaging/hd/rendererPlugin.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 
 void HD_USTC_CG_API foo();
 

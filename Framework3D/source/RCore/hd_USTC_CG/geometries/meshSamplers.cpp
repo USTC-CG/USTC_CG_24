@@ -26,7 +26,8 @@
 #include "pxr/imaging/hd/meshUtil.h"
 #include "pxr/imaging/hd/vtBufferSource.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 // HdEmbreeRTCBufferAllocator
 
 int
@@ -317,4 +318,4 @@ HdEmbreeSubdivVertexSampler::Sample(
     return true;
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

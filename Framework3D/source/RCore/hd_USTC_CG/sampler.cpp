@@ -21,9 +21,12 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 //
+#include "USTC_CG.h"
+
 #include "sampler.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 
 bool
 HdEmbreeBufferSampler::Sample(int index, void* value,
@@ -118,4 +121,4 @@ HdEmbreePrimvarSampler::_Interpolate(void* out, void** samples, float* weights,
     }
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

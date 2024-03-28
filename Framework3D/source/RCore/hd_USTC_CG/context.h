@@ -23,32 +23,31 @@
 //
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_CONTEXT_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_CONTEXT_H
-
-#include "pxr/pxr.h"
-
-#include "sampler.h"
-
-#include "pxr/base/gf/matrix4f.h"
-#include "pxr/base/vt/array.h"
-
 #include <embree4/rtcore.h>
 
-PXR_NAMESPACE_OPEN_SCOPE
+#include "USTC_CG.h"
+#include "pxr/base/gf/matrix4f.h"
+#include "pxr/base/vt/array.h"
+#include "pxr/pxr.h"
+#include "sampler.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
 class HdRprim;
+PXR_NAMESPACE_CLOSE_SCOPE
+
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 
 /// \class HdEmbreePrototypeContext
 ///
 /// A small bit of state attached to each bit of prototype geometry in embree,
 /// for the benefit of HdEmbreeRenderer::_TraceRay.
 ///
-struct HdEmbreePrototypeContext
-{
+struct HdEmbreePrototypeContext {
     /// A pointer back to the owning HdEmbree rprim.
     HdRprim *rprim;
     /// A name-indexed map of primvar samplers.
-    TfHashMap<TfToken, HdEmbreePrimvarSampler*, TfToken::HashFunctor>
-        primvarMap;
+    TfHashMap<TfToken, HdEmbreePrimvarSampler *, TfToken::HashFunctor> primvarMap;
     /// A copy of the primitive params for this rprim.
     VtIntArray primitiveParams;
 };
@@ -59,8 +58,7 @@ struct HdEmbreePrototypeContext
 /// A small bit of state attached to each bit of instanced geometry in embree,
 /// for the benefit of HdEmbreeRenderer::_TraceRay.
 ///
-struct HdEmbreeInstanceContext
-{
+struct HdEmbreeInstanceContext {
     /// The object-to-world transform, for transforming normals to worldspace.
     GfMatrix4f objectToWorldMatrix;
     /// The scene the prototype geometry lives in, for passing to
@@ -70,7 +68,6 @@ struct HdEmbreeInstanceContext
     int32_t instanceId;
 };
 
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
-PXR_NAMESPACE_CLOSE_SCOPE
-
-#endif // PXR_IMAGING_PLUGIN_HD_EMBREE_CONTEXT_H
+#endif  // PXR_IMAGING_PLUGIN_HD_EMBREE_CONTEXT_H

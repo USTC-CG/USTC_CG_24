@@ -1,11 +1,13 @@
 #pragma once
+#include "USTC_CG.h"
 
 #include "pxr/pxr.h"
 #include "integrator.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 class DirectLightIntegrator : public SamplingIntegrator
 {
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

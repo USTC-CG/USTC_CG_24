@@ -26,7 +26,8 @@
 #include "pxr/base/gf/half.h"
 #include "renderParam.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 
 Hd_USTC_CG_RenderBuffer::Hd_USTC_CG_RenderBuffer(SdfPath const &id)
     : HdRenderBuffer(id),
@@ -54,7 +55,7 @@ void Hd_USTC_CG_RenderBuffer::Sync(
     {
         // Embree has the background thread write directly into render buffers,
         // so we need to stop the render thread before reallocating them.
-        static_cast<HdEmbreeRenderParam *>(renderParam)->AcquireSceneForEdit();
+        static_cast<Hd_USTC_CG_RenderParam *>(renderParam)->AcquireSceneForEdit();
     }
 
     HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
@@ -65,7 +66,7 @@ void Hd_USTC_CG_RenderBuffer::Finalize(HdRenderParam *renderParam)
 {
     // Embree has the background thread write directly into render buffers,
     // so we need to stop the render thread before removing them.
-    static_cast<HdEmbreeRenderParam *>(renderParam)->AcquireSceneForEdit();
+    static_cast<Hd_USTC_CG_RenderParam *>(renderParam)->AcquireSceneForEdit();
 
     HdRenderBuffer::Finalize(renderParam);
 }
@@ -346,4 +347,4 @@ void Hd_USTC_CG_RenderBuffer::Resolve()
     }
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

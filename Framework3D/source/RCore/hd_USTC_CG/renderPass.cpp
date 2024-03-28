@@ -31,7 +31,8 @@
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 Hd_USTC_CG_RenderPass::Hd_USTC_CG_RenderPass(
     HdRenderIndex* index,
     const HdRprimCollection& collection,
@@ -154,4 +155,4 @@ bool Hd_USTC_CG_RenderPass::IsConverged() const
     return true;
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

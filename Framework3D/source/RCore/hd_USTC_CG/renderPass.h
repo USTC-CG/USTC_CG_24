@@ -30,7 +30,8 @@
 #include "pxr/imaging/hd/renderPass.h"
 #include "pxr/imaging/hd/renderThread.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 /// \class Hd_USTC_CG_RenderPass
 ///
 /// HdRenderPass represents a single render iteration, rendering a view of the
@@ -83,6 +84,6 @@ protected:
     GfRect2i _dataWindow;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #endif // EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDER_PASS_H

@@ -6,7 +6,8 @@
 #include "pxr/imaging/hd/sceneDelegate.h"
 #include "pxr/imaging/glf/simpleLight.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 void Hd_USTC_CG_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
@@ -204,4 +205,4 @@ VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
     return val;
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

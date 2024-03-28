@@ -29,7 +29,8 @@
 #include <algorithm>
 #include <iostream>
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 // Instantiate the config singleton.
 TF_INSTANTIATE_SINGLETON(HdEmbreeConfig);
 
@@ -117,4 +118,4 @@ HdEmbreeConfig::GetInstance()
     return TfSingleton<HdEmbreeConfig>::GetInstance();
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

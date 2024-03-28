@@ -24,10 +24,12 @@
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_CONFIG_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_CONFIG_H
 
+#include "USTC_CG.h"
 #include "pxr/pxr.h"
 #include "pxr/base/tf/singleton.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 /// \class HdEmbreeConfig
 ///
 /// This class is a singleton, holding configuration parameters for HdEmbree.
@@ -97,6 +99,6 @@ private:
     friend class TfSingleton<HdEmbreeConfig>;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #endif // PXR_IMAGING_PLUGIN_HD_EMBREE_CONFIG_H

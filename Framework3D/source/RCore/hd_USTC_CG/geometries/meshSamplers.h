@@ -23,6 +23,7 @@
 //
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_MESH_SAMPLERS_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_MESH_SAMPLERS_H
+#include "USTC_CG.h"
 
 #include "pxr/pxr.h"
 #include "sampler.h"
@@ -33,7 +34,8 @@
 
 #include <bitset>
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 /// \class HdEmbreeRTCBufferAllocator
 ///
 /// Utility class to track which embree user vertex buffers are currently
@@ -351,6 +353,6 @@ private:
     HdEmbreeRTCBufferAllocator* _allocator;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #endif // PXR_IMAGING_PLUGIN_HD_EMBREE_MESH_SAMPLERS_H

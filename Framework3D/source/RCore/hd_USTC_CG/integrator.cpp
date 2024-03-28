@@ -8,7 +8,8 @@
 #include "pxr/pxr.h"
 #include "pxr/base/gf/matrix3f.h"
 #include "pxr/base/work/loops.h"
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 static unsigned channel(VtValue val)
 {
     if (val.CanCast<float>())
@@ -146,4 +147,4 @@ void SamplingIntegrator::Render()
     camera_->film->SetConverged(true);
 }
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

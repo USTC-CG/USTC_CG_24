@@ -6,7 +6,8 @@
 #include "pxr/pxr.h"
 #include "pxr/base/gf/ray.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 class AOIntegrator : public SamplingIntegrator
 {
 public:
@@ -23,4 +24,4 @@ protected:
     override;
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE

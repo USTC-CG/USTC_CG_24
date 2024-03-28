@@ -42,7 +42,8 @@
 #include "pxr/base/gf/vec4f.h"
 #include "pxr/base/gf/vec4i.h"
 
-PXR_NAMESPACE_OPEN_SCOPE
+USTC_CG_NAMESPACE_OPEN_SCOPE
+using namespace pxr;
 
 /// \class HdEmbreeTypeHelper
 ///
@@ -179,6 +180,6 @@ protected:
         size_t sampleCount, HdTupleType dataType);
 };
 
-PXR_NAMESPACE_CLOSE_SCOPE
+USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #endif // PXR_IMAGING_PLUGIN_HD_EMBREE_SAMPLER_H
