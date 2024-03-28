@@ -24,9 +24,7 @@
 #ifndef EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 
-#include "context.h"
-#include "meshSamplers.h"
-#include "embree4/rtcore.h"
+#include "USTC_CG.h"
 #include "pxr/pxr.h"
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/imaging/hd/mesh.h"
@@ -118,28 +116,14 @@ protected:
     void _UpdatePrimvarSources(
         HdSceneDelegate* sceneDelegate,
         HdDirtyBits dirtyBits);
-    RTCGeometry _CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice device);
-    RTCGeometry _CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device);
 
     // This class does not support copying.
     Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
     Hd_USTC_CG_Mesh& operator =(const Hd_USTC_CG_Mesh&) = delete;
 
 private:
-    void _PopulateRtMesh(
-        HdSceneDelegate* sceneDelegate,
-        RTCScene scene,
-        RTCDevice device,
-        HdDirtyBits* dirtyBits,
-        const HdMeshReprDesc& desc);
-    HdEmbreePrototypeContext* _GetPrototypeContext();
-    HdEmbreeInstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
 
-    // Cached scene data. VtArrays are reference counted, so as long as we
-    // only call const accessors keeping them around doesn't incur a buffer
-    // copy.
 
-    RTCScene _rtcMeshScene;
 
     HdMeshTopology _topology;
     GfMatrix4f _transform;
@@ -147,13 +131,7 @@ private:
     HdCullStyle _cullStyle;
     bool _doubleSided;
     bool _smoothNormals;
-    unsigned _rtcMeshId;
 
-    // Each instance of the mesh in the top-level scene is stored in
-    // _rtcInstanceIds.
-    std::vector<unsigned> _rtcInstanceIds;
-
-    std::vector<RTCGeometry> _rtcInstanceGeometries;
 
     // Derived scene data:
     // - _triangulatedIndices holds a triangulation of the source topology,
@@ -165,27 +143,13 @@ private:
     VtVec3iArray _triangulatedIndices;
     VtIntArray _trianglePrimitiveParams;
 
-    // Embree recommends after creating one should hold onto the geometry
-    //
-    //      "However, it is generally recommended to store the geometry handle
-    //       inside the application's geometry representation and look up the
-    //       geometry handle from that representation directly.""
-    //
-    // found this to be necessary in the case where multiple threads were
-    // commiting to the scene at the same time, and a geometry needed to be
-    // referenced again while other threads were committing
-    RTCGeometry _geometry;
+
     bool _normalsValid;
     Hd_VertexAdjacency _adjacency;
     VtVec3fArray _computedNormals;
 
     bool _adjacencyValid;
     bool _refined;
-
-    // An embree intersection filter callback, for doing backface culling.
-    static void _EmbreeCullFaces(const RTCFilterFunctionNArguments* args);
-
-    HdEmbreeRTCBufferAllocator _embreeBufferAllocator;
 
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to

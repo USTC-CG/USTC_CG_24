@@ -6,7 +6,6 @@
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/pxr.h"
 #include "renderer.h"
-
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class Hd_USTC_CG_RenderParam;
 using namespace pxr;

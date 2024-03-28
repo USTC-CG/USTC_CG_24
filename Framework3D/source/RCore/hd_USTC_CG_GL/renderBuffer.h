@@ -24,19 +24,19 @@
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 #include "USTC_CG.h"
-
+#include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 class Hd_USTC_CG_RenderBuffer : public HdRenderBuffer {
-public:
+   public:
     Hd_USTC_CG_RenderBuffer(const SdfPath& id);
     ~Hd_USTC_CG_RenderBuffer() override;
 
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
-    override;
+        override;
 
     void Finalize(HdRenderParam* renderParam) override;
 
@@ -67,14 +67,119 @@ public:
         return _multiSampled;
     }
 
+    static GLenum GetGLFormat(HdFormat hd_format)
+    {
+        switch (hd_format) {
+            case HdFormatInvalid:
+            case HdFormatUNorm8: return GL_RED;
+            case HdFormatUNorm8Vec2: return GL_RG;
+            case HdFormatUNorm8Vec3: return GL_RGB;
+            case HdFormatUNorm8Vec4: return GL_RGBA;
+            case HdFormatSNorm8: return GL_RED;
+            case HdFormatSNorm8Vec2: return GL_RG;
+            case HdFormatSNorm8Vec3: return GL_RGB;
+            case HdFormatSNorm8Vec4: return GL_RGBA;
+            case HdFormatFloat16: return GL_RED;
+            case HdFormatFloat16Vec2: return GL_RG;
+            case HdFormatFloat16Vec3: return GL_RGB;
+            case HdFormatFloat16Vec4: return GL_RGBA;
+            case HdFormatFloat32: return GL_RED;
+            case HdFormatFloat32Vec2: return GL_RG;
+            case HdFormatFloat32Vec3: return GL_RGB;
+            case HdFormatFloat32Vec4: return GL_RGBA;
+            case HdFormatInt16: return GL_RED;
+            case HdFormatInt16Vec2: return GL_RG;
+            case HdFormatInt16Vec3: return GL_RGB;
+            case HdFormatInt16Vec4: return GL_RGBA;
+            case HdFormatUInt16: return GL_RED;
+            case HdFormatUInt16Vec2: return GL_RG;
+            case HdFormatUInt16Vec3: return GL_RGB;
+            case HdFormatUInt16Vec4: return GL_RGBA;
+            case HdFormatInt32: return GL_RED;
+            case HdFormatInt32Vec2: return GL_RG;
+            case HdFormatInt32Vec3: return GL_RGB;
+            case HdFormatInt32Vec4: return GL_RGBA;
+            case HdFormatFloat32UInt8:
+            case HdFormatCount:
+            default:;
+        }
+        return GL_RGBA;
+    }
+
+    static GLenum GetGLType(HdFormat hd_format)
+    {
+        switch (hd_format) {
+            case HdFormatInvalid:
+            case HdFormatUNorm8:
+            case HdFormatUNorm8Vec2:
+            case HdFormatUNorm8Vec3:
+            case HdFormatUNorm8Vec4: return GL_UNSIGNED_NORMALIZED;
+            case HdFormatSNorm8:
+            case HdFormatSNorm8Vec2:
+            case HdFormatSNorm8Vec3:
+            case HdFormatSNorm8Vec4: return GL_SIGNED_NORMALIZED;
+            case HdFormatFloat16:
+            case HdFormatFloat16Vec2:
+            case HdFormatFloat16Vec3:
+            case HdFormatFloat16Vec4: return GL_HALF_FLOAT;
+            case HdFormatFloat32:
+            case HdFormatFloat32Vec2:
+            case HdFormatFloat32Vec3:
+            case HdFormatFloat32Vec4: return GL_FLOAT;
+            case HdFormatInt16:
+            case HdFormatInt16Vec2:
+            case HdFormatInt16Vec3:
+            case HdFormatInt16Vec4: return GL_INT16_NV;  // Danger
+            case HdFormatUInt16:
+            case HdFormatUInt16Vec2:
+            case HdFormatUInt16Vec3:
+            case HdFormatUInt16Vec4: return GL_INT16_NV;  // Danger
+            case HdFormatInt32:
+            case HdFormatInt32Vec2:
+            case HdFormatInt32Vec3:
+            case HdFormatInt32Vec4: return GL_INT;
+            case HdFormatFloat32UInt8:
+            case HdFormatCount:
+            default:;
+        }
+        return GL_UNSIGNED_BYTE;
+    }
+
+    GLsizei GetbufSize()
+    {
+        return _width * _height * HdDataSizeOfFormat(_format);
+    }
+
     void* Map() override
     {
+        if (!_mappers) {
+            _buffer.resize(GetbufSize());
+            glBindTexture(GL_TEXTURE_2D, tex);
+
+            glGetTextureImage(
+                tex, 0, GetGLFormat(_format), GetGLType(_format), GetbufSize(), _buffer.data());
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
         _mappers++;
+
         return _buffer.data();
     }
 
     void Unmap() override
     {
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLFormat(_format),
+            _width,
+            _height,
+            0,
+            GetGLFormat(_format),
+            GetGLType(_format),
+            _buffer.data());
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         _mappers--;
     }
 
@@ -95,15 +200,11 @@ public:
 
     void Resolve() override;
 
-    void Write(const GfVec3i& pixel, size_t numComponents, const float* value);
-
-    void Write(const GfVec3i& pixel, size_t numComponents, const int* value);
-
     void Clear(size_t numComponents, const float* value);
     void Clear(size_t numComponents, const int* value);
 
-private:
-    // Calculate the needed buffer size, given the allocation parameters.
+   private:
+    // Calculate the needed _buffer size, given the allocation parameters.
     static size_t _GetBufferSize(const GfVec2i& dims, HdFormat format);
 
     static HdFormat _GetSampleFormat(HdFormat format);
@@ -117,19 +218,22 @@ private:
     unsigned int _height;
     // Buffer format.
     HdFormat _format;
-    // Whether the buffer is operating in multisample mode.
+    // Whether the _buffer is operating in multisample mode.
     bool _multiSampled;
 
-    // The resolved output buffer.
+    GLuint fbo;
+    GLuint tex;
+
     std::vector<uint8_t> _buffer;
-    // For multisampled buffers: the input write buffer.
+
+    // For multisampled buffers: the input write _buffer.
     std::vector<uint8_t> _sampleBuffer;
-    // For multisampled buffers: the sample count buffer.
+    // For multisampled buffers: the sample count _buffer.
     std::vector<uint8_t> _sampleCount;
 
-    // The number of callers mapping this buffer.
+    // The number of callers mapping this _buffer.
     std::atomic<int> _mappers;
-    // Whether the buffer has been marked as converged.
+    // Whether the _buffer has been marked as converged.
     std::atomic<bool> _converged;
 };
 

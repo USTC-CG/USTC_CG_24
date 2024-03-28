@@ -51,23 +51,12 @@ void Hd_USTC_CG_RenderBuffer::Sync(
     HdRenderParam *renderParam,
     HdDirtyBits *dirtyBits)
 {
-    if (*dirtyBits & DirtyDescription)
-    {
-        // Embree has the background thread write directly into render buffers,
-        // so we need to stop the render thread before reallocating them.
-        static_cast<Hd_USTC_CG_RenderParam *>(renderParam)->AcquireSceneForEdit();
-    }
-
     HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
 }
 
 /*virtual*/
 void Hd_USTC_CG_RenderBuffer::Finalize(HdRenderParam *renderParam)
 {
-    // Embree has the background thread write directly into render buffers,
-    // so we need to stop the render thread before removing them.
-    static_cast<Hd_USTC_CG_RenderParam *>(renderParam)->AcquireSceneForEdit();
-
     HdRenderBuffer::Finalize(renderParam);
 }
 
@@ -77,6 +66,11 @@ void Hd_USTC_CG_RenderBuffer::_Deallocate()
     // If the buffer is mapped while we're doing this, there's not a great
     // recovery path...
     TF_VERIFY(!IsMapped());
+
+    glDeleteFramebuffers(1, &fbo);
+    glDeleteTextures(1, &tex);
+    fbo = 0;
+    tex = 0;
 
     _width = 0;
     _height = 0;
@@ -103,41 +97,31 @@ HdFormat Hd_USTC_CG_RenderBuffer::_GetSampleFormat(HdFormat format)
     size_t arity = HdGetComponentCount(format);
 
     if (component == HdFormatUNorm8 || component == HdFormatSNorm8 ||
-        component == HdFormatFloat16 || component == HdFormatFloat32)
-    {
-        if (arity == 1)
-        {
+        component == HdFormatFloat16 || component == HdFormatFloat32) {
+        if (arity == 1) {
             return HdFormatFloat32;
         }
-        else if (arity == 2)
-        {
+        else if (arity == 2) {
             return HdFormatFloat32Vec2;
         }
-        else if (arity == 3)
-        {
+        else if (arity == 3) {
             return HdFormatFloat32Vec3;
         }
-        else if (arity == 4)
-        {
+        else if (arity == 4) {
             return HdFormatFloat32Vec4;
         }
     }
-    else if (component == HdFormatInt32)
-    {
-        if (arity == 1)
-        {
+    else if (component == HdFormatInt32) {
+        if (arity == 1) {
             return HdFormatInt32;
         }
-        else if (arity == 2)
-        {
+        else if (arity == 2) {
             return HdFormatInt32Vec2;
         }
-        else if (arity == 3)
-        {
+        else if (arity == 3) {
             return HdFormatInt32Vec3;
         }
-        else if (arity == 4)
-        {
+        else if (arity == 4) {
             return HdFormatInt32Vec4;
         }
     }
@@ -145,12 +129,14 @@ HdFormat Hd_USTC_CG_RenderBuffer::_GetSampleFormat(HdFormat format)
 }
 
 /*virtual*/
-bool Hd_USTC_CG_RenderBuffer::Allocate(GfVec3i const &dimensions, HdFormat format, bool multiSampled)
+bool Hd_USTC_CG_RenderBuffer::Allocate(
+    GfVec3i const &dimensions,
+    HdFormat format,
+    bool multiSampled)
 {
     _Deallocate();
 
-    if (dimensions[2] != 1)
-    {
+    if (dimensions[2] != 1) {
         TF_WARN(
             "Render buffer allocated with dims <%d, %d, %d> and"
             " format %s; depth must be 1!",
@@ -164,11 +150,32 @@ bool Hd_USTC_CG_RenderBuffer::Allocate(GfVec3i const &dimensions, HdFormat forma
     _width = dimensions[0];
     _height = dimensions[1];
     _format = format;
-    _buffer.resize(_GetBufferSize(GfVec2i(_width, _height), format));
+
+    glGenFramebuffers(1, &fbo);
+    glGenTextures(1, &tex);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GetGLFormat(_format),
+        _width,
+        _height,
+        0,
+        GetGLFormat(_format),
+        GetGLType(_format),
+        NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     _multiSampled = multiSampled;
-    if (_multiSampled)
-    {
+    if (_multiSampled) {
         _sampleBuffer.resize(_GetBufferSize(GfVec2i(_width, _height), _GetSampleFormat(format)));
         _sampleCount.resize(_width * _height);
     }
@@ -176,175 +183,23 @@ bool Hd_USTC_CG_RenderBuffer::Allocate(GfVec3i const &dimensions, HdFormat forma
     return true;
 }
 
-template<typename T>
-static void _WriteSample(HdFormat format, uint8_t *dst, size_t valueComponents, T const *value)
-{
-    HdFormat componentFormat = HdGetComponentFormat(format);
-    size_t componentCount = HdGetComponentCount(format);
-
-    for (size_t c = 0; c < componentCount; ++c)
-    {
-        if (componentFormat == HdFormatInt32)
-        {
-            ((int32_t *)dst)[c] += (c < valueComponents) ? (int32_t)(value[c]) : 0;
-        }
-        else
-        {
-            ((float *)dst)[c] += (c < valueComponents) ? (float)(value[c]) : 0.0f;
-        }
-    }
-}
-
-template<typename T>
-static void _WriteOutput(HdFormat format, uint8_t *dst, size_t valueComponents, T const *value)
-{
-    HdFormat componentFormat = HdGetComponentFormat(format);
-    size_t componentCount = HdGetComponentCount(format);
-
-    for (size_t c = 0; c < componentCount; ++c)
-    {
-        if (componentFormat == HdFormatInt32)
-        {
-            ((int32_t *)dst)[c] = (c < valueComponents) ? (int32_t)(value[c]) : 0;
-        }
-        else if (componentFormat == HdFormatFloat16)
-        {
-            ((uint16_t *)dst)[c] = (c < valueComponents) ? GfHalf(value[c]).bits() : 0;
-        }
-        else if (componentFormat == HdFormatFloat32)
-        {
-            ((float *)dst)[c] = (c < valueComponents) ? (float)(value[c]) : 0.0f;
-        }
-        else if (componentFormat == HdFormatUNorm8)
-        {
-            ((uint8_t *)dst)[c] = (c < valueComponents) ? (uint8_t)(value[c] * 255.0f) : 0.0f;
-        }
-        else if (componentFormat == HdFormatSNorm8)
-        {
-            ((int8_t *)dst)[c] = (c < valueComponents) ? (int8_t)(value[c] * 127.0f) : 0.0f;
-        }
-    }
-}
-
-void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, float const *value)
-{
-    size_t idx = pixel[1] * _width + pixel[0];
-    if (_multiSampled)
-    {
-        size_t formatSize = HdDataSizeOfFormat(_GetSampleFormat(_format));
-        uint8_t *dst = &_sampleBuffer[idx * formatSize];
-        _WriteSample(_format, dst, numComponents, value);
-        _sampleCount[idx]++;
-    }
-    else
-    {
-        size_t formatSize = HdDataSizeOfFormat(_format);
-        uint8_t *dst = &_buffer[idx * formatSize];
-        _WriteOutput(_format, dst, numComponents, value);
-    }
-}
-
-void Hd_USTC_CG_RenderBuffer::Write(GfVec3i const &pixel, size_t numComponents, int const *value)
-{
-    size_t idx = pixel[1] * _width + pixel[0];
-    if (_multiSampled)
-    {
-        size_t formatSize = HdDataSizeOfFormat(_GetSampleFormat(_format));
-        uint8_t *dst = &_sampleBuffer[idx * formatSize];
-        _WriteSample(_format, dst, numComponents, value);
-        _sampleCount[idx]++;
-    }
-    else
-    {
-        size_t formatSize = HdDataSizeOfFormat(_format);
-        uint8_t *dst = &_buffer[idx * formatSize];
-        _WriteOutput(_format, dst, numComponents, value);
-    }
-}
-
 void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, float const *value)
 {
-    size_t formatSize = HdDataSizeOfFormat(_format);
-    for (size_t i = 0; i < _width * _height; ++i)
-    {
-        uint8_t *dst = &_buffer[i * formatSize];
-        _WriteOutput(_format, dst, numComponents, value);
-    }
-
-    if (_multiSampled)
-    {
-        std::fill(_sampleCount.begin(), _sampleCount.end(), 0);
-        std::fill(_sampleBuffer.begin(), _sampleBuffer.end(), 0);
-    }
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glClearTexImage(tex, 0, GetGLFormat(_format), GetGLFormat(_format), value);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Hd_USTC_CG_RenderBuffer::Clear(size_t numComponents, int const *value)
 {
-    size_t formatSize = HdDataSizeOfFormat(_format);
-    for (size_t i = 0; i < _width * _height; ++i)
-    {
-        uint8_t *dst = &_buffer[i * formatSize];
-        _WriteOutput(_format, dst, numComponents, value);
-    }
-
-    if (_multiSampled)
-    {
-        std::fill(_sampleCount.begin(), _sampleCount.end(), 0);
-        std::fill(_sampleBuffer.begin(), _sampleBuffer.end(), 0);
-    }
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glClearTexImage(tex, 0, GetGLFormat(_format), GetGLFormat(_format), value);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 /*virtual*/
 void Hd_USTC_CG_RenderBuffer::Resolve()
 {
-    // Resolve the image buffer: find the average value per pixel by
-    // dividing the summed value by the number of samples.
-
-    if (!_multiSampled)
-    {
-        return;
-    }
-
-    HdFormat componentFormat = HdGetComponentFormat(_format);
-    size_t componentCount = HdGetComponentCount(_format);
-    size_t formatSize = HdDataSizeOfFormat(_format);
-    size_t sampleSize = HdDataSizeOfFormat(_GetSampleFormat(_format));
-
-    for (unsigned int i = 0; i < _width * _height; ++i)
-    {
-        int sampleCount = _sampleCount[i];
-        // Skip pixels with no samples.
-        if (sampleCount == 0)
-        {
-            continue;
-        }
-
-        uint8_t *dst = &_buffer[i * formatSize];
-        uint8_t *src = &_sampleBuffer[i * sampleSize];
-        for (size_t c = 0; c < componentCount; ++c)
-        {
-            if (componentFormat == HdFormatInt32)
-            {
-                ((int32_t *)dst)[c] = ((int32_t *)src)[c] / sampleCount;
-            }
-            else if (componentFormat == HdFormatFloat16)
-            {
-                ((uint16_t *)dst)[c] = GfHalf(((float *)src)[c] / sampleCount).bits();
-            }
-            else if (componentFormat == HdFormatFloat32)
-            {
-                ((float *)dst)[c] = ((float *)src)[c] / sampleCount;
-            }
-            else if (componentFormat == HdFormatUNorm8)
-            {
-                ((uint8_t *)dst)[c] = (uint8_t)(((float *)src)[c] * 255.0f / sampleCount);
-            }
-            else if (componentFormat == HdFormatSNorm8)
-            {
-                ((int8_t *)dst)[c] = (int8_t)(((float *)src)[c] * 127.0f / sampleCount);
-            }
-        }
-    }
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -103,9 +103,6 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
    private:
     // A list of render setting exports.
     HdRenderSettingDescriptorList _settingDescriptors;
-    // A callback that interprets embree error codes and injects them into
-    // the hydra logging system.
-    static void HandleRtcError(void* userPtr, RTCError code, const char* msg);
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

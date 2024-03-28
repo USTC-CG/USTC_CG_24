@@ -1,7 +1,6 @@
 #pragma once
 #include "USTC_CG.h"
 #include "camera.h"
-#include "embree4/rtcore_geometry.h"
 #include "pxr/imaging/hd/aov.h"
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/pxr.h"
@@ -18,7 +17,6 @@ class Hd_USTC_CG_Renderer {
     void SetAovBindings(const HdRenderPassAovBindingVector& aovBindings);
     virtual void Render(HdRenderThread* render_thread);
     virtual void Clear();
-    void SetScene(RTCScene scene);
 
     void MarkAovBuffersUnconverged();
 
@@ -27,9 +25,6 @@ class Hd_USTC_CG_Renderer {
    protected:
     void _RenderTiles(HdRenderThread* renderThread, size_t tileStart, size_t tileEnd);
     static GfVec4f _GetClearColor(const VtValue& clearValue);
-    RTCDevice _rtcDevice;
-
-    RTCScene _rtcScene;
 
     bool _enableSceneColors;
     std::atomic<int> _completedSamples;
@@ -37,7 +32,6 @@ class Hd_USTC_CG_Renderer {
     int _ambientOcclusionSamples = 16;
     // A callback that interprets embree error codes and injects them into
     // the hydra logging system.
-    static void HandleRtcError(void* userPtr, RTCError code, const char* msg);
 
     // The bound aovs for this renderer.
     HdRenderPassAovBindingVector _aovBindings;

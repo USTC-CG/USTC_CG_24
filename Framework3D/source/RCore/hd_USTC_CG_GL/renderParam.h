@@ -23,7 +23,6 @@
 //
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
-#include <embree4/rtcore.h>
 
 #include "USTC_CG.h"
 #include "pxr/imaging/hd/renderDelegate.h"
@@ -48,26 +47,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     {
     }
 
-    /// Accessor for the top-level embree scene.
-    RTCScene AcquireSceneForEdit()
-    {
-        _renderThread->StopRender();
-        (*_sceneVersion)++;
-        return _scene;
-    }
-    /// Accessor for the top-level embree device (library handle).
-    RTCDevice GetEmbreeDevice()
-    {
-        return _device;
-    }
-
-    friend class Hd_USTC_CG_Renderer;
-
    private:
-    /// A handle to the top-level embree scene.
-    RTCScene _scene = nullptr;
-    /// A handle to the top-level embree device (library handle).
-    RTCDevice _device = nullptr;
     /// A handle to the global render thread.
     HdRenderThread *_renderThread = nullptr;
     /// A version counter for edits to _scene.

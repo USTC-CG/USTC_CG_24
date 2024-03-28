@@ -1,7 +1,5 @@
 #include "renderer.h"
 
-#include "embree4/rtcore_scene.h"
-#include "integrators/ao.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
@@ -12,16 +10,7 @@ using namespace pxr;
 
 Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
 {
-    _rtcDevice = rtcNewDevice(nullptr);
-    rtcSetDeviceErrorFunction(_rtcDevice, HandleRtcError, NULL);
 
-    _rtcScene = rtcNewScene(_rtcDevice);
-    rtcSetSceneFlags(_rtcScene, RTC_SCENE_FLAG_DYNAMIC);
-
-    rtcSetSceneBuildQuality(_rtcScene, RTC_BUILD_QUALITY_LOW);
-
-    render_param->_scene = _rtcScene;
-    render_param->_device = _rtcDevice;
 }
 
 void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
@@ -29,7 +18,6 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     _completedSamples.store(0);
 
     // Commit any pending changes to the scene.
-    rtcCommitScene(_rtcScene);
 
     if (!_ValidateAovBindings()) {
         // We aren't going to render anything. Just mark all AOVs as converged
@@ -43,12 +31,10 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    auto integrator = std::make_shared<AOIntegrator>(
-        camera_, static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
-
-    integrator->_scene = _rtcScene;
-
-    integrator->Render();
+    for (size_t i = 0; i < _aovBindings.size(); ++i) {
+        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        rb->SetConverged(true);
+    }
 }
 
 void Hd_USTC_CG_Renderer::Clear()
@@ -87,11 +73,6 @@ void Hd_USTC_CG_Renderer::Clear()
     }
 }
 
-void Hd_USTC_CG_Renderer::SetScene(RTCScene scene)
-{
-    _rtcScene = scene;
-}
-
 /* static */
 GfVec4f Hd_USTC_CG_Renderer::_GetClearColor(const VtValue& clearValue)
 {
@@ -118,22 +99,6 @@ GfVec4f Hd_USTC_CG_Renderer::_GetClearColor(const VtValue& clearValue)
             return GfVec4f(f);
         }
         default: return GfVec4f(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-}
-
-void Hd_USTC_CG_Renderer::HandleRtcError(void* userPtr, RTCError code, const char* msg)
-{
-    // Forward RTC error messages through to hydra logging.
-    switch (code) {
-        case RTC_ERROR_UNKNOWN: TF_CODING_ERROR("Embree unknown error: %s", msg); break;
-        case RTC_ERROR_INVALID_ARGUMENT: TF_CODING_ERROR("Embree invalid argument: %s", msg); break;
-        case RTC_ERROR_INVALID_OPERATION:
-            TF_CODING_ERROR("Embree invalid operation: %s", msg);
-            break;
-        case RTC_ERROR_OUT_OF_MEMORY: TF_CODING_ERROR("Embree out of memory: %s", msg); break;
-        case RTC_ERROR_UNSUPPORTED_CPU: TF_CODING_ERROR("Embree unsupported CPU: %s", msg); break;
-        case RTC_ERROR_CANCELLED: TF_CODING_ERROR("Embree cancelled: %s", msg); break;
-        default: TF_CODING_ERROR("Embree invalid error code: %s", msg); break;
     }
 }
 
