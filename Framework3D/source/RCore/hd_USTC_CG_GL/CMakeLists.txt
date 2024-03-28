@@ -1,5 +1,5 @@
 set(PXR_PREFIX pxr/imaging)
-set(PXR_PACKAGE hd_USTC_CG)
+set(PXR_PACKAGE hd_USTC_CG_GL)
 
 message("hd_USTC_CG at ${CMAKE_CURRENT_LIST_DIR}")
 
