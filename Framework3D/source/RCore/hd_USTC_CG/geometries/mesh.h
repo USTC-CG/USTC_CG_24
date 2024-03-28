@@ -63,7 +63,7 @@ public:
     Hd_USTC_CG_Mesh(const SdfPath& id);
 
     /// Hd_USTC_CG_Mesh destructor.
-    ~Hd_USTC_CG_Mesh() override = default;
+    ~Hd_USTC_CG_Mesh() override;
 
     /// Inform the scene graph which state needs to be downloaded in the
     /// first Sync() call: in this case, topology and points data to build

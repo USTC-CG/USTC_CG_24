@@ -52,6 +52,10 @@ Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
 {
 }
 
+Hd_USTC_CG_Mesh::~Hd_USTC_CG_Mesh()
+{
+}
+
 HdDirtyBits
 Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
 {

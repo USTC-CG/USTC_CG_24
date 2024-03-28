@@ -104,7 +104,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion);
 
-    _renderer = std::make_shared<Hd_USTC_CG_Renderer_GL>(_renderParam.get());
+    _renderer = std::make_shared<Hd_USTC_CG_Renderer_Embree>(_renderParam.get());
 
     // Set the background render thread's rendering entrypoint to
     // HdEmbreeRenderer::Render.
