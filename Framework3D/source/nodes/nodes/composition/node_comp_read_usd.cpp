@@ -6,10 +6,18 @@
 namespace USTC_CG::node_comp_read_usd {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::String>("File Name").default_val("Default");
+    b.add_output<decl::Layer>("Layer");
 }
 
 static void node_exec(ExeParams params)
 {
+    auto file_name = params.get_input<std::string>("File Name");
+    auto stage = pxr::UsdStage::Open(file_name.c_str());
+    if (!stage) {
+        throw std::runtime_error("Stage not found.");
+    }
+    params.set_output("Layer", stage);
 }
 
 static void node_register()
@@ -26,4 +34,4 @@ static void node_register()
 }
 
 NOD_REGISTER_NODE(node_register)
-}  // namespace USTC_CG::node_read_usd
+}  // namespace USTC_CG::node_comp_read_usd

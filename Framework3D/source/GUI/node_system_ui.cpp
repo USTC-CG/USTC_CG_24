@@ -842,8 +842,9 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
-    impl_->OnFrame(delta_time);
+    if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
+        impl_->OnFrame(delta_time);
+    }
     ImGui::End();
 }
 

@@ -210,6 +210,7 @@ void CompositionNodeSystemExecution::try_execution()
 {
     if (required_execution) {
         auto& stage = GlobalUsdStage::global_usd_stage;
+        stage->RemovePrim(pxr::SdfPath("/Reference"));
 
         executor->execute(node_tree.get());
         required_execution = false;

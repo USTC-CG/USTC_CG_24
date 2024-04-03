@@ -1,11 +1,11 @@
 #pragma once
 
-#include "USTC_CG.h"
-#include "Utils/Macro/map.h"
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/make_standard_type.hpp"
 #include "Nodes/pin.hpp"
-#in
+#include "USTC_CG.h"
+#include "Utils/Macro/map.h"
+#include "basic_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {

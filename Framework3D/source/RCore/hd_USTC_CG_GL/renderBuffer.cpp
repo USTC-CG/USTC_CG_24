@@ -218,8 +218,6 @@ void Hd_USTC_CG_RenderBufferGL::Clear(const float *value)
     glBindTexture(GL_TEXTURE_2D, tex);
     glClearTexImage(tex, 0, _GetGLFormat(_format), _GetGLType(_format), buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    assert(glGetError() == 0);
 }
 void Hd_USTC_CG_RenderBufferGL::Clear(const int *value)
 {
