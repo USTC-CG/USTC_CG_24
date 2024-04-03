@@ -201,7 +201,7 @@ static SocketTypeInfo* make_socket_type_Camera()
 static SocketTypeInfo* make_socket_type_Texture()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Texture);
-    socktype->cpp_type = &CPPType::get<backend::TextureHandle>();
+    socktype->cpp_type = &CPPType::get<TextureHandle>();
     return socktype;
 }
 

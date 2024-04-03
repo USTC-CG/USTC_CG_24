@@ -3,10 +3,10 @@
 #include <sstream>
 
 #include "GCore/GOP.h"
-#include "USTC_CG.h"
-#include "rich_type_buffer.hpp"
-#include "Utils/Macro/map.h"
 #include "RCore/Backend.hpp"
+#include "USTC_CG.h"
+#include "Utils/Macro/map.h"
+#include "rich_type_buffer.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 /** Create a new #CPPType that can be accessed through `CPPType::get<T>()`. */
 #define BLI_CPP_TYPE_MAKE(TYPE_NAME, FLAGS)                       \
@@ -31,8 +31,8 @@ BLI_CPP_TYPE_MAKE(pxr::UsdStageRefPtr, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(CameraArray, CPPTypeFlags::EqualityComparable)
 
 // RESOURCES
-#define WRAP_MAKE(TYPE) BLI_CPP_TYPE_MAKE(TYPE, CPPTypeFlags::EqualityComparable)
-MACRO_MAP(WRAP_MAKE,RESOURCE_LIST)
+#define WRAP_MAKE(TYPE) BLI_CPP_TYPE_MAKE(TYPE##Handle, CPPTypeFlags::None)
+MACRO_MAP(WRAP_MAKE, RESOURCE_LIST)
 
 // Little Vectors
 

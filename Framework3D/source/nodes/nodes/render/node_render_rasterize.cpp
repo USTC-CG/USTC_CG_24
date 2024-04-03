@@ -1,15 +1,13 @@
-#include "RCore/GLResources.hpp"
-#include "RCore/ResourceAllocator.hpp"
-
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
+
 #include "camera.h"
 #include "light.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "render_node_base.h"
+#include "resource_allocator_instance.hpp"
 #include "rich_type_buffer.hpp"
-
 
 namespace USTC_CG::node_rasterize {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -27,13 +25,10 @@ static void node_exec(ExeParams params)
     auto lights = params.get_input<LightArray>("Lights");
     auto cameras = params.get_input<CameraArray>("Camera");
 
-    for (auto&& camera : cameras) {
-        std::cout << camera->GetTransform() << std::endl;
-    }
+    TextureDesc texture_desc;
+    auto position_texture = resource_allocator.create(texture_desc);
 
-    for (auto&& light : lights) {
-        std::cout << light->Get(HdTokens->transform).Cast<GfMatrix4d>() << std::endl;
-    }
+    params.set_output("Position", position_texture);
 }
 
 static void node_register()
@@ -45,7 +40,6 @@ static void node_register()
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
-    ntype.ALWAYS_REQUIRED = true;
     ntype.declare = node_declare;
     nodeRegisterType(&ntype);
 }
