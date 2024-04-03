@@ -23,7 +23,7 @@ class NodeWindow final : public USTC_CG::Window {
     void Render() override
     {
         createDockSpace(1);
-        renderer->render();
+        renderer->render(render_graph_system->get_tree());
         finishDockSpace();
     }
 

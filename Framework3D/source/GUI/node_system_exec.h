@@ -74,4 +74,9 @@ struct GeoNodeSystemExecution: public NodeSystemExecution{
     Node* create_node_menu() override;
 };
 
+
+struct RenderNodeSystemExecution : public NodeSystemExecution {
+    Node* create_node_menu() override;
+};
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE

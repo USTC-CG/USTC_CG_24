@@ -91,6 +91,7 @@ static bool Splitter(
 }
 
 struct NodeSystemImpl {
+    friend class NodeSystem;
     explicit NodeSystemImpl(NodeSystemType type, const std::string& filename)
         : node_system_type(type),
           filename(filename)
@@ -163,8 +164,8 @@ void NodeSystemImpl::OnStart()
     if (node_system_type == NodeSystemType::Geometry) {
         node_system_execution_ = std::make_unique<GeoNodeSystemExecution>();
     }
-    else {
-        node_system_execution_ = std::make_unique<NodeSystemExecution>();
+    else if (node_system_type == NodeSystemType::Render) {
+        node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();
     }
 
     ed::Config config;
@@ -841,6 +842,11 @@ void NodeSystem::draw_imgui()
     ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
     impl_->OnFrame(delta_time);
     ImGui::End();
+}
+
+NodeTree* NodeSystem::get_tree()
+{
+    return impl_->node_system_execution_->node_tree.get();
 }
 
 void NodeSystemImpl::ShowLeftPane(float paneWidth)

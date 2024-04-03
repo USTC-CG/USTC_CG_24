@@ -9,6 +9,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
 Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
+    : render_param(render_param)
 {
 }
 
@@ -30,10 +31,14 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    //for (size_t i = 0; i < _aovBindings.size(); ++i) {
-    //    auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
-    //    rb->SetConverged(true);
-    //}
+    // Fill the nodes that requires value from the scene.
+
+    render_param->executor->execute_tree(render_param->node_tree);
+
+    for (size_t i = 0; i < _aovBindings.size(); ++i) {
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+        rb->SetConverged(true);
+    }
 }
 
 void Hd_USTC_CG_Renderer::Clear()

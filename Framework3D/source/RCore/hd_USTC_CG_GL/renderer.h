@@ -43,6 +43,7 @@ class Hd_USTC_CG_Renderer {
     bool _aovBindingsValid = false;
 
     const Hd_USTC_CG_Camera* camera_ = nullptr;
+    Hd_USTC_CG_RenderParam* render_param;
 
     bool _ValidateAovBindings();
 };

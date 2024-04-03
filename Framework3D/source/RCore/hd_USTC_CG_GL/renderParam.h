@@ -24,6 +24,7 @@
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
 
+#include "Nodes/node_exec.hpp"
 #include "USTC_CG.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/imaging/hd/renderThread.h"
@@ -41,12 +42,19 @@ using namespace pxr;
 ///
 class Hd_USTC_CG_RenderParam final : public HdRenderParam {
    public:
-    Hd_USTC_CG_RenderParam(HdRenderThread *renderThread, std::atomic<int> *sceneVersion)
+    Hd_USTC_CG_RenderParam(
+        HdRenderThread *renderThread,
+        std::atomic<int> *sceneVersion,
+        NodeTreeExecutor *executor)
         : _renderThread(renderThread),
-          _sceneVersion(sceneVersion)
+          _sceneVersion(sceneVersion),
+          executor(executor)
     {
     }
     HdRenderThread *_renderThread = nullptr;
+
+    NodeTreeExecutor *executor;
+    NodeTree *node_tree;
 
    private:
     /// A handle to the global render thread.

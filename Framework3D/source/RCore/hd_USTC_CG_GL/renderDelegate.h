@@ -29,6 +29,7 @@
 #include "pxr/pxr.h"
 #include "renderParam.h"
 #include "renderer.h"
+#include "Nodes/node_exec.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -77,8 +78,9 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     void CommitResources(HdChangeTracker* tracker) override;
 
     HdRenderParam* GetRenderParam() const override;
+    void SetRenderSetting(const TfToken& key, const VtValue& value) override;
 
-   private:
+private:
     static const TfTokenVector SUPPORTED_RPRIM_TYPES;
     static const TfTokenVector SUPPORTED_SPRIM_TYPES;
     static const TfTokenVector SUPPORTED_BPRIM_TYPES;
@@ -89,6 +91,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     std::shared_ptr<Hd_USTC_CG_RenderParam> _renderParam;
     HdRenderThread _renderThread;
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
+    std::unique_ptr<NodeTreeExecutor> executor;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;

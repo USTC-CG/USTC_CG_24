@@ -26,6 +26,8 @@
 
 #include <iostream>
 
+#include "Nodes/node_exec_eager.hpp"
+#include "Nodes/node_tree.hpp"
 #include "Utils/Logging/Logging.h"
 #include "config.h"
 #include "geometries/mesh.h"
@@ -100,7 +102,9 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
-    _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion);
+    executor = std::make_unique<EagerNodeTreeExecutor>();
+    _renderParam =
+        std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion, executor.get());
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -126,16 +130,16 @@ HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken
     if (name == HdAovTokens->normal || name == HdAovTokens->Neye) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(-1.0f)));
     }
-    //if (name == HdAovTokens->depth) {
-    //    return HdAovDescriptor(HdFormatFloat32, false, VtValue(1.0f));
-    //}
+    // if (name == HdAovTokens->depth) {
+    //     return HdAovDescriptor(HdFormatFloat32, false, VtValue(1.0f));
+    // }
     if (name == HdAovTokens->cameraDepth) {
         return HdAovDescriptor(HdFormatFloat32, false, VtValue(0.0f));
     }
-    //if (name == HdAovTokens->primId || name == HdAovTokens->instanceId ||
-    //    name == HdAovTokens->elementId) {
-    //    return HdAovDescriptor(HdFormatInt32, false, VtValue(-1));
-    //}
+    // if (name == HdAovTokens->primId || name == HdAovTokens->instanceId ||
+    //     name == HdAovTokens->elementId) {
+    //     return HdAovDescriptor(HdFormatInt32, false, VtValue(-1));
+    // }
     HdParsedAovToken aovId(name);
     if (aovId.isPrimvar) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(0.0f)));
@@ -293,6 +297,14 @@ void Hd_USTC_CG_RenderDelegate::DestroyInstancer(HdInstancer* instancer)
 HdRenderParam* Hd_USTC_CG_RenderDelegate::GetRenderParam() const
 {
     return _renderParam.get();
+}
+
+void Hd_USTC_CG_RenderDelegate::SetRenderSetting(const TfToken& key, const VtValue& value)
+{
+    HdRenderDelegate::SetRenderSetting(key, value);
+    if (key == TfToken("RenderNodeTree")) {
+        _renderParam->node_tree = static_cast<NodeTree*>(value.Get<void*>());
+    }
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

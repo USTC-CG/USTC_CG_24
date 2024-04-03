@@ -159,16 +159,8 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
     }
 }
 
-void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
+void EagerNodeTreeExecutor::prepare_memory()
 {
-    tree->ensure_topology_cache();
-    clear();
-
-    compile(tree);
-
-    input_states.resize(input_of_nodes_to_execute.size(), { nullptr, false });
-    output_states.resize(output_of_nodes_to_execute.size(), { nullptr });
-
     for (int i = 0; i < input_states.size(); ++i) {
         index_cache[input_of_nodes_to_execute[i]] = i;
         auto type = input_of_nodes_to_execute[i]->type_info->cpp_type;
@@ -182,6 +174,24 @@ void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
         output_states[i].value = { type, malloc(type->size()) };
         output_states[i].value.default_construct();
     }
+}
+
+void EagerNodeTreeExecutor::prepare_tree(NodeTree* tree)
+{
+    tree->ensure_topology_cache();
+    clear();
+
+    compile(tree);
+
+    input_states.resize(input_of_nodes_to_execute.size(), { nullptr, false });
+    output_states.resize(output_of_nodes_to_execute.size(), { nullptr });
+
+    prepare_memory();
+}
+
+void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
+{
+    prepare_tree(tree);
 
     for (int i = 0; i < nodes_to_execute_count; ++i) {
         auto node = nodes_to_execute[i];

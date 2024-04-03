@@ -23,8 +23,11 @@ struct RuntimeOutputState {
 // Provide single threaded execution. The aim of this executor is simplicity and
 // robustness.
 
-struct EagerNodeTreeExecutor : public NodeTreeExecutor {
+class EagerNodeTreeExecutor final : public NodeTreeExecutor {
+   public:
     void compile(NodeTree* tree);
+    void prepare_memory();
+    void prepare_tree(NodeTree* tree);
     void execute_tree(NodeTree* tree) override;
 
    private:
@@ -39,7 +42,7 @@ struct EagerNodeTreeExecutor : public NodeTreeExecutor {
     std::vector<Node*> nodes_to_execute;
     std::vector<NodeSocket*> input_of_nodes_to_execute;
     std::vector<NodeSocket*> output_of_nodes_to_execute;
-    ptrdiff_t nodes_to_execute_count;
+    ptrdiff_t nodes_to_execute_count = 0;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -166,4 +166,14 @@ Node* GeoNodeSystemExecution::create_node_menu()
     return node;
 }
 
+Node* RenderNodeSystemExecution::create_node_menu()
+{
+    auto& registry = get_render_node_registry();
+
+    Node* node;
+    node = default_node_menu(registry);
+
+    return node;
+}
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE

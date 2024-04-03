@@ -8,6 +8,8 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 enum class NodeSystemType { Geometry, Render };
 
 struct NodeSystemImpl;
+class NodeTree;
+
 
 class USTC_CG_API NodeSystem {
    public:
@@ -17,7 +19,7 @@ class USTC_CG_API NodeSystem {
         const std::string& window_name);
     ~NodeSystem();
     void draw_imgui();
-
+    NodeTree* get_tree();
    protected:
     std::string window_name;
     NodeSystemType node_system_type;

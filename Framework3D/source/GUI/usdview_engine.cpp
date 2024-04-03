@@ -12,6 +12,7 @@
 #include "pxr/usdImaging/usdImagingGL/engine.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class NodeTree;
 using namespace pxr;
 
 class UsdviewEngineImpl {
@@ -38,7 +39,7 @@ class UsdviewEngineImpl {
     }
 
     void DrawMenuBar();
-    void OnFrame(float delta_time);
+    void OnFrame(float delta_time, NodeTree* node_tree);
     void refresh_platform_texture();
     void refresh_viewport(int x, int y);
     void OnResize(int x, int y);
@@ -103,7 +104,7 @@ void UsdviewEngineImpl::DrawMenuBar()
     ImGui::EndMenuBar();
 }
 
-void UsdviewEngineImpl::OnFrame(float delta_time)
+void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree)
 {
     DrawMenuBar();
     // Update the camera when mouse is in the subwindow
@@ -116,6 +117,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time)
 
     renderer_->SetCameraState(viewMatrix, projectionMatrix);
     renderer_->SetRendererAov(HdAovTokens->color);
+    renderer_->SetRendererSetting(TfToken("RenderNodeTree"),VtValue((void*)node_tree));
 
     _renderParams.enableLighting = true;
     _renderParams.enableSceneMaterials = true;
@@ -244,7 +246,7 @@ UsdviewEngine::~UsdviewEngine()
 {
 }
 
-void UsdviewEngine::render()
+void UsdviewEngine::render(NodeTree* render_nodetree)
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
@@ -254,7 +256,7 @@ void UsdviewEngine::render()
 
     impl_->OnResize(size.x, size.y);
 
-    impl_->OnFrame(delta_time);
+    impl_->OnFrame(delta_time, render_nodetree);
 
     ImGui::End();
 }
