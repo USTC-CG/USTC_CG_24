@@ -8,6 +8,7 @@
 // #include "Utils/Functions/GenericPointer.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+struct NodeSocket;
 struct Node;
 struct NodeTree;
 
@@ -41,8 +42,7 @@ struct ExeParams {
         *outputs_[index].get<DecayT>() = std::forward<T>(value);
     }
 
-
-private:
+   private:
     int get_input_index(const char* identifier) const;
     int get_output_index(const char* identifier);
 
@@ -56,7 +56,16 @@ private:
 // This executes a tree. The execution strategy is left to its children.
 struct NodeTreeExecutor {
     virtual ~NodeTreeExecutor() = default;
+    virtual void prepare_tree(NodeTree* tree) = 0;
     virtual void execute_tree(NodeTree* tree) = 0;
+    virtual void fill_node_before_execution(NodeSocket* socket, void* data)
+    {
+    }
+    void execute(NodeTree* tree)
+    {
+        prepare_tree(tree);
+        execute_tree(tree);
+    }
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

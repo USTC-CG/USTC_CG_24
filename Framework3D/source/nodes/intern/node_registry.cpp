@@ -1,6 +1,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_register.h"
 #include "USTC_CG.h"
+#include "rich_type_buffer.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 static void reset_declaration(NodeDeclaration& declaration)
@@ -39,9 +40,7 @@ void nodeRegisterType(NodeTypeInfo* type_info)
 {
     switch (type_info->node_type_of_grpah) {
         case NodeTypeOfGrpah::Geometry: geo_node_registry[type_info->id_name] = type_info; break;
-        case NodeTypeOfGrpah::Rendering:
-            render_node_registry[type_info->id_name] = type_info;
-            break;
+        case NodeTypeOfGrpah::Render: render_node_registry[type_info->id_name] = type_info; break;
 
         case NodeTypeOfGrpah::Function:
             geo_node_registry[type_info->id_name] = type_info;
@@ -59,14 +58,24 @@ void nodeRegisterType(NodeTypeInfo* type_info)
 NodeTypeInfo* nodeTypeFind(const char* idname)
 {
     if (idname[0]) {
-        auto& registry = get_geo_node_registry();
-        NodeTypeInfo* nt = registry.at(std::string(idname));
-        if (nt) {
-            return nt;
+        auto& geo_node_registry = get_geo_node_registry();
+        auto& render_node_registry = get_render_node_registry();
+
+        NodeTypeInfo* nt;
+        if (geo_node_registry.find(std::string(idname)) != geo_node_registry.end()) {
+            nt = geo_node_registry.at(std::string(idname));
+            if (nt) {
+                return nt;
+            }
+        }
+        if (render_node_registry.find(std::string(idname)) != render_node_registry.end()) {
+            nt = render_node_registry.at(std::string(idname));
+            if (nt) {
+                return nt;
+            }
         }
     }
-
-    return nullptr;
+    throw std::runtime_error("Id name not found.");
 }
 
 static std::map<std::string, std::unique_ptr<SocketTypeInfo>> socket_registry;
@@ -102,6 +111,8 @@ const char* get_socket_typename(SocketType socket)
             GetTypeName(Int, 2);
             GetTypeName(Int, 3);
             GetTypeName(Int, 4);
+        case SocketType::Lights: return "SocketLights";
+
         default: return "";
     }
 }
@@ -162,6 +173,13 @@ static SocketTypeInfo* make_socket_type_geometry()
     return socktype;
 }
 
+static SocketTypeInfo* make_socket_type_lights()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Lights);
+    socktype->cpp_type = &CPPType::get<LightArray>();
+    return socktype;
+}
+
 void register_socket(SocketTypeInfo* type_info)
 {
     socket_registry[type_info->type_name] = std::unique_ptr<SocketTypeInfo>(type_info);
@@ -181,6 +199,7 @@ void register_sockets()
     register_socket(make_socket_type_Int4_buffer());
     register_socket(make_socket_type_string());
     register_socket(make_socket_type_geometry());
+    register_socket(make_socket_type_lights());
 }
 
 void register_all()

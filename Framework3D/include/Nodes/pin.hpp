@@ -21,6 +21,7 @@ enum class SocketType : uint32_t {
     TypeSizeEnum(Int, 2),
     TypeSizeEnum(Int, 3),
     TypeSizeEnum(Int, 4),
+    Lights,
     // Bool,
     // Int,
     // String,

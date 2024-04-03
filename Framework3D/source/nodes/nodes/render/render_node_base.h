@@ -1,8 +1,9 @@
 #pragma once
-#include "Nodes/geo_socket_types.hpp"
+#include "Nodes/render_socket_types.hpp"
+#include "Nodes/node.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-inline void func_node_type_base(NodeTypeInfo* ntype)
+inline void render_node_type_base(NodeTypeInfo* ntype)
 {
     ntype->color[0] = 114 / 255.f;
     ntype->color[1] = 94 / 255.f;

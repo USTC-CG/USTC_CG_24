@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include "Nodes/node_tree.hpp"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
@@ -32,8 +33,20 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     // Fill the nodes that requires value from the scene.
+    auto& executor = render_param->executor;
+    auto& node_tree = render_param->node_tree;
 
-    render_param->executor->execute_tree(render_param->node_tree);
+    executor->prepare_tree(node_tree);
+
+    for (auto&& node : node_tree->nodes) {
+        if (node->REQUIRED) {
+            if (std::string(node->typeinfo->id_name) == "render_scene_lights") {
+                assert(node->outputs.size() == 1);
+                auto output_socket = node->outputs[0];
+                executor->fill_node_before_execution(output_socket, render_param->lights);
+            }
+        }
+    }
 
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
         auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);

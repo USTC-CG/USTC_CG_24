@@ -29,9 +29,11 @@
 #include "pxr/pxr.h"
 #include "renderParam.h"
 #include "renderer.h"
+#include "Nodes/node_tree.hpp"
 #include "Nodes/node_exec.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_Light;
 using namespace pxr;
 #define HDEMBREE_RENDER_SETTINGS_TOKENS \
     (enableAmbientOcclusion)(enableSceneColors)(ambientOcclusionSamples)(renderMode)
@@ -92,6 +94,7 @@ private:
     HdRenderThread _renderThread;
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
     std::unique_ptr<NodeTreeExecutor> executor;
+    pxr::VtArray<Hd_USTC_CG_Light*> lights;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;

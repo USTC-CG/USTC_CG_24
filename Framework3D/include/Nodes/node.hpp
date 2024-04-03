@@ -35,7 +35,7 @@ using NodeDeclareFunction = void (*)(NodeDeclarationBuilder& builder);
 enum class NodeTypeOfGrpah {
     Geometry,
     Function,
-    Rendering
+    Render
 };
 
 // There can be many instances of nodes, while each of them has a type. The

@@ -92,7 +92,7 @@ unsigned NodeSystemExecution::GetNextId()
 void NodeSystemExecution::try_execution()
 {
     if (required_execution) {
-        executor->execute_tree(node_tree.get());
+        executor->execute(node_tree.get());
         required_execution = false;
     }
 }
@@ -151,7 +151,7 @@ void GeoNodeSystemExecution::try_execution()
         stage->RemovePrim(pxr::SdfPath("/geom"));
         stage->RemovePrim(pxr::SdfPath("/TexModel"));
 
-        executor->execute_tree(node_tree.get());
+        executor->execute(node_tree.get());
         required_execution = false;
     }
 }

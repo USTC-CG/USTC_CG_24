@@ -26,6 +26,7 @@
 
 #include <iostream>
 
+#include "Nodes/node_exec.hpp"
 #include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_tree.hpp"
 #include "Utils/Logging/Logging.h"
@@ -103,8 +104,8 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     _PopulateDefaultSettings(_settingDescriptors);
 
     executor = std::make_unique<EagerNodeTreeExecutor>();
-    _renderParam =
-        std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion, executor.get());
+    _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
+        &_renderThread, &_sceneVersion, &lights, executor.get());
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -214,7 +215,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         return new HdExtComputation(sprimId);
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(sprimId, typeId);
+        auto light = new Hd_USTC_CG_Light(sprimId, typeId);
+        lights.push_back(light);
+        return light;
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());

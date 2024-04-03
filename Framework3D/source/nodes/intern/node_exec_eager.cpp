@@ -191,14 +191,27 @@ void EagerNodeTreeExecutor::prepare_tree(NodeTree* tree)
 
 void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
 {
-    prepare_tree(tree);
-
     for (int i = 0; i < nodes_to_execute_count; ++i) {
         auto node = nodes_to_execute[i];
         auto result = execute_node(tree, node);
         if (result) {
             forward_output_to_input(node);
         }
+    }
+}
+
+void EagerNodeTreeExecutor::fill_node_before_execution(NodeSocket* socket, void* data)
+{
+    if (index_cache.find(socket) != index_cache.end()) {
+        GMutablePointer ptr;
+
+        if (socket->in_out == PinKind::Input) {
+            ptr = input_states[index_cache[socket]].value;
+        }
+        else {
+            ptr = output_states[index_cache[socket]].value;
+        }
+        ptr.type()->copy_construct(data, ptr.get());
     }
 }
 

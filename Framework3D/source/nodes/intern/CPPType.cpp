@@ -4,7 +4,9 @@
 
 #include "GCore/GOP.h"
 #include "USTC_CG.h"
+#include "rich_type_buffer.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
+
 /** Create a new #CPPType that can be accessed through `CPPType::get<T>()`. */
 #define BLI_CPP_TYPE_MAKE(TYPE_NAME, FLAGS)                       \
     template<>                                                    \
@@ -23,7 +25,7 @@ BLI_CPP_TYPE_MAKE(float, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(int32_t, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(std::string, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(GOperandBase, CPPTypeFlags::EqualityComparable)
-
+BLI_CPP_TYPE_MAKE(LightArray, CPPTypeFlags::EqualityComparable)
 
 // Buffers
 BLI_CPP_TYPE_MAKE(pxr::VtArray<float>, CPPTypeFlags::BasicType)
@@ -35,13 +37,13 @@ BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec2i>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec3i>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec4i>, CPPTypeFlags::BasicType)
 
-
 void register_cpp_types()
 {
     BLI_CPP_TYPE_REGISTER(float);
     BLI_CPP_TYPE_REGISTER(int32_t);
     BLI_CPP_TYPE_REGISTER(std::string);
     BLI_CPP_TYPE_REGISTER(GOperandBase);
+    BLI_CPP_TYPE_REGISTER(LightArray);
 
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<float>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec2f>);

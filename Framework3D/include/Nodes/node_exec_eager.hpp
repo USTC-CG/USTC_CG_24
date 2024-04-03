@@ -27,8 +27,9 @@ class EagerNodeTreeExecutor final : public NodeTreeExecutor {
    public:
     void compile(NodeTree* tree);
     void prepare_memory();
-    void prepare_tree(NodeTree* tree);
-    void execute_tree(NodeTree* tree) override;
+    void prepare_tree(NodeTree* tree)override;
+    void execute_tree(NodeTree* tree)override;
+    void fill_node_before_execution(NodeSocket* socket, void* data) override;
 
    private:
     ExeParams prepare_params(NodeTree* tree, Node* node);
@@ -36,6 +37,8 @@ class EagerNodeTreeExecutor final : public NodeTreeExecutor {
     void forward_output_to_input(Node* node);
     void clear();
 
+
+private:
     std::vector<RuntimeInputState> input_states;
     std::vector<RuntimeOutputState> output_states;
     std::map<NodeSocket*, size_t> index_cache;
