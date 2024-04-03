@@ -19,6 +19,9 @@ include(pxrPlugin)
 
 add_subdirectory(hd_USTC_CG)
 target_link_libraries(RCore PRIVATE hd_USTC_CG)
+target_compile_options(hd_USTC_CG PRIVATE -DUSTC_CG_BUILD_MODULE=1)
 
 add_subdirectory(hd_USTC_CG_GL)
 target_link_libraries(RCore PRIVATE hd_USTC_CG_GL)
+target_compile_options(hd_USTC_CG_GL PRIVATE -DUSTC_CG_BUILD_MODULE=1)
+

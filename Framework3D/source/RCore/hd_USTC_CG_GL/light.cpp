@@ -39,14 +39,6 @@ void Hd_USTC_CG_Light::Sync(
         _params[HdTokens->transform] = VtValue(sceneDelegate->GetTransform(id));
     }
 
-    std::ostringstream val;
-    val << VtValue(sceneDelegate->GetTransform(id))
-        .Cast<GfMatrix4d>();
-
-    USTC_CG::logging(
-        val.str(),
-        USTC_CG::Info);
-
     // Lighting Params
     if (bits & DirtyParams)
     {

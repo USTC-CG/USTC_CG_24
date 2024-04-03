@@ -4,6 +4,7 @@
 #include "Nodes/node_register.h"
 #include "comp_node_base.h"
 #include "pxr/usd/usd/prim.h"
+#include "pxr/usd/usdGeom/tokens.h"
 #include "pxr/usd/usd/references.h"
 
 namespace USTC_CG::node_merge_to_global {
@@ -17,6 +18,7 @@ static void node_exec(ExeParams params)
 {
     using namespace pxr;
     auto layer = params.get_input<pxr::UsdStageRefPtr>("Layer");
+    layer->SetMetadata(pxr::UsdGeomTokens->upAxis, pxr::VtValue(pxr::UsdGeomTokens->z));;
 
     auto path = params.get_input<std::string>("Path");
     auto sdf_path = SdfPath(path.c_str());

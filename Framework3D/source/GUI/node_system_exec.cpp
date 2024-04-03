@@ -5,6 +5,8 @@
 #include "Nodes/node_register.h"
 #include "Nodes/node_tree.hpp"
 #include "imgui/imgui-node-editor/imgui_node_editor.h"
+#include "pxr/usd/usdGeom/metrics.h"
+#include "pxr/usd/usdGeom/tokens.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace ed = ax::NodeEditor;
 
@@ -211,6 +213,7 @@ void CompositionNodeSystemExecution::try_execution()
     if (required_execution) {
         auto& stage = GlobalUsdStage::global_usd_stage;
         stage->RemovePrim(pxr::SdfPath("/Reference"));
+        pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->z);
 
         executor->execute(node_tree.get());
         required_execution = false;

@@ -153,7 +153,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     ImGui::BeginChild("ViewPort", ImGui::GetContentRegionAvail(), 0, ImGuiWindowFlags_NoMove);
-    ImGui::Image(ImTextureID(tex), ImGui::GetContentRegionAvail());
+    ImGui::Image(
+        ImTextureID(tex), ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     is_active_ = ImGui::IsWindowFocused();
     is_hovered_ = ImGui::IsItemHovered();
     ImGui::EndChild();

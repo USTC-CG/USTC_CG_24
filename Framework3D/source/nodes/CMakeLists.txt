@@ -57,6 +57,7 @@ target_link_libraries(nodes nodes_generated)
 target_link_libraries(nodes GCore)
 target_link_libraries(nodes Eigen3::Eigen)
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
+target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)
 
 target_compile_options(nodes PRIVATE -DUSTC_CG_BUILD_MODULE=1 -DNOMINMAX)
 

@@ -1,7 +1,10 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
+#include "light.h"
+#include "pxr/imaging/hd/tokens.h"
 #include "render_node_base.h"
+#include "rich_type_buffer.hpp"
 
 namespace USTC_CG::node_debug_info {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -12,7 +15,11 @@ static void node_declare(NodeDeclarationBuilder& b)
 static void node_exec(ExeParams params)
 {
     // Left empty.
-    throw std::runtime_error("Not implemented!");
+    auto lights = params.get_input<LightArray>("Lights");
+
+    for (auto&& light : lights) {
+        std::cout << light->Get(HdTokens->transform).Cast<GfMatrix4d>() << std::endl;
+    }
 }
 
 static void node_register()

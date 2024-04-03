@@ -47,6 +47,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
             }
         }
     }
+    executor->execute_tree(node_tree);
 
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
         auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);

@@ -124,7 +124,7 @@ struct NodeSystemImpl {
     const float m_TouchTime = 1.0f;
     std::map<NodeId, float, NodeIdLess> m_NodeTouchTime;
     bool m_ShowOrdinals = false;
-    std::string filename = "Blueprints.json";
+    std::string filename;
 
    private:
     ed::EditorContext* m_Editor = nullptr;
