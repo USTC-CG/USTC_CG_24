@@ -50,6 +50,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
                 auto output_socket = node->outputs[0];
                 executor->fill_node_before_execution(output_socket, render_param->cameras);
             }
+
         }
     }
     executor->execute_tree(node_tree);

@@ -1,3 +1,6 @@
+#include "RCore/GLResources.hpp"
+#include "RCore/ResourceAllocator.hpp"
+
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -7,11 +10,15 @@
 #include "render_node_base.h"
 #include "rich_type_buffer.hpp"
 
+
 namespace USTC_CG::node_rasterize {
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Lights>("Lights");
     b.add_input<decl::Camera>("Camera");
+    b.add_output<decl::Texture>("Position");
+    b.add_output<decl::Texture>("Normal");
+    b.add_output<decl::Texture>("Depth");
 }
 
 static void node_exec(ExeParams params)

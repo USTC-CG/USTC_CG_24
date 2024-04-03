@@ -5,8 +5,9 @@
 #include "GCore/GOP.h"
 #include "USTC_CG.h"
 #include "rich_type_buffer.hpp"
+#include "Utils/Macro/map.h"
+#include "RCore/Backend.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
-
 /** Create a new #CPPType that can be accessed through `CPPType::get<T>()`. */
 #define BLI_CPP_TYPE_MAKE(TYPE_NAME, FLAGS)                       \
     template<>                                                    \
@@ -29,12 +30,25 @@ BLI_CPP_TYPE_MAKE(LightArray, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(pxr::UsdStageRefPtr, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(CameraArray, CPPTypeFlags::EqualityComparable)
 
+// RESOURCES
+#define WRAP_MAKE(TYPE) BLI_CPP_TYPE_MAKE(TYPE, CPPTypeFlags::EqualityComparable)
+MACRO_MAP(WRAP_MAKE,RESOURCE_LIST)
+
+// Little Vectors
+
+BLI_CPP_TYPE_MAKE(pxr::GfVec2f, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::GfVec3f, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::GfVec4f, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::GfVec2i, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::GfVec3i, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::GfVec4i, CPPTypeFlags::BasicType)
+
 // Buffers
 BLI_CPP_TYPE_MAKE(pxr::VtArray<float>, CPPTypeFlags::BasicType)
+BLI_CPP_TYPE_MAKE(pxr::VtArray<int>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec2f>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec3f>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec4f>, CPPTypeFlags::BasicType)
-BLI_CPP_TYPE_MAKE(pxr::VtArray<int>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec2i>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec3i>, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(pxr::VtArray<pxr::GfVec4i>, CPPTypeFlags::BasicType)
@@ -49,11 +63,18 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);
     BLI_CPP_TYPE_REGISTER(CameraArray);
 
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec2f);
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec3f);
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec4f);
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec2i);
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec3i);
+    BLI_CPP_TYPE_REGISTER(pxr::GfVec4i);
+
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<float>);
+    BLI_CPP_TYPE_REGISTER(pxr::VtArray<int>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec2f>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec3f>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec4f>);
-    BLI_CPP_TYPE_REGISTER(pxr::VtArray<int>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec2i>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec3i>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec4i>);

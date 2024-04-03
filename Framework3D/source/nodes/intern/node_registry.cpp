@@ -126,7 +126,7 @@ SocketTypeInfo* make_standard_socket_type(SocketType socket)
     return type_info;
 }
 
-#define MakeTypeBuffer(Type, Item, Size)                                                      \
+#define MakeType(Type, Item, Size, Buffer)                                                    \
     static SocketTypeInfo* make_socket_type_##Type##Size##Buffer()                            \
     {                                                                                         \
         SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Type##Size##Buffer); \
@@ -134,16 +134,20 @@ SocketTypeInfo* make_standard_socket_type(SocketType socket)
         return socktype;                                                                      \
     }
 
-MakeTypeBuffer(Float, float, 1);
-MakeTypeBuffer(Float, pxr::GfVec2f, 2);
-MakeTypeBuffer(Float, pxr::GfVec3f, 3);
-MakeTypeBuffer(Float, pxr::GfVec4f, 4);
-
-MakeTypeBuffer(Int, int, 1);
-MakeTypeBuffer(Int, pxr::GfVec2i, 2);
-MakeTypeBuffer(Int, pxr::GfVec3i, 3);
-MakeTypeBuffer(Int, pxr::GfVec4i, 4);
-
+MakeType(Float, float, 1, Buffer);
+MakeType(Float, pxr::GfVec2f, 2, Buffer);
+MakeType(Float, pxr::GfVec3f, 3, Buffer);
+MakeType(Float, pxr::GfVec4f, 4, Buffer);
+MakeType(Int, int, 1, Buffer);
+MakeType(Int, pxr::GfVec2i, 2, Buffer);
+MakeType(Int, pxr::GfVec3i, 3, Buffer);
+MakeType(Int, pxr::GfVec4i, 4, Buffer);
+MakeType(Float, pxr::GfVec2f, 2);
+MakeType(Float, pxr::GfVec3f, 3);
+MakeType(Float, pxr::GfVec4f, 4);
+MakeType(Int, pxr::GfVec2i, 2);
+MakeType(Int, pxr::GfVec3i, 3);
+MakeType(Int, pxr::GfVec4i, 4);
 #undef MakeTypeBuffer
 
 static SocketTypeInfo* make_socket_type_Int()
@@ -191,6 +195,13 @@ static SocketTypeInfo* make_socket_type_Camera()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Camera);
     socktype->cpp_type = &CPPType::get<CameraArray>();
+    return socktype;
+}
+
+static SocketTypeInfo* make_socket_type_Texture()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Texture);
+    socktype->cpp_type = &CPPType::get<backend::TextureHandle>();
     return socktype;
 }
 

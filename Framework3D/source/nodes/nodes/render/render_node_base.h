@@ -1,4 +1,5 @@
 #pragma once
+#include "Nodes/socket_types/buffer_socket_types.hpp"
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "Nodes/node.hpp"
 
