@@ -3,33 +3,9 @@
 #include "Nodes/geo_socket_types.hpp"
 #include "Nodes/node.hpp"
 #include "Nodes/render_socket_types.hpp"
+#include "Nodes/stage_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-NodeSocket* decl::Geometry::build(NodeTree* ntree, Node* node) const
-{
-    NodeSocket* socket = nodeAddSocket(
-        ntree,
-        node,
-        this->in_out,
-        get_socket_typename(SocketType::Geometry),
-        this->identifier.c_str(),
-        this->name.c_str());
-    return socket;
-}
-
-NodeSocket* decl::Int::build(NodeTree* ntree, Node* node) const
-{
-    NodeSocket* socket = nodeAddSocket(
-        ntree,
-        node,
-        this->in_out,
-        get_socket_typename(SocketType::Int),
-        this->identifier.c_str(),
-        this->name.c_str());
-    update_default_value(socket);
-
-    return socket;
-}
 
 void decl::Int::update_default_value(NodeSocket* socket) const
 {
@@ -43,19 +19,6 @@ void decl::Int::update_default_value(NodeSocket* socket) const
     }
 }
 
-NodeSocket* decl::Float::build(NodeTree* ntree, Node* node) const
-{
-    NodeSocket* socket = nodeAddSocket(
-        ntree,
-        node,
-        this->in_out,
-        get_socket_typename(SocketType::Float),
-        this->identifier.c_str(),
-        this->name.c_str());
-    update_default_value(socket);
-
-    return socket;
-}
 
 #define BufferBuild(Type, Size)                                                    \
     NodeSocket* decl::Type##Size##Buffer::build(NodeTree* ntree, Node* node) const \
@@ -91,6 +54,57 @@ void decl::Float::update_default_value(NodeSocket* socket) const
     }
 }
 
+void decl::String::update_default_value(NodeSocket* socket) const
+{
+    if (!socket->default_value) {
+        // TODO: When shall we destroy these?
+        auto default_value = new bNodeSocketValueString();
+        default_value->value.resize(256);
+        memcpy(default_value->value.data(), default_value_.data(), default_value_.size());
+        socket->default_value = default_value;
+    }
+}
+
+
+NodeSocket* decl::Float::build(NodeTree* ntree, Node* node) const
+{
+    NodeSocket* socket = nodeAddSocket(
+        ntree,
+        node,
+        this->in_out,
+        get_socket_typename(SocketType::Float),
+        this->identifier.c_str(),
+        this->name.c_str());
+    update_default_value(socket);
+
+    return socket;
+}
+
+NodeSocket* decl::Geometry::build(NodeTree* ntree, Node* node) const
+{
+    NodeSocket* socket = nodeAddSocket(
+        ntree,
+        node,
+        this->in_out,
+        get_socket_typename(SocketType::Geometry),
+        this->identifier.c_str(),
+        this->name.c_str());
+    return socket;
+}
+
+NodeSocket* decl::Int::build(NodeTree* ntree, Node* node) const
+{
+    NodeSocket* socket = nodeAddSocket(
+        ntree,
+        node,
+        this->in_out,
+        get_socket_typename(SocketType::Int),
+        this->identifier.c_str(),
+        this->name.c_str());
+    update_default_value(socket);
+
+    return socket;
+}
 NodeSocket* decl::String::build(NodeTree* ntree, Node* node) const
 {
     NodeSocket* socket = nodeAddSocket(
@@ -105,17 +119,6 @@ NodeSocket* decl::String::build(NodeTree* ntree, Node* node) const
     return socket;
 }
 
-void decl::String::update_default_value(NodeSocket* socket) const
-{
-    if (!socket->default_value) {
-        // TODO: When shall we destroy these?
-        auto default_value = new bNodeSocketValueString();
-        default_value->value.resize(256);
-        memcpy(default_value->value.data(), default_value_.data(), default_value_.size());
-        socket->default_value = default_value;
-    }
-}
-
 NodeSocket* decl::Lights::build(NodeTree* ntree, Node* node) const
 {
     NodeSocket* socket = nodeAddSocket(
@@ -123,6 +126,18 @@ NodeSocket* decl::Lights::build(NodeTree* ntree, Node* node) const
         node,
         this->in_out,
         get_socket_typename(SocketType::Lights),
+        this->identifier.c_str(),
+        this->name.c_str());
+    return socket;
+}
+
+NodeSocket* decl::Layer::build(NodeTree* ntree, Node* node) const
+{
+    NodeSocket* socket = nodeAddSocket(
+        ntree,
+        node,
+        this->in_out,
+        get_socket_typename(SocketType::Layer),
         this->identifier.c_str(),
         this->name.c_str());
     return socket;

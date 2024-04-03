@@ -1,48 +1,13 @@
 #pragma once
 
 #include "USTC_CG.h"
+#include "make_standard_type.hpp"
+#include "Utils/Macro/map.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
-class GeometryBuilder;
 
-class Geometry : public SocketDeclaration {
-   public:
-    Geometry()
-    {
-        type = SocketType::Geometry;
-    }
-
-    NodeSocket* build(NodeTree* ntree, Node* node) const override;
-
-    using Builder = GeometryBuilder;
-};
-
-class GeometryBuilder : public SocketDeclarationBuilder<Geometry> { };
-
-#define BufferBuilder(Type, Size)                                      \
-    class Type##Size##BufferBuilder;                                   \
-    class Type##Size##Buffer : public SocketDeclaration {              \
-       public:                                                         \
-        Type##Size##Buffer()                                           \
-        {                                                              \
-            type = SocketType::Type##Size##Buffer;                     \
-        }                                                              \
-        NodeSocket* build(NodeTree* ntree, Node* node) const override; \
-        using Builder = Type##Size##BufferBuilder;                     \
-    };                                                                 \
-    class Type##Size##BufferBuilder : public SocketDeclarationBuilder<Type##Size##Buffer> { }
-
-BufferBuilder(Float, 1);
-BufferBuilder(Float, 2);
-BufferBuilder(Float, 3);
-BufferBuilder(Float, 4);
-BufferBuilder(Int, 1);
-BufferBuilder(Int, 2);
-BufferBuilder(Int, 3);
-BufferBuilder(Int, 4);
-
-#undef BufferBuilder
+DECLARE_SOCKET_TYPE(Geometry)
 
 // Here we don't use a template style since there are not many types following
 // this style... Later we may have all kinds of images and shaders.
@@ -157,6 +122,14 @@ class StringBuilder : public SocketDeclarationBuilder<String> {
         return *this;
     }
 };
+
+#define BUFFER_TYPES                                                                          \
+    Int1Buffer, Int2Buffer, Int3Buffer, Int4Buffer, Float1Buffer, Float2Buffer, Float3Buffer, \
+        Float4Buffer
+
+MACRO_MAP(DECLARE_SOCKET_TYPE, BUFFER_TYPES)
+
+#define GEO_SOCKET_TYPES Geometry, Int, String, Float, BUFFER_TYPES
 
 }  // namespace decl
 

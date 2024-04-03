@@ -95,12 +95,13 @@ SocketTypeInfo* socketTypeFind(const char* idname)
 
 const char* get_socket_typename(SocketType socket)
 {
-#define GetTypeName(Type, Size) \
-    case SocketType::Type##Size##Buffer: return "Socket" #Type #Size "Buffer";
+
     switch (socket) {
         case SocketType::Geometry: return "SocketGeometry";
         case SocketType::Int: return "SocketInt";
         case SocketType::Float: return "SocketFloat";
+#define GetTypeName(Type, Size) \
+    case SocketType::Type##Size##Buffer: return "Socket" #Type #Size "Buffer";
         case SocketType::String:
             return "SocketString";
             GetTypeName(Float, 1);
@@ -112,6 +113,7 @@ const char* get_socket_typename(SocketType socket)
             GetTypeName(Int, 3);
             GetTypeName(Int, 4);
         case SocketType::Lights: return "SocketLights";
+        case SocketType::Layer: return "SocketLayer";
 
         default: return "";
     }
