@@ -8,11 +8,11 @@ class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
     {
-        system = std::make_shared<USTC_CG::NodeSystem>();
+        geonode_system = std::make_shared<USTC_CG::NodeSystem>();
     }
 
    protected:
-    std::shared_ptr<USTC_CG::NodeSystem> system;
+    std::shared_ptr<USTC_CG::NodeSystem> geonode_system;
     std::shared_ptr<USTC_CG::UsdviewEngine> usdview_engine_;
     void BuildUI() override;
 
@@ -29,7 +29,7 @@ void NodeWindow::BuildUI()
 {
     createDockSpace(0);
 
-    system->draw_imgui();
+    geonode_system->draw_imgui();
     finishDockSpace();
 }
 

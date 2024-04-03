@@ -51,7 +51,6 @@ using namespace ax;
 
 using ax::Widgets::IconType;
 
-static ed::EditorContext* m_Editor = nullptr;
 
 struct NodeIdLess {
     bool operator()(const NodeId& lhs, const NodeId& rhs) const
@@ -93,6 +92,10 @@ static bool Splitter(
 }
 
 struct NodeSystemImpl {
+    explicit NodeSystemImpl(const std::string& filename) : filename(filename)
+    {
+    }
+
     Node* SpawnComment();
 
     void OnStart();
@@ -119,8 +122,11 @@ struct NodeSystemImpl {
     const float m_TouchTime = 1.0f;
     std::map<NodeId, float, NodeIdLess> m_NodeTouchTime;
     bool m_ShowOrdinals = false;
+    std::string filename = "Blueprints.json";
 
    private:
+    ed::EditorContext* m_Editor = nullptr;
+
     ImTextureID LoadTexture(const unsigned char* data, size_t buffer_size);
 
     struct ImTexture {
@@ -156,15 +162,15 @@ void NodeSystemImpl::OnStart()
 
     ed::Config config;
 
-    config.UserPointer = node_system_execution_.get();
+    config.UserPointer = this;
 
     config.SaveSettings = [](const char* data,
                              size_t size,
                              NodeEditor::SaveReasonFlags reason,
                              void* userPointer) -> bool {
-        auto ptr = static_cast<NodeSystemExecution*>(userPointer);
+        auto ptr = static_cast<NodeSystemImpl*>(userPointer);
         std::ofstream file(ptr->filename);
-        auto node_serialize = ptr->Serialize();
+        auto node_serialize = ptr->node_system_execution_->Serialize();
 
         node_serialize.erase(node_serialize.end() - 1);
 
@@ -178,7 +184,7 @@ void NodeSystemImpl::OnStart()
     };
 
     config.LoadSettings = [](char* d, void* userPointer) -> size_t {
-        auto ptr = static_cast<NodeSystemExecution*>(userPointer);
+        auto ptr = static_cast<NodeSystemImpl*>(userPointer);
         std::ifstream file(ptr->filename);
         if (!file) {
             return 0;
@@ -197,7 +203,7 @@ void NodeSystemImpl::OnStart()
         data.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
         if (data.size() > 0) {
-            ptr->Deserialize(data);
+            ptr->node_system_execution_->Deserialize(data);
         }
 
         memcpy(d, data.data(), data.size());
@@ -290,7 +296,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
     ImGui::SameLine(0.0f, 12.0f);
 
-    ed::Begin("Node editor");
+    ed::Begin(("Node editor" + filename).c_str());
     {
         auto cursorTopLeft = ImGui::GetCursorScreenPos();
 
@@ -805,9 +811,10 @@ inline ImGuiWindowFlags GetWindowFlags()
     return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 }
 
-NodeSystem::NodeSystem()
+NodeSystem::NodeSystem(const std::string& file_name, const std::string& window_name)
+    : window_name(window_name)
 {
-    impl_ = std::make_unique<NodeSystemImpl>();
+    impl_ = std::make_unique<NodeSystemImpl>(file_name);
     impl_->OnStart();
 }
 
@@ -820,10 +827,8 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    ImGui::Begin("Node System", nullptr, GetWindowFlags());
-
+    ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
     impl_->OnFrame(delta_time);
-
     ImGui::End();
 }
 

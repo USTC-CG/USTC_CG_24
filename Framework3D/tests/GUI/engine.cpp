@@ -2,18 +2,20 @@
 
 #include <memory>
 
-#include "Nodes/GlobalUsdStage.h"
 #include "GUI/node_system.h"
 #include "GUI/usdview_engine.h"
 #include "GUI/window/window.h"
+#include "Nodes/GlobalUsdStage.h"
 
 class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
     {
-        system = std::make_shared<USTC_CG::NodeSystem>();
-        renderer = std::make_shared<USTC_CG::UsdviewEngine>(
-            USTC_CG::GlobalUsdStage::global_usd_stage);
+        geonode_system = std::make_shared<USTC_CG::NodeSystem>("GeoNodeSystem.json","Geometric Nodes");
+        render_graph_system =
+            std::make_shared<USTC_CG::NodeSystem>("RenderGraph.json", "Render Nodes");
+        renderer =
+            std::make_shared<USTC_CG::UsdviewEngine>(USTC_CG::GlobalUsdStage::global_usd_stage);
     }
 
    protected:
@@ -24,7 +26,8 @@ class NodeWindow final : public USTC_CG::Window {
         finishDockSpace();
     }
 
-    std::shared_ptr<USTC_CG::NodeSystem> system;
+    std::shared_ptr<USTC_CG::NodeSystem> geonode_system;
+    std::shared_ptr<USTC_CG::NodeSystem> render_graph_system;
     std::shared_ptr<USTC_CG::UsdviewEngine> renderer;
     void BuildUI() override;
 };
@@ -32,8 +35,11 @@ class NodeWindow final : public USTC_CG::Window {
 void NodeWindow::BuildUI()
 {
     createDockSpace(0);
+    geonode_system->draw_imgui();
+    finishDockSpace();
 
-    system->draw_imgui();
+    createDockSpace(2);
+    render_graph_system->draw_imgui();
     finishDockSpace();
 }
 
