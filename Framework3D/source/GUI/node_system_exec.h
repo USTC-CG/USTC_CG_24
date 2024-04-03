@@ -55,7 +55,6 @@ class NodeSystemExecution {
     void try_execution()
     {
         if (required_execution) {
-            // for (auto&& prim: GlobalUsdStage::global_usd_stage->TraverseAll()) {
             auto& stage = GlobalUsdStage::global_usd_stage;
             stage->RemovePrim(pxr::SdfPath("/geom"));
             stage->RemovePrim(pxr::SdfPath("/TexModel"));
