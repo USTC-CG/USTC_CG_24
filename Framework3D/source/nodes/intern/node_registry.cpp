@@ -21,16 +21,16 @@ void build_node_declaration(
     node_decl_builder.finalize();
 }
 
-static std::map<std::string, NodeTypeInfo*> node_registry;
+static std::map<std::string, NodeTypeInfo*> geo_node_registry;
 
-const std::map<std::string, NodeTypeInfo*>& get_node_registry()
+const std::map<std::string, NodeTypeInfo*>& get_geo_node_registry()
 {
-    return node_registry;
+    return geo_node_registry;
 }
 
 void nodeRegisterType(NodeTypeInfo* type_info)
 {
-    node_registry[type_info->id_name] = type_info;
+    geo_node_registry[type_info->id_name] = type_info;
     if (type_info->declare) {
         type_info->static_declaration = std::make_unique<NodeDeclaration>();
     }
@@ -44,7 +44,7 @@ void nodeRegisterType(NodeTypeInfo* type_info)
 NodeTypeInfo* nodeTypeFind(const char* idname)
 {
     if (idname[0]) {
-        auto& registry = get_node_registry();
+        auto& registry = get_geo_node_registry();
         NodeTypeInfo* nt = registry.at(std::string(idname));
         if (nt) {
             return nt;

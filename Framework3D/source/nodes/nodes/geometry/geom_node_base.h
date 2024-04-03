@@ -8,6 +8,8 @@ inline void geo_node_type_base(NodeTypeInfo* ntype)
     ntype->color[1] = 114 / 255.f;
     ntype->color[2] = 94 / 255.f;
     ntype->color[3] = 1.0f;
+
+    ntype->node_type_of_grpah = NodeTypeOfGrpah::Geometry;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

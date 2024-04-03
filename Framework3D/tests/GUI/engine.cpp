@@ -11,9 +11,10 @@ class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
     {
-        geonode_system = std::make_shared<USTC_CG::NodeSystem>("GeoNodeSystem.json","Geometric Nodes");
-        render_graph_system =
-            std::make_shared<USTC_CG::NodeSystem>("RenderGraph.json", "Render Nodes");
+        geonode_system = std::make_shared<USTC_CG::NodeSystem>(
+            USTC_CG::NodeSystemType::Geometry, "GeoNodeSystem.json", "Geometric Nodes");
+        render_graph_system = std::make_shared<USTC_CG::NodeSystem>(
+            USTC_CG::NodeSystemType::Render, "RenderGraph.json", "Render Nodes");
         renderer =
             std::make_shared<USTC_CG::UsdviewEngine>(USTC_CG::GlobalUsdStage::global_usd_stage);
     }

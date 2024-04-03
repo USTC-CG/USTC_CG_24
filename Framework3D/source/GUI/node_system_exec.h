@@ -11,9 +11,10 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeSystemExecution {
    public:
+    virtual ~NodeSystemExecution() = default;
     NodeSystemExecution();
 
-    Node* create_node_menu();
+    virtual Node* create_node_menu();
 
     std::vector<std::unique_ptr<Node>>& get_nodes();
 
@@ -52,17 +53,7 @@ class NodeSystemExecution {
 
     unsigned GetNextId();
 
-    void try_execution()
-    {
-        if (required_execution) {
-            auto& stage = GlobalUsdStage::global_usd_stage;
-            stage->RemovePrim(pxr::SdfPath("/geom"));
-            stage->RemovePrim(pxr::SdfPath("/TexModel"));
-
-            executor->execute_tree(node_tree.get());
-            required_execution = false;
-        }
-    }
+    virtual void try_execution();
 
     std::vector<std::unique_ptr<NodeLink>>& get_links()
     {
@@ -75,10 +66,16 @@ class NodeSystemExecution {
     bool CanCreateLink(NodeSocket* a, NodeSocket* b);
 
 
-   private:
+   protected:
     bool required_execution = true;
+    Node* default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry);
 
     unsigned m_NextId = 1;
+};
+
+struct GeoNodeSystemExecution: public NodeSystemExecution{
+    void try_execution() override;
+    Node* create_node_menu() override;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

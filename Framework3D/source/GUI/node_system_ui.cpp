@@ -51,7 +51,6 @@ using namespace ax;
 
 using ax::Widgets::IconType;
 
-
 struct NodeIdLess {
     bool operator()(const NodeId& lhs, const NodeId& rhs) const
     {
@@ -92,7 +91,9 @@ static bool Splitter(
 }
 
 struct NodeSystemImpl {
-    explicit NodeSystemImpl(const std::string& filename) : filename(filename)
+    explicit NodeSystemImpl(NodeSystemType type, const std::string& filename)
+        : node_system_type(type),
+          filename(filename)
     {
     }
 
@@ -126,6 +127,7 @@ struct NodeSystemImpl {
 
    private:
     ed::EditorContext* m_Editor = nullptr;
+    const NodeSystemType node_system_type;
 
     ImTextureID LoadTexture(const unsigned char* data, size_t buffer_size);
 
@@ -158,7 +160,12 @@ Node* NodeSystemImpl::SpawnComment()
 
 void NodeSystemImpl::OnStart()
 {
-    node_system_execution_ = std::make_unique<NodeSystemExecution>();
+    if (node_system_type == NodeSystemType::Geometry) {
+        node_system_execution_ = std::make_unique<GeoNodeSystemExecution>();
+    }
+    else {
+        node_system_execution_ = std::make_unique<NodeSystemExecution>();
+    }
 
     ed::Config config;
 
@@ -811,10 +818,14 @@ inline ImGuiWindowFlags GetWindowFlags()
     return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 }
 
-NodeSystem::NodeSystem(const std::string& file_name, const std::string& window_name)
-    : window_name(window_name)
+NodeSystem::NodeSystem(
+    NodeSystemType type,
+    const std::string& file_name,
+    const std::string& window_name)
+    : node_system_type(type),
+      window_name(window_name)
 {
-    impl_ = std::make_unique<NodeSystemImpl>(file_name);
+    impl_ = std::make_unique<NodeSystemImpl>(type, file_name);
     impl_->OnStart();
 }
 

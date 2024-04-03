@@ -5,17 +5,22 @@
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+enum class NodeSystemType { Geometry, Render };
 
 struct NodeSystemImpl;
 
 class USTC_CG_API NodeSystem {
    public:
-    explicit NodeSystem(const std::string& file_name, const std::string& window_name);
+    explicit NodeSystem(
+        NodeSystemType type,
+        const std::string& file_name,
+        const std::string& window_name);
     ~NodeSystem();
     void draw_imgui();
 
    protected:
     std::string window_name;
+    NodeSystemType node_system_type;
     std::unique_ptr<NodeSystemImpl> impl_;
 };
 
