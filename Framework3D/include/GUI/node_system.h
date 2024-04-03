@@ -5,11 +5,10 @@
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-enum class NodeSystemType { Geometry, Render };
+enum class NodeSystemType { Geometry, Render, Composition };
 
 struct NodeSystemImpl;
 class NodeTree;
-
 
 class USTC_CG_API NodeSystem {
    public:
@@ -20,6 +19,7 @@ class USTC_CG_API NodeSystem {
     ~NodeSystem();
     void draw_imgui();
     NodeTree* get_tree();
+
    protected:
     std::string window_name;
     NodeSystemType node_system_type;

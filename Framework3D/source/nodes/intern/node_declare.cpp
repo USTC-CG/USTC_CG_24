@@ -2,9 +2,9 @@
 
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/node.hpp"
-#include "Nodes/render_socket_types.hpp"
-#include "Nodes/stage_socket_types.hpp"
-#include "Nodes/geo_socket_types.hpp"
+#include "Nodes/socket_types/render_socket_types.hpp"
+#include "Nodes/socket_types/stage_socket_types.hpp"
+#include "Nodes/socket_types/geo_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 

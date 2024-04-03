@@ -38,16 +38,27 @@ const std::map<std::string, NodeTypeInfo*>& get_render_node_registry()
     return render_node_registry;
 }
 
+static std::map<std::string, NodeTypeInfo*> func_node_registry;
+
+const std::map<std::string, NodeTypeInfo*>& get_func_node_registry()
+{
+    return func_node_registry;
+}
+
+static std::map<std::string, NodeTypeInfo*> composition_node_registry;
+
+const std::map<std::string, NodeTypeInfo*>& get_composition_node_registry()
+{
+    return composition_node_registry;
+}
+
 void nodeRegisterType(NodeTypeInfo* type_info)
 {
     switch (type_info->node_type_of_grpah) {
         case NodeTypeOfGrpah::Geometry: geo_node_registry[type_info->id_name] = type_info; break;
         case NodeTypeOfGrpah::Render: render_node_registry[type_info->id_name] = type_info; break;
-
-        case NodeTypeOfGrpah::Function:
-            geo_node_registry[type_info->id_name] = type_info;
-            render_node_registry[type_info->id_name] = type_info;
-            break;
+        case NodeTypeOfGrpah::Function: func_node_registry[type_info->id_name] = type_info; break;
+        case NodeTypeOfGrpah::Composition: composition_node_registry[type_info->id_name] = type_info; break;
         default: logging("Unknown graph type of node.", Error);
     }
 
@@ -60,22 +71,21 @@ void nodeRegisterType(NodeTypeInfo* type_info)
 NodeTypeInfo* nodeTypeFind(const char* idname)
 {
     if (idname[0]) {
-        auto& geo_node_registry = get_geo_node_registry();
-        auto& render_node_registry = get_render_node_registry();
-
         NodeTypeInfo* nt;
-        if (geo_node_registry.find(std::string(idname)) != geo_node_registry.end()) {
-            nt = geo_node_registry.at(std::string(idname));
-            if (nt) {
-                return nt;
+
+        auto find_type = [idname, &nt](const std::map<std::string, NodeTypeInfo*>& node_registry) {
+            if (node_registry.find(std::string(idname)) != node_registry.end()) {
+                nt = node_registry.at(std::string(idname));
             }
-        }
-        if (render_node_registry.find(std::string(idname)) != render_node_registry.end()) {
-            nt = render_node_registry.at(std::string(idname));
-            if (nt) {
-                return nt;
-            }
-        }
+        };
+
+        find_type(get_geo_node_registry());
+        find_type(get_render_node_registry());
+        find_type(get_func_node_registry());
+        find_type(get_composition_node_registry());
+
+        if (nt)
+            return nt;
     }
     throw std::runtime_error("Id name not found.");
 }

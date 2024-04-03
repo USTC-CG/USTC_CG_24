@@ -11,12 +11,6 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
 enum class SocketType : uint32_t {
     ALL_SOCKET_TYPES
-    // Bool,
-    // Int,
-    // String,
-    // Object,
-    // Function,
-    // Delegate
 };
 
 #undef TypeSizeEnum

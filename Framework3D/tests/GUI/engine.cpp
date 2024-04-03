@@ -15,6 +15,9 @@ class NodeWindow final : public USTC_CG::Window {
             USTC_CG::NodeSystemType::Geometry, "GeoNodeSystem.json", "Geometric Nodes");
         render_graph_system = std::make_shared<USTC_CG::NodeSystem>(
             USTC_CG::NodeSystemType::Render, "RenderGraph.json", "Render Nodes");
+
+        composition_graph = std::make_shared<USTC_CG::NodeSystem>(
+            USTC_CG::NodeSystemType::Composition, "CompositionGraph.json", "Composition");
         renderer =
             std::make_shared<USTC_CG::UsdviewEngine>(USTC_CG::GlobalUsdStage::global_usd_stage);
     }
@@ -26,7 +29,7 @@ class NodeWindow final : public USTC_CG::Window {
         renderer->render(render_graph_system->get_tree());
         finishDockSpace();
     }
-
+    std::shared_ptr<USTC_CG::NodeSystem> composition_graph;
     std::shared_ptr<USTC_CG::NodeSystem> geonode_system;
     std::shared_ptr<USTC_CG::NodeSystem> render_graph_system;
     std::shared_ptr<USTC_CG::UsdviewEngine> renderer;
@@ -41,6 +44,10 @@ void NodeWindow::BuildUI()
 
     createDockSpace(2);
     render_graph_system->draw_imgui();
+    finishDockSpace();
+
+    createDockSpace(3);
+    composition_graph->draw_imgui();
     finishDockSpace();
 }
 

@@ -1,15 +1,10 @@
 #pragma once
 
 #include "USTC_CG.h"
-#include "make_standard_type.hpp"
-#include "Utils/Macro/map.h"
-#include "node_declare.hpp"
-#include "all_socket_types.hpp"
+#include "Nodes/pin.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
-
-DECLARE_SOCKET_TYPE(Geometry)
 
 // Here we don't use a template style since there are not many types following
 // this style... Later we may have all kinds of images and shaders.
@@ -124,11 +119,6 @@ class StringBuilder : public SocketDeclarationBuilder<String> {
         return *this;
     }
 };
-
-
-MACRO_MAP(DECLARE_SOCKET_TYPE, BUFFER_TYPES)
-
-
 }  // namespace decl
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

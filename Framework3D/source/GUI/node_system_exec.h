@@ -79,4 +79,9 @@ struct RenderNodeSystemExecution : public NodeSystemExecution {
     Node* create_node_menu() override;
 };
 
+struct CompositionNodeSystemExecution : public NodeSystemExecution {
+    void try_execution() override;
+    Node* create_node_menu() override;
+};
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE

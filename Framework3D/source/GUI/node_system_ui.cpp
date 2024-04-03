@@ -167,6 +167,9 @@ void NodeSystemImpl::OnStart()
     else if (node_system_type == NodeSystemType::Render) {
         node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();
     }
+    else if (node_system_type == NodeSystemType::Composition) {
+        node_system_execution_ = std::make_unique<CompositionNodeSystemExecution>();
+    }
 
     ed::Config config;
 
@@ -296,7 +299,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     static NodeSocket* newNodeLinkPin = nullptr;
     static NodeSocket* newLinkPin = nullptr;
 
-    static float leftPaneWidth = 400.0f;
+    static float leftPaneWidth = 200.0f;
     static float rightPaneWidth = 800.0f;
     Splitter(true, 4.0f, &leftPaneWidth, &rightPaneWidth, 50.0f, 50.0f);
 

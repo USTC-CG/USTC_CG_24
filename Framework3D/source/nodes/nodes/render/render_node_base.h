@@ -1,5 +1,5 @@
 #pragma once
-#include "Nodes/render_socket_types.hpp"
+#include "Nodes/socket_types/render_socket_types.hpp"
 #include "Nodes/node.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

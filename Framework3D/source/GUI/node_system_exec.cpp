@@ -158,20 +158,85 @@ void GeoNodeSystemExecution::try_execution()
 
 Node* GeoNodeSystemExecution::create_node_menu()
 {
-    auto& registry = get_geo_node_registry();
+    auto& geo_node_registry = get_geo_node_registry();
+    auto& func_node_registry = get_func_node_registry();
 
-    Node* node;
-    node = default_node_menu(registry);
+    Node* node = nullptr;
+
+    if (ImGui::BeginMenu("Function Nodes")) {
+        for (auto&& value : func_node_registry) {
+            auto name = value.second->ui_name;
+            if (ImGui::MenuItem(name))
+                node = node_tree->nodeAddNode(value.second->id_name);
+        }
+        ImGui::EndMenu();
+    }
+
+    for (auto&& value : geo_node_registry) {
+        auto name = value.second->ui_name;
+        if (ImGui::MenuItem(name))
+            node = node_tree->nodeAddNode(value.second->id_name);
+    }
 
     return node;
 }
 
 Node* RenderNodeSystemExecution::create_node_menu()
 {
-    auto& registry = get_render_node_registry();
+    auto& render_registry = get_render_node_registry();
+    auto& func_node_registry = get_func_node_registry();
 
-    Node* node;
-    node = default_node_menu(registry);
+    Node* node = nullptr;
+
+    if (ImGui::BeginMenu("Function Nodes")) {
+        for (auto&& value : func_node_registry) {
+            auto name = value.second->ui_name;
+            if (ImGui::MenuItem(name))
+                node = node_tree->nodeAddNode(value.second->id_name);
+        }
+        ImGui::EndMenu();
+    }
+
+    for (auto&& value : render_registry) {
+        auto name = value.second->ui_name;
+        if (ImGui::MenuItem(name))
+            node = node_tree->nodeAddNode(value.second->id_name);
+    }
+
+    return node;
+}
+
+void CompositionNodeSystemExecution::try_execution()
+{
+    if (required_execution) {
+        auto& stage = GlobalUsdStage::global_usd_stage;
+
+        executor->execute(node_tree.get());
+        required_execution = false;
+    }
+}
+
+Node* CompositionNodeSystemExecution::create_node_menu()
+{
+    auto& composition_registry = get_composition_node_registry();
+    auto& func_node_registry = get_func_node_registry();
+
+    Node* node = nullptr;
+
+    if (ImGui::BeginMenu("Function Nodes")) {
+        for (auto&& value : func_node_registry) {
+            auto name = value.second->ui_name;
+            if (ImGui::MenuItem(name))
+                node = node_tree->nodeAddNode(value.second->id_name);
+        }
+        ImGui::EndMenu();
+    }
+
+    for (auto&& value : composition_registry) {
+        auto name = value.second->ui_name;
+        if (ImGui::MenuItem(name))
+            node = node_tree->nodeAddNode(value.second->id_name);
+    }
 
     return node;
 }

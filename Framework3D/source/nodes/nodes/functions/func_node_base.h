@@ -1,5 +1,6 @@
 #pragma once
-#include "Nodes/geo_socket_types.hpp"
+#include "Nodes/socket_types/geo_socket_types.hpp"
+#include "Nodes/socket_types/buffer_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 inline void func_node_type_base(NodeTypeInfo* ntype)
