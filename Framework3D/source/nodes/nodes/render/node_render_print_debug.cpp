@@ -1,6 +1,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
+#include "camera.h"
 #include "light.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "render_node_base.h"
@@ -10,12 +11,18 @@ namespace USTC_CG::node_debug_info {
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Lights>("Lights");
+    b.add_input<decl::Camera>("Camera");
 }
 
 static void node_exec(ExeParams params)
 {
     // Left empty.
     auto lights = params.get_input<LightArray>("Lights");
+    auto cameras = params.get_input<CameraArray>("Camera");
+
+    for (auto&& camera : cameras) {
+        std::cout << camera->GetTransform() << std::endl;
+    }
 
     for (auto&& light : lights) {
         std::cout << light->Get(HdTokens->transform).Cast<GfMatrix4d>() << std::endl;

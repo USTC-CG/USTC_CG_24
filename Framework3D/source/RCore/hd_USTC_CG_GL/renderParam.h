@@ -54,7 +54,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
           _sceneVersion(sceneVersion),
           executor(executor),
           lights(lights),
-          camera(camera)
+          cameras(camera)
     {
     }
     HdRenderThread *_renderThread = nullptr;
@@ -62,7 +62,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     NodeTreeExecutor *executor;
     NodeTree *node_tree;
     pxr::VtArray<Hd_USTC_CG_Light *> *lights;
-    pxr::VtArray<Hd_USTC_CG_Camera *> *camera = nullptr;
+    pxr::VtArray<Hd_USTC_CG_Camera *> *cameras = nullptr;
 
    private:
     /// A handle to the global render thread.

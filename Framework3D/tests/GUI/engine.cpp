@@ -25,6 +25,10 @@ class NodeWindow final : public USTC_CG::Window {
    protected:
     void Render() override
     {
+        createDockSpace(2);
+        render_graph_system->draw_imgui();
+        finishDockSpace();
+
         createDockSpace(1);
         renderer->render(render_graph_system->get_tree());
         finishDockSpace();
@@ -40,10 +44,6 @@ void NodeWindow::BuildUI()
 {
     createDockSpace(0);
     geonode_system->draw_imgui();
-    finishDockSpace();
-
-    createDockSpace(2);
-    render_graph_system->draw_imgui();
     finishDockSpace();
 
     createDockSpace(3);

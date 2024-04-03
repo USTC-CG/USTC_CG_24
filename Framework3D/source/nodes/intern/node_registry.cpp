@@ -58,7 +58,9 @@ void nodeRegisterType(NodeTypeInfo* type_info)
         case NodeTypeOfGrpah::Geometry: geo_node_registry[type_info->id_name] = type_info; break;
         case NodeTypeOfGrpah::Render: render_node_registry[type_info->id_name] = type_info; break;
         case NodeTypeOfGrpah::Function: func_node_registry[type_info->id_name] = type_info; break;
-        case NodeTypeOfGrpah::Composition: composition_node_registry[type_info->id_name] = type_info; break;
+        case NodeTypeOfGrpah::Composition:
+            composition_node_registry[type_info->id_name] = type_info;
+            break;
         default: logging("Unknown graph type of node.", Error);
     }
 
@@ -182,6 +184,13 @@ static SocketTypeInfo* make_socket_type_Layer()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Layer);
     socktype->cpp_type = &CPPType::get<pxr::UsdStageRefPtr>();
+    return socktype;
+}
+
+static SocketTypeInfo* make_socket_type_Camera()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Camera);
+    socktype->cpp_type = &CPPType::get<CameraArray>();
     return socktype;
 }
 

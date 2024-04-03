@@ -27,6 +27,7 @@ BLI_CPP_TYPE_MAKE(std::string, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(GOperandBase, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(LightArray, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(pxr::UsdStageRefPtr, CPPTypeFlags::EqualityComparable)
+BLI_CPP_TYPE_MAKE(CameraArray, CPPTypeFlags::EqualityComparable)
 
 // Buffers
 BLI_CPP_TYPE_MAKE(pxr::VtArray<float>, CPPTypeFlags::BasicType)
@@ -46,6 +47,7 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(GOperandBase);
     BLI_CPP_TYPE_REGISTER(LightArray);
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);
+    BLI_CPP_TYPE_REGISTER(CameraArray);
 
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<float>);
     BLI_CPP_TYPE_REGISTER(pxr::VtArray<pxr::GfVec2f>);
