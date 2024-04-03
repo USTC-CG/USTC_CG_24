@@ -1,5 +1,6 @@
 #include "node_system_exec.h"
 
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_register.h"
 #include "Nodes/node_tree.hpp"

@@ -93,6 +93,7 @@ struct Node {
 void nodeRegisterType(NodeTypeInfo* type_info);
 
 const std::map<std::string, NodeTypeInfo*>& get_geo_node_registry();
+const std::map<std::string, NodeTypeInfo*>& get_render_node_registry();
 
 NodeSocket* nodeAddSocket(
     NodeTree* ntree,

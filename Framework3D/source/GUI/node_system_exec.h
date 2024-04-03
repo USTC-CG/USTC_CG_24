@@ -1,12 +1,8 @@
 #pragma once
 
-#include "GCore/GOP.h"
-#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
-#include "imgui.h"
-#include "pxr/usd/usd/primRange.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeSystemExecution {

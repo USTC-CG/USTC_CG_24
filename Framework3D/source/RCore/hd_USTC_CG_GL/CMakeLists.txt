@@ -15,6 +15,7 @@ pxr_plugin(${PXR_PACKAGE}
         hdx
         ${TBB_tbb_LIBRARY}
         usdLux
+        nodes
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}

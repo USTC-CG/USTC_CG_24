@@ -6,7 +6,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 static void reset_declaration(NodeDeclaration& declaration)
 {
     std::destroy_at(&declaration);
-    new(&declaration) NodeDeclaration();
+    new (&declaration) NodeDeclaration();
 }
 
 void build_node_declaration(
@@ -28,17 +28,32 @@ const std::map<std::string, NodeTypeInfo*>& get_geo_node_registry()
     return geo_node_registry;
 }
 
+static std::map<std::string, NodeTypeInfo*> render_node_registry;
+
+const std::map<std::string, NodeTypeInfo*>& get_render_node_registry()
+{
+    return render_node_registry;
+}
+
 void nodeRegisterType(NodeTypeInfo* type_info)
 {
-    geo_node_registry[type_info->id_name] = type_info;
+    switch (type_info->node_type_of_grpah) {
+        case NodeTypeOfGrpah::Geometry: geo_node_registry[type_info->id_name] = type_info; break;
+        case NodeTypeOfGrpah::Rendering:
+            render_node_registry[type_info->id_name] = type_info;
+            break;
+
+        case NodeTypeOfGrpah::Function:
+            geo_node_registry[type_info->id_name] = type_info;
+            render_node_registry[type_info->id_name] = type_info;
+            break;
+        default: logging("Unknown graph type of node.", Error);
+    }
+
     if (type_info->declare) {
         type_info->static_declaration = std::make_unique<NodeDeclaration>();
     }
-    build_node_declaration(
-        *type_info,
-        *type_info->static_declaration,
-        nullptr,
-        nullptr);
+    build_node_declaration(*type_info, *type_info->static_declaration, nullptr, nullptr);
 }
 
 NodeTypeInfo* nodeTypeFind(const char* idname)
@@ -77,15 +92,16 @@ const char* get_socket_typename(SocketType socket)
         case SocketType::Geometry: return "SocketGeometry";
         case SocketType::Int: return "SocketInt";
         case SocketType::Float: return "SocketFloat";
-        case SocketType::String: return "SocketString";
-        GetTypeName(Float, 1);
-        GetTypeName(Float, 2);
-        GetTypeName(Float, 3);
-        GetTypeName(Float, 4);
-        GetTypeName(Int, 1);
-        GetTypeName(Int, 2);
-        GetTypeName(Int, 3);
-        GetTypeName(Int, 4);
+        case SocketType::String:
+            return "SocketString";
+            GetTypeName(Float, 1);
+            GetTypeName(Float, 2);
+            GetTypeName(Float, 3);
+            GetTypeName(Float, 4);
+            GetTypeName(Int, 1);
+            GetTypeName(Int, 2);
+            GetTypeName(Int, 3);
+            GetTypeName(Int, 4);
         default: return "";
     }
 }
@@ -119,13 +135,12 @@ static SocketTypeInfo* make_socket_type_string()
     return socktype;
 }
 
-#define MakeTypeBuffer(Type, Item, Size)                               \
-    static SocketTypeInfo* make_socket_type_##Type##Size##_buffer()    \
-    {                                                                  \
-        SocketTypeInfo* socktype =                                     \
-            make_standard_socket_type(SocketType::Type##Size##Buffer); \
-        socktype->cpp_type = &CPPType::get<pxr::VtArray<Item>>();      \
-        return socktype;                                               \
+#define MakeTypeBuffer(Type, Item, Size)                                                      \
+    static SocketTypeInfo* make_socket_type_##Type##Size##_buffer()                           \
+    {                                                                                         \
+        SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Type##Size##Buffer); \
+        socktype->cpp_type = &CPPType::get<pxr::VtArray<Item>>();                             \
+        return socktype;                                                                      \
     }
 
 MakeTypeBuffer(Float, float, 1);
@@ -149,8 +164,7 @@ static SocketTypeInfo* make_socket_type_geometry()
 
 void register_socket(SocketTypeInfo* type_info)
 {
-    socket_registry[type_info->type_name] =
-        std::unique_ptr<SocketTypeInfo>(type_info);
+    socket_registry[type_info->type_name] = std::unique_ptr<SocketTypeInfo>(type_info);
 }
 
 void register_sockets()

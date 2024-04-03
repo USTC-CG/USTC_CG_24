@@ -75,11 +75,8 @@ Hd_USTC_CG_RenderPass::_Execute(
     const HdRenderPassStateSharedPtr& renderPassState,
     const TfTokenVector& renderTags)
 {
-    // XXX: Add collection and renderTags support.
-    // XXX: Add clip planes support.
 
-    // Determine whether the scene has changed since the last time we rendered.
-    bool needStartRender = true;
+    bool needStartRender = false;
     int currentSceneVersion = _sceneVersion->load();
     if (_lastSceneVersion != currentSceneVersion)
     {

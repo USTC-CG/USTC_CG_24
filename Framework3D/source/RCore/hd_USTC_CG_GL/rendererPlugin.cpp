@@ -35,10 +35,6 @@ TF_REGISTRY_FUNCTION(TfType)
     HdRendererPluginRegistry::Define<Hd_USTC_CG_GL_RendererPlugin>();
 }
 
-void foo()
-{
-}
-
 HdRenderDelegate* Hd_USTC_CG_GL_RendererPlugin::CreateRenderDelegate()
 {
     return new USTC_CG::Hd_USTC_CG_RenderDelegate();
