@@ -4,11 +4,11 @@
 #include "pin.hpp"
 #include "make_standard_type.hpp"
 #include "Utils/Macro/map.h"
+#include "all_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
 
-#define STAGE_SOCKET_TYPES Layer
 MACRO_MAP(DECLARE_SOCKET_TYPE, STAGE_SOCKET_TYPES)
 
 }  // namespace decl

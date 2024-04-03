@@ -3,6 +3,8 @@
 #include "USTC_CG.h"
 #include "make_standard_type.hpp"
 #include "Utils/Macro/map.h"
+#include "node_declare.hpp"
+#include "all_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
@@ -123,13 +125,9 @@ class StringBuilder : public SocketDeclarationBuilder<String> {
     }
 };
 
-#define BUFFER_TYPES                                                                          \
-    Int1Buffer, Int2Buffer, Int3Buffer, Int4Buffer, Float1Buffer, Float2Buffer, Float3Buffer, \
-        Float4Buffer
 
 MACRO_MAP(DECLARE_SOCKET_TYPE, BUFFER_TYPES)
 
-#define GEO_SOCKET_TYPES Geometry, Int, String, Float, BUFFER_TYPES
 
 }  // namespace decl
 

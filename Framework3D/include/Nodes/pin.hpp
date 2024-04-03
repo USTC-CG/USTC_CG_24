@@ -4,25 +4,13 @@
 #include "USTC_CG.h"
 #include "Utils/Functions/CPPType.hpp"
 #include "Utils/json.hpp"
+#include "all_socket_types.hpp"
 #include "id.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
 enum class SocketType : uint32_t {
-    Geometry,
-    Int,
-    Float,
-    String,
-    TypeSizeEnum(Float, 1),
-    TypeSizeEnum(Float, 2),
-    TypeSizeEnum(Float, 3),
-    TypeSizeEnum(Float, 4),
-    TypeSizeEnum(Int, 1),
-    TypeSizeEnum(Int, 2),
-    TypeSizeEnum(Int, 3),
-    TypeSizeEnum(Int, 4),
-    Lights,
-    Layer
+    ALL_SOCKET_TYPES
     // Bool,
     // Int,
     // String,
