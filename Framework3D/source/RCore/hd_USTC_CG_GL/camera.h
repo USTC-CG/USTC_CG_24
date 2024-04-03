@@ -21,9 +21,7 @@ public:
         HdSceneDelegate* sceneDelegate,
         HdRenderParam* renderParam,
         HdDirtyBits* dirtyBits) override;
-    virtual GfRay generateRay(
-        GfVec2f pixel_center,
-        const std::function<float()>& function) const;
+
 
     void update(const HdRenderPassStateSharedPtr& renderPassState) const;
 

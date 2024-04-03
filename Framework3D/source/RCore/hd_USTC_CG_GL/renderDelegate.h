@@ -24,13 +24,13 @@
 #ifndef EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDER_DELEGATE_H
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDER_DELEGATE_H
 
+#include "Nodes/node_exec.hpp"
+#include "Nodes/node_tree.hpp"
 #include "pxr/base/tf/staticTokens.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/pxr.h"
 #include "renderParam.h"
 #include "renderer.h"
-#include "Nodes/node_tree.hpp"
-#include "Nodes/node_exec.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class Hd_USTC_CG_Light;
@@ -82,7 +82,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     HdRenderParam* GetRenderParam() const override;
     void SetRenderSetting(const TfToken& key, const VtValue& value) override;
 
-private:
+   private:
     static const TfTokenVector SUPPORTED_RPRIM_TYPES;
     static const TfTokenVector SUPPORTED_SPRIM_TYPES;
     static const TfTokenVector SUPPORTED_BPRIM_TYPES;
@@ -95,6 +95,7 @@ private:
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
     std::unique_ptr<NodeTreeExecutor> executor;
     pxr::VtArray<Hd_USTC_CG_Light*> lights;
+    pxr::VtArray<Hd_USTC_CG_Camera*> cameras;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;

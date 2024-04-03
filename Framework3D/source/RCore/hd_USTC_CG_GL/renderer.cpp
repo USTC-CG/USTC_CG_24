@@ -45,6 +45,11 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
                 auto output_socket = node->outputs[0];
                 executor->fill_node_before_execution(output_socket, render_param->lights);
             }
+            if (std::string(node->typeinfo->id_name) == "render_scene_camera") {
+                assert(node->outputs.size() == 1);
+                auto output_socket = node->outputs[0];
+                executor->fill_node_before_execution(output_socket, render_param->camera->front());
+            }
         }
     }
     executor->execute_tree(node_tree);

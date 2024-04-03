@@ -32,6 +32,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class Hd_USTC_CG_Light;
+class Hd_USTC_CG_Camera;
 using namespace pxr;
 
 ///
@@ -47,11 +48,13 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
         HdRenderThread *renderThread,
         std::atomic<int> *sceneVersion,
         pxr::VtArray<Hd_USTC_CG_Light *> *lights,
+        pxr::VtArray<Hd_USTC_CG_Camera *> *camera,
         NodeTreeExecutor *executor)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion),
           executor(executor),
-          lights(lights)
+          lights(lights),
+          camera(camera)
     {
     }
     HdRenderThread *_renderThread = nullptr;
@@ -59,6 +62,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     NodeTreeExecutor *executor;
     NodeTree *node_tree;
     pxr::VtArray<Hd_USTC_CG_Light *> *lights;
+    pxr::VtArray<Hd_USTC_CG_Camera *> *camera = nullptr;
 
    private:
     /// A handle to the global render thread.

@@ -82,6 +82,7 @@ protected:
     // respect to the data window).
     GfMatrix4d _projMatrix;
     GfRect2i _dataWindow;
+    bool needStartRender = true;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -76,7 +76,6 @@ Hd_USTC_CG_RenderPass::_Execute(
     const TfTokenVector& renderTags)
 {
 
-    bool needStartRender = false;
     int currentSceneVersion = _sceneVersion->load();
     if (_lastSceneVersion != currentSceneVersion)
     {
@@ -137,6 +136,7 @@ Hd_USTC_CG_RenderPass::_Execute(
         _renderer->MarkAovBuffersUnconverged();
         _renderer->Clear();
         _renderer->Render(nullptr);
+        needStartRender = false;
         //_renderThread->StartRender();
     }
 }

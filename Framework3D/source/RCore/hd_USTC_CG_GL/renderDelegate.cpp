@@ -105,7 +105,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 
     executor = std::make_unique<EagerNodeTreeExecutor>();
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
-        &_renderThread, &_sceneVersion, &lights, executor.get());
+        &_renderThread, &_sceneVersion, &lights, &cameras, executor.get());
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -209,7 +209,9 @@ void Hd_USTC_CG_RenderDelegate::DestroyRprim(HdRprim* rPrim)
 HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const SdfPath& sprimId)
 {
     if (typeId == HdPrimTypeTokens->camera) {
-        return new Hd_USTC_CG_Camera(sprimId);
+        auto camera = new Hd_USTC_CG_Camera(sprimId);
+        cameras.push_back(camera);
+        return camera;
     }
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(sprimId);
@@ -231,13 +233,17 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
     // For fallback sprims, create objects with an empty scene path.
     // They'll use default values and won't be updated by a scene delegate.
     if (typeId == HdPrimTypeTokens->camera) {
-        return new HdCamera(SdfPath::EmptyPath());
+        auto camera = new Hd_USTC_CG_Camera(SdfPath::EmptyPath());
+        cameras.push_back(camera);
+        return camera;
     }
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(SdfPath::EmptyPath());
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
+        auto light = new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
+        lights.push_back(light);
+        return light;
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
