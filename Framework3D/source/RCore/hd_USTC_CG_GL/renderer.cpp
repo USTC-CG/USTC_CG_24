@@ -44,7 +44,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
             if (std::string(node->typeinfo->id_name) == id_name) {
                 assert(node->outputs.size() == 1);
                 auto output_socket = node->outputs[0];
-                executor->fill_node_before_execution(output_socket, data);
+                executor->sync_node_from_external_storage(output_socket, data);
             }
         };
         try_fill_info("render_scene_lights", render_param->lights);
@@ -56,9 +56,9 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     for (auto&& node : node_tree->nodes) {
         auto try_fetch_info = [&node, &executor](const char* id_name, void* data) {
             if (std::string(node->typeinfo->id_name) == id_name) {
-                assert(node->outputs.size() == 1);
-                auto output_socket = node->outputs[0];
-                executor->fill_node_before_execution(texture, output_socket);
+                assert(node->inputs.size() == 1);
+                auto output_socket = node->inputs[0];
+                executor->sync_node_to_external_storage(output_socket, data);
             }
         };
         try_fetch_info("render_present", &texture);

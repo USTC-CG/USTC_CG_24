@@ -63,7 +63,7 @@ class NodeSystemExecution {
 
 
    protected:
-    bool required_execution = true;
+    bool required_execution = false;
     Node* default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry);
 
     unsigned m_NextId = 1;

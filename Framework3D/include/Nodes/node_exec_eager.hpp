@@ -29,7 +29,9 @@ class EagerNodeTreeExecutor final : public NodeTreeExecutor {
     void prepare_memory();
     void prepare_tree(NodeTree* tree)override;
     void execute_tree(NodeTree* tree)override;
-    void fill_node_before_execution(NodeSocket* socket, void* data) override;
+    GMutablePointer FindPtr(NodeSocket* socket);
+    void sync_node_from_external_storage(NodeSocket* socket, void* data) override;
+    void sync_node_to_external_storage(NodeSocket* socket, void* data) override;
 
    private:
     ExeParams prepare_params(NodeTree* tree, Node* node);

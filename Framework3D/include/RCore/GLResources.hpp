@@ -3,6 +3,7 @@
 #include "USTC_CG.h"
 #include "pxr/base/gf/vec2i.h"
 #include "pxr/imaging/garch/glApi.h"
+#include "pxr/imaging/hd/types.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -10,10 +11,11 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 
 struct TextureDesc {
     pxr::GfVec2i size;
+    pxr::HdFormat format;
 
     friend bool operator==(const TextureDesc& lhs, const TextureDesc& rhs)
     {
-        return lhs.size == rhs.size;
+        return lhs.size == rhs.size && lhs.format == rhs.format;
     }
 
     friend bool operator!=(const TextureDesc& lhs, const TextureDesc& rhs)
@@ -27,13 +29,7 @@ struct TextureHandle {
     GLuint texture_id;
 };
 
-inline TextureHandle createTexture(const TextureDesc& desc)
-{
-    TextureHandle ret;
-    ret.desc = desc;
-    glCreateTextures(GL_TEXTURE_2D, 1, &ret.texture_id);
-    return ret;
-}
+TextureHandle createTexture(const TextureDesc& desc);
 
 inline void destroyTexture(TextureHandle texture)
 {

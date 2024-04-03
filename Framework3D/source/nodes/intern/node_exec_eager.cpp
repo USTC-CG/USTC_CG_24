@@ -200,18 +200,31 @@ void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
     }
 }
 
-void EagerNodeTreeExecutor::fill_node_before_execution(NodeSocket* socket, void* data)
+GMutablePointer EagerNodeTreeExecutor::FindPtr(NodeSocket* socket)
+{
+    GMutablePointer ptr;
+    if (socket->in_out == PinKind::Input) {
+        ptr = input_states[index_cache[socket]].value;
+    }
+    else {
+        ptr = output_states[index_cache[socket]].value;
+    }
+    return ptr;
+}
+
+void EagerNodeTreeExecutor::sync_node_from_external_storage(NodeSocket* socket, void* data)
 {
     if (index_cache.find(socket) != index_cache.end()) {
-        GMutablePointer ptr;
-
-        if (socket->in_out == PinKind::Input) {
-            ptr = input_states[index_cache[socket]].value;
-        }
-        else {
-            ptr = output_states[index_cache[socket]].value;
-        }
+        GMutablePointer ptr = FindPtr(socket);
         ptr.type()->copy_construct(data, ptr.get());
+    }
+}
+
+void EagerNodeTreeExecutor::sync_node_to_external_storage(NodeSocket* socket, void* data)
+{
+    if (index_cache.find(socket) != index_cache.end()) {
+        GMutablePointer ptr = FindPtr(socket);
+        ptr.type()->copy_construct(ptr.get(), data);
     }
 }
 

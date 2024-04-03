@@ -706,8 +706,9 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
         drawList->PopClipRect();
     }
-
-    node_system_execution_->try_execution();
+    if (node_system_type != NodeSystemType::Render) {
+        node_system_execution_->try_execution();
+    }
 }
 
 ImTextureID NodeSystemImpl::LoadTexture(const unsigned char* data, size_t buffer_size)

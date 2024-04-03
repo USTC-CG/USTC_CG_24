@@ -54,7 +54,7 @@ add_library(nodes STATIC "${CPP_FILES}")
 target_link_libraries(nodes_generated nodes)
 target_link_libraries(nodes nodes_generated)
 
-target_link_libraries(nodes GCore)
+target_link_libraries(nodes GCore RCore)
 target_link_libraries(nodes Eigen3::Eigen)
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
 target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)
