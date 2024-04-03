@@ -169,8 +169,8 @@ void Window::render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    BuildUI();
     Render();
+    BuildUI();
 
     ImGui::Render();
 
