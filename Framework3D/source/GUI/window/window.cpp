@@ -20,8 +20,7 @@ Window::Window(const std::string& window_name) : name_(window_name)
         throw std::runtime_error("Failed to initialize GLFW!");
     }
 
-    window_ =
-        glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
+    window_ = glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
     if (window_ == nullptr) {
         glfwTerminate();  // Ensure GLFW is cleaned up before throwing
         throw std::runtime_error("Failed to create GLFW window!");
@@ -78,21 +77,16 @@ void Window::createDockSpace(unsigned dock_id)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus |
-                    ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+    window_flags |= ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-    ImGui::Begin(
-        ("DockSpace" + std::to_string(dock_id)).c_str(), 0, window_flags);
+    ImGui::Begin(("DockSpace" + std::to_string(dock_id)).c_str(), 0, window_flags);
     ImGui::PopStyleVar(3);
 
     ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 
-    ImGui::DockSpace(
-        dockspace_id,
-        ImVec2(0.0f, 0.0f),
-        ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 void Window::finishDockSpace()
@@ -109,15 +103,12 @@ void Window::BuildUI()
 
 bool Window::init_glfw()
 {
-    glfwSetErrorCallback([](int error, const char* desc) {
-        fprintf(stderr, "GLFW Error %d: %s\n", error, desc);
-    });
+    glfwSetErrorCallback(
+        [](int error, const char* desc) { fprintf(stderr, "GLFW Error %d: %s\n", error, desc); });
 
     if (!glfwInit()) {
         return false;
     }
-
-    
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -149,16 +140,13 @@ bool Window::init_gui()
     io.DisplayFramebufferScale.x = xscale;
     io.DisplayFramebufferScale.x = yscale;
 
-
     ImGui_ImplGlfw_InitForOpenGL(window_, true);
-    #ifdef __APPLE__
+#ifdef __APPLE__
     ImGui_ImplOpenGL3_Init("#version 410");
-    #else
+#else
     io.FontGlobalScale = xscale;
     ImGui_ImplOpenGL3_Init("#version 130");
-    #endif
-
-
+#endif
 
     return true;
 }

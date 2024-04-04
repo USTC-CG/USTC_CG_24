@@ -30,7 +30,7 @@ class NodeWindow final : public USTC_CG::Window {
         finishDockSpace();
 
         createDockSpace(1);
-        renderer->render(render_graph_system->get_tree());
+        renderer->render(render_graph_system->get_tree(), render_graph_system->get_executor());
         finishDockSpace();
     }
     std::shared_ptr<USTC_CG::NodeSystem> composition_graph;

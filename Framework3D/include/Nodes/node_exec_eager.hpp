@@ -19,6 +19,7 @@ struct RuntimeInputState {
 
 struct RuntimeOutputState {
     GMutablePointer value = nullptr;
+    bool is_last_used = false;
 };
 
 // Provide single threaded execution. The aim of this executor is simplicity and

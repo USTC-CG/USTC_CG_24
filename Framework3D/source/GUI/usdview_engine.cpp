@@ -40,6 +40,7 @@ class UsdviewEngineImpl {
 
     void DrawMenuBar();
     void OnFrame(float delta_time, NodeTree* node_tree);
+    void OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor);
     void refresh_platform_texture();
     void refresh_viewport(int x, int y);
     void OnResize(int x, int y);
@@ -104,7 +105,7 @@ void UsdviewEngineImpl::DrawMenuBar()
     ImGui::EndMenuBar();
 }
 
-void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree)
+void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor)
 {
     DrawMenuBar();
     // Update the camera when mouse is in the subwindow
@@ -117,7 +118,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree)
 
     renderer_->SetCameraState(viewMatrix, projectionMatrix);
     renderer_->SetRendererAov(HdAovTokens->color);
-    renderer_->SetRendererSetting(TfToken("RenderNodeTree"),VtValue((void*)node_tree));
+    renderer_->SetRendererSetting(TfToken("RenderNodeTree"), VtValue((void*)node_tree));
+    renderer_->SetRendererSetting(TfToken("RenderNodeTreeExecutor"), VtValue((void*)executor));
 
     _renderParams.enableLighting = true;
     _renderParams.enableSceneMaterials = true;
@@ -247,7 +249,7 @@ UsdviewEngine::~UsdviewEngine()
 {
 }
 
-void UsdviewEngine::render(NodeTree* render_nodetree)
+void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
@@ -257,7 +259,7 @@ void UsdviewEngine::render(NodeTree* render_nodetree)
 
     impl_->OnResize(size.x, size.y);
 
-    impl_->OnFrame(delta_time, render_nodetree);
+    impl_->OnFrame(delta_time, node_tree, get_executor);
 
     ImGui::End();
 }

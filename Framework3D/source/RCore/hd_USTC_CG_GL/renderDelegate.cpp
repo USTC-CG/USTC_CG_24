@@ -103,9 +103,8 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
-    executor = CreateEagerNodeTreeExecutorRender();
-    _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
-        &_renderThread, &_sceneVersion, &lights, &cameras, executor.get());
+    _renderParam =
+        std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion, &lights, &cameras);
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -313,6 +312,9 @@ void Hd_USTC_CG_RenderDelegate::SetRenderSetting(const TfToken& key, const VtVal
     HdRenderDelegate::SetRenderSetting(key, value);
     if (key == TfToken("RenderNodeTree")) {
         _renderParam->node_tree = static_cast<NodeTree*>(value.Get<void*>());
+    }
+    if (key == TfToken("RenderNodeTreeExecutor")) {
+        _renderParam->executor = static_cast<NodeTreeExecutor*>(value.Get<void*>());
     }
 }
 

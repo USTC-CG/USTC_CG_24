@@ -26,12 +26,14 @@ class ResourceAllocator {
 #define JUDGE_RESOURCE_DYNAMIC(RSC) if (CPPType::get<RSC##Handle>() == *handle.type())
 #define JUDGE_RESOURCE(RSC)         if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
 
-#define RESOLVE_DESTROY(RESOURCE)                    \
-    RESOURCE##Handle h;                              \
-    handle.type()->copy_construct(handle.get(), &h); \
-    PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };    \
-    resolveCacheDestroy(                             \
-        h, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE));
+#define RESOLVE_DESTROY(RESOURCE)                                                          \
+    RESOURCE##Handle h;                                                                    \
+    handle.type()->copy_construct(handle.get(), &h);                                       \
+    if (h) {                                                                               \
+        PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };                                      \
+        resolveCacheDestroy(                                                               \
+            h, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE)); \
+    }
 
    public:
     explicit ResourceAllocator() noexcept;
@@ -69,12 +71,8 @@ class ResourceAllocator {
     void destroy(GMutablePointer handle) noexcept
     {
         if constexpr (mEnabled) {
-            if (CPPType::get<TextureHandle>() == *handle.type()) {
-                TextureHandle h;
-                handle.type()->copy_construct(handle.get(), &h);
-                TextureCachePayload payload{ h, mAge, 0 };
-                resolveCacheDestroy(h, mTextureCacheSize, payload, mTextureCache, mInUseTexture);
-            };
+            // If code runs here, It means some of your output resource is not created;
+            MACRO_MAP(FOREACH_DESTROY, RESOURCE_LIST)
         }
         else {
             handle = nullptr;

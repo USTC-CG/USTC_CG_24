@@ -62,14 +62,19 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
             }
         };
         try_fetch_info("render_present", &texture);
+        if (texture) {
+            break;
+        }
     }
     if (texture) {
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
             auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
-            rb->tex = texture->texture_id;
+            rb->Present(texture->texture_id);
             rb->SetConverged(true);
         }
     }
+
+    executor->finalize(node_tree);
 }
 
 void Hd_USTC_CG_Renderer::Clear()
@@ -162,6 +167,18 @@ void Hd_USTC_CG_Renderer::renderTimeUpdateCamera(const HdRenderPassStateSharedPt
 {
     camera_ = static_cast<const Hd_USTC_CG_Camera*>(renderPassState->GetCamera());
     camera_->update(renderPassState);
+}
+
+bool Hd_USTC_CG_Renderer::nodetree_modified()
+{
+    return render_param->node_tree->GetDirty();
+}
+
+bool Hd_USTC_CG_Renderer::nodetree_modified(bool new_status)
+{
+    auto old_status = render_param->node_tree->GetDirty();
+    render_param->node_tree->SetDirty(new_status);
+    return old_status;
 }
 
 bool Hd_USTC_CG_Renderer::_ValidateAovBindings()

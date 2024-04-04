@@ -21,8 +21,10 @@ class Hd_USTC_CG_Renderer {
     void MarkAovBuffersUnconverged();
 
     void renderTimeUpdateCamera(const HdRenderPassStateSharedPtr& renderPassState);
+    bool nodetree_modified();
+    bool nodetree_modified(bool new_status);
 
-   protected:
+protected:
     void _RenderTiles(HdRenderThread* renderThread, size_t tileStart, size_t tileEnd);
     static GfVec4f _GetClearColor(const VtValue& clearValue);
 

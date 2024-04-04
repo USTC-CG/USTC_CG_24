@@ -231,6 +231,27 @@ void Hd_USTC_CG_RenderBufferGL::Clear(const int *value)
     assert(glGetError() == 0);
 }
 
+void Hd_USTC_CG_RenderBufferGL::Present(GLuint texture)
+{
+    GLuint temp;
+    glCreateFramebuffers(1,&temp);
+    // 绑定传入的纹理到帧缓冲
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    // 绑定自己的纹理到读取帧缓冲
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+
+    // 拷贝纹理数据到成员变量
+    glBlitFramebuffer(
+        0, 0, _width, _height, 0, 0, _width, _height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    // 解绑定帧缓冲
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 GLenum Hd_USTC_CG_RenderBufferGL::_GetGLFormat(HdFormat hd_format)
 {
     switch (hd_format) {

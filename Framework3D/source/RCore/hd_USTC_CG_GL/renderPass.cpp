@@ -22,14 +22,14 @@
 // language governing permissions and limitations under the Apache License.
 //
 #include "renderPass.h"
-#include "pxr/imaging/hd/renderPass.h"
-#include "pxr/imaging/hd/renderPassState.h"
 
 #include <iostream>
 
-#include "renderBuffer.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/renderDelegate.h"
+#include "pxr/imaging/hd/renderPass.h"
+#include "pxr/imaging/hd/renderPassState.h"
+#include "renderBuffer.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -53,32 +53,24 @@ Hd_USTC_CG_RenderPass::~Hd_USTC_CG_RenderPass()
     std::cout << "Destroying renderPass" << std::endl;
 }
 
-
-static GfRect2i _GetDataWindow(
-    const HdRenderPassStateSharedPtr& renderPassState)
+static GfRect2i _GetDataWindow(const HdRenderPassStateSharedPtr& renderPassState)
 {
     const CameraUtilFraming& framing = renderPassState->GetFraming();
-    if (framing.IsValid())
-    {
+    if (framing.IsValid()) {
         return framing.dataWindow;
     }
-    else
-    {
+    else {
         const GfVec4f vp = renderPassState->GetViewport();
         return GfRect2i(GfVec2i(0), int(vp[2]), int(vp[3]));
     }
 }
 
-
-void
-Hd_USTC_CG_RenderPass::_Execute(
+void Hd_USTC_CG_RenderPass::_Execute(
     const HdRenderPassStateSharedPtr& renderPassState,
     const TfTokenVector& renderTags)
 {
-
     int currentSceneVersion = _sceneVersion->load();
-    if (_lastSceneVersion != currentSceneVersion)
-    {
+    if (_lastSceneVersion != currentSceneVersion) {
         needStartRender = true;
         _lastSceneVersion = currentSceneVersion;
     }
@@ -86,8 +78,7 @@ Hd_USTC_CG_RenderPass::_Execute(
     // Likewise the render settings.
     HdRenderDelegate* renderDelegate = GetRenderIndex()->GetRenderDelegate();
     int currentSettingsVersion = renderDelegate->GetRenderSettingsVersion();
-    if (_lastSettingsVersion != currentSettingsVersion)
-    {
+    if (_lastSettingsVersion != currentSettingsVersion) {
         _renderThread->StopRender();
         _lastSettingsVersion = currentSettingsVersion;
 
@@ -100,8 +91,7 @@ Hd_USTC_CG_RenderPass::_Execute(
     const GfMatrix4d proj = renderPassState->GetProjectionMatrix();
     const GfRect2i dataWindow = _GetDataWindow(renderPassState);
 
-    if (_viewMatrix != view || _projMatrix != proj || _dataWindow != dataWindow)
-    {
+    if (_viewMatrix != view || _projMatrix != proj || _dataWindow != dataWindow) {
         _viewMatrix = view;
         _projMatrix = proj;
         _dataWindow = dataWindow;
@@ -114,10 +104,8 @@ Hd_USTC_CG_RenderPass::_Execute(
 
     // Determine whether we need to update the renderer AOV bindings.
 
-    HdRenderPassAovBindingVector aovBindings =
-        renderPassState->GetAovBindings();
-    if (_aovBindings != aovBindings)
-    {
+    HdRenderPassAovBindingVector aovBindings = renderPassState->GetAovBindings();
+    if (_aovBindings != aovBindings) {
         _aovBindings = aovBindings;
         _renderThread->StopRender();
         _renderer->SetAovBindings(aovBindings);
@@ -127,12 +115,15 @@ Hd_USTC_CG_RenderPass::_Execute(
         needStartRender = true;
     }
 
+    if (_renderer->nodetree_modified(false)) {
+        _renderer->Clear();
+
+        needStartRender = true;
+    }
+
     TF_VERIFY(!_aovBindings.empty(), "No aov bindings to render into");
-
     // Only start a new render if something in the scene has changed.
-    if (needStartRender)
-    {
-
+    if (needStartRender) {
         _renderer->MarkAovBuffersUnconverged();
         _renderer->Clear();
         _renderer->Render(nullptr);
@@ -144,11 +135,8 @@ Hd_USTC_CG_RenderPass::_Execute(
 bool Hd_USTC_CG_RenderPass::IsConverged() const
 {
     // Otherwise, check the convergence of all attachments.
-    for (size_t i = 0; i < _aovBindings.size(); ++i)
-    {
-        if (_aovBindings[i].renderBuffer &&
-            !_aovBindings[i].renderBuffer->IsConverged())
-        {
+    for (size_t i = 0; i < _aovBindings.size(); ++i) {
+        if (_aovBindings[i].renderBuffer && !_aovBindings[i].renderBuffer->IsConverged()) {
             return false;
         }
     }

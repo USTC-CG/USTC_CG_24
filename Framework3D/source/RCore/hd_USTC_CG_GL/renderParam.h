@@ -48,11 +48,9 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
         HdRenderThread *renderThread,
         std::atomic<int> *sceneVersion,
         pxr::VtArray<Hd_USTC_CG_Light *> *lights,
-        pxr::VtArray<Hd_USTC_CG_Camera *> *camera,
-        NodeTreeExecutor *executor)
+        pxr::VtArray<Hd_USTC_CG_Camera *> *camera)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion),
-          executor(executor),
           lights(lights),
           cameras(camera)
     {

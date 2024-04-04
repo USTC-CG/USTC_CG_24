@@ -27,6 +27,7 @@
 #include "imgui_impl_opengl3_loader.h"
 #include "node_system_ui.h"
 #include "stb_image.h"
+#include "Nodes/node_exec_eager.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 static inline ImRect ImGui_GetItemRect()
@@ -166,6 +167,7 @@ void NodeSystemImpl::OnStart()
     }
     else if (node_system_type == NodeSystemType::Render) {
         node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();
+        node_system_execution_->executor = CreateEagerNodeTreeExecutorRender();
     }
     else if (node_system_type == NodeSystemType::Composition) {
         node_system_execution_ = std::make_unique<CompositionNodeSystemExecution>();
@@ -820,7 +822,7 @@ bool NodeSystemImpl::CanCreateLink(NodeSocket* a, NodeSocket* b)
 
 inline ImGuiWindowFlags GetWindowFlags()
 {
-    return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    return ImGuiWindowFlags_NoScrollbar;
 }
 
 NodeSystem::NodeSystem(
@@ -852,6 +854,11 @@ void NodeSystem::draw_imgui()
 NodeTree* NodeSystem::get_tree()
 {
     return impl_->node_system_execution_->node_tree.get();
+}
+
+NodeTreeExecutor* NodeSystem::get_executor() const
+{
+    return impl_->node_system_execution_->executor.get();
 }
 
 void NodeSystemImpl::ShowLeftPane(float paneWidth)

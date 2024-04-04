@@ -93,6 +93,7 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     // The feed memory size must match the type
     void Clear(const float* value);
     void Clear(const int* value);
+    void Present(GLuint texture);
     GLuint fbo = 0;
     GLuint tex = 0;
 

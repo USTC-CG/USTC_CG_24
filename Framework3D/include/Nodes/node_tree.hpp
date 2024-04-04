@@ -66,11 +66,7 @@ class NodeTree {
 
     void update_socket_vectors_and_owner_node();
     void ensure_topology_cache();
-    NodeLink* nodeAddLink(
-        Node* fromnode,
-        NodeSocket* fromsock,
-        Node* tonode,
-        NodeSocket* tosock);
+    NodeLink* nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock);
 
     NodeLink* nodeAddLink(SocketID startPinId, SocketID endPinId);
 
@@ -99,6 +95,18 @@ class NodeTree {
    public:
     std::string Serialize();
     void Deserialize(const std::string& str);
+
+    void SetDirty(bool dirty = true)
+    {
+        this->dirty = dirty;
+    }
+    bool GetDirty()
+    {
+        return dirty;
+    }
+
+   private:
+    bool dirty = true;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

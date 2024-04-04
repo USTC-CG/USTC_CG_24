@@ -98,6 +98,8 @@ unsigned NodeTree::UniqueID()
 NodeLink*
 NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock)
 {
+    SetDirty(true);
+
     auto link = std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
 
     if ((fromsock->in_out) == PinKind::Output && (tosock->in_out) == PinKind::Input) {
@@ -124,6 +126,7 @@ NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSo
 
 NodeLink* NodeTree::nodeAddLink(SocketID startPinId, SocketID endPinId)
 {
+    SetDirty(true);
     auto socket1 = FindPin(startPinId);
     auto socket2 = FindPin(endPinId);
 
@@ -135,6 +138,8 @@ NodeLink* NodeTree::nodeAddLink(SocketID startPinId, SocketID endPinId)
 
 void NodeTree::RemoveLink(LinkId linkId)
 {
+    SetDirty(true);
+
     auto link = std::find_if(
         links.begin(), links.end(), [linkId](auto& link) { return link->ID == linkId; });
     if (link != links.end()) {

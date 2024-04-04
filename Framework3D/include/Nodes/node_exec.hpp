@@ -58,6 +58,9 @@ struct NodeTreeExecutor {
     virtual ~NodeTreeExecutor() = default;
     virtual void prepare_tree(NodeTree* tree) = 0;
     virtual void execute_tree(NodeTree* tree) = 0;
+    virtual void finalize(NodeTree* tree)
+    {
+    }
     virtual void sync_node_from_external_storage(NodeSocket* socket, void* data)
     {
     }

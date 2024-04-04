@@ -64,32 +64,42 @@ bool EagerNodeTreeExecutor::execute_node(NodeTree* tree, Node* node)
 void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
 {
     for (auto&& output : node->outputs) {
-        size_t last_used_id = 0;
-
-        for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
-            auto directly_linked_input_socket = output->directly_linked_sockets[i];
-
-            if (index_cache.find(directly_linked_input_socket) != index_cache.end()) {
-                last_used_id = std::max(last_used_id, index_cache[directly_linked_input_socket]);
-                auto& input_state = input_states[index_cache[directly_linked_input_socket]];
-
-                auto& output_state = output_states[index_cache[output]];
-
-                auto& cpp_type = *output->type_info->cpp_type;
-                auto is_last_target = i == output->directly_linked_sockets.size() - 1;
-
-                auto dst_buffer = input_state.value.get();
-                auto value_to_forward = output_state.value;
-                if (is_last_target) {
-                    cpp_type.move_construct(value_to_forward.get(), dst_buffer);
-                }
-                else {
-                    cpp_type.copy_construct(value_to_forward.get(), dst_buffer);
-                }
-                input_state.is_forwarded = true;
-            }
+        if (output->directly_linked_sockets.empty()) {
+            auto& output_state = output_states[index_cache[output]];
+            assert(output_state.is_last_used == false);
+            output_state.is_last_used = true;
         }
-        input_states[last_used_id].is_last_used = true;
+        else {
+            size_t last_used_id = 0;
+
+            for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
+                auto directly_linked_input_socket = output->directly_linked_sockets[i];
+
+                if (index_cache.find(directly_linked_input_socket) != index_cache.end()) {
+                    last_used_id =
+                        std::max(last_used_id, index_cache[directly_linked_input_socket]);
+                    auto& input_state = input_states[index_cache[directly_linked_input_socket]];
+
+                    auto& output_state = output_states[index_cache[output]];
+
+                    auto& cpp_type = *output->type_info->cpp_type;
+                    auto is_last_target = i == output->directly_linked_sockets.size() - 1;
+
+                    auto dst_buffer = input_state.value.get();
+                    auto value_to_forward = output_state.value;
+                    if (is_last_target) {
+                        cpp_type.move_construct(value_to_forward.get(), dst_buffer);
+                    }
+                    else {
+                        cpp_type.copy_construct(value_to_forward.get(), dst_buffer);
+                    }
+                    input_state.is_forwarded = true;
+                }
+            }
+            assert(input_states[last_used_id].is_last_used == false);
+
+            input_states[last_used_id].is_last_used = true;
+        }
     }
 }
 

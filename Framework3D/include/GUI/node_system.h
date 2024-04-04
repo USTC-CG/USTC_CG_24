@@ -1,10 +1,14 @@
 #pragma once
+#include <complex.h>
+
 #include <memory>
 #include <string>
 
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+struct NodeTreeExecutor;
+
 enum class NodeSystemType { Geometry, Render, Composition };
 
 struct NodeSystemImpl;
@@ -19,6 +23,7 @@ class USTC_CG_API NodeSystem {
     ~NodeSystem();
     void draw_imgui();
     NodeTree* get_tree();
+    NodeTreeExecutor* get_executor() const;
 
    protected:
     std::string window_name;

@@ -59,4 +59,7 @@ template<typename DESC>
 struct DescResouce {
     using Resource = void;
 };
+
+GLenum GetGLFormat(pxr::HdFormat hd_format);
+GLenum GetGLType(pxr::HdFormat hd_format);
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -3,7 +3,7 @@
 #include "pxr/imaging/hd/types.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-GLenum _GetGLFormat(HdFormat hd_format)
+GLenum GetGLFormat(HdFormat hd_format)
 {
     switch (hd_format) {
         case HdFormatInvalid:
@@ -40,7 +40,7 @@ GLenum _GetGLFormat(HdFormat hd_format)
     }
 }
 
-GLenum _GetGLType(HdFormat hd_format)
+GLenum GetGLType(HdFormat hd_format)
 {
     switch (hd_format) {
         case HdFormatInvalid:
@@ -87,12 +87,12 @@ TextureHandle createTexture(const TextureDesc& desc)
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        _GetGLFormat(_format),
+        GetGLFormat(_format),
         desc.size[0],
         desc.size[1],
         0,
-        _GetGLFormat(_format),
-        _GetGLType(_format),
+        GetGLFormat(_format),
+        GetGLType(_format),
         NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
