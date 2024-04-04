@@ -37,8 +37,6 @@ protected:
         USTC_CG::logging("Empty render function for window.", Info);
     }
 
-    void createDockSpace(unsigned dock_id);
-    void finishDockSpace();
 
 protected:
     // Initializes GLFW library.

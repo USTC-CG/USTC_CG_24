@@ -254,12 +254,16 @@ void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
     auto delta_time = ImGui::GetIO().DeltaTime;
 
     ImGui::SetNextWindowSize({ 800, 600 });
-    ImGui::Begin("UsdView Engine", nullptr, ImGuiWindowFlags_MenuBar);
-    auto size = ImGui::GetContentRegionAvail();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-    impl_->OnResize(size.x, size.y);
+    if (ImGui::Begin("UsdView Engine", nullptr, ImGuiWindowFlags_MenuBar)) {
+        auto size = ImGui::GetContentRegionAvail();
 
-    impl_->OnFrame(delta_time, node_tree, get_executor);
+        impl_->OnResize(size.x, size.y);
+
+        impl_->OnFrame(delta_time, node_tree, get_executor);
+    }
+    ImGui::PopStyleVar(1);
 
     ImGui::End();
 }

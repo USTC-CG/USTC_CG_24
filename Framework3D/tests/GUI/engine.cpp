@@ -25,13 +25,8 @@ class NodeWindow final : public USTC_CG::Window {
    protected:
     void Render() override
     {
-        createDockSpace(2);
         render_graph_system->draw_imgui();
-        finishDockSpace();
-
-        createDockSpace(1);
         renderer->render(render_graph_system->get_tree(), render_graph_system->get_executor());
-        finishDockSpace();
     }
     std::shared_ptr<USTC_CG::NodeSystem> composition_graph;
     std::shared_ptr<USTC_CG::NodeSystem> geonode_system;
@@ -42,13 +37,8 @@ class NodeWindow final : public USTC_CG::Window {
 
 void NodeWindow::BuildUI()
 {
-    createDockSpace(0);
     geonode_system->draw_imgui();
-    finishDockSpace();
-
-    createDockSpace(3);
     composition_graph->draw_imgui();
-    finishDockSpace();
 }
 
 int main()

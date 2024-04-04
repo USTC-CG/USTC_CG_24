@@ -22,12 +22,12 @@
 #include "Nodes/GlobalUsdStage.h"
 #include "Nodes/id.hpp"
 #include "Nodes/node.hpp"
+#include "Nodes/node_exec_eager.hpp"
 #include "Nodes/pin.hpp"
 #include "Utils/json.hpp"
 #include "imgui_impl_opengl3_loader.h"
 #include "node_system_ui.h"
 #include "stb_image.h"
-#include "Nodes/node_exec_eager.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 static inline ImRect ImGui_GetItemRect()
@@ -124,7 +124,6 @@ struct NodeSystemImpl {
     ImTextureID m_HeaderBackground = nullptr;
     const float m_TouchTime = 1.0f;
     std::map<NodeId, float, NodeIdLess> m_NodeTouchTime;
-    bool m_ShowOrdinals = false;
     std::string filename;
 
    private:
@@ -227,8 +226,6 @@ void NodeSystemImpl::OnStart()
     m_Editor = ed::CreateEditor(&config);
     ed::SetCurrentEditor(m_Editor);
 
-    ed::NavigateToContent();
-
     m_HeaderBackground = LoadTexture(BlueprintBackground, sizeof(BlueprintBackground));
 }
 
@@ -289,8 +286,6 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     UpdateTouch();
 
     auto& io = ImGui::GetIO();
-
-    ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
     ed::SetCurrentEditor(m_Editor);
 
@@ -665,49 +660,6 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     auto editorMin = ImGui::GetItemRectMin();
     auto editorMax = ImGui::GetItemRectMax();
 
-    if (m_ShowOrdinals) {
-        int nodeCount = ed::GetNodeCount();
-        std::vector<NodeId> orderedNodeIds;
-        orderedNodeIds.resize(static_cast<size_t>(nodeCount));
-        ed::GetOrderedNodeIds(orderedNodeIds.data(), nodeCount);
-
-        auto drawList = ImGui::GetWindowDrawList();
-        drawList->PushClipRect(editorMin, editorMax);
-
-        int ordinal = 0;
-        for (auto& nodeId : orderedNodeIds) {
-            auto p0 = ed::GetNodePosition(nodeId);
-            auto p1 = p0 + ed::GetNodeSize(nodeId);
-            p0 = ed::CanvasToScreen(p0);
-            p1 = ed::CanvasToScreen(p1);
-
-            ImGuiTextBuffer builder;
-            builder.appendf("#%d", ordinal++);
-
-            auto textSize = ImGui::CalcTextSize(builder.c_str());
-            auto padding = ImVec2(2.0f, 2.0f);
-            auto widgetSize = textSize + padding * 2;
-
-            auto widgetPosition = ImVec2(p1.x, p0.y) + ImVec2(0.0f, -widgetSize.y);
-
-            drawList->AddRectFilled(
-                widgetPosition,
-                widgetPosition + widgetSize,
-                IM_COL32(100, 80, 80, 190),
-                3.0f,
-                ImDrawFlags_RoundCornersAll);
-            drawList->AddRect(
-                widgetPosition,
-                widgetPosition + widgetSize,
-                IM_COL32(200, 160, 160, 190),
-                3.0f,
-                ImDrawFlags_RoundCornersAll);
-            drawList->AddText(
-                widgetPosition + padding, IM_COL32(255, 255, 255, 255), builder.c_str());
-        }
-
-        drawList->PopClipRect();
-    }
     if (node_system_type != NodeSystemType::Render) {
         node_system_execution_->try_execution();
     }
@@ -845,9 +797,13 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
     if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
         impl_->OnFrame(delta_time);
     }
+    ImGui::PopStyleVar(1);
+
     ImGui::End();
 }
 
@@ -864,6 +820,7 @@ NodeTreeExecutor* NodeSystem::get_executor() const
 void NodeSystemImpl::ShowLeftPane(float paneWidth)
 {
     auto& io = ImGui::GetIO();
+    ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
     ImGui::BeginChild("Selection", ImVec2(paneWidth, 0));
 
@@ -882,7 +839,6 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
     if (ImGui::Button("Save"))
         ;
     ImGui::EndHorizontal();
-    ImGui::Checkbox("Show Ordinals", &m_ShowOrdinals);
 
     std::vector<NodeId> selectedNodes;
     std::vector<LinkId> selectedLinks;

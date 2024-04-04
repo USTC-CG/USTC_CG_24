@@ -65,40 +65,9 @@ void Window::run()
     }
 }
 
-void Window::createDockSpace(unsigned dock_id)
-{
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-    ImGui::Begin(("DockSpace" + std::to_string(dock_id)).c_str(), 0, window_flags);
-    ImGui::PopStyleVar(3);
-
-    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-
-    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-}
-
-void Window::finishDockSpace()
-{
-    ImGui::End();
-}
-
 void Window::BuildUI()
 {
-    createDockSpace(0);
     ImGui::ShowDemoWindow();
-    finishDockSpace();
 }
 
 bool Window::init_glfw()
@@ -157,8 +126,28 @@ void Window::render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    ImGui::Begin(("DockSpace" + std::to_string(0)).c_str(), 0, window_flags);
+    ImGui::PopStyleVar(3);
+    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
     Render();
     BuildUI();
+    ImGui::End();
 
     ImGui::Render();
 
