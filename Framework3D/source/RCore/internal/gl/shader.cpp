@@ -1,4 +1,4 @@
-#include "shader.hpp"
+#include "RCore/internal/gl/shader.hpp"
 
 #include <fstream>
 #include <iostream>

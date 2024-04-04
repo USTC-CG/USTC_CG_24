@@ -26,7 +26,7 @@ class ResourceAllocator {
 #define JUDGE_RESOURCE_DYNAMIC(RSC) if (CPPType::get<RSC##Handle>() == *handle.type())
 #define JUDGE_RESOURCE(RSC)         if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
 
-#define RESOLVE_DESTROY(RESOURCE)                                                          \
+#define RESOLVE_DESTROY_DYNAMIC(RESOURCE)                                                  \
     RESOURCE##Handle h;                                                                    \
     handle.type()->copy_construct(handle.get(), &h);                                       \
     if (h) {                                                                               \
@@ -34,6 +34,11 @@ class ResourceAllocator {
         resolveCacheDestroy(                                                               \
             h, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE)); \
     }
+
+#define RESOLVE_DESTROY(RESOURCE)                      \
+    PAYLOAD_NAME(RESOURCE) payload{ handle, mAge, 0 }; \
+    resolveCacheDestroy(                               \
+        handle, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE));
 
    public:
     explicit ResourceAllocator() noexcept;
@@ -62,16 +67,33 @@ class ResourceAllocator {
         MACRO_MAP(CLEAR_CACHE, RESOURCE_LIST)
     }
 
-#define FOREACH_DESTROY(RESOURCE)    \
-    JUDGE_RESOURCE_DYNAMIC(RESOURCE) \
-    {                                \
-        RESOLVE_DESTROY(RESOURCE)    \
+#define FOREACH_DESTROY_DYNAMIC(RESOURCE) \
+    JUDGE_RESOURCE_DYNAMIC(RESOURCE)      \
+    {                                     \
+        RESOLVE_DESTROY_DYNAMIC(RESOURCE) \
     }
 
     void destroy(GMutablePointer handle) noexcept
     {
         if constexpr (mEnabled) {
             // If code runs here, It means some of your output resource is not created;
+            MACRO_MAP(FOREACH_DESTROY_DYNAMIC, RESOURCE_LIST)
+        }
+        else {
+            handle = nullptr;
+        }
+    }
+
+#define FOREACH_DESTROY(NAMESPACE, RESOURCE) \
+    JUDGE_RESOURCE(NAMESPACE, RESOURCE)      \
+    {                                        \
+        RESOLVE_DESTROY(NAMESPACE, RESOURCE) \
+    }
+
+    template<typename RESOURCE>
+    void destroy(RESOURCE& handle) noexcept
+    {
+        if constexpr (mEnabled) {
             MACRO_MAP(FOREACH_DESTROY, RESOURCE_LIST)
         }
         else {

@@ -29,6 +29,7 @@
 #include "pxr/imaging/hd/mesh.h"
 #include "pxr/imaging/hd/vertexAdjacency.h"
 #include "pxr/pxr.h"
+#include "pxr/imaging/garch/glApi.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -69,10 +70,12 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
     Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
 
+    GLuint VAO;
+    GLuint VBO;
+
    private:
     HdMeshTopology _topology;
     GfMatrix4f _transform;
-    VtVec3fArray _points;
     HdCullStyle _cullStyle;
     bool _doubleSided;
     bool _smoothNormals;

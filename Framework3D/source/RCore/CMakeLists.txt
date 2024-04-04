@@ -1,6 +1,7 @@
+file(GLOB_RECURSE internal_files ${CMAKE_CURRENT_LIST_DIR}/internal/*.cpp)
 set(CPP_FILES 
 	ROP.cpp
-	GLResources.cpp
+	${internal_files}
 	hd_USTC_CG_GL/light.cpp
 	hd_USTC_CG_GL/camera.cpp
 )

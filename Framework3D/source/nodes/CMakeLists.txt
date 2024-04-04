@@ -61,3 +61,10 @@ target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_U
 
 target_compile_options(nodes PRIVATE -DUSTC_CG_BUILD_MODULE=1 -DNOMINMAX)
 
+get_filename_component(NODES_FILES_DIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
+set(NODES_FILES_DIR_MACRO "#define NODES_FILES_DIR \"${NODES_FILES_DIR}\"")
+set(RENDER_NODES_FILES_DIR_MACRO "#define RENDER_NODES_FILES_DIR \"${NODES_FILES_DIR}/nodes/render\"")
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/NODES_FILES_DIR.h.in"
+    "${CMAKE_CURRENT_LIST_DIR}/nodes/render/NODES_FILES_DIR.h"
+)

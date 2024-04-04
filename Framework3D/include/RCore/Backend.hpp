@@ -5,5 +5,5 @@
 #define USTC_CG_BACKEND_OPENGL
 
 #ifdef USTC_CG_BACKEND_OPENGL
-#include "internal/GLResources.hpp"
+#include "internal/gl/GLResources.hpp"
 #endif

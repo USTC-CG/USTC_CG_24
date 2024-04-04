@@ -150,14 +150,39 @@ void Hd_USTC_CG_Mesh::Sync(
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
 
-    // XXX: A mesh repr can have multiple repr decs; this is done, for example,
-    // when the drawstyle specifies different rasterizing modes between front
-    // faces and back faces.
-    // With raytracing, this concept makes less sense, but
-    // combining semantics of two HdMeshReprDesc is tricky in the general case.
-    // For now, HdEmbreeMesh only respects the first desc; this should be fixed.
     _MeshReprConfig::DescArray descs = _GetReprDesc(reprToken);
-    const HdMeshReprDesc& desc = descs[0];
+
+    const SdfPath& id = GetId();
+
+    if (HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->points)) {
+        VtValue value = sceneDelegate->Get(id, HdTokens->points);
+        auto points = value.Get<VtVec3fArray>();
+
+        _normalsValid = false;
+
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(
+            GL_ARRAY_BUFFER, points.size() * sizeof(GfVec3f), points.cdata(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    if (HdChangeTracker::IsTopologyDirty(*dirtyBits, id)) {
+        // When pulling a new topology, we don't want to overwrite the
+        // refine level or subdiv tags, which are provided separately by the
+        // scene delegate, so we save and restore them.
+
+        auto topology = GetMeshTopology(sceneDelegate);
+    }
 }
 
 void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)

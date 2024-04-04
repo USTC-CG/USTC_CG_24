@@ -1,4 +1,4 @@
-#include "RCore/internal/GLResources.hpp"
+#include "RCore/internal/gl/GLResources.hpp"
 
 #include "pxr/imaging/hd/types.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -75,6 +75,14 @@ GLenum GetGLType(HdFormat hd_format)
         case HdFormatFloat32UInt8: return GL_DEPTH32F_STENCIL8;
         default: throw std::runtime_error("Unsupported format");
     }
+}
+
+ShaderHandle createShader(const ShaderDesc& desc)
+{
+    ShaderHandle ret =
+        std::make_shared<ShaderResource>(desc.vertexPath.c_str(), desc.fragmentPath.c_str());
+    ret->desc = desc;
+    return ret;
 }
 
 TextureHandle createTexture(const TextureDesc& desc)
