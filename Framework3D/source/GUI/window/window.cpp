@@ -144,9 +144,10 @@ void Window::render()
     ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-    Render();
 
+    Render();
     BuildUI();
+
     ImGui::End();
 
     ImGui::Render();

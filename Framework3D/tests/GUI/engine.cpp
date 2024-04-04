@@ -38,8 +38,8 @@ class NodeWindow final : public USTC_CG::Window {
 
 void NodeWindow::BuildUI()
 {
-    geonode_system->draw_imgui();
     composition_graph->draw_imgui();
+    geonode_system->draw_imgui();
 }
 
 int main()

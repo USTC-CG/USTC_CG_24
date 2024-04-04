@@ -112,6 +112,7 @@ struct NodeSystemImpl {
     static void DrawPinIcon(const NodeSocket& pin, bool connected, int alpha);
 
    protected:
+    size_t frame = 0;
     void TouchNode(NodeId id);
     float GetTouchProgress(NodeId id);
     void UpdateTouch();
@@ -282,7 +283,12 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
 
 void NodeSystemImpl::OnFrame(float deltaTime)
 {
-    // UpdateTouch();
+    // A very awkward workaround.
+    if (frame == 0) {
+        frame++;
+        return;
+    }
+    frame++;
 
     auto& io = ImGui::GetIO();
 
@@ -301,8 +307,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
     if (ImGui::Button("Zoom to Content"))
         ed::NavigateToContent();
-
-    ed::Begin(("Node editor" + filename).c_str(), ImGui::GetWindowContentRegionMax());
+    ed::Begin(("Node editor" + filename).c_str());
     {
         auto cursorTopLeft = ImGui::GetCursorScreenPos();
 
@@ -795,18 +800,26 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
-
-    if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
+    if (node_system_type == NodeSystemType::Render) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
+        ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
         ImGui::PopStyleVar(1);
-
         impl_->OnFrame(delta_time);
+        ImGui::End();
     }
     else {
-        ImGui::PopStyleVar(1);
-    }
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
+        if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
+            ImGui::PopStyleVar(1);
 
-    ImGui::End();
+            impl_->OnFrame(delta_time);
+        }
+        else {
+            ImGui::PopStyleVar(1);
+        }
+
+        ImGui::End();
+    }
 }
 
 NodeTree* NodeSystem::get_tree()
