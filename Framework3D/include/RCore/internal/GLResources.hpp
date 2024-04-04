@@ -24,17 +24,19 @@ struct TextureDesc {
     }
 };
 
-struct TextureHandle {
+struct TextureResource {
     TextureDesc desc;
     GLuint texture_id;
+
+    ~TextureResource()
+    {
+        glDeleteTextures(1, &texture_id);
+    }
 };
 
-TextureHandle createTexture(const TextureDesc& desc);
+using TextureHandle = std::shared_ptr<TextureResource>;
 
-inline void destroyTexture(TextureHandle texture)
-{
-    glDeleteTextures(1, &texture.texture_id);
-}
+TextureHandle createTexture(const TextureDesc& desc);
 
 #define DESC_HANDLE_TRAIT(RESOURCE)        \
     template<>                             \

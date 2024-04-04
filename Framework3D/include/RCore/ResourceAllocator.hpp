@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "USTC_CG.h"
+#include "Utils/Functions/GenericPointer.hpp"
 #include "Utils/Macro/map.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -22,12 +23,14 @@ class ResourceAllocator {
 #define PAYLOAD_NAME(RESOURCE) RESOURCE##CachePayload
 #define CACHE_SIZE(RESOURCE)   m##RESOURCE##CacheSize
 
-#define JUDGE_RESOURCE(RSC) if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
+#define JUDGE_RESOURCE_DYNAMIC(RSC) if (CPPType::get<RSC##Handle>() == *handle.type())
+#define JUDGE_RESOURCE(RSC)         if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
 
-#define RESOLVE_DESTROY(RESOURCE)                  \
-    RESOURCE##Handle h = RESOURCE##Handle(handle); \
-    PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };  \
-    resolveCacheDestroy(                           \
+#define RESOLVE_DESTROY(RESOURCE)                    \
+    RESOURCE##Handle h;                              \
+    handle.type()->copy_construct(handle.get(), &h); \
+    PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };    \
+    resolveCacheDestroy(                             \
         h, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE));
 
    public:
@@ -48,7 +51,7 @@ class ResourceAllocator {
 #define CLEAR_CACHE(RESOURCE)                                                         \
     assert(!INUSE_NAME(RESOURCE).size());                                             \
     for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end();) { \
-        destroy##RESOURCE(it->second.handle);                                         \
+        it->second.handle = nullptr;                                                  \
         it = CACHE_NAME(RESOURCE).erase(it);                                          \
     }
 
@@ -57,17 +60,21 @@ class ResourceAllocator {
         MACRO_MAP(CLEAR_CACHE, RESOURCE_LIST)
     }
 
-#define FOREACH_DESTROY(RESOURCE) \
-    JUDGE_RESOURCE(RESOURCE)      \
-    {                             \
-        RESOLVE_DESTROY(RESOURCE) \
+#define FOREACH_DESTROY(RESOURCE)    \
+    JUDGE_RESOURCE_DYNAMIC(RESOURCE) \
+    {                                \
+        RESOLVE_DESTROY(RESOURCE)    \
     }
 
-    template<typename RESOURCE>
-    void destroy(RESOURCE& handle) noexcept
+    void destroy(GMutablePointer handle) noexcept
     {
         if constexpr (mEnabled) {
-            MACRO_MAP(FOREACH_DESTROY, RESOURCE_LIST)
+            if (CPPType::get<TextureHandle>() == *handle.type()) {
+                TextureHandle h;
+                handle.type()->copy_construct(handle.get(), &h);
+                TextureCachePayload payload{ h, mAge, 0 };
+                resolveCacheDestroy(h, mTextureCacheSize, payload, mTextureCache, mInUseTexture);
+            };
         }
         else {
             handle = nullptr;
@@ -120,13 +127,13 @@ class ResourceAllocator {
 #define PURGE(RESOURCE)                                                                     \
     RESOURCE##CacheContainer::iterator purge(const RESOURCE##CacheContainer::iterator& pos) \
     {                                                                                       \
-        destroy##RESOURCE(pos->second.handle);                                              \
+        pos->second.handle = nullptr;                                                       \
         m##RESOURCE##CacheSize -= pos->second.size;                                         \
         return CACHE_NAME(RESOURCE).erase(pos);                                             \
     }
 
    private:
-#define CREATE_CONCRETE(RESOURCE)         \
+#define CREATE_CONCRETE(RESOURCE)               \
     JUDGE_RESOURCE(RESOURCE)                    \
     {                                           \
         return create##RESOURCE(desc, rest...); \

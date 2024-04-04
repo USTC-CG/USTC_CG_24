@@ -14,6 +14,7 @@ struct Node;
 struct RuntimeInputState {
     GMutablePointer value = nullptr;
     bool is_forwarded = false;
+    bool is_last_used = false;
 };
 
 struct RuntimeOutputState {
@@ -35,7 +36,7 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
 
    protected:
     ExeParams prepare_params(NodeTree* tree, Node* node);
-    bool execute_node(NodeTree* tree, Node* node);
+    virtual bool execute_node(NodeTree* tree, Node* node);
     void forward_output_to_input(Node* node);
     void clear();
 
@@ -47,5 +48,7 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     std::vector<NodeSocket*> output_of_nodes_to_execute;
     ptrdiff_t nodes_to_execute_count = 0;
 };
+
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

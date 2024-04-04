@@ -40,7 +40,6 @@ GLenum _GetGLFormat(HdFormat hd_format)
     }
 }
 
-
 GLenum _GetGLType(HdFormat hd_format)
 {
     switch (hd_format) {
@@ -80,11 +79,11 @@ GLenum _GetGLType(HdFormat hd_format)
 
 TextureHandle createTexture(const TextureDesc& desc)
 {
-    TextureHandle ret;
-    ret.desc = desc;
+    TextureHandle ret = std::make_shared<TextureResource>();
+    ret->desc = desc;
     auto _format = desc.format;
-    glCreateTextures(GL_TEXTURE_2D, 1, &ret.texture_id);
-    glBindTexture(GL_TEXTURE_2D, ret.texture_id);
+    glCreateTextures(GL_TEXTURE_2D, 1, &ret->texture_id);
+    glBindTexture(GL_TEXTURE_2D, ret->texture_id);
     glTexImage2D(
         GL_TEXTURE_2D,
         0,

@@ -63,6 +63,10 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);
     BLI_CPP_TYPE_REGISTER(CameraArray);
 
+#define WRAP_REGISTER(TYPE) BLI_CPP_TYPE_REGISTER(TYPE##Handle)
+
+    MACRO_MAP(WRAP_REGISTER, RESOURCE_LIST);
+
     BLI_CPP_TYPE_REGISTER(pxr::GfVec2f);
     BLI_CPP_TYPE_REGISTER(pxr::GfVec3f);
     BLI_CPP_TYPE_REGISTER(pxr::GfVec4f);

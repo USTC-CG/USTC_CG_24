@@ -52,7 +52,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
     executor->execute_tree(node_tree);
 
-    TextureHandle texture;
+    TextureHandle texture = nullptr;
     for (auto&& node : node_tree->nodes) {
         auto try_fetch_info = [&node, &executor](const char* id_name, void* data) {
             if (std::string(node->typeinfo->id_name) == id_name) {
@@ -63,11 +63,12 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         };
         try_fetch_info("render_present", &texture);
     }
-
-    for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
-        rb->tex = texture.texture_id;
-        rb->SetConverged(true);
+    if (texture) {
+        for (size_t i = 0; i < _aovBindings.size(); ++i) {
+            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+            rb->tex = texture->texture_id;
+            rb->SetConverged(true);
+        }
     }
 }
 

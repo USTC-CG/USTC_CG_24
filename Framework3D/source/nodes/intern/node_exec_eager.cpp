@@ -64,10 +64,13 @@ bool EagerNodeTreeExecutor::execute_node(NodeTree* tree, Node* node)
 void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
 {
     for (auto&& output : node->outputs) {
+        size_t last_used_id = 0;
+
         for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
             auto directly_linked_input_socket = output->directly_linked_sockets[i];
 
             if (index_cache.find(directly_linked_input_socket) != index_cache.end()) {
+                last_used_id = std::max(last_used_id, index_cache[directly_linked_input_socket]);
                 auto& input_state = input_states[index_cache[directly_linked_input_socket]];
 
                 auto& output_state = output_states[index_cache[output]];
@@ -86,6 +89,7 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                 input_state.is_forwarded = true;
             }
         }
+        input_states[last_used_id].is_last_used = true;
     }
 }
 
@@ -144,6 +148,9 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
         std::stable_partition(nodes_to_execute.begin(), nodes_to_execute.end(), [](Node* node) {
             return node->REQUIRED;
         });
+
+    // Now the nodes is split into two parts, and the topology sequence is correct.
+
     nodes_to_execute_count = std::distance(nodes_to_execute.begin(), split);
 
     for (int i = 0; i < nodes_to_execute_count; ++i) {

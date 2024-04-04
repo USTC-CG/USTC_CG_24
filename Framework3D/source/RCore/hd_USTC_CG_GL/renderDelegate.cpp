@@ -103,7 +103,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
-    executor = std::make_unique<EagerNodeTreeExecutor>();
+    executor = CreateEagerNodeTreeExecutorRender();
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
         &_renderThread, &_sceneVersion, &lights, &cameras, executor.get());
 

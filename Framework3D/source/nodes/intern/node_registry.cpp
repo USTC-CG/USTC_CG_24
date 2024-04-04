@@ -4,7 +4,7 @@
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "rich_type_buffer.hpp"
-
+#include "RCore/Backend.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 static void reset_declaration(NodeDeclaration& declaration)
 {
@@ -197,6 +197,8 @@ static SocketTypeInfo* make_socket_type_Camera()
     socktype->cpp_type = &CPPType::get<CameraArray>();
     return socktype;
 }
+
+
 
 static SocketTypeInfo* make_socket_type_Texture()
 {
