@@ -66,6 +66,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
 
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
         auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+        rb->tex = texture.texture_id;
         rb->SetConverged(true);
     }
 }

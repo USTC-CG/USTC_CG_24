@@ -126,7 +126,7 @@ class ResourceAllocator {
     }
 
    private:
-#define CREATE_CONCRETE_NVRHI(RESOURCE)         \
+#define CREATE_CONCRETE(RESOURCE)         \
     JUDGE_RESOURCE(RESOURCE)                    \
     {                                           \
         return create##RESOURCE(desc, rest...); \
@@ -135,7 +135,7 @@ class ResourceAllocator {
     template<typename RESOURCE, typename... Args>
     RESOURCE create_resource(const desc<RESOURCE>& desc, Args&&... rest)
     {
-        MACRO_MAP(CREATE_CONCRETE_NVRHI, RESOURCE_LIST)
+        MACRO_MAP(CREATE_CONCRETE, RESOURCE_LIST)
     }
 
     template<typename RESOURCE>
@@ -194,24 +194,13 @@ class ResourceAllocator {
     template<typename RESOURCE>
     void gc_type(auto& cacheSize, auto&& cache_in)
     {
-        // this is called regularly -- usually once per frame of each Renderer
-
-        // increase our age
         const size_t age = mAge++;
-
-        // Purging strategy:
-        //  - remove entries that are older than a certain age
-        //      - remove only one entry per gc(),
-        //      - unless we're at capacity
-        // - remove LRU entries until we're below capacity
 
         for (auto it = cache_in.begin(); it != cache_in.end();) {
             const size_t ageDiff = age - it->second.age;
             if (ageDiff >= CACHE_MAX_AGE) {
                 it = purge(it);
                 if (cacheSize < CACHE_CAPACITY) {
-                    // if we're not at capacity, only purge a single entry per gc, trying to
-                    // avoid a burst of work.
                     break;
                 }
             }
@@ -221,37 +210,30 @@ class ResourceAllocator {
         }
 
         if ((cacheSize >= CACHE_CAPACITY)) {
-            // make a copy of our CacheContainer to a vector
             using ContainerType = std::remove_cvref_t<decltype(cache_in)>;
             using Vector = std::vector<
                 std::pair<typename ContainerType::key_type, typename ContainerType::value_type>>;
             auto cache = Vector();
             std::copy(cache_in.begin(), cache_in.end(), std::back_insert_iterator<Vector>(cache));
 
-            // sort by least recently used
             std::sort(cache.begin(), cache.end(), [](const auto& lhs, const auto& rhs) {
                 return lhs.second.age < rhs.second.age;
             });
 
-            // now remove entries until we're at capacity
             auto curr = cache.begin();
             while (cacheSize >= CACHE_CAPACITY) {
-                // by construction this entry must exist
                 purge(cache_in.find(curr->first));
                 ++curr;
             }
 
-            // Since we're sorted already, reset the oldestAge of the whole system
             size_t oldestAge = cache.front().second.age;
             for (auto& it : cache_in) {
                 it.second.age -= oldestAge;
             }
             mAge -= oldestAge;
         }
-        // if (mAge % 60 == 0) dump();
     }
 
-    // TODO: these should be settings of the engine
     static constexpr size_t CACHE_CAPACITY = 64u << 20u;  // 64 MiB
     static constexpr size_t CACHE_MAX_AGE = 30u;
 

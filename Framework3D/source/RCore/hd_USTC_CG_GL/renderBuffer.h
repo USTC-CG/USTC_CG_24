@@ -93,6 +93,8 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     // The feed memory size must match the type
     void Clear(const float* value);
     void Clear(const int* value);
+    GLuint fbo = 0;
+    GLuint tex = 0;
 
    private:
     static GLenum _GetGLFormat(HdFormat hd_format);
@@ -115,9 +117,6 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     HdFormat _format;
     // Whether the _buffer is operating in multisample mode.
     bool _multiSampled;
-
-    GLuint fbo = 0;
-    GLuint tex = 0;
 
     std::vector<uint8_t> _buffer;
 

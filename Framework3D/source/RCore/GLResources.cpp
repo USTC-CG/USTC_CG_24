@@ -1,4 +1,4 @@
-#include "RCore/GLResources.hpp"
+#include "RCore/internal/GLResources.hpp"
 
 #include "pxr/imaging/hd/types.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE

@@ -2,8 +2,8 @@
 
 #include "USTC_CG.h"
 
-#define BACKEND_OPENGL
+#define USTC_CG_BACKEND_OPENGL
 
-#ifdef BACKEND_OPENGL
-#include "GLResources.hpp"
+#ifdef USTC_CG_BACKEND_OPENGL
+#include "internal/GLResources.hpp"
 #endif

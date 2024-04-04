@@ -31,6 +31,17 @@ struct ExeParams {
     }
 
     /**
+     * Get the output value allocated by the virtual resource allocator
+     */
+    template<typename T>
+    T get_output(const char* identifier)
+    {
+        const int index = this->get_output_index(identifier);
+        const T& value = *static_cast<T*>(inputs_[index].get());
+        return value;
+    }
+
+    /**
      * Store the output value for the given socket identifier.
      */
     template<typename T>

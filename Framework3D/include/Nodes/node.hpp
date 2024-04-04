@@ -5,7 +5,6 @@
 #include "node_exec.hpp"
 #include "pin.hpp"
 
-
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class Operator;
 
@@ -32,12 +31,7 @@ struct NodeLink {
 using ExecFunction = void (*)(ExeParams params);
 using NodeDeclareFunction = void (*)(NodeDeclarationBuilder& builder);
 
-enum class NodeTypeOfGrpah {
-    Geometry,
-    Function,
-    Render,
-    Composition
-};
+enum class NodeTypeOfGrpah { Geometry, Function, Render, Composition };
 
 // There can be many instances of nodes, while each of them has a type. The
 // templates should be declared statically. It contains the information of the
