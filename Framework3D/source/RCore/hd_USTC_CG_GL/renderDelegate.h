@@ -96,6 +96,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     std::unique_ptr<NodeTreeExecutor> executor;
     pxr::VtArray<Hd_USTC_CG_Light*> lights;
     pxr::VtArray<Hd_USTC_CG_Camera*> cameras;
+    pxr::VtArray<Hd_USTC_CG_Mesh*> meshes;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;

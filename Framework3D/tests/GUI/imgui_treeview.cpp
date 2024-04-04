@@ -19,13 +19,8 @@ class TreeViewUSDWindow final : public USTC_CG::Window {
    protected:
     void BuildUI() override
     {
-        createDockSpace(0);
         file_viewer->ShowFileTree();
-        finishDockSpace();
-
-        createDockSpace(1);
         file_viewer->ShowPrimInfo();
-        finishDockSpace();
     }
 
     void Render() override

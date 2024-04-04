@@ -4,7 +4,7 @@
 
 #define STAGE_SOCKET_TYPES Layer
 
-#define RENDER_SOCKET_TYPES Lights, Camera, Texture
+#define RENDER_SOCKET_TYPES Lights, Camera, Texture, Meshes
 
 #define BUFFER_TYPES                                                                          \
     Int1Buffer, Int2Buffer, Int3Buffer, Int4Buffer, Float1Buffer, Float2Buffer, Float3Buffer, \

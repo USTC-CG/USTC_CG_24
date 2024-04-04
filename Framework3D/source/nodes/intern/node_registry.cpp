@@ -1,10 +1,10 @@
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/node.hpp"
 #include "Nodes/node_register.h"
+#include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "rich_type_buffer.hpp"
-#include "RCore/Backend.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 static void reset_declaration(NodeDeclaration& declaration)
 {
@@ -198,7 +198,12 @@ static SocketTypeInfo* make_socket_type_Camera()
     return socktype;
 }
 
-
+static SocketTypeInfo* make_socket_type_Meshes()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Meshes);
+    socktype->cpp_type = &CPPType::get<MeshArray>();
+    return socktype;
+}
 
 static SocketTypeInfo* make_socket_type_Texture()
 {

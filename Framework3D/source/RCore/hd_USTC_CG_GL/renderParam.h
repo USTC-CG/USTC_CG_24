@@ -31,6 +31,7 @@
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_Mesh;
 class Hd_USTC_CG_Light;
 class Hd_USTC_CG_Camera;
 using namespace pxr;
@@ -48,11 +49,13 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
         HdRenderThread *renderThread,
         std::atomic<int> *sceneVersion,
         pxr::VtArray<Hd_USTC_CG_Light *> *lights,
-        pxr::VtArray<Hd_USTC_CG_Camera *> *camera)
+        pxr::VtArray<Hd_USTC_CG_Camera *> *cameras,
+        pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion),
           lights(lights),
-          cameras(camera)
+          cameras(cameras),
+          meshes(meshes)
     {
     }
     HdRenderThread *_renderThread = nullptr;
@@ -61,6 +64,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     NodeTree *node_tree;
     pxr::VtArray<Hd_USTC_CG_Light *> *lights;
     pxr::VtArray<Hd_USTC_CG_Camera *> *cameras = nullptr;
+    pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes = nullptr;
 
    private:
     /// A handle to the global render thread.

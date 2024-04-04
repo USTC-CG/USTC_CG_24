@@ -21,7 +21,6 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 // #
-
 #include "renderDelegate.h"
 
 #include <iostream>
@@ -35,7 +34,6 @@
 #include "instancer.h"
 #include "light.h"
 #include "pxr/imaging/hd/camera.h"
-#include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
 #include "renderPass.h"
 #include "renderer.h"
@@ -103,8 +101,8 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
-    _renderParam =
-        std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion, &lights, &cameras);
+    _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
+        &_renderThread, &_sceneVersion, &lights, &cameras, &meshes);
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -190,10 +188,12 @@ HdRenderPassSharedPtr Hd_USTC_CG_RenderDelegate::CreateRenderPass(
 
 HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const SdfPath& rprimId)
 {
-    std::cout << "Create Tiny Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
+    std::cout << "Create Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
 
     if (typeId == HdPrimTypeTokens->mesh) {
-        return new Hd_USTC_CG_Mesh(rprimId);
+        auto mesh = new Hd_USTC_CG_Mesh(rprimId);
+        meshes.push_back(mesh);
+        return mesh;
     }
     TF_CODING_ERROR("Unknown Rprim type=%s id=%s", typeId.GetText(), rprimId.GetText());
     return nullptr;
@@ -202,6 +202,7 @@ HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const Sdf
 void Hd_USTC_CG_RenderDelegate::DestroyRprim(HdRprim* rPrim)
 {
     logging("Destroy Tiny Rprim id=" + rPrim->GetId().GetString(), USTC_CG::Info);
+    meshes.erase(std::remove(meshes.begin(), meshes.end(), rPrim), meshes.end());
     delete rPrim;
 }
 
@@ -212,9 +213,7 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         cameras.push_back(camera);
         return camera;
     }
-    else if (typeId == HdPrimTypeTokens->extComputation) {
-        return new HdExtComputation(sprimId);
-    }
+
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(sprimId, typeId);
         lights.push_back(light);
@@ -236,9 +235,6 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
         cameras.push_back(camera);
         return camera;
     }
-    else if (typeId == HdPrimTypeTokens->extComputation) {
-        return new HdExtComputation(SdfPath::EmptyPath());
-    }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
         lights.push_back(light);
@@ -254,6 +250,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
 void Hd_USTC_CG_RenderDelegate::DestroySprim(HdSprim* sPrim)
 {
     logging(sPrim->GetId().GetAsString() + " destroyed", USTC_CG::Info);
+    lights.erase(std::remove(lights.begin(), lights.end(), sPrim), lights.end());
+    cameras.erase(std::remove(cameras.begin(), cameras.end(), sPrim), cameras.end());
+
     delete sPrim;
 }
 

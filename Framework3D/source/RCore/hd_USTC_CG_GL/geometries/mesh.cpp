@@ -54,9 +54,6 @@ Hd_USTC_CG_Mesh::~Hd_USTC_CG_Mesh()
 
 HdDirtyBits Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
 {
-    // The initial dirty bits control what data is available on the first
-    // run through _PopulateRtMesh(), so it should list every data item
-    // that _PopulateRtMesh requests.
     int mask = HdChangeTracker::Clean | HdChangeTracker::InitRepr | HdChangeTracker::DirtyPoints |
                HdChangeTracker::DirtyTopology | HdChangeTracker::DirtyTransform |
                HdChangeTracker::DirtyVisibility | HdChangeTracker::DirtyCullStyle |
@@ -127,16 +124,6 @@ void Hd_USTC_CG_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDi
     HD_TRACE_FUNCTION();
     const SdfPath& id = GetId();
 
-    // Update _primvarSourceMap, our local cache of raw primvar data.
-    // This function pulls data from the scene delegate, but defers processing.
-    //
-    // While iterating primvars, we skip "points" (vertex positions) because
-    // the points primvar is processed by _PopulateRtMesh. We only call
-    // GetPrimvar on primvars that have been marked dirty.
-    //
-    // Currently, hydra doesn't have a good way of communicating changes in
-    // the set of primvars, so we only ever add and update to the primvar set.
-
     HdPrimvarDescriptorVector primvars;
     for (size_t i = 0; i < HdInterpolationCount; ++i) {
         auto interp = static_cast<HdInterpolation>(i);
@@ -171,9 +158,6 @@ void Hd_USTC_CG_Mesh::Sync(
     // For now, HdEmbreeMesh only respects the first desc; this should be fixed.
     _MeshReprConfig::DescArray descs = _GetReprDesc(reprToken);
     const HdMeshReprDesc& desc = descs[0];
-
-    // Pull top-level embree state out of the render param.
-    auto embreeRenderParam = static_cast<Hd_USTC_CG_RenderParam*>(renderParam);
 }
 
 void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
