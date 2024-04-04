@@ -116,7 +116,6 @@ bool Window::init_gui()
     io.FontGlobalScale = xscale;
     ImGui_ImplOpenGL3_Init("#version 130");
 #endif
-
     return true;
 }
 
@@ -146,6 +145,7 @@ void Window::render()
 
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
     Render();
+
     BuildUI();
     ImGui::End();
 

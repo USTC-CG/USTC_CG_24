@@ -119,7 +119,7 @@ struct NodeSystemImpl {
     bool CanCreateLink(NodeSocket* a, NodeSocket* b);
 
     std::unique_ptr<NodeSystemExecution> node_system_execution_;
-    static const int m_PinIconSize = 24;
+    static const int m_PinIconSize = 20;
     // std::vector<Node*> m_Nodes;
     ImTextureID m_HeaderBackground = nullptr;
     const float m_TouchTime = 1.0f;
@@ -224,7 +224,6 @@ void NodeSystemImpl::OnStart()
     };
 
     m_Editor = ed::CreateEditor(&config);
-    ed::SetCurrentEditor(m_Editor);
 
     m_HeaderBackground = LoadTexture(BlueprintBackground, sizeof(BlueprintBackground));
 }
@@ -283,7 +282,7 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
 
 void NodeSystemImpl::OnFrame(float deltaTime)
 {
-    UpdateTouch();
+    // UpdateTouch();
 
     auto& io = ImGui::GetIO();
 
@@ -296,15 +295,14 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     static NodeSocket* newNodeLinkPin = nullptr;
     static NodeSocket* newLinkPin = nullptr;
 
-    static float leftPaneWidth = 200.0f;
-    static float rightPaneWidth = 800.0f;
-    Splitter(true, 4.0f, &leftPaneWidth, &rightPaneWidth, 50.0f, 50.0f);
+    // ShowLeftPane(leftPaneWidth - 4.0f);
 
-    ShowLeftPane(leftPaneWidth - 4.0f);
+    // ImGui::SameLine(0.0f, 12.0f);
 
-    ImGui::SameLine(0.0f, 12.0f);
+    if (ImGui::Button("Zoom to Content"))
+        ed::NavigateToContent();
 
-    ed::Begin(("Node editor" + filename).c_str());
+    ed::Begin(("Node editor" + filename).c_str(), ImGui::GetWindowContentRegionMax());
     {
         auto cursorTopLeft = ImGui::GetCursorScreenPos();
 
@@ -774,7 +772,7 @@ bool NodeSystemImpl::CanCreateLink(NodeSocket* a, NodeSocket* b)
 
 inline ImGuiWindowFlags GetWindowFlags()
 {
-    return ImGuiWindowFlags_NoScrollbar;
+    return ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse;
 }
 
 NodeSystem::NodeSystem(
@@ -797,12 +795,16 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
 
     if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
+        ImGui::PopStyleVar(1);
+
         impl_->OnFrame(delta_time);
     }
-    ImGui::PopStyleVar(1);
+    else {
+        ImGui::PopStyleVar(1);
+    }
 
     ImGui::End();
 }

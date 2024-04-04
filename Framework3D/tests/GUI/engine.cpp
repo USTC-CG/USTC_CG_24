@@ -26,6 +26,7 @@ class NodeWindow final : public USTC_CG::Window {
     void Render() override
     {
         render_graph_system->draw_imgui();
+
         renderer->render(render_graph_system->get_tree(), render_graph_system->get_executor());
     }
     std::shared_ptr<USTC_CG::NodeSystem> composition_graph;
