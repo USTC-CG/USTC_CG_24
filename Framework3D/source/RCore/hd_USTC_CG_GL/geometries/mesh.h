@@ -26,10 +26,10 @@
 
 #include "USTC_CG.h"
 #include "pxr/base/gf/matrix4f.h"
+#include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/mesh.h"
 #include "pxr/imaging/hd/vertexAdjacency.h"
 #include "pxr/pxr.h"
-#include "pxr/imaging/garch/glApi.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -55,9 +55,20 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
         HdDirtyBits* dirtyBits,
         const TfToken& reprToken) override;
 
-    void Finalize(HdRenderParam* renderParam) override;
+    void RefreshGLBuffer();
 
-   protected:
+    void Finalize(HdRenderParam* renderParam) override;
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
+    GfMatrix4f transform;
+    VtVec3iArray triangulatedIndices;
+    VtIntArray trianglePrimitiveParams;
+    VtArray<GfVec3f> points;
+
+protected:
+    uint32_t _dirtyBits;
+
     void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
 
     HdDirtyBits _PropagateDirtyBits(HdDirtyBits bits) const override;
@@ -70,25 +81,10 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
     Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
 
-    GLuint VAO;
-    GLuint VBO;
-
    private:
-    HdMeshTopology _topology;
-    GfMatrix4f _transform;
     HdCullStyle _cullStyle;
     bool _doubleSided;
     bool _smoothNormals;
-
-    // Derived scene data:
-    // - _triangulatedIndices holds a triangulation of the source topology,
-    //   which can have faces of arbitrary arity.
-    // - _trianglePrimitiveParams holds a mapping from triangle index (in
-    //   the triangulated topology) to authored face index.
-    // - _computedNormals holds per-vertex normals computed as an average of
-    //   adjacent face normals.
-    VtVec3iArray _triangulatedIndices;
-    VtIntArray _trianglePrimitiveParams;
 
     bool _normalsValid;
     Hd_VertexAdjacency _adjacency;

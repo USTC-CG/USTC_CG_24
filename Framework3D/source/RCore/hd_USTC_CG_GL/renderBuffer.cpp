@@ -250,6 +250,7 @@ void Hd_USTC_CG_RenderBufferGL::Present(GLuint texture)
 
     // ½â°ó¶¨Ö¡»º³å
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1,&temp);
 }
 
 GLenum Hd_USTC_CG_RenderBufferGL::_GetGLFormat(HdFormat hd_format)

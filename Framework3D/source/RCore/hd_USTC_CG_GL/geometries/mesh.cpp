@@ -28,13 +28,10 @@
 
 #include "USTC_CG.h"
 #include "context.h"
-#include "instancer.h"
 #include "pxr/imaging/hd/extComputationUtils.h"
 #include "pxr/imaging/hd/instancer.h"
 #include "pxr/imaging/hd/meshUtil.h"
 #include "pxr/imaging/hd/smoothNormals.h"
-#include "renderParam.h"
-
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
@@ -107,13 +104,7 @@ TfTokenVector Hd_USTC_CG_Mesh::_UpdateComputedPrimvarSources(
         }
 
         compPrimvarNames.emplace_back(compPrimvar.name);
-        if (compPrimvar.name == HdTokens->points) {
-            _points = it->second.Get<VtVec3fArray>();
-            _normalsValid = false;
-        }
-        else {
-            _primvarSourceMap[compPrimvar.name] = { it->second, compPrimvar.interpolation };
-        }
+        _primvarSourceMap[compPrimvar.name] = { it->second, compPrimvar.interpolation };
     }
 
     return compPrimvarNames;
@@ -147,33 +138,20 @@ void Hd_USTC_CG_Mesh::Sync(
     HdDirtyBits* dirtyBits,
     const TfToken& reprToken)
 {
+    _dirtyBits = *dirtyBits;
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
 
     _MeshReprConfig::DescArray descs = _GetReprDesc(reprToken);
 
     const SdfPath& id = GetId();
+    std::string path = id.GetText();
 
     if (HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->points)) {
         VtValue value = sceneDelegate->Get(id, HdTokens->points);
-        auto points = value.Get<VtVec3fArray>();
+        points = value.Get<VtVec3fArray>();
 
         _normalsValid = false;
-
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
-
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-        glBufferData(
-            GL_ARRAY_BUFFER, points.size() * sizeof(GfVec3f), points.cdata(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
     }
 
     if (HdChangeTracker::IsTopologyDirty(*dirtyBits, id)) {
@@ -181,12 +159,61 @@ void Hd_USTC_CG_Mesh::Sync(
         // refine level or subdiv tags, which are provided separately by the
         // scene delegate, so we save and restore them.
 
-        auto topology = GetMeshTopology(sceneDelegate);
+        HdMeshTopology topology = GetMeshTopology(sceneDelegate);
+        HdMeshUtil meshUtil(&topology, GetId());
+        meshUtil.ComputeTriangleIndices(&triangulatedIndices, &trianglePrimitiveParams);
     }
+    if (HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
+        transform = GfMatrix4f(sceneDelegate->GetTransform(id));
+    }
+}
+
+void Hd_USTC_CG_Mesh::RefreshGLBuffer()
+{
+    const SdfPath& id = GetId();
+
+    if (HdChangeTracker::IsPrimvarDirty(_dirtyBits, id, HdTokens->points)) {
+        // Generate and bind the VAO
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        // Generate and bind the VBO
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        // Upload the points data to the VBO
+        glBufferData(
+            GL_ARRAY_BUFFER, points.size() * sizeof(pxr::GfVec3f), points.cdata(), GL_STATIC_DRAW);
+
+        // Specify the layout of the points in the VBO
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // Unbind the VAO and VBO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    if (HdChangeTracker::IsTopologyDirty(_dirtyBits, id)) {
+        glBindVertexArray(VAO);
+
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+        glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            triangulatedIndices.size() * sizeof(GfVec3i),
+            triangulatedIndices.cdata(),
+            GL_STATIC_DRAW);
+    }
+    _dirtyBits = 0;
 }
 
 void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
 {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

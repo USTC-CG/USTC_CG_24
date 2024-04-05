@@ -1,13 +1,13 @@
 #pragma once
 
 #include "USTC_CG.h"
+#include "Utils/Logging/Logging.h"
 #include "pxr/base/gf/vec2i.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/types.h"
 #include "shader.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-
 #define RESOURCE_LIST Texture, Shader
 
 struct ShaderDesc {

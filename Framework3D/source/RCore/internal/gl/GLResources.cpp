@@ -35,7 +35,7 @@ GLenum GetGLFormat(HdFormat hd_format)
         case HdFormatInt32Vec2: return GL_RG;
         case HdFormatInt32Vec3: return GL_RGB;
         case HdFormatInt32Vec4: return GL_RGBA;
-        case HdFormatFloat32UInt8: return GL_DEPTH_STENCIL;
+        case HdFormatFloat32UInt8: return GL_DEPTH_COMPONENT;
         default: throw std::runtime_error("Unsupported format");
     }
 }

@@ -127,7 +127,7 @@ void Hd_USTC_CG_RenderPass::_Execute(
         _renderer->MarkAovBuffersUnconverged();
         _renderer->Clear();
         _renderer->Render(nullptr);
-        needStartRender = false;
+        //needStartRender = false;
         //_renderThread->StartRender();
     }
 }

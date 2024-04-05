@@ -79,6 +79,7 @@ HdResourceRegistrySharedPtr Hd_USTC_CG_RenderDelegate::_resourceRegistry;
 
 void Hd_USTC_CG_RenderDelegate::_Initialize()
 {
+
     // Initialize the settings and settings descriptors.
     _settingDescriptors.resize(5);
     _settingDescriptors[0] = { "Enable Scene Colors",

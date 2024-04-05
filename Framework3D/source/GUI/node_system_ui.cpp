@@ -800,26 +800,11 @@ void NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
-    if (node_system_type == NodeSystemType::Render) {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
-        ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
-        ImGui::PopStyleVar(1);
-        impl_->OnFrame(delta_time);
-        ImGui::End();
-    }
-    else {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
-        if (ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags())) {
-            ImGui::PopStyleVar(1);
-
-            impl_->OnFrame(delta_time);
-        }
-        else {
-            ImGui::PopStyleVar(1);
-        }
-
-        ImGui::End();
-    }
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
+    ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
+    ImGui::PopStyleVar(1);
+    impl_->OnFrame(delta_time);
+    ImGui::End();
 }
 
 NodeTree* NodeSystem::get_tree()
