@@ -29,18 +29,16 @@
 #include "USTC_CG.h"
 #include "context.h"
 #include "pxr/imaging/hd/extComputationUtils.h"
+#include "pxr/imaging/hd/flatNormals.h"
 #include "pxr/imaging/hd/instancer.h"
 #include "pxr/imaging/hd/meshUtil.h"
-#include "pxr/imaging/hd/smoothNormals.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
     : HdMesh(id),
       _cullStyle(HdCullStyleDontCare),
       _doubleSided(false),
-      _smoothNormals(false),
       _normalsValid(false),
-      _adjacencyValid(false),
       _refined(false)
 {
 }
@@ -155,17 +153,33 @@ void Hd_USTC_CG_Mesh::Sync(
     }
 
     if (HdChangeTracker::IsTopologyDirty(*dirtyBits, id)) {
-        // When pulling a new topology, we don't want to overwrite the
-        // refine level or subdiv tags, which are provided separately by the
-        // scene delegate, so we save and restore them.
-
-        HdMeshTopology topology = GetMeshTopology(sceneDelegate);
+        topology = GetMeshTopology(sceneDelegate);
         HdMeshUtil meshUtil(&topology, GetId());
         meshUtil.ComputeTriangleIndices(&triangulatedIndices, &trianglePrimitiveParams);
+        _normalsValid = false;
     }
     if (HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
         transform = GfMatrix4f(sceneDelegate->GetTransform(id));
     }
+
+    if (!_normalsValid) {
+        auto face_computedNormals = Hd_FlatNormals::ComputeFlatNormals(&topology, points.cdata());
+        VtArray<GfVec3f> per_element_normal;
+        per_element_normal.resize(topology.GetNumPoints());
+
+        auto f = topology.GetFaceVertexCounts();
+        for (int element_id = 0; element_id < per_element_normal.size(); ++element_id) {
+            
+        }
+
+        HdMeshUtil meshUtil(&topology, GetId());
+        VtValue triangulated;
+        meshUtil.ComputeTriangulatedFaceVaryingPrimvar(
+            per_element_normal.cdata(), per_element_normal.size(), HdTypeFloatVec3, &triangulated);
+        assert(triangulated.CanCast<VtVec3fArray>());
+        computedNormals = triangulated.Get<VtVec3fArray>();
+    }
+    _UpdateComputedPrimvarSources(sceneDelegate, *dirtyBits);
 }
 
 void Hd_USTC_CG_Mesh::RefreshGLBuffer()
@@ -174,10 +188,12 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
 
     if (HdChangeTracker::IsPrimvarDirty(_dirtyBits, id, HdTokens->points)) {
         // Generate and bind the VAO
+        glDeleteVertexArrays(1, &VAO);
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
 
         // Generate and bind the VBO
+        glDeleteBuffers(1, &VBO);
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -197,7 +213,9 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
     if (HdChangeTracker::IsTopologyDirty(_dirtyBits, id)) {
         glBindVertexArray(VAO);
 
+        glDeleteBuffers(1, &EBO);
         glGenBuffers(1, &EBO);
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
         glBufferData(
@@ -206,14 +224,38 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
             triangulatedIndices.cdata(),
             GL_STATIC_DRAW);
     }
+    if (!_normalsValid) {
+        glBindVertexArray(VAO);
+
+        glDeleteBuffers(1, &normalBuffer);
+        glGenBuffers(1, &normalBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            computedNormals.size() * sizeof(GfVec3f),
+            computedNormals.cdata(),
+            GL_STATIC_DRAW);
+
+        // Enable and specify the layout of the normal buffer
+        glEnableVertexAttribArray(normalLocation);
+        glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        _normalsValid = true;
+    }
+
     _dirtyBits = 0;
 }
 
 void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
 {
     glDeleteVertexArrays(1, &VAO);
+    VAO = 0;
     glDeleteBuffers(1, &VBO);
+    VBO = 0;
     glDeleteBuffers(1, &EBO);
+    EBO = 0;
+    glDeleteBuffers(1, &normalBuffer);
+    normalBuffer = 0;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

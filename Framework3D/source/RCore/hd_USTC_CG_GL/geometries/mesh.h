@@ -43,12 +43,6 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     ~Hd_USTC_CG_Mesh() override;
 
     HdDirtyBits GetInitialDirtyBitsMask() const override;
-    void _CreatePrimvarSampler(
-        const TfToken& name,
-        const VtValue& data,
-        HdInterpolation interpolation,
-        bool refined);
-
     void Sync(
         HdSceneDelegate* sceneDelegate,
         HdRenderParam* renderParam,
@@ -61,10 +55,13 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;
+    GLuint normalBuffer = 0;
     GfMatrix4f transform;
     VtVec3iArray triangulatedIndices;
     VtIntArray trianglePrimitiveParams;
     VtArray<GfVec3f> points;
+    VtVec3fArray computedNormals;
+    static constexpr GLuint normalLocation = 1;
 
 protected:
     uint32_t _dirtyBits;
@@ -82,15 +79,15 @@ protected:
     Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
 
    private:
+
     HdCullStyle _cullStyle;
     bool _doubleSided;
-    bool _smoothNormals;
 
     bool _normalsValid;
-    Hd_VertexAdjacency _adjacency;
-    VtVec3fArray _computedNormals;
 
-    bool _adjacencyValid;
+    HdMeshTopology topology;
+    Hd_VertexAdjacency _adjacency;
+
     bool _refined;
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to

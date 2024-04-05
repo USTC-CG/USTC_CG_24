@@ -1,6 +1,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
+#include "RCore/Backend.hpp"
 #include "render_node_base.h"
 
 namespace USTC_CG::node_scene_present {
@@ -11,7 +12,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    // Do nothing. The output is filled in renderer.
+    // Do nothing. Wait for external statements to fetch
 }
 
 static void node_register()

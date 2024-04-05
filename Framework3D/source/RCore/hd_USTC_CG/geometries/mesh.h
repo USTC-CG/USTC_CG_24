@@ -177,7 +177,7 @@ private:
     RTCGeometry _geometry;
     bool _normalsValid;
     Hd_VertexAdjacency _adjacency;
-    VtVec3fArray _computedNormals;
+    VtVec3fArray computedNormals;
 
     bool _adjacencyValid;
     bool _refined;

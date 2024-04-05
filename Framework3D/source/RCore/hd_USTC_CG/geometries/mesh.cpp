@@ -643,7 +643,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
         _normalsValid = false;
     }
     if (_smoothNormals && !_normalsValid) {
-        _computedNormals =
+        computedNormals =
             Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, _points.size(), _points.cdata());
         _normalsValid = true;
 
@@ -651,7 +651,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
         // normals, the smooth normals flag has been suppressed, so it won't
         // be overwritten by the primvar population below.
         _CreatePrimvarSampler(
-            HdTokens->normals, VtValue(_computedNormals), HdInterpolationVertex, _refined);
+            HdTokens->normals, VtValue(computedNormals), HdInterpolationVertex, _refined);
     }
 
     // If smooth normals are off and there are no authored normals, make

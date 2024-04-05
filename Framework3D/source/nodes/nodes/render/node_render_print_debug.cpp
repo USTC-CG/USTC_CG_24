@@ -33,6 +33,10 @@ static void node_exec(ExeParams params)
 
     for (auto&& mesh : meshes) {
         std::cout << mesh->GetId() << std::endl;
+        auto names = mesh->GetBuiltinPrimvarNames();
+        for (auto&& name : names) {
+            std::cout << name.GetString() << std::endl;
+        }
     }
 }
 

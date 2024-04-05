@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "USTC_CG.h"
@@ -35,7 +36,15 @@ class Shader {
     void setMat3(const std::string &name, const pxr::GfMatrix3f &mat) const;
     void setMat4(const std::string &name, const pxr::GfMatrix4f &mat) const;
 
-   private:
+    std::string get_error()
+    {
+        return error_string;
+    }
+
+private:
+    std::string error_string;
+    std::ostringstream error_stream;
+
     // utility function for checking shader compilation/linking errors.
 
     void checkCompileErrors(GLuint shader, std::string type);

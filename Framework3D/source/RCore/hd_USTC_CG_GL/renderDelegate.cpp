@@ -37,6 +37,7 @@
 #include "renderBuffer.h"
 #include "renderPass.h"
 #include "renderer.h"
+#include "pxr/imaging/hd/extComputation.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -79,7 +80,6 @@ HdResourceRegistrySharedPtr Hd_USTC_CG_RenderDelegate::_resourceRegistry;
 
 void Hd_USTC_CG_RenderDelegate::_Initialize()
 {
-
     // Initialize the settings and settings descriptors.
     _settingDescriptors.resize(5);
     _settingDescriptors[0] = { "Enable Scene Colors",
@@ -214,7 +214,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         cameras.push_back(camera);
         return camera;
     }
-
+    else if (typeId == HdPrimTypeTokens->extComputation) {
+        return new HdExtComputation(sprimId);
+    }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(sprimId, typeId);
         lights.push_back(light);
@@ -235,6 +237,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
         auto camera = new Hd_USTC_CG_Camera(SdfPath::EmptyPath());
         cameras.push_back(camera);
         return camera;
+    }
+    else if (typeId == HdPrimTypeTokens->extComputation) {
+        return new HdExtComputation(SdfPath::EmptyPath());
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);

@@ -16,6 +16,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
+    error_stream.clear();
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;
@@ -40,7 +41,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
         fragmentCode = fShaderStream.str();
     }
     catch (std::ifstream::failure& e) {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+        error_stream << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
@@ -65,6 +66,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     // delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+
+    error_string = error_stream.str();
+    error_stream.clear();
 }
 
 void Shader::use() const
@@ -140,18 +144,20 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
-                      << infoLog << "\n -- --------------------------------------------------- -- "
-                      << std::endl;
+            error_stream << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
+                         << infoLog
+                         << "\n -- --------------------------------------------------- -- "
+                         << std::endl;
         }
     }
     else {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
-                      << infoLog << "\n -- --------------------------------------------------- -- "
-                      << std::endl;
+            error_stream << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
+                         << infoLog
+                         << "\n -- --------------------------------------------------- -- "
+                         << std::endl;
         }
     }
 }

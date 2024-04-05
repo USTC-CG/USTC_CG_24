@@ -1,28 +1,44 @@
 #pragma once
 
+#include <filesystem>
+
 #include "USTC_CG.h"
 #include "Utils/Logging/Logging.h"
 #include "pxr/base/gf/vec2i.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/types.h"
 #include "shader.hpp"
-
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define RESOURCE_LIST Texture, Shader
 
-struct ShaderDesc {
-    std::string vertexPath;
-    std::string fragmentPath;
+////////////////////////////////Shader/////////////////////////////////////////
 
+struct ShaderResource;
+using ShaderHandle = std::shared_ptr<ShaderResource>;
+
+struct ShaderDesc {
     friend bool operator==(const ShaderDesc& lhs, const ShaderDesc& rhs)
     {
-        return lhs.vertexPath == rhs.vertexPath && lhs.fragmentPath == rhs.fragmentPath;
+        return lhs.vertexPath == rhs.vertexPath && lhs.fragmentPath == rhs.fragmentPath &&
+               lhs.lastWriteTime == rhs.lastWriteTime;
     }
 
     friend bool operator!=(const ShaderDesc& lhs, const ShaderDesc& rhs)
     {
         return !(lhs == rhs);
     }
+
+    void set_vertex_path(const std::filesystem::path& vertex_path);
+
+    void set_fragment_path(const std::filesystem::path& fragment_path);
+
+   private:
+    void update_last_write_time(const std::filesystem::path& path);
+
+    friend ShaderHandle createShader(const ShaderDesc& desc);
+    std::filesystem::path vertexPath;
+    std::filesystem::path fragmentPath;
+    std::filesystem::file_time_type lastWriteTime;
 };
 
 struct ShaderResource {
@@ -41,6 +57,8 @@ struct ShaderResource {
 
 using ShaderHandle = std::shared_ptr<ShaderResource>;
 ShaderHandle createShader(const ShaderDesc& desc);
+
+////////////////////////////////Texture///////////////////////////////////////
 
 struct TextureDesc {
     pxr::GfVec2i size;
