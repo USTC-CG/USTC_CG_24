@@ -27,11 +27,12 @@
 #include <iostream>
 
 #include "USTC_CG.h"
+#include "Utils/Logging/Logging.h"
 #include "context.h"
 #include "pxr/imaging/hd/extComputationUtils.h"
-#include "pxr/imaging/hd/flatNormals.h"
 #include "pxr/imaging/hd/instancer.h"
 #include "pxr/imaging/hd/meshUtil.h"
+#include "pxr/imaging/hd/smoothNormals.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
@@ -39,6 +40,7 @@ Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
       _cullStyle(HdCullStyleDontCare),
       _doubleSided(false),
       _normalsValid(false),
+      _adjacencyValid(false),
       _refined(false)
 {
 }
@@ -157,29 +159,25 @@ void Hd_USTC_CG_Mesh::Sync(
         HdMeshUtil meshUtil(&topology, GetId());
         meshUtil.ComputeTriangleIndices(&triangulatedIndices, &trianglePrimitiveParams);
         _normalsValid = false;
+        _adjacencyValid = false;
     }
     if (HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
         transform = GfMatrix4f(sceneDelegate->GetTransform(id));
     }
 
+    if (!_adjacencyValid) {
+        _adjacency.BuildAdjacencyTable(&topology);
+        _adjacencyValid = true;
+        // If we rebuilt the adjacency table, force a rebuild of normals.
+        _normalsValid = false;
+    }
+
     if (!_normalsValid) {
-        auto face_computedNormals = Hd_FlatNormals::ComputeFlatNormals(&topology, points.cdata());
-        VtArray<GfVec3f> per_element_normal;
-        per_element_normal.resize(topology.GetNumPoints());
-
-        auto f = topology.GetFaceVertexCounts();
-        for (int element_id = 0; element_id < per_element_normal.size(); ++element_id) {
-            
-        }
-
-        HdMeshUtil meshUtil(&topology, GetId());
-        VtValue triangulated;
-        meshUtil.ComputeTriangulatedFaceVaryingPrimvar(
-            per_element_normal.cdata(), per_element_normal.size(), HdTypeFloatVec3, &triangulated);
-        assert(triangulated.CanCast<VtVec3fArray>());
-        computedNormals = triangulated.Get<VtVec3fArray>();
+        computedNormals =
+            Hd_SmoothNormals::ComputeSmoothNormals(&_adjacency, points.size(), points.cdata());
     }
     _UpdateComputedPrimvarSources(sceneDelegate, *dirtyBits);
+    logging("Syncing mesh " + GetId().GetString(), Info);
 }
 
 void Hd_USTC_CG_Mesh::RefreshGLBuffer()
@@ -237,8 +235,8 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
             GL_STATIC_DRAW);
 
         // Enable and specify the layout of the normal buffer
+        glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
         glEnableVertexAttribArray(normalLocation);
-        glVertexAttribPointer(normalLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         _normalsValid = true;
     }

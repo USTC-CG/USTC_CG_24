@@ -32,6 +32,7 @@ pxr_plugin(${PXR_PACKAGE}
         instancer
         camera
         light
+        material
 
         geometries/mesh
 

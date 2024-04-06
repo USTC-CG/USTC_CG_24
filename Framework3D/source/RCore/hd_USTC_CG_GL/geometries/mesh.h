@@ -84,6 +84,7 @@ protected:
     bool _doubleSided;
 
     bool _normalsValid;
+    bool _adjacencyValid;
 
     HdMeshTopology topology;
     Hd_VertexAdjacency _adjacency;

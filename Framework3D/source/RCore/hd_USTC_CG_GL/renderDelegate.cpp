@@ -33,11 +33,12 @@
 #include "geometries/mesh.h"
 #include "instancer.h"
 #include "light.h"
+#include "material.h"
 #include "pxr/imaging/hd/camera.h"
+#include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
 #include "renderPass.h"
 #include "renderer.h"
-#include "pxr/imaging/hd/extComputation.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -51,6 +52,7 @@ const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_SPRIM_TYPES = {
     HdPrimTypeTokens->camera,
     HdPrimTypeTokens->simpleLight,
     HdPrimTypeTokens->sphereLight,
+    HdPrimTypeTokens->material,
 };
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_BPRIM_TYPES = {
@@ -217,6 +219,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(sprimId);
     }
+    else if (typeId == HdPrimTypeTokens->material) {
+        return new Hd_USTC_CG_Material(sprimId);
+    }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(sprimId, typeId);
         lights.push_back(light);
@@ -240,6 +245,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
     }
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(SdfPath::EmptyPath());
+    }
+    else if (typeId == HdPrimTypeTokens->material) {
+        return new Hd_USTC_CG_Material(SdfPath::EmptyPath());
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
