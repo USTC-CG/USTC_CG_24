@@ -212,6 +212,13 @@ static SocketTypeInfo* make_socket_type_Texture()
     return socktype;
 }
 
+static SocketTypeInfo* make_socket_type_Materials()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Materials);
+    socktype->cpp_type = &CPPType::get<MaterialMap>();
+    return socktype;
+}
+
 void register_socket(SocketTypeInfo* type_info)
 {
     socket_registry[type_info->type_name] = std::unique_ptr<SocketTypeInfo>(type_info);

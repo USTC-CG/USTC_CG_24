@@ -56,7 +56,8 @@ HdDirtyBits Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
                HdChangeTracker::DirtyVisibility | HdChangeTracker::DirtyCullStyle |
                HdChangeTracker::DirtyDoubleSided | HdChangeTracker::DirtyDisplayStyle |
                HdChangeTracker::DirtySubdivTags | HdChangeTracker::DirtyPrimvar |
-               HdChangeTracker::DirtyNormals | HdChangeTracker::DirtyInstancer;
+               HdChangeTracker::DirtyNormals | HdChangeTracker::DirtyInstancer |
+               HdChangeTracker::DirtyMaterialId;
 
     return (HdDirtyBits)mask;
 }
@@ -132,6 +133,14 @@ void Hd_USTC_CG_Mesh::_InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits
 {
 }
 
+void Hd_USTC_CG_Mesh::_SetMaterialId(HdSceneDelegate* delegate, Hd_USTC_CG_Mesh* rprim)
+{
+    SdfPath const& newMaterialId = delegate->GetMaterialId(rprim->GetId());
+    if (rprim->GetMaterialId() != newMaterialId) {
+        rprim->SetMaterialId(newMaterialId);
+    }
+}
+
 void Hd_USTC_CG_Mesh::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
@@ -146,6 +155,10 @@ void Hd_USTC_CG_Mesh::Sync(
 
     const SdfPath& id = GetId();
     std::string path = id.GetText();
+
+    if (*dirtyBits & HdChangeTracker::DirtyMaterialId) {
+        _SetMaterialId(sceneDelegate, this);
+    }
 
     if (HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->points)) {
         VtValue value = sceneDelegate->Get(id, HdTokens->points);

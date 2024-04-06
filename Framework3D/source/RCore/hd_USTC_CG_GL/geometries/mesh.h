@@ -63,10 +63,13 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     VtVec3fArray computedNormals;
     static constexpr GLuint normalLocation = 1;
 
-protected:
+   protected:
     uint32_t _dirtyBits;
 
     void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
+    void _SetMaterialId(
+        HdSceneDelegate* scene_delegate,
+        Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
 
     HdDirtyBits _PropagateDirtyBits(HdDirtyBits bits) const override;
     TfTokenVector _UpdateComputedPrimvarSources(
@@ -79,7 +82,6 @@ protected:
     Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
 
    private:
-
     HdCullStyle _cullStyle;
     bool _doubleSided;
 

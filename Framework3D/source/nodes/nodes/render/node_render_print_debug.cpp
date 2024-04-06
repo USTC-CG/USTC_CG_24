@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "geometries/mesh.h"
 #include "light.h"
+#include "material.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "render_node_base.h"
 #include "rich_type_buffer.hpp"
@@ -14,6 +15,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Lights>("Lights");
     b.add_input<decl::Camera>("Camera");
     b.add_input<decl::Meshes>("Meshes");
+    b.add_input<decl::Materials>("Materials");
 }
 
 static void node_exec(ExeParams params)
@@ -22,6 +24,7 @@ static void node_exec(ExeParams params)
     auto lights = params.get_input<LightArray>("Lights");
     auto cameras = params.get_input<CameraArray>("Camera");
     auto meshes = params.get_input<MeshArray>("Meshes");
+    MaterialMap materials = params.get_input<MaterialMap>("Materials");
 
     for (auto&& camera : cameras) {
         std::cout << camera->GetTransform() << std::endl;
@@ -37,6 +40,9 @@ static void node_exec(ExeParams params)
         for (auto&& name : names) {
             std::cout << name.GetString() << std::endl;
         }
+        logging(
+            "Mesh contained material: " + materials[mesh->GetMaterialId()]->GetId().GetString(),
+            Info);
     }
 }
 

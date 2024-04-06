@@ -8,7 +8,8 @@ class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
     {
-        geonode_system = std::make_shared<USTC_CG::NodeSystem>();
+        geonode_system = std::make_shared<USTC_CG::NodeSystem>(
+            USTC_CG::NodeSystemType::Geometry, "Blueprints.json", window_name);
     }
 
    protected:
@@ -21,10 +22,7 @@ class NodeWindow final : public USTC_CG::Window {
 
 void NodeWindow::BuildUI()
 {
-    createDockSpace(0);
-
     geonode_system->draw_imgui();
-    finishDockSpace();
 }
 
 int main()

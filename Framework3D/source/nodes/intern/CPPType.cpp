@@ -31,6 +31,7 @@ BLI_CPP_TYPE_MAKE(pxr::UsdStageRefPtr, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(MeshArray, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(LightArray, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(CameraArray, CPPTypeFlags::EqualityComparable)
+BLI_CPP_TYPE_MAKE(MaterialMap, CPPTypeFlags::EqualityComparable)
 
 // RESOURCES
 #define WRAP_MAKE(TYPE) BLI_CPP_TYPE_MAKE(TYPE##Handle, CPPTypeFlags::None)
@@ -65,6 +66,7 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);
     BLI_CPP_TYPE_REGISTER(MeshArray);
     BLI_CPP_TYPE_REGISTER(CameraArray);
+    BLI_CPP_TYPE_REGISTER(MaterialMap);
 
 #define WRAP_REGISTER(TYPE) BLI_CPP_TYPE_REGISTER(TYPE##Handle);
 

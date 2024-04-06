@@ -130,6 +130,7 @@ void Hd_USTC_CG_RenderPass::_Execute(
         //needStartRender = false;
         //_renderThread->StartRender();
     }
+    
 }
 
 bool Hd_USTC_CG_RenderPass::IsConverged() const

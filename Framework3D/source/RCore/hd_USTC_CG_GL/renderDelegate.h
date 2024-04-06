@@ -33,6 +33,7 @@
 #include "renderer.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_Material;
 class Hd_USTC_CG_Light;
 using namespace pxr;
 #define HDEMBREE_RENDER_SETTINGS_TOKENS \
@@ -96,6 +97,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     std::unique_ptr<NodeTreeExecutor> executor;
     pxr::VtArray<Hd_USTC_CG_Light*> lights;
     pxr::VtArray<Hd_USTC_CG_Camera*> cameras;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
     pxr::VtArray<Hd_USTC_CG_Mesh*> meshes;
 
     static std::mutex _mutexResourceRegistry;

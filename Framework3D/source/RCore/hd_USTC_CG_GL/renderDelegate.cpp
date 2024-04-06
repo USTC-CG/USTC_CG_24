@@ -21,6 +21,7 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 // #
+
 #include "renderDelegate.h"
 
 #include <iostream>
@@ -105,7 +106,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     _PopulateDefaultSettings(_settingDescriptors);
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
-        &_renderThread, &_sceneVersion, &lights, &cameras, &meshes);
+        &_renderThread, &_sceneVersion, &lights, &cameras, &meshes, &materials);
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -220,7 +221,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         return new HdExtComputation(sprimId);
     }
     else if (typeId == HdPrimTypeTokens->material) {
-        return new Hd_USTC_CG_Material(sprimId);
+        auto material = new Hd_USTC_CG_Material(sprimId);
+        materials[sprimId] = material;
+        return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(sprimId, typeId);
@@ -247,7 +250,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
         return new HdExtComputation(SdfPath::EmptyPath());
     }
     else if (typeId == HdPrimTypeTokens->material) {
-        return new Hd_USTC_CG_Material(SdfPath::EmptyPath());
+        auto material = new Hd_USTC_CG_Material(SdfPath::EmptyPath());
+        materials[SdfPath::EmptyPath()] = material;
+        return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         auto light = new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
@@ -266,7 +271,7 @@ void Hd_USTC_CG_RenderDelegate::DestroySprim(HdSprim* sPrim)
     logging(sPrim->GetId().GetAsString() + " destroyed", USTC_CG::Info);
     lights.erase(std::remove(lights.begin(), lights.end(), sPrim), lights.end());
     cameras.erase(std::remove(cameras.begin(), cameras.end(), sPrim), cameras.end());
-
+    materials.erase(sPrim->GetId());
     delete sPrim;
 }
 
