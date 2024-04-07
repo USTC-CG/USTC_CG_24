@@ -51,7 +51,7 @@ static void node_exec(ExeParams params)
     ShaderDesc shader_desc;
     shader_desc.set_vertex_path(
         std::filesystem::path(RENDER_NODES_FILES_DIR) /
-        std::filesystem::path("shaders/shadertoy.vs"));
+        std::filesystem::path("shaders/fullscreen.vs"));
 
     shader_desc.set_fragment_path(
         std::filesystem::path(RENDER_NODES_FILES_DIR) / std::filesystem::path(shaderPath));

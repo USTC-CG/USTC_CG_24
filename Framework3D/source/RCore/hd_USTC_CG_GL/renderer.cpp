@@ -11,7 +11,8 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
 Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
-    : render_param(render_param)
+    : _enableSceneColors(false),
+      render_param(render_param)
 {
 }
 

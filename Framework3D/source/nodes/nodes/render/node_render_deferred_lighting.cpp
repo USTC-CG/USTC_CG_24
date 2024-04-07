@@ -8,14 +8,10 @@
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
 #include "rich_type_buffer.hpp"
+#include "utils/draw_fullscreen.h"
 
 namespace USTC_CG::node_deferred_lighting {
 
-float vertices[] = {
-    // positions
-    -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 1.0f,  0.0f
-};
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Camera>("Camera");
@@ -35,19 +31,18 @@ static void node_declare(NodeDeclarationBuilder& b)
 static void node_exec(ExeParams params)
 {
     unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    CreateFullScreenVAO(VAO, VBO);
+
     // Left empty.
+
     auto lights = params.get_input<LightArray>("Lights");
     auto cameras = params.get_input<CameraArray>("Camera");
 
     TextureDesc texture_desc;
     auto position_texture = resource_allocator.create(texture_desc);
+
+
+    DestroyFullScreenVAO(VAO, VBO);
 
     params.set_output("Position", position_texture);
 }
