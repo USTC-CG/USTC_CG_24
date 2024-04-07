@@ -12,6 +12,7 @@ class Hio_OpenEXRImage;
 }
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Shader;
 using namespace pxr;
 
 class Hio_StbImage;
@@ -30,15 +31,16 @@ class Hd_USTC_CG_Material : public HdMaterial {
         GLuint glTexture = 0;
     };
 
-    explicit Hd_USTC_CG_Material(SdfPath const& id) : HdMaterial(id)
-    {
-    }
+    explicit Hd_USTC_CG_Material(SdfPath const& id);
 
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
 
     void RefreshGLBuffer();
+    void BindTextures(Shader& shader);
     HdDirtyBits GetInitialDirtyBitsMask() const override;
+
+    TfToken requireTexcoordName();
 
     void Finalize(HdRenderParam* renderParam) override;
 
@@ -58,6 +60,9 @@ class Hd_USTC_CG_Material : public HdMaterial {
 
    private:
     HdMaterialNetwork2 surfaceNetwork;
+
+    // Function to create an OpenGL texture from a HioImage object
+    static GLuint createTextureFromHioImage(const InputDescriptor& descriptor);
 
     void TryLoadTexture(
         const char* str,

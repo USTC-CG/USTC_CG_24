@@ -50,26 +50,28 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
         const TfToken& reprToken) override;
 
     void RefreshGLBuffer();
+    void RefreshTexcoordGLBuffer(TfToken texcoord_name);
 
     void Finalize(HdRenderParam* renderParam) override;
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;
     GLuint normalBuffer = 0;
+    GLuint texcoords = 0;
     GfMatrix4f transform;
     VtVec3iArray triangulatedIndices;
     VtIntArray trianglePrimitiveParams;
     VtArray<GfVec3f> points;
     VtVec3fArray computedNormals;
     static constexpr GLuint normalLocation = 1;
+    static constexpr GLuint texcoordLocation = 2;
 
    protected:
     uint32_t _dirtyBits;
+    bool _texcoordsClean;
 
     void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
-    void _SetMaterialId(
-        HdSceneDelegate* scene_delegate,
-        Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
+    void _SetMaterialId(HdSceneDelegate* scene_delegate, Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
 
     HdDirtyBits _PropagateDirtyBits(HdDirtyBits bits) const override;
     TfTokenVector _UpdateComputedPrimvarSources(

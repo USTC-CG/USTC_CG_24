@@ -2,6 +2,7 @@
 
 #include "material.h"
 
+#include "RCore/internal/gl/GLResources.hpp"
 #include "Utils/Logging/Logging.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
 #include "pxr/imaging/hio/image.h"
@@ -50,6 +51,7 @@ void Hd_USTC_CG_Material::TryLoadTexture(
             logging("Texture file name: " + file_name);
 
             descriptor.image = HioImage::OpenForReading(file_name);
+            assert(descriptor.image);
             descriptor.wrapS = texture_node.parameters[TfToken("wrapS")].Get<TfToken>();
             descriptor.wrapT = texture_node.parameters[TfToken("wrapT")].Get<TfToken>();
 
@@ -112,50 +114,66 @@ static HdFormat hdFormatConversion(HioFormat format)
     }
 }
 
-// Function to create an OpenGL texture from a HioImage object
-static GLuint createTextureFromHioImage(const HioImageSharedPtr& image)
+GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& descriptor)
 {
-    // Step 1: Get image information
-    int width = image->GetWidth();
-    int height = image->GetHeight();
-    HioFormat format = image->GetFormat();
-
-    // Step 2: Allocate memory for storing image data
-    HioImage::StorageSpec storageSpec;
-    storageSpec.width = width;
-    storageSpec.height = height;
-    storageSpec.format = format;
-    storageSpec.data = malloc(width * height * image->GetBytesPerPixel());
-    if (!storageSpec.data) {
-        // Handle error if unable to allocate memory
-        return 0;
-    }
-
-    // Step 3: Read the image data
-    if (!image->Read(storageSpec)) {
-        // Handle error if unable to read image data
-        free(storageSpec.data);
-        return 0;
-    }
-
     // Step 4: Create an OpenGL texture object
     GLuint texture;
     glGenTextures(1, &texture);
 
     // Step 5: Bind the texture object and specify its parameters
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, storageSpec.data);
 
-    // Step 6: Optionally set texture parameters
+    auto image = descriptor.image;
+    if (image) {
+        // Step 1: Get image information
+        int width = image->GetWidth();
+        int height = image->GetHeight();
+        HioFormat format = image->GetFormat();
+
+        HioImage::StorageSpec storageSpec;
+        storageSpec.width = width;
+        storageSpec.height = height;
+        storageSpec.format = format;
+        storageSpec.data = malloc(width * height * image->GetBytesPerPixel());
+        if (!storageSpec.data) {
+            return 0;
+        }
+
+        // Step 3: Read the image data
+        if (!image->Read(storageSpec)) {
+            free(storageSpec.data);
+            return 0;
+        }
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLInternalFormat(format),
+            width,
+            height,
+            0,
+            GetGLFormat(format),
+            GetGLType(format),
+            storageSpec.data);
+        free(storageSpec.data);
+    }
+    else {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLInternalFormat(HioFormatFloat32Vec4),
+            1,
+            1,
+            0,
+            GetGLFormat(HioFormatFloat32Vec4),
+            GetGLType(HioFormatFloat32Vec4),
+            descriptor.value.Get<GfVec3f>().data());
+    }
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Step 7: Unbind the texture object
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Step 8: Clean up allocated memory
-    free(storageSpec.data);
 
     return texture;
 }
@@ -164,7 +182,12 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 {
     if (descriptor.image) {
         if (descriptor.glTexture == 0) {
-            descriptor.glTexture = createTextureFromHioImage(descriptor.image);
+            descriptor.glTexture = createTextureFromHioImage(descriptor);
+        }
+    }
+    else {
+        if (descriptor.glTexture == 0) {
+            descriptor.glTexture = createTextureFromHioImage(descriptor);
         }
     }
 }
@@ -176,6 +199,11 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 #define TRY_LOAD(INPUT)                                 \
     TryLoadTexture(#INPUT, INPUT, usd_preview_surface); \
     TryLoadParameter(#INPUT, INPUT, usd_preview_surface);
+
+Hd_USTC_CG_Material::Hd_USTC_CG_Material(SdfPath const& id) : HdMaterial(id)
+{
+    diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
+}
 
 void Hd_USTC_CG_Material::Sync(
     HdSceneDelegate* sceneDelegate,
@@ -209,12 +237,44 @@ void Hd_USTC_CG_Material::Sync(
 
 void Hd_USTC_CG_Material::RefreshGLBuffer()
 {
-    MACRO_MAP(; TryCreateGLTexture, INPUT_LIST);
+    ;
+    TryCreateGLTexture(diffuseColor);
+    TryCreateGLTexture(specularColor);
+    TryCreateGLTexture(emissiveColor);
+    TryCreateGLTexture(displacement);
+    TryCreateGLTexture(opacity);
+    TryCreateGLTexture(opacityThreshold);
+    TryCreateGLTexture(roughness);
+    TryCreateGLTexture(metallic);
+    TryCreateGLTexture(clearcoat);
+    TryCreateGLTexture(clearcoatRoughness);
+    TryCreateGLTexture(occlusion);
+    TryCreateGLTexture(normal);
+    TryCreateGLTexture(ior);
+}
+
+void Hd_USTC_CG_Material::BindTextures(Shader& shader)
+{
+    assert(diffuseColor.glTexture);
+    shader.setInt("diffuseColorSampler", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseColor.glTexture);
 }
 
 HdDirtyBits Hd_USTC_CG_Material::GetInitialDirtyBitsMask() const
 {
     return AllDirty;
+}
+
+#define requireTexCoord(INPUT)              \
+    if (!INPUT.uv_primvar_name.IsEmpty()) { \
+        return INPUT.uv_primvar_name;       \
+    }
+
+TfToken Hd_USTC_CG_Material::requireTexcoordName()
+{
+    MACRO_MAP(requireTexCoord, INPUT_LIST)
+    return {};
 }
 
 void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)

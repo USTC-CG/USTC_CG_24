@@ -29,6 +29,7 @@
 #include "USTC_CG.h"
 #include "Utils/Logging/Logging.h"
 #include "context.h"
+#include "pxr/base/gf/vec2f.h"
 #include "pxr/imaging/hd/extComputationUtils.h"
 #include "pxr/imaging/hd/instancer.h"
 #include "pxr/imaging/hd/meshUtil.h"
@@ -123,6 +124,7 @@ void Hd_USTC_CG_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDi
         for (const HdPrimvarDescriptor& pv : primvars) {
             if (HdChangeTracker::IsPrimvarDirty(dirtyBits, id, pv.name) &&
                 pv.name != HdTokens->points) {
+                logging("Primvar source " + pv.name.GetString());
                 _primvarSourceMap[pv.name] = { GetPrimvar(sceneDelegate, pv.name), interp };
             }
         }
@@ -176,6 +178,13 @@ void Hd_USTC_CG_Mesh::Sync(
     }
     if (HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
         transform = GfMatrix4f(sceneDelegate->GetTransform(id));
+    }
+
+    if (HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->normals) ||
+        HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->widths) ||
+        HdChangeTracker::IsPrimvarDirty(*dirtyBits, id, HdTokens->primvar)) {
+        _UpdatePrimvarSources(sceneDelegate, *dirtyBits);
+        _texcoordsClean = false;
     }
 
     if (!_adjacencyValid) {
@@ -253,8 +262,47 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
 
         _normalsValid = true;
     }
-
     _dirtyBits = 0;
+}
+
+void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
+{
+    if (!texcoord_name.IsEmpty()) {
+        if (!_texcoordsClean) {
+            glDeleteBuffers(1, &texcoords);
+            glGenBuffers(1, &texcoords);
+
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, texcoords);
+
+            logging("Attempts to attach texcoord: " + texcoord_name.GetString());
+            assert(this->_primvarSourceMap[texcoord_name].data.CanCast<VtVec2fArray>());
+
+            HdMeshUtil mesh_util(&topology, GetId());
+            VtArray<GfVec2f> raw_texcoord =
+                this->_primvarSourceMap[texcoord_name].data.Get<VtVec2fArray>();
+            VtValue vt_triangulated;
+            mesh_util.ComputeTriangulatedFaceVaryingPrimvar(
+                raw_texcoord.cdata(), raw_texcoord.size(), HdTypeFloatVec2, &vt_triangulated);
+            auto triangulated = vt_triangulated.Get<VtVec2fArray>();
+
+            VtArray<GfVec2f> texcoord;
+            texcoord.resize(points.size());
+            for (int i = 0; i < triangulatedIndices.size(); ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    texcoord[triangulatedIndices[i][j]] = raw_texcoord[i * 3 + j];
+                }
+            }
+
+            glBufferData(
+                GL_SHADER_STORAGE_BUFFER,
+                texcoord.size() * sizeof(GfVec2f),
+                texcoord.cdata(),
+                GL_STATIC_DRAW);
+
+            _texcoordsClean = true;
+        }
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, texcoords);
+    }
 }
 
 void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
@@ -267,6 +315,8 @@ void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
     EBO = 0;
     glDeleteBuffers(1, &normalBuffer);
     normalBuffer = 0;
+    glDeleteBuffers(1, &texcoords);
+    texcoords = 0;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

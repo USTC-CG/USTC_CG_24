@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "pxr/imaging/hd/types.h"
+#include "pxr/imaging/hio/types.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 GLenum GetGLInternalFormat(HdFormat hd_format)
@@ -112,6 +113,152 @@ GLenum GetGLType(HdFormat hd_format)
         case HdFormatInt32Vec3:
         case HdFormatInt32Vec4: return GL_INT;
         case HdFormatFloat32UInt8: return GL_UNSIGNED_INT_24_8;
+        default: throw std::runtime_error("Unsupported format");
+    }
+}
+
+GLenum GetGLInternalFormat(HioFormat hd_format)
+{
+    switch (hd_format) {
+        case HioFormatInvalid:
+        case HioFormatUNorm8: return GL_RED;
+        case HioFormatUNorm8Vec2: return GL_RG;
+        case HioFormatUNorm8Vec3: return GL_RGB;
+        case HioFormatUNorm8Vec4: return GL_RGBA;
+        case HioFormatSNorm8: return GL_RED;
+        case HioFormatSNorm8Vec2: return GL_RG;
+        case HioFormatSNorm8Vec3: return GL_RGB;
+        case HioFormatSNorm8Vec4: return GL_RGBA;
+        case HioFormatFloat16: return GL_RED;
+        case HioFormatFloat16Vec2: return GL_RG;
+        case HioFormatFloat16Vec3: return GL_RGB;
+        case HioFormatFloat16Vec4: return GL_RGBA;
+        case HioFormatFloat32: return GL_RED;
+        case HioFormatFloat32Vec2: return GL_RG;
+        case HioFormatFloat32Vec3: return GL_RGB;
+        case HioFormatFloat32Vec4: return GL_RGBA;
+        case HioFormatInt16: return GL_RED;
+        case HioFormatInt16Vec2: return GL_RG;
+        case HioFormatInt16Vec3: return GL_RGB;
+        case HioFormatInt16Vec4: return GL_RGBA;
+        case HioFormatUInt16: return GL_RED;
+        case HioFormatUInt16Vec2: return GL_RG;
+        case HioFormatUInt16Vec3: return GL_RGB;
+        case HioFormatUInt16Vec4: return GL_RGBA;
+        case HioFormatInt32: return GL_RED;
+        case HioFormatInt32Vec2: return GL_RG;
+        case HioFormatInt32Vec3: return GL_RGB;
+        case HioFormatInt32Vec4: return GL_RGBA;
+        case HioFormatDouble64: return GL_RED;
+        case HioFormatDouble64Vec2: return GL_RG;
+        case HioFormatDouble64Vec3: return GL_RGB;
+        case HioFormatDouble64Vec4: return GL_RGBA;
+        case HioFormatUInt32: return GL_RED;
+        case HioFormatUInt32Vec2: return GL_RG;
+        case HioFormatUInt32Vec3: return GL_RGB;
+        case HioFormatUInt32Vec4: return GL_RGBA;
+        case HioFormatUNorm8srgb: return GL_RED;
+        case HioFormatUNorm8Vec2srgb: return GL_RG;
+        case HioFormatUNorm8Vec3srgb: return GL_SRGB8;
+        case HioFormatUNorm8Vec4srgb: return GL_SRGB8_ALPHA8;
+        default: throw std::runtime_error("Unsupported format");
+    }
+}
+
+GLenum GetGLFormat(HioFormat hd_format)
+{
+    switch (hd_format) {
+        case HioFormatInvalid:
+        case HioFormatUNorm8: return GL_RED;
+        case HioFormatUNorm8Vec2: return GL_RG;
+        case HioFormatUNorm8Vec3: return GL_RGB;
+        case HioFormatUNorm8Vec4: return GL_RGBA;
+        case HioFormatSNorm8: return GL_RED;
+        case HioFormatSNorm8Vec2: return GL_RG;
+        case HioFormatSNorm8Vec3: return GL_RGB;
+        case HioFormatSNorm8Vec4: return GL_RGBA;
+        case HioFormatFloat16: return GL_RED;
+        case HioFormatFloat16Vec2: return GL_RG;
+        case HioFormatFloat16Vec3: return GL_RGB;
+        case HioFormatFloat16Vec4: return GL_RGBA;
+        case HioFormatFloat32: return GL_RED;
+        case HioFormatFloat32Vec2: return GL_RG;
+        case HioFormatFloat32Vec3: return GL_RGB;
+        case HioFormatFloat32Vec4: return GL_RGBA;
+        case HioFormatInt16: return GL_RED;
+        case HioFormatInt16Vec2: return GL_RG;
+        case HioFormatInt16Vec3: return GL_RGB;
+        case HioFormatInt16Vec4: return GL_RGBA;
+        case HioFormatUInt16: return GL_RED;
+        case HioFormatUInt16Vec2: return GL_RG;
+        case HioFormatUInt16Vec3: return GL_RGB;
+        case HioFormatUInt16Vec4: return GL_RGBA;
+        case HioFormatInt32: return GL_RED;
+        case HioFormatInt32Vec2: return GL_RG;
+        case HioFormatInt32Vec3: return GL_RGB;
+        case HioFormatInt32Vec4: return GL_RGBA;
+        case HioFormatDouble64: return GL_RED;
+        case HioFormatDouble64Vec2: return GL_RG;
+        case HioFormatDouble64Vec3: return GL_RGB;
+        case HioFormatDouble64Vec4: return GL_RGBA;
+        case HioFormatUInt32: return GL_RED;
+        case HioFormatUInt32Vec2: return GL_RG;
+        case HioFormatUInt32Vec3: return GL_RGB;
+        case HioFormatUInt32Vec4: return GL_RGBA;
+        case HioFormatUNorm8srgb: return GL_RED;
+        case HioFormatUNorm8Vec2srgb: return GL_RG;
+        case HioFormatUNorm8Vec3srgb: return GL_RGB;
+        case HioFormatUNorm8Vec4srgb: return GL_RGBA;
+
+        default: throw std::runtime_error("Unsupported format");
+    }
+}
+
+GLenum GetGLType(HioFormat hd_format)
+{
+    switch (hd_format) {
+        case HioFormatInvalid:
+        case HioFormatUNorm8:
+        case HioFormatUNorm8Vec2:
+        case HioFormatUNorm8Vec3:
+        case HioFormatUNorm8Vec4: return GL_UNSIGNED_BYTE;
+        case HioFormatSNorm8:
+        case HioFormatSNorm8Vec2:
+        case HioFormatSNorm8Vec3:
+        case HioFormatSNorm8Vec4: return GL_BYTE;
+        case HioFormatFloat16:
+        case HioFormatFloat16Vec2:
+        case HioFormatFloat16Vec3:
+        case HioFormatFloat16Vec4: return GL_HALF_FLOAT;
+        case HioFormatFloat32:
+        case HioFormatFloat32Vec2:
+        case HioFormatFloat32Vec3:
+        case HioFormatFloat32Vec4: return GL_FLOAT;
+        case HioFormatInt16:
+        case HioFormatInt16Vec2:
+        case HioFormatInt16Vec3:
+        case HioFormatInt16Vec4: return GL_INT16_NV;  // Danger
+        case HioFormatUInt16:
+        case HioFormatUInt16Vec2:
+        case HioFormatUInt16Vec3:
+        case HioFormatUInt16Vec4: return GL_INT16_NV;  // Danger
+        case HioFormatInt32:
+        case HioFormatInt32Vec2:
+        case HioFormatInt32Vec3:
+        case HioFormatInt32Vec4: return GL_INT;
+        case HioFormatDouble64:
+        case HioFormatDouble64Vec2:
+        case HioFormatDouble64Vec3:
+        case HioFormatDouble64Vec4: return GL_DOUBLE;
+        case HioFormatUInt32:
+        case HioFormatUInt32Vec2:
+        case HioFormatUInt32Vec3:
+        case HioFormatUInt32Vec4: return GL_UNSIGNED_INT;
+        case HioFormatUNorm8srgb:
+        case HioFormatUNorm8Vec2srgb:
+        case HioFormatUNorm8Vec3srgb:
+        case HioFormatUNorm8Vec4srgb: return GL_UNSIGNED_BYTE;
+
         default: throw std::runtime_error("Unsupported format");
     }
 }

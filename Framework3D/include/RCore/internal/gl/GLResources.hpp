@@ -8,6 +8,8 @@
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/types.h"
 #include "shader.hpp"
+#include "pxr/imaging/hio/types.h"
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define RESOURCE_LIST Texture, Shader
 
@@ -112,4 +114,9 @@ struct DescResouce {
 
 GLenum GetGLFormat(pxr::HdFormat hd_format);
 GLenum GetGLType(pxr::HdFormat hd_format);
+GLenum GetGLInternalFormat(pxr::HdFormat hd_format);
+
+GLenum GetGLFormat(pxr::HioFormat hd_format);
+GLenum GetGLType(pxr::HioFormat hd_format);
+GLenum GetGLInternalFormat(pxr::HioFormat hd_format);
 USTC_CG_NAMESPACE_CLOSE_SCOPE
