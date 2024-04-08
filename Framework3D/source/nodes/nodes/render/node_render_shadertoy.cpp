@@ -9,14 +9,9 @@
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
 #include "rich_type_buffer.hpp"
+#include "utils/draw_fullscreen.h"
 
 namespace USTC_CG::node_shadertoy {
-float vertices[] = {
-    // positions
-    -1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 1.0f,  0.0f
-};
-
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Camera>("Camera");
@@ -33,13 +28,8 @@ static void node_exec(ExeParams params)
     auto size = free_camera->_dataWindow.GetSize();
 
     unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+
+    CreateFullScreenVAO(VAO, VBO);
 
     TextureDesc texture_desc;
     texture_desc.size = size;
@@ -70,9 +60,7 @@ static void node_exec(ExeParams params)
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-
+    DestroyFullScreenVAO(VAO, VBO);
     resource_allocator.destroy(shader);
 
     params.set_output("Color", color_texture);

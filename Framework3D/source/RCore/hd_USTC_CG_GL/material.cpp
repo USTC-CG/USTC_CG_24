@@ -158,16 +158,18 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
         free(storageSpec.data);
     }
     else {
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GetGLInternalFormat(HioFormatFloat32Vec4),
-            1,
-            1,
-            0,
-            GetGLFormat(HioFormatFloat32Vec4),
-            GetGLType(HioFormatFloat32Vec4),
-            descriptor.value.Get<GfVec3f>().data());
+        if (!descriptor.value.IsEmpty()) {
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GetGLInternalFormat(HioFormatFloat32Vec4),
+                1,
+                1,
+                0,
+                GetGLFormat(HioFormatFloat32Vec4),
+                GetGLType(HioFormatFloat32Vec4),
+                descriptor.value.Get<GfVec3f>().data());
+        }
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -203,6 +205,9 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(SdfPath const& id) : HdMaterial(id)
 {
     diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
+    metallic.value = VtValue(0.0f);
+    roughness.value = VtValue(0.8f);
+    normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
 }
 
 void Hd_USTC_CG_Material::Sync(

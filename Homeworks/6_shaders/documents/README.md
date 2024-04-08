@@ -4,6 +4,29 @@
 
 GPGPU被广泛使用在各种任务中，是目前火热的人工智能领域最重要的硬件资源。在本次作业中，我么会利用GPU最开始设计出来的目的——图形计算。
 
+## 本次作业
+
+我们需要完成：
+
+### Blinn Phong着色模型
+1. 首先连接节点Rasterize的输出，观察不同连接的结果。
+2. 在Lighting节点中，按注释完成 blinn_phong.fs
+3. 在rasterize.fs中，读取法线贴图并且完成法线贴图映射
+
+### Shadow Mapping
+1. 创建Shadow Mapping节点
+2. 完成Shadow Mapping节点中的shadow_map.fs
+3. 完成Shadow Masking节点中的shadow_masking.fs
+
+### PCSS (Optional)
+1. 在Shadow Masking节点中添加接口，读取原图像的位置信息
+
+### SSAO (Optional)
+1. 创建SSAO节点，读取深度和光照的结果
+
+还有一种效果更好的的算法，称为HBAO，我们提供的节点接口足以支撑这种算法，感兴趣的同学可以尝试实现。
+
+
 ## OpenGL
 
 **图形API：** 我们需要通过图形API来与GPU交换信息。GPU计算的输入输出都会通过图形API来在内存和显存之间传递。
@@ -15,9 +38,10 @@ OpenGL是目前广泛使用的一种图形API。由于它诞生较早，近些�
 
 Shader是一段在GPU上执行的代码。
 
-Shader有多种类型。最早发展的是顶点着色器（Vertex Shader）和面元着色器（Fragment Shader）。它们构成的管线
+Shader有多种类型。最早发展的是顶点着色器（Vertex Shader）和面元着色器（Fragment Shader）。它们构成的管线能够读取顶点的描述信息，将读取的结果进行光栅化，并且进行着色。
 
 ## GLSL
+
 
 ## 现代图形API
 

@@ -11,43 +11,35 @@
 #include "rich_type_buffer.hpp"
 #include "utils/draw_fullscreen.h"
 
-namespace USTC_CG::node_deferred_lighting {
-
+namespace USTC_CG::node_shadow_masking {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::Camera>("Camera");
     b.add_input<decl::Lights>("Lights");
+    b.add_input<decl::Texture>("Shadow Masks");
+    b.add_input<decl::Texture>("Color");
 
-    b.add_input<decl::Texture>("Position");
-    b.add_input<decl::Texture>("Normal");
-    b.add_output<decl::Texture>("MetallicRoughness");
-    b.add_output<decl::Texture>("diffuseColor");
-
-    b.add_input<decl::String>("Lighting Shader").default_val("shaders/blinn_phong.fs");
+    b.add_input<decl::String>("Shader").default_val("shaders/shadow_masking.fs");
     b.add_output<decl::Texture>("Color");
 }
 
 static void node_exec(ExeParams params)
 {
-    // Fetch all the information
+    auto cameras = params.get_input<CameraArray>("Camera");
 
-    auto lights = params.get_input<LightArray>("Lights");
-
-    auto position_texture = params.get_input<TextureHandle>("Position");
-    auto normal_texture = params.get_input<TextureHandle>("Normal");
-    auto metallic_roughness = params.get_input<TextureHandle>("MetallicRoughness");
-    auto diffuseColor_texture = params.get_input<TextureHandle>("diffuseColor");
-
-    // Creating output textures.
-    auto size = position_texture->desc.size;
-    TextureDesc color_output_desc;
-    color_output_desc.format = HdFormatFloat32Vec4;
-    color_output_desc.size = size;
-    auto color_texture = resource_allocator.create(color_output_desc);
+    auto free_camera = cameras.back();
+    auto size = free_camera->_dataWindow.GetSize();
 
     unsigned int VBO, VAO;
+
     CreateFullScreenVAO(VAO, VBO);
 
-    auto shaderPath = params.get_input<std::string>("Lighting Shader");
+    TextureDesc texture_desc;
+    texture_desc.size = size;
+    texture_desc.format = HdFormatFloat32Vec4;
+    auto color_texture = resource_allocator.create(texture_desc);
+
+    auto shaderPath = params.get_input<std::string>("Shader");
 
     ShaderDesc shader_desc;
     shader_desc.set_vertex_path(
@@ -72,6 +64,7 @@ static void node_exec(ExeParams params)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     DestroyFullScreenVAO(VAO, VBO);
+    resource_allocator.destroy(shader);
 
     params.set_output("Color", color_texture);
 }
@@ -80,8 +73,8 @@ static void node_register()
 {
     static NodeTypeInfo ntype;
 
-    strcpy(ntype.ui_name, "Deferred Lighting");
-    strcpy_s(ntype.id_name, "render_deferred_lighting");
+    strcpy(ntype.ui_name, "Shadow Masking");
+    strcpy_s(ntype.id_name, "render_shadow_masking");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
@@ -90,4 +83,4 @@ static void node_register()
 }
 
 NOD_REGISTER_NODE(node_register)
-}  // namespace USTC_CG::node_deferred_lighting
+}  // namespace USTC_CG::node_shadow_masking
