@@ -32,5 +32,5 @@ void main() {
     vec3 normalmap_value = texture2D(normalMapSampler, vTexcoord).xyz;
     normal = normalize(vertexNormal);
 
-    // HW6_TODO: Apply normal map here. Use normal textures to modify vertex normals
+    // HW6_TODO: Apply normal map here. Use normal textures to modify vertex normals.
 }
