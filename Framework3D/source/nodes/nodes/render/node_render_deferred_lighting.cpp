@@ -24,6 +24,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Texture>("diffuseColor");
     b.add_input<decl::Texture>("MetallicRoughness");
     b.add_input<decl::Texture>("Normal");
+    b.add_input<decl::Texture>("Shadow Maps");
 
     b.add_input<decl::String>("Lighting Shader").default_val("shaders/blinn_phong.fs");
     b.add_output<decl::Texture>("Color");
@@ -43,7 +44,9 @@ static void node_exec(ExeParams params)
     auto position_texture = params.get_input<TextureHandle>("Position");
     auto normal_texture = params.get_input<TextureHandle>("Normal");
     auto metallic_roughness = params.get_input<TextureHandle>("MetallicRoughness");
-    auto diffuseColor_texture = params.get_input<TextureHandle>("diffuseColor");
+    auto diffuseColor_texture = params.get_input<TextureHandle>("Shadow Maps");
+
+    auto shadow_maps = params.get_input<TextureHandle>("diffuseColor");
 
     // Creating output textures.
     auto size = position_texture->desc.size;
@@ -86,10 +89,18 @@ static void node_exec(ExeParams params)
 
     shader->shader.setInt("metallicRoughnessSampler", 2);
     glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, metallic_roughness->texture_id);
+    
+
+    shader->shader.setInt("shadow_maps", 3);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, shadow_maps->texture_id);
+    
 
     GLuint lightBuffer;
     glGenBuffers(1, &lightBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightBuffer);
+    
 
     std::vector<LightInfo> light_vector;
 
@@ -105,15 +116,20 @@ static void node_exec(ExeParams params)
         light_vector.size() * sizeof(LightInfo),
         light_vector.data(),
         GL_STATIC_DRAW);
+    
+
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightBuffer);
+    
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    
 
     DestroyFullScreenVAO(VAO, VBO);
 
     resource_allocator.destroy(shader);
     glDeleteBuffers(1, &lightBuffer);
+    
 
     params.set_output("Color", color_texture);
 }

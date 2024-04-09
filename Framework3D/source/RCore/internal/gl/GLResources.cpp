@@ -320,13 +320,17 @@ TextureHandle createTexture(const TextureDesc& desc)
     else {
         glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &ret->texture_id);
         glBindTexture(GL_TEXTURE_2D_ARRAY, ret->texture_id);
-        glTexStorage3D(
+        glTexImage3D(
             GL_TEXTURE_2D_ARRAY,
             0,
             GetGLInternalFormat(_format),
             desc.size[0],
             desc.size[1],
-            desc.array_size);
+            desc.array_size,
+            0,
+            GetGLFormat(_format),
+            GetGLType(_format),
+            NULL);
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

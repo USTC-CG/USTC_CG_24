@@ -32,13 +32,11 @@ static void node_exec(ExeParams params)
     auto resolution = params.get_input<int>("resolution");
 
     TextureDesc texture_desc;
-     texture_desc.array_size = lights.size();
+    texture_desc.array_size = lights.size();
     texture_desc.size = GfVec2i(resolution);
     texture_desc.format = HdFormatFloat32;
     auto shadow_map_texture = resource_allocator.create(texture_desc);
 
-    texture_desc.format = HdFormatFloat32UInt8;
-    auto depth_texture_for_opengl = resource_allocator.create(texture_desc);
     auto shaderPath = params.get_input<std::string>("Shader");
 
     ShaderDesc shader_desc;
@@ -53,50 +51,60 @@ static void node_exec(ExeParams params)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    GLuint framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    std::vector<TextureHandle> depth_textures;
 
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER,
-        GL_DEPTH_STENCIL_ATTACHMENT,
-        GL_TEXTURE_2D,
-        depth_texture_for_opengl->texture_id,
-        0);
+    for (int light_id = 0; light_id < lights.size(); ++light_id) {
+        GLuint framebuffer;
+        glGenFramebuffers(1, &framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            assert(glGetError()==GL_NO_ERROR);
 
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadow_map_texture->texture_id, 0);
+        glViewport(0, 0, resolution, resolution);
+            assert(glGetError()==GL_NO_ERROR);
 
-    GLenum attachments[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, attachments);
+        shader_handle->shader.use();
 
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    glViewport(0, 0, resolution, resolution);
-    shader_handle->shader.use();
-
-    for (int i = 0; i < lights.size(); ++i) {
-        if (!lights[i]->GetId().IsEmpty()) {
-            GlfSimpleLight light_params = lights[i]->Get(HdTokens->params).Get<GlfSimpleLight>();
+        if (!lights[light_id]->GetId().IsEmpty()) {
+            GlfSimpleLight light_params =
+                lights[light_id]->Get(HdTokens->params).Get<GlfSimpleLight>();
             GfVec3f light_position = { light_params.GetPosition()[0],
                                        light_params.GetPosition()[1],
                                        light_params.GetPosition()[2] };
-            auto light_view_mat =
-                GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1)).GetInverse();
+            auto light_view_mat = GfMatrix4f()
+                                      .SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1))
+                                      .GetInverse();
 
+            // HW6: The matrices for lights information is here!
             GfFrustum frustum;
-            frustum.SetPerspective(60.f, 1.0, 1, 10.f);
-
+            frustum.SetPerspective(60.f, 1.0, 1, 100.f);
             auto light_projection_mat = frustum.ComputeProjectionMatrix();
-
             shader_handle->shader.setMat4(
                 "light_mat", GfMatrix4f(light_projection_mat) * light_view_mat);
 
-             glFramebufferTextureLayer(
-                 GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, i);
+            glFramebufferTextureLayer(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, light_id);
+            assert(glGetError()==GL_NO_ERROR);
 
-            for (int i = 0; i < meshes.size(); ++i) {
-                auto mesh = meshes[i];
+            texture_desc.format = HdFormatFloat32UInt8;
+            texture_desc.array_size = 1;
+            auto depth_texture_for_opengl = resource_allocator.create(texture_desc);
+            depth_textures.push_back(depth_texture_for_opengl);
+
+            glFramebufferTexture2D(
+                GL_FRAMEBUFFER,
+                GL_DEPTH_STENCIL_ATTACHMENT,
+                GL_TEXTURE_2D,
+                depth_texture_for_opengl->texture_id,
+                0);
+
+            assert(glGetError()==GL_NO_ERROR);
+
+            glClearColor(0.f, 0.f, 0.f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            assert(glGetError()==GL_NO_ERROR);
+
+            for (int mesh_id = 0; mesh_id < meshes.size(); ++mesh_id) {
+                auto mesh = meshes[mesh_id];
 
                 shader_handle->shader.setMat4("model", mesh->transform);
 
@@ -111,13 +119,20 @@ static void node_exec(ExeParams params)
                 glBindVertexArray(0);
             }
         }
+
+        glDeleteFramebuffers(1, &framebuffer);
+            assert(glGetError()==GL_NO_ERROR);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    for (auto && depth_texture : depth_textures) {
+        resource_allocator.destroy(depth_texture);
+    }
 
     resource_allocator.destroy(shader_handle);
-    resource_allocator.destroy(depth_texture_for_opengl);
-    glDeleteFramebuffers(1, &framebuffer);
-    
+            assert(glGetError()==GL_NO_ERROR);
+
     auto shader_error = shader_handle->shader.get_error();
 
     params.set_output("Shadow Maps", shadow_map_texture);

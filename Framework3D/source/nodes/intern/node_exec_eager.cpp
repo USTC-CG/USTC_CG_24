@@ -70,14 +70,17 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
             output_state.is_last_used = true;
         }
         else {
-            size_t last_used_id = 0;
+            int last_used_id = -1;
 
             for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
                 auto directly_linked_input_socket = output->directly_linked_sockets[i];
 
                 if (index_cache.find(directly_linked_input_socket) != index_cache.end()) {
-                    last_used_id =
-                        std::max(last_used_id, index_cache[directly_linked_input_socket]);
+                    if (directly_linked_input_socket->Node->REQUIRED) {
+                        last_used_id =
+                            std::max(last_used_id, int(index_cache[directly_linked_input_socket]));
+                    }
+
                     auto& input_state = input_states[index_cache[directly_linked_input_socket]];
 
                     auto& output_state = output_states[index_cache[output]];
@@ -96,9 +99,14 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                     input_state.is_forwarded = true;
                 }
             }
-            //assert(input_states[last_used_id].is_last_used == false);
+            if (last_used_id == -1) {
+                output_states[index_cache[output]].is_last_used = true;
+            }
+            else {
+                assert(input_states[last_used_id].is_last_used == false);
 
-            input_states[last_used_id].is_last_used = true;
+                input_states[last_used_id].is_last_used = true;
+            }
         }
     }
 }
