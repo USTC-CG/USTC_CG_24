@@ -1,3 +1,5 @@
+// #define __GNUC__
+
 #include "NODES_FILES_DIR.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
@@ -5,6 +7,7 @@
 #include "Nodes/socket_types/basic_socket_types.hpp"
 #include "camera.h"
 #include "light.h"
+#include "pxr/imaging/glf/simpleLight.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
@@ -18,13 +21,18 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Lights>("Lights");
 
     b.add_input<decl::Texture>("Position");
+    b.add_input<decl::Texture>("diffuseColor");
+    b.add_input<decl::Texture>("MetallicRoughness");
     b.add_input<decl::Texture>("Normal");
-    b.add_output<decl::Texture>("MetallicRoughness");
-    b.add_output<decl::Texture>("diffuseColor");
 
     b.add_input<decl::String>("Lighting Shader").default_val("shaders/blinn_phong.fs");
     b.add_output<decl::Texture>("Color");
 }
+
+struct LightInfo {
+    GfVec4f position;
+    GfVec4f luminance;
+};
 
 static void node_exec(ExeParams params)
 {
@@ -68,10 +76,44 @@ static void node_exec(ExeParams params)
     shader->shader.use();
     shader->shader.setVec2("iResolution", size);
 
+    shader->shader.setInt("diffuseColorSampler", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseColor_texture->texture_id);
+
+    shader->shader.setInt("normalMapSampler", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normal_texture->texture_id);
+
+    shader->shader.setInt("metallicRoughnessSampler", 2);
+    glActiveTexture(GL_TEXTURE2);
+
+    GLuint lightBuffer;
+    glGenBuffers(1, &lightBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightBuffer);
+
+    std::vector<LightInfo> light_vector;
+
+    for (int i = 0; i < lights.size(); ++i) {
+        if (!lights[i]->GetId().IsEmpty()) {
+            GlfSimpleLight light_params = lights[i]->Get(HdTokens->params).Get<GlfSimpleLight>();
+
+            light_vector.emplace_back(light_params.GetPosition(), light_params.GetDiffuse());
+        }
+    }
+    glBufferData(
+        GL_SHADER_STORAGE_BUFFER,
+        light_vector.size() * sizeof(LightInfo),
+        light_vector.data(),
+        GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightBuffer);
+
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     DestroyFullScreenVAO(VAO, VBO);
+
+    resource_allocator.destroy(shader);
+    glDeleteBuffers(1, &lightBuffer);
 
     params.set_output("Color", color_texture);
 }

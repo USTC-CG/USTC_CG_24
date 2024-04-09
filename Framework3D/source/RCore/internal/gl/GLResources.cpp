@@ -303,18 +303,31 @@ TextureHandle createTexture(const TextureDesc& desc)
     TextureHandle ret = std::make_shared<TextureResource>();
     ret->desc = desc;
     auto _format = desc.format;
-    glCreateTextures(GL_TEXTURE_2D, 1, &ret->texture_id);
-    glBindTexture(GL_TEXTURE_2D, ret->texture_id);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GetGLInternalFormat(_format),
-        desc.size[0],
-        desc.size[1],
-        0,
-        GetGLFormat(_format),
-        GetGLType(_format),
-        NULL);
+    if (desc.array_size == 1) {
+        glCreateTextures(GL_TEXTURE_2D, 1, &ret->texture_id);
+        glBindTexture(GL_TEXTURE_2D, ret->texture_id);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLInternalFormat(_format),
+            desc.size[0],
+            desc.size[1],
+            0,
+            GetGLFormat(_format),
+            GetGLType(_format),
+            NULL);
+    }
+    else {
+        glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &ret->texture_id);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, ret->texture_id);
+        glTexStorage3D(
+            GL_TEXTURE_2D_ARRAY,
+            0,
+            GetGLInternalFormat(_format),
+            desc.size[0],
+            desc.size[1],
+            desc.array_size);
+    }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

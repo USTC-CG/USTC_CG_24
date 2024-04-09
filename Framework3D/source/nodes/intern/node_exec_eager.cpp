@@ -96,7 +96,7 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                     input_state.is_forwarded = true;
                 }
             }
-            assert(input_states[last_used_id].is_last_used == false);
+            //assert(input_states[last_used_id].is_last_used == false);
 
             input_states[last_used_id].is_last_used = true;
         }

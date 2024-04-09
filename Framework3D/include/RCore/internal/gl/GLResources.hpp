@@ -7,8 +7,8 @@
 #include "pxr/base/gf/vec2i.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/types.h"
-#include "shader.hpp"
 #include "pxr/imaging/hio/types.h"
+#include "shader.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define RESOURCE_LIST Texture, Shader
@@ -66,9 +66,11 @@ struct TextureDesc {
     pxr::GfVec2i size;
     pxr::HdFormat format;
 
+    unsigned array_size = 1;
+
     friend bool operator==(const TextureDesc& lhs, const TextureDesc& rhs)
     {
-        return lhs.size == rhs.size && lhs.format == rhs.format;
+        return lhs.size == rhs.size && lhs.format == rhs.format && lhs.array_size == rhs.array_size;
     }
 
     friend bool operator!=(const TextureDesc& lhs, const TextureDesc& rhs)

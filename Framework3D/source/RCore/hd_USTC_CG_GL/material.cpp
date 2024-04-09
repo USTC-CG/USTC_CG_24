@@ -205,8 +205,9 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(SdfPath const& id) : HdMaterial(id)
 {
     diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
-    metallic.value = VtValue(0.0f);
-    roughness.value = VtValue(0.8f);
+    roughness.value = VtValue(GfVec3f(0.0f, 0.8, 0.0));
+
+    metallic.value = VtValue(GfVec3f(0.0f, 0.8, 0.0));
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
 }
 
@@ -264,6 +265,14 @@ void Hd_USTC_CG_Material::BindTextures(Shader& shader)
     shader.setInt("diffuseColorSampler", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, diffuseColor.glTexture);
+
+    shader.setInt("normalMapSampler", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normal.glTexture);
+
+    shader.setInt("metallicRoughnessSampler", 2);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, metallic.glTexture);
 }
 
 HdDirtyBits Hd_USTC_CG_Material::GetInitialDirtyBitsMask() const
