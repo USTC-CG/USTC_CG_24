@@ -71,7 +71,7 @@ static void node_exec(ExeParams params)
             auto light_view_mat =
                 GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
 
-            // HW6: The matrices for lights information is here!
+            // HW6: The matrices for lights information is here! Current value is set that "it just works". However, you should try to modify the values to see how it affects the performance of the shadow maps.
             GfFrustum frustum;
             frustum.SetPerspective(120.f, 1.0, 1, 25.f);
             auto light_projection_mat = frustum.ComputeProjectionMatrix();
@@ -81,13 +81,6 @@ static void node_exec(ExeParams params)
              glFramebufferTextureLayer(
                  GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0,
                  light_id);
-
-            //glFramebufferTexture2D(
-            //    GL_FRAMEBUFFER,
-            //    GL_COLOR_ATTACHMENT0,
-            //    GL_TEXTURE_2D,
-            //    shadow_map_texture->texture_id,
-            //    0);
 
             texture_desc.format = HdFormatFloat32UInt8;
             texture_desc.array_size = 1;
