@@ -284,13 +284,19 @@ void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
             mesh_util.ComputeTriangulatedFaceVaryingPrimvar(
                 raw_texcoord.cdata(), raw_texcoord.size(), HdTypeFloatVec2, &vt_triangulated);
             auto triangulated = vt_triangulated.Get<VtVec2fArray>();
-
             VtArray<GfVec2f> texcoord;
-            texcoord.resize(points.size());
-            for (int i = 0; i < triangulatedIndices.size(); ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    texcoord[triangulatedIndices[i][j]] = raw_texcoord[i * 3 + j];
+
+            if (this->_primvarSourceMap[texcoord_name].interpolation ==
+                HdInterpolationFaceVarying) {
+                texcoord.resize(points.size());
+                for (int i = 0; i < triangulatedIndices.size(); ++i) {
+                    for (int j = 0; j < 3; ++j) {
+                        texcoord[triangulatedIndices[i][j]] = raw_texcoord[i * 3 + j];
+                    }
                 }
+            }
+            else {
+                texcoord = raw_texcoord;
             }
 
             glBufferData(

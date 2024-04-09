@@ -80,7 +80,7 @@ static void node_exec(ExeParams params)
 
              glFramebufferTextureLayer(
                  GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0,
-                 0);
+                 light_id);
 
             //glFramebufferTexture2D(
             //    GL_FRAMEBUFFER,

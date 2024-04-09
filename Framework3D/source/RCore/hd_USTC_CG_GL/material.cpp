@@ -46,14 +46,26 @@ void Hd_USTC_CG_Material::TryLoadTexture(
             auto texture_node = get_input_connection(surfaceNetwork, input_connection);
             assert(texture_node.nodeTypeId == UsdImagingTokens->UsdUVTexture);
 
+            
+
             auto file_name =
                 texture_node.parameters[TfToken("file")].Get<SdfAssetPath>().GetAssetPath();
             logging("Texture file name: " + file_name);
 
-            descriptor.image = HioImage::OpenForReading(file_name);
-            assert(descriptor.image);
+            HioImage::SourceColorSpace colorSpace;
+
+            if (texture_node.parameters[TfToken("sourceColorSpace")]==TfToken("sRGB")) {
+
+                colorSpace = HioImage::SRGB;
+            }
+            else {
+                colorSpace = HioImage::Raw;
+            }
+
+            descriptor.image = HioImage::OpenForReading(file_name,0,0,colorSpace);
             descriptor.wrapS = texture_node.parameters[TfToken("wrapS")].Get<TfToken>();
             descriptor.wrapT = texture_node.parameters[TfToken("wrapT")].Get<TfToken>();
+            
 
             HdMaterialNode2 st_read_node;
             for (auto&& st_read_connection : texture_node.inputConnections) {
@@ -171,10 +183,11 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
                 descriptor.value.Get<GfVec3f>().data());
         }
     }
+    //glGenerateMipmap(texture);
+
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return texture;

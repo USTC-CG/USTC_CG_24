@@ -31,8 +31,11 @@ static void node_declare(NodeDeclarationBuilder& b)
 }
 
 struct LightInfo {
+    GfMatrix4f light_projection;
+    GfMatrix4f light_view;
     GfVec4f position;
     GfVec4f luminance;
+    int shadow_map_id;
 };
 
 static void node_exec(ExeParams params)
@@ -110,9 +113,16 @@ static void node_exec(ExeParams params)
         if (!lights[i]->GetId().IsEmpty()) {
             GlfSimpleLight light_params = lights[i]->Get(HdTokens->params).Get<GlfSimpleLight>();
 
-            light_vector.emplace_back(light_params.GetPosition(), light_params.GetDiffuse());
+            light_vector.emplace_back(
+                GfMatrix4f(),
+                GfMatrix4f(),
+                light_params.GetPosition(),
+                light_params.GetDiffuse(),
+                i);
         }
     }
+
+    shader->shader.setInt("light_count", light_vector.size());
 
     glBufferData(
         GL_SHADER_STORAGE_BUFFER,

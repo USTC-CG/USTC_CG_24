@@ -41,7 +41,12 @@ static void node_exec(ExeParams params)
     auto lightPath = xformPath.AppendPath(sdf_path);
     // Create a transform for the light and set its position
     pxr::UsdGeomXform lightXform = pxr::UsdGeomXform::Define(global_stage, xformPath);
-    lightXform.AddTransformOp().Set(pxr::GfMatrix4d().SetTranslate(pxr::GfVec3f(x, y, z)));
+
+    auto transformOp = lightXform.GetTransformOp();
+    if (!transformOp) {
+        transformOp = lightXform.AddTransformOp();
+    }
+    transformOp.Set(pxr::GfMatrix4d().SetTranslate(pxr::GfVec3f(x, y, z)));
 
     pxr::UsdLuxSphereLight sphere_light = pxr::UsdLuxSphereLight::Define(global_stage, lightPath);
     sphere_light.CreateDiffuseAttr().Set(VtValue(GfVec3f(r, g, b)));
