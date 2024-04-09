@@ -46,26 +46,22 @@ void Hd_USTC_CG_Material::TryLoadTexture(
             auto texture_node = get_input_connection(surfaceNetwork, input_connection);
             assert(texture_node.nodeTypeId == UsdImagingTokens->UsdUVTexture);
 
-            
-
             auto file_name =
                 texture_node.parameters[TfToken("file")].Get<SdfAssetPath>().GetAssetPath();
             logging("Texture file name: " + file_name);
 
             HioImage::SourceColorSpace colorSpace;
 
-            if (texture_node.parameters[TfToken("sourceColorSpace")]==TfToken("sRGB")) {
-
+            if (texture_node.parameters[TfToken("sourceColorSpace")] == TfToken("sRGB")) {
                 colorSpace = HioImage::SRGB;
             }
             else {
                 colorSpace = HioImage::Raw;
             }
 
-            descriptor.image = HioImage::OpenForReading(file_name,0,0,colorSpace);
+            descriptor.image = HioImage::OpenForReading(file_name, 0, 0, colorSpace);
             descriptor.wrapS = texture_node.parameters[TfToken("wrapS")].Get<TfToken>();
             descriptor.wrapT = texture_node.parameters[TfToken("wrapT")].Get<TfToken>();
-            
 
             HdMaterialNode2 st_read_node;
             for (auto&& st_read_connection : texture_node.inputConnections) {
@@ -171,20 +167,21 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
     }
     else {
         if (!descriptor.value.IsEmpty()) {
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GetGLInternalFormat(HioFormatFloat32Vec4),
-                1,
-                1,
-                0,
-                GetGLFormat(HioFormatFloat32Vec4),
-                GetGLType(HioFormatFloat32Vec4),
-                descriptor.value.Get<GfVec3f>().data());
+            if (descriptor.value.CanCast<GfVec3f>()) {
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GetGLInternalFormat(HioFormatFloat32Vec4),
+                    1,
+                    1,
+                    0,
+                    GetGLFormat(HioFormatFloat32Vec4),
+                    GetGLType(HioFormatFloat32Vec4),
+                    descriptor.value.Get<GfVec3f>().data());
+            }
         }
     }
-    //glGenerateMipmap(texture);
-
+    // glGenerateMipmap(texture);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -215,7 +212,7 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
     TryLoadTexture(#INPUT, INPUT, usd_preview_surface); \
     TryLoadParameter(#INPUT, INPUT, usd_preview_surface);
 
-Hd_USTC_CG_Material::Hd_USTC_CG_Material(SdfPath const& id) : HdMaterial(id)
+Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
     diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
     roughness.value = VtValue(GfVec3f(0.0f, 0.8, 0.0));
@@ -231,7 +228,7 @@ void Hd_USTC_CG_Material::Sync(
 {
     VtValue vtMat = sceneDelegate->GetMaterialResource(GetId());
     if (vtMat.IsHolding<HdMaterialNetworkMap>()) {
-        HdMaterialNetworkMap const& hdNetworkMap = vtMat.UncheckedGet<HdMaterialNetworkMap>();
+        const HdMaterialNetworkMap& hdNetworkMap = vtMat.UncheckedGet<HdMaterialNetworkMap>();
         if (!hdNetworkMap.terminals.empty() && !hdNetworkMap.map.empty()) {
             logging("Loaded a material", Info);
 
