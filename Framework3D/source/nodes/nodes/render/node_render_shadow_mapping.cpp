@@ -32,7 +32,7 @@ static void node_exec(ExeParams params)
     auto resolution = params.get_input<int>("resolution");
 
     TextureDesc texture_desc;
-    // texture_desc.array_size = lights.size();
+     texture_desc.array_size = lights.size();
     texture_desc.size = GfVec2i(resolution);
     texture_desc.format = HdFormatFloat32;
     auto shadow_map_texture = resource_allocator.create(texture_desc);
@@ -50,6 +50,9 @@ static void node_exec(ExeParams params)
         std::filesystem::path(RENDER_NODES_FILES_DIR) / std::filesystem::path(shaderPath));
     auto shader_handle = resource_allocator.create(shader_desc);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -64,9 +67,12 @@ static void node_exec(ExeParams params)
     glFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadow_map_texture->texture_id, 0);
 
+    GLenum attachments[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, attachments);
+
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+    glViewport(0, 0, resolution, resolution);
     shader_handle->shader.use();
 
     for (int i = 0; i < lights.size(); ++i) {
@@ -76,18 +82,18 @@ static void node_exec(ExeParams params)
                                        light_params.GetPosition()[1],
                                        light_params.GetPosition()[2] };
             auto light_view_mat =
-                GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
+                GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1)).GetInverse();
 
             GfFrustum frustum;
-            frustum.SetPerspective(45.f, 1.0, 0.1, 100);
+            frustum.SetPerspective(60.f, 1.0, 1, 10.f);
 
             auto light_projection_mat = frustum.ComputeProjectionMatrix();
 
             shader_handle->shader.setMat4(
                 "light_mat", GfMatrix4f(light_projection_mat) * light_view_mat);
 
-            // glFramebufferTextureLayer(
-            //     GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, i);
+             glFramebufferTextureLayer(
+                 GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, i);
 
             for (int i = 0; i < meshes.size(); ++i) {
                 auto mesh = meshes[i];
@@ -106,14 +112,19 @@ static void node_exec(ExeParams params)
             }
         }
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     resource_allocator.destroy(shader_handle);
     resource_allocator.destroy(depth_texture_for_opengl);
     glDeleteFramebuffers(1, &framebuffer);
+    
+    auto shader_error = shader_handle->shader.get_error();
 
     params.set_output("Shadow Maps", shadow_map_texture);
+    if (!shader_error.empty()) {
+        throw std::runtime_error(shader_error);
+    }
 }
-
 static void node_register()
 {
     static NodeTypeInfo ntype;

@@ -1,4 +1,4 @@
-#version 430
+#version 430 core
 
 uniform mat4 light_mat;
 
@@ -8,5 +8,5 @@ layout(location = 0) out float shadow_map0;
 void main() {
 vec4 clipPos = light_mat * (vec4(vertexPosition, 1.0));
 shadow_map0 = clipPos.z / clipPos.w;
-shadow_map0 = 1.0;
+shadow_map0 = 1.2;
 }
