@@ -33,8 +33,9 @@ static void node_exec(ExeParams params)
 
     TextureDesc texture_desc;
     texture_desc.array_size = lights.size();
+    //texture_desc.array_size = 1;
     texture_desc.size = GfVec2i(resolution);
-    texture_desc.format = HdFormatFloat32;
+    texture_desc.format = HdFormatUNorm8Vec4;
     auto shadow_map_texture = resource_allocator.create(texture_desc);
 
     auto shaderPath = params.get_input<std::string>("Shader");
@@ -52,16 +53,13 @@ static void node_exec(ExeParams params)
     glDepthFunc(GL_LESS);
 
     std::vector<TextureHandle> depth_textures;
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    glViewport(0, 0, resolution, resolution);
 
     for (int light_id = 0; light_id < lights.size(); ++light_id) {
-        GLuint framebuffer;
-        glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-            assert(glGetError()==GL_NO_ERROR);
-
-        glViewport(0, 0, resolution, resolution);
-            assert(glGetError()==GL_NO_ERROR);
-
         shader_handle->shader.use();
 
         if (!lights[light_id]->GetId().IsEmpty()) {
@@ -70,20 +68,26 @@ static void node_exec(ExeParams params)
             GfVec3f light_position = { light_params.GetPosition()[0],
                                        light_params.GetPosition()[1],
                                        light_params.GetPosition()[2] };
-            auto light_view_mat = GfMatrix4f()
-                                      .SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1))
-                                      .GetInverse();
+            auto light_view_mat =
+                GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
 
             // HW6: The matrices for lights information is here!
             GfFrustum frustum;
-            frustum.SetPerspective(60.f, 1.0, 1, 100.f);
+            frustum.SetPerspective(120.f, 1.0, 1, 25.f);
             auto light_projection_mat = frustum.ComputeProjectionMatrix();
-            shader_handle->shader.setMat4(
-                "light_mat", GfMatrix4f(light_projection_mat) * light_view_mat);
+            shader_handle->shader.setMat4("light_view", light_view_mat);
+            shader_handle->shader.setMat4("light_projection", GfMatrix4f(light_projection_mat));
 
-            glFramebufferTextureLayer(
-                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, light_id);
-            assert(glGetError()==GL_NO_ERROR);
+             glFramebufferTextureLayer(
+                 GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0,
+                 0);
+
+            //glFramebufferTexture2D(
+            //    GL_FRAMEBUFFER,
+            //    GL_COLOR_ATTACHMENT0,
+            //    GL_TEXTURE_2D,
+            //    shadow_map_texture->texture_id,
+            //    0);
 
             texture_desc.format = HdFormatFloat32UInt8;
             texture_desc.array_size = 1;
@@ -97,11 +101,8 @@ static void node_exec(ExeParams params)
                 depth_texture_for_opengl->texture_id,
                 0);
 
-            assert(glGetError()==GL_NO_ERROR);
-
             glClearColor(0.f, 0.f, 0.f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            assert(glGetError()==GL_NO_ERROR);
 
             for (int mesh_id = 0; mesh_id < meshes.size(); ++mesh_id) {
                 auto mesh = meshes[mesh_id];
@@ -119,19 +120,16 @@ static void node_exec(ExeParams params)
                 glBindVertexArray(0);
             }
         }
-
-        glDeleteFramebuffers(1, &framebuffer);
-            assert(glGetError()==GL_NO_ERROR);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    for (auto && depth_texture : depth_textures) {
+    for (auto&& depth_texture : depth_textures) {
         resource_allocator.destroy(depth_texture);
     }
 
     resource_allocator.destroy(shader_handle);
-            assert(glGetError()==GL_NO_ERROR);
+    glDeleteFramebuffers(1, &framebuffer);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     auto shader_error = shader_handle->shader.get_error();
 

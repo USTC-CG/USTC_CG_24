@@ -42,11 +42,12 @@ static void node_exec(ExeParams params)
     auto lights = params.get_input<LightArray>("Lights");
 
     auto position_texture = params.get_input<TextureHandle>("Position");
-    auto normal_texture = params.get_input<TextureHandle>("Normal");
-    auto metallic_roughness = params.get_input<TextureHandle>("MetallicRoughness");
-    auto diffuseColor_texture = params.get_input<TextureHandle>("Shadow Maps");
+    auto diffuseColor_texture = params.get_input<TextureHandle>("diffuseColor");
 
-    auto shadow_maps = params.get_input<TextureHandle>("diffuseColor");
+    auto metallic_roughness = params.get_input<TextureHandle>("MetallicRoughness");
+    auto normal_texture = params.get_input<TextureHandle>("Normal");
+
+    auto shadow_maps = params.get_input<TextureHandle>("Shadow Maps");
 
     // Creating output textures.
     auto size = position_texture->desc.size;
@@ -90,18 +91,19 @@ static void node_exec(ExeParams params)
     shader->shader.setInt("metallicRoughnessSampler", 2);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, metallic_roughness->texture_id);
-    
 
     shader->shader.setInt("shadow_maps", 3);
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, shadow_maps->texture_id);
-    
+    glBindTexture(GL_TEXTURE_2D_ARRAY, shadow_maps->texture_id);
+
+    shader->shader.setInt("position", 4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, position_texture->texture_id);
 
     GLuint lightBuffer;
     glGenBuffers(1, &lightBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightBuffer);
-    
-
+    glViewport(0, 0, size[0], size[1]);
     std::vector<LightInfo> light_vector;
 
     for (int i = 0; i < lights.size(); ++i) {
@@ -111,26 +113,23 @@ static void node_exec(ExeParams params)
             light_vector.emplace_back(light_params.GetPosition(), light_params.GetDiffuse());
         }
     }
+
     glBufferData(
         GL_SHADER_STORAGE_BUFFER,
         light_vector.size() * sizeof(LightInfo),
         light_vector.data(),
         GL_STATIC_DRAW);
-    
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightBuffer);
-    
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    
 
     DestroyFullScreenVAO(VAO, VBO);
 
     resource_allocator.destroy(shader);
     glDeleteBuffers(1, &lightBuffer);
-    
-
+    glDeleteFramebuffers(1, &framebuffer);
     params.set_output("Color", color_texture);
 }
 

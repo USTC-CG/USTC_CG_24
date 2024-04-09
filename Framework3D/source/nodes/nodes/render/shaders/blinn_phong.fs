@@ -12,11 +12,11 @@ Light lights[4];
 
 uniform vec2 iResolution;
 
+uniform sampler2D diffuseColorSampler;
+uniform sampler2D normalMapSampler;
+uniform sampler2D metallicRoughnessSampler;
+uniform sampler2DArray shadow_maps;
 uniform sampler2D position;
-uniform sampler2D normal;
-uniform sampler2D metallic_roughness;
-uniform sampler2D diffuseColor;
-uniform sampler2D shadow_maps;
 
 uniform int light_count;
 
@@ -24,7 +24,7 @@ layout(location = 0) out vec4 Color;
 
 void main() {
 vec2 uv = gl_FragCoord.xy / iResolution;
-Color = texture2D(diffuseColor, uv);
-Color = vec4(1.0,1,1.0, 1.0);
-
+Color = vec4(texture(shadow_maps, vec3(uv,0)));
+//Color = texture2D(position,uv);
+//Color = lights[0].position;
 }
