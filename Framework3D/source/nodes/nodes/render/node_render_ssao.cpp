@@ -18,7 +18,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Texture>("Position");
     b.add_input<decl::Texture>("Depth");
 
-    // For HBAO you might need normal texture.
+    // HW6: For HBAO you might need normal texture.
 
     b.add_input<decl::String>("Shader").default_val("shaders/ssao.fs");
     b.add_output<decl::Texture>("Color");
@@ -26,10 +26,9 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    auto cameras = params.get_input<CameraArray>("Camera");
+    auto color = params.get_input<TextureHandle>("Color");
 
-    auto free_camera = cameras.back();
-    auto size = free_camera->_dataWindow.GetSize();
+    auto size = color->desc.size;
 
     unsigned int VBO, VAO;
 
@@ -60,6 +59,8 @@ static void node_exec(ExeParams params)
     glClear(GL_COLOR_BUFFER_BIT);
     shader->shader.use();
     shader->shader.setVec2("iResolution", size);
+
+    // HW6: Bind the textures like other passes here.
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -4,6 +4,7 @@
 struct Light {
     // The matrices are used for shadow mapping. You need to fill it according to how we are filling it when building the normal maps (node_render_shadow_mapping.cpp). 
     // Now, they are filled with identity matrix. You need to modify C++ code innode_render_deferred_lighting.cpp.
+    // Position and color are filled.
     mat4 light_projection;
     mat4 light_view;
     vec4 position;
@@ -30,9 +31,7 @@ layout(location = 0) out vec4 Color;
 void main() {
 vec2 uv = gl_FragCoord.xy / iResolution;
 
-for(int i = 0;
-i < light_count;
-i ++) {
+for(int i = 0; i < light_count; i ++) {
 
 float shadow_map_value = texture(shadow_maps, vec3(uv, lights[i].shadow_map_id)).x;
 
