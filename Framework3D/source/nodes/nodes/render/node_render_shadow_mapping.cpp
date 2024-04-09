@@ -50,8 +50,6 @@ static void node_exec(ExeParams params)
         std::filesystem::path(RENDER_NODES_FILES_DIR) / std::filesystem::path(shaderPath));
     auto shader_handle = resource_allocator.create(shader_desc);
 
-    std::vector<GfMatrix4f> lights_projection;
-
     GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -62,6 +60,12 @@ static void node_exec(ExeParams params)
         GL_TEXTURE_2D,
         depth_texture_for_opengl->texture_id,
         0);
+
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadow_map_texture->texture_id, 0);
+
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     shader_handle->shader.use();
 
@@ -75,7 +79,8 @@ static void node_exec(ExeParams params)
                 GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
 
             GfFrustum frustum;
-            frustum.SetPerspective(45 / 180 * 3.14, 1.0, 0.1, 100);
+            frustum.SetPerspective(45.f, 1.0, 0.1, 100);
+
             auto light_projection_mat = frustum.ComputeProjectionMatrix();
 
             shader_handle->shader.setMat4(
@@ -83,16 +88,6 @@ static void node_exec(ExeParams params)
 
             // glFramebufferTextureLayer(
             //     GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, i);
-
-            glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                GL_COLOR_ATTACHMENT0,
-                GL_TEXTURE_2D,
-                shadow_map_texture->texture_id,
-                0);
-
-            glClearColor(0.f, 0.f, 0.f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
             for (int i = 0; i < meshes.size(); ++i) {
                 auto mesh = meshes[i];
