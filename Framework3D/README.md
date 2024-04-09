@@ -53,6 +53,10 @@ python.exe configure.py
 
 - 稍后助教会对此限制进行改进。
 
+# Update at HW5
+
+默认相机是第一人称相机，使用QWWASD进行交互，鼠标滚轮可以调速度。上方菜单栏可以改回第三人称相机。
+
 # Usage (Kick Start for HW4)
 
 构建并执行 `engine_test.exe`
