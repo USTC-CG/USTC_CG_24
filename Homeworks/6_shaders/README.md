@@ -16,9 +16,9 @@
 
 ## 要求
 
-- 实现 Blinn-Phong 着色模型 (参考资料)
-- 实现 Shadow Mapping 算法 (参考资料)
-- 可选：实现 Percentage Close Soft Shadow (参考资料)
+- 实现 Blinn-Phong 着色模型 ([参考资料](https://learnopengl-cn.github.io/02%20Lighting/03%20Materials/))
+- 实现 Shadow Mapping 算法 ([参考资料](https://learnopengl-cn.github.io/05%20Advanced%20Lighting/03%20Shadows/01%20Shadow%20Mapping/))
+- 可选：实现 Percentage Close Soft Shadow ([参考资料](https://zhuanlan.zhihu.com/p/478472753))
 - 可选：实现 Screen Space Ambient Occlusion (参考资料)
 
 
@@ -57,12 +57,16 @@ ID_姓名_Homework*/
 ├── utils/                        // 辅助代码文件
 │   ├── some_algorithm.h
 │   ├── some_algorithm.cpp
+├── shaders/                      // 全部shader文件，无论是否修改
+|   ├──
 │   └── ...  
 ├── nodes/                        // 你实现or修改的节点文件
 │   ├── node_your_implementation.cpp
 │   ├── node_your_other_implementation.cpp
 │   └── ...  
-├── Blueprints.json               // 节点连接信息
+├── CompositionGraph.json               // 节点连接信息
+├── GeoNodeSystem.json
+├── RenderGraph.json
 ├── report.pdf                    // 实验报告
 └── ...                           // 其他补充文件
 

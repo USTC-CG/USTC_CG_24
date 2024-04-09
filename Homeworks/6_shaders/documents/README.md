@@ -11,21 +11,36 @@ GPGPU被广泛使用在各种任务中，是目前火热的人工智能领域最
 ### Blinn Phong着色模型
 1. 首先连接节点Rasterize的输出，观察不同连接的结果。
 2. 在Lighting节点中，按注释完成 blinn_phong.fs
-3. 在rasterize.fs中，读取法线贴图并且完成法线贴图映射
+3. 在rasterize.fs中，读取法线贴图并且完成法线贴图映射。（本步骤可以后执行）
 
 ### Shadow Mapping
 1. 创建Shadow Mapping节点
-2. 完成Shadow Mapping节点中的shadow_map.fs
-3. 完成Shadow Masking节点中的shadow_masking.fs
+2. 修改或是拷贝一份 rasterize_impl.fs，在其中完成Shadow Mapping。这里你需要在C++文件中填写更多信息，需要对光源出发的矩阵进行填写（与计算shadow mapping时使用的一致即可）
 
 ### PCSS (Optional)
-1. 在Shadow Masking节点中添加接口，读取原图像的位置信息
-
+1. 修改或拷贝一份blinn-phong.fs，按注释和参考资料完成PCSS。
 ### SSAO (Optional)
 1. 创建SSAO节点，读取深度和光照的结果
 
 还有一种效果更好的的算法，称为HBAO，我们提供的节点接口足以支撑这种算法，感兴趣的同学可以尝试实现。
 
+
+## 框架配置
+
+本次框架更新了一批功能，但配置流程保持不变，即拉取后重新cmake并配置即可。如出现本地自己先前完成的节点无法运行的情况可以联系助教。
+
+更新后可能有一些窗口藏在后面，可以使用shift+tab将其切换到前方，然后进行缩放或贴靠，也可以将已有的窗口挪开，找到新窗口进行贴靠。
+
+本次框架提供的新功能[在此](./NewFeatures.md)介绍：
+
+## 框架提供的一些功能
+- 节点大多数可以动态替换shader文件的路径，因此可以创建同名但调用不同shader的节点，便于比较结果。
+- 如果只修改了shader，不用退出再重新打开，只需对shader进行保存即可在程序中看到更新后的结果。
+
+## 限制
+
+- 本次作业对点光源进行shadow mapping，但目前的shadow贴图只使用了单张而不是cubemap对场景进行观察，因此没有办法向四面八方进行投影。感兴趣的同学可以对此改进。
+- 可以加入方向光源的支持。
 
 ## OpenGL
 
@@ -39,8 +54,6 @@ OpenGL是目前广泛使用的一种图形API。由于它诞生较早，近些�
 Shader是一段在GPU上执行的代码。
 
 Shader有多种类型。最早发展的是顶点着色器（Vertex Shader）和面元着色器（Fragment Shader）。它们构成的管线能够读取顶点的描述信息，将读取的结果进行光栅化，并且进行着色。
-
-## GLSL
 
 
 ## 现代图形API

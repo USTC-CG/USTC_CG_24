@@ -7,8 +7,9 @@ struct Light {
     // Position and color are filled.
     mat4 light_projection;
     mat4 light_view;
-    vec4 position;
-    vec4 color; // Just use the same diffuse and specular color.
+    vec3 position;
+    float radius;
+    vec3 color; // Just use the same diffuse and specular color.
     int shadow_map_id;
 };
 

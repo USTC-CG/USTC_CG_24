@@ -33,7 +33,8 @@ static void node_declare(NodeDeclarationBuilder& b)
 struct LightInfo {
     GfMatrix4f light_projection;
     GfMatrix4f light_view;
-    GfVec4f position;
+    GfVec3f position;
+    float radius;
     GfVec3f luminance;
     int shadow_map_id;
 };
@@ -114,8 +115,11 @@ static void node_exec(ExeParams params)
             GlfSimpleLight light_params = lights[i]->Get(HdTokens->params).Get<GlfSimpleLight>();
             auto diffuse4 = light_params.GetDiffuse();
             pxr::GfVec3f diffuse3(diffuse4[0], diffuse4[1], diffuse4[2]);
-            light_vector.emplace_back(
-                GfMatrix4f(), GfMatrix4f(), light_params.GetPosition(), diffuse3, i);
+            auto position4 = light_params.GetPosition();
+            pxr::GfVec3f position3(position4[0], position4[1], position4[2]);
+            light_vector.emplace_back(GfMatrix4f(), GfMatrix4f(), position3, 0.f, diffuse3, i);
+
+            // You can add directional light here, and also the corresponding shadow map calculation part.
         }
     }
 

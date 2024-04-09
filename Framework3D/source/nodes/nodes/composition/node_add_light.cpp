@@ -18,6 +18,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("R").default_val(1).min(0).max(10);
     b.add_input<decl::Float>("G").default_val(1).min(0).max(10);
     b.add_input<decl::Float>("B").default_val(1).min(0).max(10);
+    b.add_input<decl::Float>("radius").default_val(0.1).min(0).max(1);
 
     b.add_input<decl::String>("Path").default_val("Light");
 }
@@ -50,6 +51,8 @@ static void node_exec(ExeParams params)
 
     pxr::UsdLuxSphereLight sphere_light = pxr::UsdLuxSphereLight::Define(global_stage, lightPath);
     sphere_light.CreateDiffuseAttr().Set(VtValue(GfVec3f(r, g, b)));
+    auto radius = params.get_input<float>("radius");
+    sphere_light.CreateRadiusAttr().Set(VtValue(radius));
 }
 
 static void node_register()
