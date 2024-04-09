@@ -30,7 +30,7 @@ void main() {
     metallicRoughness = texture2D(metallicRoughnessSampler, vTexcoord).yz;
 
     vec3 normalmap_value = texture2D(normalMapSampler, vTexcoord).xyz;
-    normal = normalmap_value;
+    normal = normalize(vertexNormal);
 
     // HW6_TODO: Apply normal map here.
     //normal = normalize(vertexNormal);
