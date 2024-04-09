@@ -112,14 +112,10 @@ static void node_exec(ExeParams params)
     for (int i = 0; i < lights.size(); ++i) {
         if (!lights[i]->GetId().IsEmpty()) {
             GlfSimpleLight light_params = lights[i]->Get(HdTokens->params).Get<GlfSimpleLight>();
-            auto vec4 = light_params.GetDiffuse();
-            pxr::GfVec3f diffuse3(vec4[0], vec4[1], vec4[2]);
+            auto diffuse4 = light_params.GetDiffuse();
+            pxr::GfVec3f diffuse3(diffuse4[0], diffuse4[1], diffuse4[2]);
             light_vector.emplace_back(
-                GfMatrix4f(),
-                GfMatrix4f(),
-                light_params.GetPosition(),
-                diffuse3,
-                i);
+                GfMatrix4f(), GfMatrix4f(), light_params.GetPosition(), diffuse3, i);
         }
     }
 
