@@ -18,6 +18,7 @@ Light lights[4];
 };
 
 uniform vec2 iResolution;
+uniform vec3 camPos;
 
 uniform sampler2D diffuseColorSampler;
 uniform sampler2D normalMapSampler; // You should apply normal mapping in rasterize_impl.fs
