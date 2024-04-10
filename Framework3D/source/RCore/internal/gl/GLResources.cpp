@@ -22,10 +22,10 @@ GLenum GetGLInternalFormat(HdFormat hd_format)
         case HdFormatFloat16Vec2: return GL_RG;
         case HdFormatFloat16Vec3: return GL_RGB;
         case HdFormatFloat16Vec4: return GL_RGBA;
-        case HdFormatFloat32: return GL_RED;
-        case HdFormatFloat32Vec2: return GL_RG;
-        case HdFormatFloat32Vec3: return GL_RGB;
-        case HdFormatFloat32Vec4: return GL_RGBA;
+        case HdFormatFloat32: return GL_R32F;
+        case HdFormatFloat32Vec2: return GL_RG32F;
+        case HdFormatFloat32Vec3: return GL_RGB32F;
+        case HdFormatFloat32Vec4: return GL_RGBA32F;
         case HdFormatInt16: return GL_RED;
         case HdFormatInt16Vec2: return GL_RG;
         case HdFormatInt16Vec3: return GL_RGB;
