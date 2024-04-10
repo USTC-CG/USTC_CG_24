@@ -33,7 +33,7 @@ static void node_exec(ExeParams params)
 
     TextureDesc texture_desc;
     texture_desc.array_size = lights.size();
-    //texture_desc.array_size = 1;
+    // texture_desc.array_size = 1;
     texture_desc.size = GfVec2i(resolution);
     texture_desc.format = HdFormatUNorm8Vec4;
     auto shadow_map_texture = resource_allocator.create(texture_desc);
@@ -65,22 +65,33 @@ static void node_exec(ExeParams params)
         if (!lights[light_id]->GetId().IsEmpty()) {
             GlfSimpleLight light_params =
                 lights[light_id]->Get(HdTokens->params).Get<GlfSimpleLight>();
-            GfVec3f light_position = { light_params.GetPosition()[0],
-                                       light_params.GetPosition()[1],
-                                       light_params.GetPosition()[2] };
-            auto light_view_mat =
-                GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
 
-            // HW6: The matrices for lights information is here! Current value is set that "it just works". However, you should try to modify the values to see how it affects the performance of the shadow maps.
-            GfFrustum frustum;
-            frustum.SetPerspective(120.f, 1.0, 1, 25.f);
-            auto light_projection_mat = frustum.ComputeProjectionMatrix();
+            // HW6: The matrices for lights information is here! Current value is set that "it just
+            // works". However, you should try to modify the values to see how it affects the
+            // performance of the shadow maps.
+
+            GfMatrix4f light_view_mat;
+            GfMatrix4f light_projection_mat;
+
+            if (lights[light_id]->GetLightType() == HdPrimTypeTokens->sphereLight) {
+                GfFrustum frustum;
+                GfVec3f light_position = { light_params.GetPosition()[0],
+                                           light_params.GetPosition()[1],
+                                           light_params.GetPosition()[2] };
+
+                light_view_mat =
+                    GfMatrix4f().SetLookAt(light_position, GfVec3f(0, 0, 0), GfVec3f(0, 0, 1));
+                frustum.SetPerspective(120.f, 1.0, 1, 25.f);
+                light_projection_mat = GfMatrix4f(frustum.ComputeProjectionMatrix());
+            }
+            // else (lights[light_id]->GetLightType() == HdPrimTypeTokens->distantLight). See
+            // light.cpp under hd_ustc_cg_gl/
+
             shader_handle->shader.setMat4("light_view", light_view_mat);
             shader_handle->shader.setMat4("light_projection", GfMatrix4f(light_projection_mat));
 
-             glFramebufferTextureLayer(
-                 GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0,
-                 light_id);
+            glFramebufferTextureLayer(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, shadow_map_texture->texture_id, 0, light_id);
 
             texture_desc.format = HdFormatFloat32UInt8;
             texture_desc.array_size = 1;

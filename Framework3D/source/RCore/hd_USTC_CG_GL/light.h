@@ -19,7 +19,12 @@ class USTC_CG_API Hd_USTC_CG_Light : public HdLight {
 
     VtValue Get(TfToken const& token) const;
 
-   private:
+    [[nodiscard]] TfToken GetLightType() const
+    {
+        return _lightType;
+    }
+
+private:
     // Stores the internal light type of this light.
     TfToken _lightType;
     // Cached states.
