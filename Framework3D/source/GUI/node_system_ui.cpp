@@ -636,6 +636,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
         if (node) {
             createNewNode = false;
+            node_system_execution_->MarkDirty();
 
             ed::SetNodePosition(node->ID, newNodePostion);
 
