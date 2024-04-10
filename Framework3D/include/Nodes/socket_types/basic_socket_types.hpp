@@ -2,6 +2,7 @@
 
 #include "USTC_CG.h"
 #include "Nodes/pin.hpp"
+#include "float.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
