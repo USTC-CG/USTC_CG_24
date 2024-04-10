@@ -37,7 +37,9 @@
 
 ### (2) 作业项目 `Framework3D` [->](../../Framework3D/) 
 
-作业的基础代码框架
+作业的基础代码框架和测试数据。
+
+测试数据链接：https://rec.ustc.edu.cn/share/e1f568e0-f6e5-11ee-803b-31c46e7802ed
 
 ## 提交文件格式
 
