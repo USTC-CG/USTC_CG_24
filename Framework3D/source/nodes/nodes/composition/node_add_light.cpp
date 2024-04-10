@@ -50,7 +50,7 @@ static void node_exec(ExeParams params)
     transformOp.Set(pxr::GfMatrix4d().SetTranslate(pxr::GfVec3f(x, y, z)));
 
     pxr::UsdLuxSphereLight sphere_light = pxr::UsdLuxSphereLight::Define(global_stage, lightPath);
-    sphere_light.CreateDiffuseAttr().Set(VtValue(GfVec3f(r, g, b)));
+    sphere_light.CreateColorAttr().Set(VtValue(GfVec3f(r, g, b)));
     auto radius = params.get_input<float>("radius");
     sphere_light.CreateRadiusAttr().Set(VtValue(radius));
 }
