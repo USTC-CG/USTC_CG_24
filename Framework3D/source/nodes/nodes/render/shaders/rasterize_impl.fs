@@ -33,4 +33,18 @@ void main() {
     normal = normalize(vertexNormal);
 
     // HW6_TODO: Apply normal map here. Use normal textures to modify vertex normals.
+    
+    // Calculate tangent and bitangent
+    vec3 edge1 = dFdx(vertexPosition);
+    vec3 edge2 = dFdy(vertexPosition);
+    vec2 deltaUV1 = dFdx(texcoords);
+    vec2 deltaUV2 = dFdy(texcoords);
+
+    float f = 1.0 / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+    vec3 tangent = f * (deltaUV2.y * edge1 - deltaUV1.y * edge2);
+    vec3 bitangent = f * (-deltaUV2.x * edge1 + deltaUV1.x * edge2);
+
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
+    bitangent = normalize(bitangent - dot(bitangent, normal) * normal);
 }
