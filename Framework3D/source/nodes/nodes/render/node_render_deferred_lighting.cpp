@@ -132,6 +132,9 @@ static void node_exec(ExeParams params)
             pxr::GfVec3f diffuse3(diffuse4[0], diffuse4[1], diffuse4[2]);
             auto position4 = light_params.GetPosition();
             pxr::GfVec3f position3(position4[0], position4[1], position4[2]);
+
+            auto radius = lights[i]->Get(HdLightTokens->radius).Get<float>();
+            
             light_vector.emplace_back(GfMatrix4f(), GfMatrix4f(), position3, 0.f, diffuse3, i);
 
             // You can add directional light here, and also the corresponding shadow map calculation

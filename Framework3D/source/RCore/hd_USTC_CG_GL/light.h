@@ -7,7 +7,9 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 class USTC_CG_API Hd_USTC_CG_Light : public HdLight {
    public:
-    explicit Hd_USTC_CG_Light(const SdfPath& id, const TfToken& lightType) : HdLight(id)
+    explicit Hd_USTC_CG_Light(const SdfPath& id, const TfToken& lightType)
+        : HdLight(id),
+          _lightType(lightType)
     {
     }
 

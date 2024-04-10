@@ -51,6 +51,7 @@ static void node_exec(ExeParams params)
 
     pxr::UsdLuxSphereLight sphere_light = pxr::UsdLuxSphereLight::Define(global_stage, lightPath);
     sphere_light.CreateColorAttr().Set(VtValue(GfVec3f(r, g, b)));
+    sphere_light.CreateDiffuseAttr().Set(1.0f);
     auto radius = params.get_input<float>("radius");
     sphere_light.CreateRadiusAttr().Set(VtValue(radius));
 }
