@@ -127,6 +127,8 @@ struct NodeSystemImpl {
     std::map<NodeId, float, NodeIdLess> m_NodeTouchTime;
     std::string filename;
 
+    bool link_changed = true;
+
    private:
     ed::EditorContext* m_Editor = nullptr;
     const NodeSystemType node_system_type;
@@ -182,6 +184,7 @@ void NodeSystemImpl::OnStart()
                              NodeEditor::SaveReasonFlags reason,
                              void* userPointer) -> bool {
         auto ptr = static_cast<NodeSystemImpl*>(userPointer);
+
         std::ofstream file(ptr->filename);
         auto node_serialize = ptr->node_system_execution_->Serialize();
 
