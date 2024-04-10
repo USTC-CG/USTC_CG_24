@@ -35,6 +35,9 @@ layout(location = 0) out vec4 Color;
 void main() {
 vec2 uv = gl_FragCoord.xy / iResolution;
 
+vec3 pos = texture2D(position,uv).xyz;
+vec3 normal = texture2D(normalMapSampler,uv).xyz;
+
 vec4 metalnessRoughness = texture2D(metallicRoughnessSampler,uv);
 float metal = metalnessRoughness.x;
 float roughness = metalnessRoughness.y;
