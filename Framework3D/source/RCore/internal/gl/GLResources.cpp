@@ -341,8 +341,6 @@ TextureHandle createTexture(const TextureDesc& desc)
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
-
-    assert(glGetError() == GL_NO_ERROR);
     return ret;
 }
 

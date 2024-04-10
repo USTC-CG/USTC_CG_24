@@ -18,7 +18,6 @@ Light lights[4];
 };
 
 uniform vec2 iResolution;
-uniform vec3 camPos;
 
 uniform sampler2D diffuseColorSampler;
 uniform sampler2D normalMapSampler; // You should apply normal mapping in rasterize_impl.fs
@@ -27,6 +26,7 @@ uniform sampler2DArray shadow_maps;
 uniform sampler2D position;
 
 // uniform float alpha;
+uniform vec3 camPos;
 
 uniform int light_count;
 
@@ -35,7 +35,7 @@ layout(location = 0) out vec4 Color;
 void main() {
 vec2 uv = gl_FragCoord.xy / iResolution;
 
-float2 metalnessRoughness = texture2D(metallicRoughnessSampler,uv);
+vec4 metalnessRoughness = texture2D(metallicRoughnessSampler,uv);
 float metal = metalnessRoughness.x;
 float roughness = metalnessRoughness.y;
 
