@@ -29,6 +29,7 @@ class Hd_USTC_CG_Material : public HdMaterial {
         VtValue value;
 
         GLuint glTexture = 0;
+        TfToken input_name;
     };
 
     explicit Hd_USTC_CG_Material(SdfPath const& id);
@@ -62,7 +63,7 @@ class Hd_USTC_CG_Material : public HdMaterial {
     HdMaterialNetwork2 surfaceNetwork;
 
     // Function to create an OpenGL texture from a HioImage object
-    static GLuint createTextureFromHioImage(const InputDescriptor& descriptor);
+    GLuint createTextureFromHioImage(const InputDescriptor& descriptor);
 
     void TryLoadTexture(
         const char* str,

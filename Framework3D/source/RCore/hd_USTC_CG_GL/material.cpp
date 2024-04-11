@@ -131,7 +131,27 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
         free(storageSpec.data);
     }
     else {
-        if (!descriptor.value.IsEmpty()) {
+        if (descriptor.input_name == TfToken("roughness") ||
+            descriptor.input_name == TfToken("metallic")) {
+            logging("Creating metallic or roughness for " + GetId().GetString());
+
+            float metallic_value = metallic.value.Get<float>();
+            float roughness_value = roughness.value.Get<float>();
+            assert(metallic.value.CanCast<float>());
+            assert(roughness.value.CanCast<float>());
+            float color[4] = { 0, metallic_value, roughness_value, 1.0f };
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GetGLInternalFormat(HioFormatFloat32Vec4),
+                1,
+                1,
+                0,
+                GetGLFormat(HioFormatFloat32Vec4),
+                GetGLType(HioFormatFloat32Vec4),
+                color);
+        }
+        else if (!descriptor.value.IsEmpty()) {
             if (descriptor.value.CanCast<GfVec3f>()) {
                 auto val = descriptor.value.Get<GfVec3f>();
                 float color[4] = { val[0], val[1], val[2], 1.0f };
@@ -151,9 +171,9 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
     }
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    //float aniso = 0.0f;
-    //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+    // float aniso = 0.0f;
+    // glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+    // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -180,13 +200,18 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
     TryLoadTexture(#INPUT, INPUT, usd_preview_surface); \
     TryLoadParameter(#INPUT, INPUT, usd_preview_surface);
 
+#define NAME_IT(INPUT) INPUT.input_name = TfToken(#INPUT);
+
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
+    logging("Creating material " + id.GetString());
     diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
-    roughness.value = VtValue(GfVec3f(0.0f, 0.0, 0.8));
+    roughness.value = VtValue(0.8f);
 
-    metallic.value = VtValue(GfVec3f(0.0f, 0.0, 0.8));
+    metallic.value = VtValue(0.0f);
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
+
+    MACRO_MAP(NAME_IT,INPUT_LIST);
 }
 
 void Hd_USTC_CG_Material::Sync(
