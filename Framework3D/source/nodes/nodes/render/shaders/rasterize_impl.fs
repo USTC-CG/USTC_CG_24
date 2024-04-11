@@ -39,7 +39,14 @@ void main() {
     vec3 edge2 = dFdy(vertexPosition);
     vec2 deltaUV1 = dFdx(vTexcoord);
     vec2 deltaUV2 = dFdy(vTexcoord);
+
+    vec3 tangent = edge1 * deltaUV2.y - edge2 * deltaUV1.y;
+
     // Robust tangent and bitangent evaluation
-    vec3 tangent = normalize(edge1 * deltaUV2.y - edge2 * deltaUV1.y);
+    if(length(tangent) < 1E-7) {
+        vec3 bitangent = -edge1 * deltaUV2.x + edge2 * deltaUV1.x;
+        tangent = normalize(cross(bitangent, normal));
+    }
+    tangent = normalize(tangent - dot(tangent, normal) * normal);
     vec3 bitangent = normalize(cross(tangent,normal));
 }
