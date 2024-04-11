@@ -44,5 +44,4 @@ void main() {
     vec3 bitangent = normalize(-edge1 * deltaUV2.x + edge2 * deltaUV1.x);
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     bitangent = normalize(bitangent - dot(bitangent, normal) * normal);
-    normal = tangent;
 }
