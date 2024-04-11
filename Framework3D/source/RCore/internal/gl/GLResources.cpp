@@ -133,10 +133,10 @@ GLenum GetGLInternalFormat(HioFormat hd_format)
         case HioFormatFloat16Vec2: return GL_RG;
         case HioFormatFloat16Vec3: return GL_RGB;
         case HioFormatFloat16Vec4: return GL_RGBA;
-        case HioFormatFloat32: return GL_RED;
-        case HioFormatFloat32Vec2: return GL_RG;
-        case HioFormatFloat32Vec3: return GL_RGB;
-        case HioFormatFloat32Vec4: return GL_RGBA;
+        case HioFormatFloat32: return GL_R32F;
+        case HioFormatFloat32Vec2: return GL_RG32F;
+        case HioFormatFloat32Vec3: return GL_RGB32F;
+        case HioFormatFloat32Vec4: return GL_RGBA32F;
         case HioFormatInt16: return GL_RED;
         case HioFormatInt16Vec2: return GL_RG;
         case HioFormatInt16Vec3: return GL_RGB;

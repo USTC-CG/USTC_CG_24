@@ -124,7 +124,7 @@ void Hd_USTC_CG_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDi
         for (const HdPrimvarDescriptor& pv : primvars) {
             if (HdChangeTracker::IsPrimvarDirty(dirtyBits, id, pv.name) &&
                 pv.name != HdTokens->points) {
-                logging("Primvar source " + pv.name.GetString());
+                logging("Primvar source " + pv.name.GetString(), Info);
                 _primvarSourceMap[pv.name] = { GetPrimvar(sceneDelegate, pv.name), interp };
             }
         }
@@ -277,20 +277,24 @@ void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, texcoords);
 
-            logging(GetId().GetString()+" Attempts to attach texcoord: " + texcoord_name.GetString());
+            logging(
+                GetId().GetString() + " Attempts to attach texcoord: " + texcoord_name.GetString(),
+                Info);
             assert(this->_primvarSourceMap[texcoord_name].data.CanCast<VtVec2fArray>());
 
-            HdMeshUtil mesh_util(&topology, GetId());
             VtArray<GfVec2f> raw_texcoord =
                 this->_primvarSourceMap[texcoord_name].data.Get<VtVec2fArray>();
-            VtValue vt_triangulated;
-            mesh_util.ComputeTriangulatedFaceVaryingPrimvar(
-                raw_texcoord.cdata(), raw_texcoord.size(), HdTypeFloatVec2, &vt_triangulated);
-            auto triangulated = vt_triangulated.Get<VtVec2fArray>();
+
             VtArray<GfVec2f> texcoord;
 
             if (this->_primvarSourceMap[texcoord_name].interpolation ==
                 HdInterpolationFaceVarying) {
+                HdMeshUtil mesh_util(&topology, GetId());
+
+                VtValue vt_triangulated;
+                mesh_util.ComputeTriangulatedFaceVaryingPrimvar(
+                    raw_texcoord.cdata(), raw_texcoord.size(), HdTypeFloatVec2, &vt_triangulated);
+                auto triangulated = vt_triangulated.Get<VtVec2fArray>();
                 texcoord.resize(points.size());
                 for (int i = 0; i < triangulatedIndices.size(); ++i) {
                     for (int j = 0; j < 3; ++j) {

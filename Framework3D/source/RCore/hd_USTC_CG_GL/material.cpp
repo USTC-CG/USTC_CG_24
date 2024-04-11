@@ -42,13 +42,13 @@ void Hd_USTC_CG_Material::TryLoadTexture(
 {
     for (auto&& input_connection : usd_preview_surface.inputConnections) {
         if (input_connection.first == TfToken(name)) {
-            logging("Loading texture: " + input_connection.first.GetString());
+            logging("Loading texture: " + input_connection.first.GetString(), Info);
             auto texture_node = get_input_connection(surfaceNetwork, input_connection);
             assert(texture_node.nodeTypeId == UsdImagingTokens->UsdUVTexture);
 
             auto file_name =
                 texture_node.parameters[TfToken("file")].Get<SdfAssetPath>().GetAssetPath();
-            logging("Texture file name: " + file_name);
+            logging("Texture file name: " + file_name, Info);
 
             HioImage::SourceColorSpace colorSpace;
 
@@ -82,7 +82,7 @@ void Hd_USTC_CG_Material::TryLoadParameter(
     for (auto&& parameter : usd_preview_surface.parameters) {
         if (parameter.first == name) {
             descriptor.value = parameter.second;
-            logging("Loading parameter: " + parameter.first.GetString());
+            logging("Loading parameter: " + parameter.first.GetString(), Info);
         }
     }
 }
@@ -133,6 +133,9 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
     else {
         if (!descriptor.value.IsEmpty()) {
             if (descriptor.value.CanCast<GfVec3f>()) {
+                auto val = descriptor.value.Get<GfVec3f>();
+                float color[4] = { val[0], val[1], val[2], 1.0f };
+
                 glTexImage2D(
                     GL_TEXTURE_2D,
                     0,
@@ -142,7 +145,10 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
                     0,
                     GetGLFormat(HioFormatFloat32Vec4),
                     GetGLType(HioFormatFloat32Vec4),
-                    descriptor.value.Get<GfVec3f>().data());
+                    color);
+            }
+            else {
+                logging(descriptor.value.GetTypeName());
             }
         }
     }
@@ -150,6 +156,9 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return texture;

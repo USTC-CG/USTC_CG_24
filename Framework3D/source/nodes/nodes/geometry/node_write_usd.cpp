@@ -151,10 +151,6 @@ static void node_exec(ExeParams params)
                 auto pbrShader = pxr::UsdShadeShader::Define(stage, material_shader_path);
 
                 pbrShader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
-                pbrShader.CreateInput(pxr::TfToken("roughness"), pxr::SdfValueTypeNames->Float)
-                    .Set(0.4f);
-                pbrShader.CreateInput(pxr::TfToken("metallic"), pxr::SdfValueTypeNames->Float)
-                    .Set(0.0f);
                 material.CreateSurfaceOutput().ConnectToSource(
                     pbrShader.ConnectableAPI(), pxr::TfToken("surface"));
 
