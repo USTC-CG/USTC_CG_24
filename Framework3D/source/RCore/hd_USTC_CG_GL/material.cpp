@@ -147,9 +147,6 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
                     GetGLType(HioFormatFloat32Vec4),
                     color);
             }
-            else {
-                logging(descriptor.value.GetTypeName());
-            }
         }
     }
     // glGenerateMipmap(texture);
