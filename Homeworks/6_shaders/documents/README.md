@@ -18,7 +18,7 @@ GPGPU被广泛使用在各种任务中，是目前火热的人工智能领域最
 2. 修改或是拷贝一份 blinn_phong.fs，在其中完成Shadow Mapping。这里你需要在C++文件中填写更多信息，需要对光源出发的矩阵进行填写（与计算shadow mapping时使用的一致即可）
 
 ### PCSS (Optional)
-1. 修改或拷贝一份blinn-phong.fs，按注释和参考资料完成PCSS。
+1. 修改或拷贝一份blinn_phong.fs，按注释和参考资料完成PCSS。
 ### SSAO (Optional)
 1. 创建SSAO节点，读取深度和光照的结果
 
