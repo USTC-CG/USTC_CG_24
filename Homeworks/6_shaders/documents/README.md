@@ -12,7 +12,7 @@ GPGPU被广泛使用在各种任务中，是目前火热的人工智能领域最
 
 ### Blinn Phong着色模型
 1. 首先连接节点Rasterize的输出，观察不同连接的结果。
-2. 在Lighting节点中，按注释完成 blinn_phong.fs
+2. 在Lighting节点中，按注释完成 blinn_phong.fs. 此shader需要在节点图中添加Deferred shading节点来进行调用。
 3. 在rasterize.fs中，读取法线贴图并且完成法线贴图映射。（本步骤可以后执行）
 
 ### Shadow Mapping
