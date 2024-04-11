@@ -101,6 +101,9 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 
     // Transform the normal from object space to world space.
     normal = instanceContext->objectToWorldMatrix.TransformDir(normal);
+    if (GfDot(normal,ray.GetDirection())>0) {
+        normal*=-1;
+    }
 
     // Make sure the normal is unit-length.
     normal.Normalize();
