@@ -267,6 +267,9 @@ void Hd_USTC_CG_Mesh::RefreshGLBuffer()
 
 void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
 {
+    if (texcoord_name.IsEmpty()) {
+        texcoord_name = texcoord_name = TfToken("UVMap");
+    }
     if (!texcoord_name.IsEmpty()) {
         if (!_texcoordsClean) {
             glDeleteBuffers(1, &texcoords);
@@ -274,7 +277,7 @@ void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, texcoords);
 
-            logging("Attempts to attach texcoord: " + texcoord_name.GetString());
+            logging(GetId().GetString()+" Attempts to attach texcoord: " + texcoord_name.GetString());
             assert(this->_primvarSourceMap[texcoord_name].data.CanCast<VtVec2fArray>());
 
             HdMeshUtil mesh_util(&topology, GetId());
@@ -291,7 +294,7 @@ void Hd_USTC_CG_Mesh::RefreshTexcoordGLBuffer(TfToken texcoord_name)
                 texcoord.resize(points.size());
                 for (int i = 0; i < triangulatedIndices.size(); ++i) {
                     for (int j = 0; j < 3; ++j) {
-                        texcoord[triangulatedIndices[i][j]] = raw_texcoord[i * 3 + j];
+                        texcoord[triangulatedIndices[i][j]] = triangulated[i * 3 + j];
                     }
                 }
             }

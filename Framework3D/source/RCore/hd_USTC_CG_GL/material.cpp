@@ -87,41 +87,6 @@ void Hd_USTC_CG_Material::TryLoadParameter(
     }
 }
 
-static HdFormat hdFormatConversion(HioFormat format)
-{
-    switch (format) {
-        case HioFormatUNorm8: return HdFormatUNorm8;
-        case HioFormatUNorm8Vec2: return HdFormatUNorm8Vec2;
-        case HioFormatUNorm8Vec3: return HdFormatUNorm8Vec3;
-        case HioFormatUNorm8Vec4: return HdFormatUNorm8Vec4;
-        case HioFormatSNorm8: return HdFormatSNorm8;
-        case HioFormatSNorm8Vec2: return HdFormatSNorm8Vec2;
-        case HioFormatSNorm8Vec3: return HdFormatSNorm8Vec3;
-        case HioFormatSNorm8Vec4: return HdFormatSNorm8Vec4;
-        case HioFormatFloat16: return HdFormatFloat16;
-        case HioFormatFloat16Vec2: return HdFormatFloat16Vec2;
-        case HioFormatFloat16Vec3: return HdFormatFloat16Vec3;
-        case HioFormatFloat16Vec4: return HdFormatFloat16Vec4;
-        case HioFormatFloat32: return HdFormatFloat32;
-        case HioFormatFloat32Vec2: return HdFormatFloat32Vec2;
-        case HioFormatFloat32Vec3: return HdFormatFloat32Vec3;
-        case HioFormatFloat32Vec4: return HdFormatFloat32Vec4;
-        case HioFormatInt16: return HdFormatInt16;
-        case HioFormatInt16Vec2: return HdFormatInt16Vec2;
-        case HioFormatInt16Vec3: return HdFormatInt16Vec3;
-        case HioFormatInt16Vec4: return HdFormatInt16Vec4;
-        case HioFormatUInt16: return HdFormatUInt16;
-        case HioFormatUInt16Vec2: return HdFormatUInt16Vec2;
-        case HioFormatUInt16Vec3: return HdFormatUInt16Vec3;
-        case HioFormatUInt16Vec4: return HdFormatUInt16Vec4;
-        case HioFormatInt32: return HdFormatInt32;
-        case HioFormatInt32Vec2: return HdFormatInt32Vec2;
-        case HioFormatInt32Vec3: return HdFormatInt32Vec3;
-        case HioFormatInt32Vec4: return HdFormatInt32Vec4;
-        default: return HdFormatInvalid;
-    }
-}
-
 GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& descriptor)
 {
     // Step 4: Create an OpenGL texture object
@@ -192,15 +157,8 @@ GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& des
 
 void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 {
-    if (descriptor.image) {
-        if (descriptor.glTexture == 0) {
-            descriptor.glTexture = createTextureFromHioImage(descriptor);
-        }
-    }
-    else {
-        if (descriptor.glTexture == 0) {
-            descriptor.glTexture = createTextureFromHioImage(descriptor);
-        }
+    if (descriptor.glTexture == 0) {
+        descriptor.glTexture = createTextureFromHioImage(descriptor);
     }
 }
 
@@ -215,9 +173,9 @@ void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
     diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
-    roughness.value = VtValue(GfVec3f(0.0f, 0.8, 0.0));
+    roughness.value = VtValue(GfVec3f(0.0f, 0.0, 0.8));
 
-    metallic.value = VtValue(GfVec3f(0.0f, 0.8, 0.0));
+    metallic.value = VtValue(GfVec3f(0.0f, 0.0, 0.8));
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
 }
 
