@@ -31,6 +31,7 @@ pxr_plugin(${PXR_PACKAGE}
         sampler
         instancer
         integrator
+        material
         camera
         light
 

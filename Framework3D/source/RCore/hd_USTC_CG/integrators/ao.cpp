@@ -7,11 +7,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 /// Fill in an RTCRay structure from the given parameters.
-static void _PopulateRay(
-    RTCRay* ray,
-    const GfVec3d& origin,
-    const GfVec3d& dir,
-    float nearest)
+static void _PopulateRay(RTCRay* ray, const GfVec3d& origin, const GfVec3d& dir, float nearest)
 {
     ray->org_x = origin[0];
     ray->org_y = origin[1];
@@ -29,11 +25,8 @@ static void _PopulateRay(
 
 /// Fill in an RTCRayHit structure from the given parameters.
 // note this containts a Ray and a RayHit
-static void _PopulateRayHit(
-    RTCRayHit* rayHit,
-    const GfVec3d& origin,
-    const GfVec3d& dir,
-    float nearest)
+static void
+_PopulateRayHit(RTCRayHit* rayHit, const GfVec3d& origin, const GfVec3d& dir, float nearest)
 {
     // Fill in defaults for the ray
     _PopulateRay(&rayHit->ray, origin, dir, nearest);
@@ -63,7 +56,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // Create a uniform random distribution for AO calculations.
     std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
     std::function<float()> uniform_float = std::bind(uniform_dist, random);
-    RTCRayHit rayHit; // EMBREE_FIXME: use RTCRay for occlusion rays
+    RTCRayHit rayHit;  // EMBREE_FIXME: use RTCRay for occlusion rays
     rayHit.ray.flags = 0;
     _PopulateRayHit(&rayHit, ray.GetStartPoint(), ray.GetDirection(), 0.0f);
     {
@@ -80,13 +73,11 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // Get the instance and prototype context structures for the hit prim.
     // We don't use embree's multi-level instancing; we
     // flatten everything in hydra. So instID[0] should always be correct.
-    const HdEmbreeInstanceContext* instanceContext =
-        static_cast<HdEmbreeInstanceContext*>(rtcGetGeometryUserData(
-            rtcGetGeometry(_scene, rayHit.hit.instID[0])));
+    const HdEmbreeInstanceContext* instanceContext = static_cast<HdEmbreeInstanceContext*>(
+        rtcGetGeometryUserData(rtcGetGeometry(_scene, rayHit.hit.instID[0])));
 
-    const HdEmbreePrototypeContext* prototypeContext =
-        static_cast<HdEmbreePrototypeContext*>(rtcGetGeometryUserData(
-            rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
+    const HdEmbreePrototypeContext* prototypeContext = static_cast<HdEmbreePrototypeContext*>(
+        rtcGetGeometryUserData(rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
 
     // Compute the worldspace location of the rayHit hit.
     auto hitPos = GfVec3f(
@@ -96,13 +87,19 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 
     // If a normal primvar is present (e.g. from smooth shading), use that
     // for shading; otherwise use the flat face normal.
-    GfVec3f normal =
-        -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
+    GfVec3f normal = -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
 
     // Transform the normal from object space to world space.
     normal = instanceContext->objectToWorldMatrix.TransformDir(normal);
-    if (GfDot(normal,ray.GetDirection())>0) {
-        normal*=-1;
+
+    auto it = prototypeContext->primvarMap.find(HdTokens->normals);
+    if (it != prototypeContext->primvarMap.end()) {
+        it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal);
+    }
+
+
+    if (GfDot(normal, ray.GetDirection()) > 0) {
+        normal *= -1;
     }
 
     // Make sure the normal is unit-length.
