@@ -83,7 +83,7 @@ static void node_exec(ExeParams params)
 
             if (mesh->texcoordsArray.size() > 0) {
                 pxr::UsdGeomPrimvar primvar = PrimVarAPI.CreatePrimvar(
-                    pxr::TfToken("st"), pxr::SdfValueTypeNames->TexCoord2fArray);
+                    pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->TexCoord2fArray);
                 primvar.Set(mesh->texcoordsArray, time);
 
                 // Here only consider two modes
@@ -165,7 +165,7 @@ static void node_exec(ExeParams params)
                     .CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
                     .Set(pxr::SdfAssetPath(texture_name));
                 diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
+                    .CreateInput(pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->Float2)
                     .ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
                 diffuseTextureSampler.CreateOutput(
                     pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
@@ -183,7 +183,7 @@ static void node_exec(ExeParams params)
 
                 auto stInput = material.CreateInput(
                     pxr::TfToken("frame:stPrimvarName"), pxr::SdfValueTypeNames->Token);
-                stInput.Set(pxr::TfToken("st"));
+                stInput.Set(pxr::TfToken("UVMap"));
 
                 stReader.CreateInput(pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token)
                     .ConnectToSource(stInput);
