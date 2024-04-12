@@ -38,7 +38,7 @@ static void node_exec(ExeParams params)
 
     auto global_stage = GlobalUsdStage::global_usd_stage;
 
-    auto xformPath = SdfPath("/Reference").AppendPath(SdfPath("XForm"));
+    auto xformPath = SdfPath("/Reference").AppendPath(SdfPath("XForm"+sdf_path.GetString()));
     auto lightPath = xformPath.AppendPath(sdf_path);
     // Create a transform for the light and set its position
     pxr::UsdGeomXform lightXform = pxr::UsdGeomXform::Define(global_stage, xformPath);
