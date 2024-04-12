@@ -31,6 +31,7 @@
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_Material;
 using namespace pxr;
 
 ///
@@ -62,6 +63,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     }
 
     friend class Hd_USTC_CG_Renderer;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
 
    private:
     /// A handle to the top-level embree scene.

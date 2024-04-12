@@ -28,7 +28,6 @@ class Hd_USTC_CG_Material : public HdMaterial {
 
         VtValue value;
 
-        GLuint glTexture = 0;
         TfToken input_name;
     };
 
@@ -37,8 +36,6 @@ class Hd_USTC_CG_Material : public HdMaterial {
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
 
-    void RefreshGLBuffer();
-    void BindTextures(Shader& shader);
     HdDirtyBits GetInitialDirtyBitsMask() const override;
 
     TfToken requireTexcoordName();
@@ -62,9 +59,6 @@ class Hd_USTC_CG_Material : public HdMaterial {
    private:
     HdMaterialNetwork2 surfaceNetwork;
 
-    // Function to create an OpenGL texture from a HioImage object
-    GLuint createTextureFromHioImage(const InputDescriptor& descriptor);
-
     void TryLoadTexture(
         const char* str,
         InputDescriptor& descriptor,
@@ -74,12 +68,9 @@ class Hd_USTC_CG_Material : public HdMaterial {
         InputDescriptor& descriptor,
         HdMaterialNode2& usd_preview_surface);
 
-    void TryCreateGLTexture(InputDescriptor& descriptor);
-
     HdMaterialNode2 get_input_connection(
         HdMaterialNetwork2 surfaceNetwork,
         std::map<TfToken, std::vector<HdMaterialConnection2>>::value_type& input_connection);
-    void DestroyTexture(InputDescriptor& input_descriptor);
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

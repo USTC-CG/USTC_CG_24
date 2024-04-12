@@ -1,5 +1,6 @@
 #include "ao.h"
 
+#include "surfaceInteraction.h"
 #include "context.h"
 #include "embree4/rtcore.h"
 #include "pxr/base/gf/matrix3f.h"
@@ -94,7 +95,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 
     auto it = prototypeContext->primvarMap.find(HdTokens->normals);
     if (it != prototypeContext->primvarMap.end()) {
-        it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal);
+        assert(it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal));
     }
 
 
@@ -175,7 +176,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // Compute the average of the occlusion samples.
     color /= _ambientOcclusionSamples;
 
-    return VtValue(GfVec4f(color, color, color, 1));
+    return VtValue(GfVec4f(normal[0], normal[1], normal[2], 1));
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

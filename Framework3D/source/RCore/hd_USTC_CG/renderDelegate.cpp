@@ -31,6 +31,7 @@
 #include "geometries/mesh.h"
 #include "instancer.h"
 #include "light.h"
+#include "material.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
@@ -85,7 +86,8 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
                                VtValue(Hd_USTC_CG_Config::GetInstance().useFaceColors) };
     _settingDescriptors[1] = { "Enable Ambient Occlusion",
                                Hd_USTC_CG_RenderSettingsTokens->enableAmbientOcclusion,
-                               VtValue(Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples > 0) };
+                               VtValue(
+                                   Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples > 0) };
     _settingDescriptors[2] = { "Ambient Occlusion Samples",
                                Hd_USTC_CG_RenderSettingsTokens->ambientOcclusionSamples,
                                VtValue(static_cast<int>(
@@ -147,7 +149,7 @@ HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken
 Hd_USTC_CG_RenderDelegate::~Hd_USTC_CG_RenderDelegate()
 {
     _resourceRegistry.reset();
-    std::cout << "Destroying Tiny RenderDelegate" << std::endl;
+    std::cout << "Destroying RenderDelegate" << std::endl;
 }
 
 const TfTokenVector& Hd_USTC_CG_RenderDelegate::GetSupportedRprimTypes() const
@@ -186,7 +188,7 @@ HdRenderPassSharedPtr Hd_USTC_CG_RenderDelegate::CreateRenderPass(
 
 HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const SdfPath& rprimId)
 {
-    std::cout << "Create Tiny Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
+    std::cout << "Create Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
 
     if (typeId == HdPrimTypeTokens->mesh) {
         return new Hd_USTC_CG_Mesh(rprimId);
@@ -197,7 +199,7 @@ HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const Sdf
 
 void Hd_USTC_CG_RenderDelegate::DestroyRprim(HdRprim* rPrim)
 {
-    logging("Destroy Tiny Rprim id=" + rPrim->GetId().GetString(), USTC_CG::Info);
+    logging("Destroy Rprim id=" + rPrim->GetId().GetString(), USTC_CG::Info);
     delete rPrim;
 }
 
@@ -208,6 +210,12 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
     }
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(sprimId);
+    }
+    else if (typeId == HdPrimTypeTokens->material) {
+        auto material = new Hd_USTC_CG_Material(sprimId);
+        materials[sprimId] = material;
+
+        return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         return new Hd_USTC_CG_Light(sprimId, typeId);

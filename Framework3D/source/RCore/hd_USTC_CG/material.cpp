@@ -27,14 +27,6 @@ HdMaterialNode2 Hd_USTC_CG_Material::get_input_connection(
     return upstream;
 }
 
-void Hd_USTC_CG_Material::DestroyTexture(InputDescriptor& input_descriptor)
-{
-    if (input_descriptor.glTexture) {
-        glDeleteTextures(1, &input_descriptor.glTexture);
-        input_descriptor.glTexture = 0;
-    }
-}
-
 void Hd_USTC_CG_Material::TryLoadTexture(
     const char* name,
     InputDescriptor& descriptor,
@@ -87,110 +79,7 @@ void Hd_USTC_CG_Material::TryLoadParameter(
     }
 }
 
-GLuint Hd_USTC_CG_Material::createTextureFromHioImage(const InputDescriptor& descriptor)
-{
-    // Step 4: Create an OpenGL texture object
-    GLuint texture;
-    glGenTextures(1, &texture);
 
-    // Step 5: Bind the texture object and specify its parameters
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    auto image = descriptor.image;
-    if (image) {
-        // Step 1: Get image information
-        int width = image->GetWidth();
-        int height = image->GetHeight();
-        HioFormat format = image->GetFormat();
-
-        HioImage::StorageSpec storageSpec;
-        storageSpec.width = width;
-        storageSpec.height = height;
-        storageSpec.format = format;
-        storageSpec.data = malloc(width * height * image->GetBytesPerPixel());
-        if (!storageSpec.data) {
-            return 0;
-        }
-
-        // Step 3: Read the image data
-        if (!image->Read(storageSpec)) {
-            free(storageSpec.data);
-            return 0;
-        }
-
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GetGLInternalFormat(format),
-            width,
-            height,
-            0,
-            GetGLFormat(format),
-            GetGLType(format),
-            storageSpec.data);
-        free(storageSpec.data);
-    }
-    else {
-        if (descriptor.input_name == TfToken("roughness") ||
-            descriptor.input_name == TfToken("metallic")) {
-            logging("Creating metallic or roughness for " + GetId().GetString());
-
-            float metallic_value = metallic.value.Get<float>();
-            float roughness_value = roughness.value.Get<float>();
-            assert(metallic.value.CanCast<float>());
-            assert(roughness.value.CanCast<float>());
-            float color[4] = { 0, metallic_value, roughness_value, 1.0f };
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GetGLInternalFormat(HioFormatFloat32Vec4),
-                1,
-                1,
-                0,
-                GetGLFormat(HioFormatFloat32Vec4),
-                GetGLType(HioFormatFloat32Vec4),
-                color);
-        }
-        else if (!descriptor.value.IsEmpty()) {
-            if (descriptor.value.CanCast<GfVec3f>()) {
-                auto val = descriptor.value.Get<GfVec3f>();
-                float color[4] = { val[0], val[1], val[2], 1.0f };
-
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GetGLInternalFormat(HioFormatFloat32Vec4),
-                    1,
-                    1,
-                    0,
-                    GetGLFormat(HioFormatFloat32Vec4),
-                    GetGLType(HioFormatFloat32Vec4),
-                    color);
-            }
-        }
-    }
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    float aniso = 0.0f;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    return texture;
-}
-
-void Hd_USTC_CG_Material::TryCreateGLTexture(InputDescriptor& descriptor)
-{
-    if (descriptor.glTexture == 0) {
-        descriptor.glTexture = createTextureFromHioImage(descriptor);
-    }
-}
 
 #define INPUT_LIST                                                                       \
     diffuseColor, specularColor, emissiveColor, displacement, opacity, opacityThreshold, \
@@ -244,40 +133,6 @@ void Hd_USTC_CG_Material::Sync(
     *dirtyBits = Clean;
 }
 
-void Hd_USTC_CG_Material::RefreshGLBuffer()
-{
-    ;
-    TryCreateGLTexture(diffuseColor);
-    TryCreateGLTexture(specularColor);
-    TryCreateGLTexture(emissiveColor);
-    TryCreateGLTexture(displacement);
-    TryCreateGLTexture(opacity);
-    TryCreateGLTexture(opacityThreshold);
-    TryCreateGLTexture(roughness);
-    TryCreateGLTexture(metallic);
-    TryCreateGLTexture(clearcoat);
-    TryCreateGLTexture(clearcoatRoughness);
-    TryCreateGLTexture(occlusion);
-    TryCreateGLTexture(normal);
-    TryCreateGLTexture(ior);
-}
-
-void Hd_USTC_CG_Material::BindTextures(Shader& shader)
-{
-    assert(diffuseColor.glTexture);
-    shader.setInt("diffuseColorSampler", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuseColor.glTexture);
-
-    shader.setInt("normalMapSampler", 1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normal.glTexture);
-
-    shader.setInt("metallicRoughnessSampler", 2);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, metallic.glTexture);
-}
-
 HdDirtyBits Hd_USTC_CG_Material::GetInitialDirtyBitsMask() const
 {
     return AllDirty;
@@ -296,8 +151,6 @@ TfToken Hd_USTC_CG_Material::requireTexcoordName()
 
 void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)
 {
-    MACRO_MAP(; DestroyTexture, INPUT_LIST);
-
     HdMaterial::Finalize(renderParam);
 }
 
