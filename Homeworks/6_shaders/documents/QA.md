@@ -10,7 +10,10 @@
 
 调整这些常数都不需要重新编译，只需保存shader即可看到结果的变化，因此可以快速迭代。
 
-[specular-roughness工作流转换](https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows/)
+在这个链接（[specular-roughness工作流转换](https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows/)）的源代码（在网页上按F12进入）中，有一份标准的转换方式。
+
+![alt text](image-7.png)
+
 
 ## 为什么我的图像看起来有点糊？尤其是从斜视表面的视角进行观察时？
 ![alt text](image-6.png)
