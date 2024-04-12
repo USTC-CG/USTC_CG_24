@@ -132,8 +132,8 @@ private:
         RTCDevice device,
         HdDirtyBits* dirtyBits,
         const HdMeshReprDesc& desc);
-    HdEmbreePrototypeContext* _GetPrototypeContext();
-    HdEmbreeInstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
+    Hd_USTC_CG_PrototypeContext* _GetPrototypeContext();
+    Hd_USTC_CG_InstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
 
     // Cached scene data. VtArrays are reference counted, so as long as we
     // only call const accessors keeping them around doesn't incur a buffer
@@ -185,7 +185,7 @@ private:
     // An embree intersection filter callback, for doing backface culling.
     static void _EmbreeCullFaces(const RTCFilterFunctionNArguments* args);
 
-    HdEmbreeRTCBufferAllocator _embreeBufferAllocator;
+    Hd_USTC_CG_RTCBufferAllocator _embreeBufferAllocator;
 
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to

@@ -28,10 +28,10 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-// HdEmbreeRTCBufferAllocator
+// Hd_USTC_CG_RTCBufferAllocator
 
 int
-HdEmbreeRTCBufferAllocator::Allocate()
+Hd_USTC_CG_RTCBufferAllocator::Allocate()
 {
     for (size_t i = 0; i < _bitset.size(); ++i)
     {
@@ -45,14 +45,14 @@ HdEmbreeRTCBufferAllocator::Allocate()
 }
 
 void
-HdEmbreeRTCBufferAllocator::Free(int bufferIndex)
+Hd_USTC_CG_RTCBufferAllocator::Free(int bufferIndex)
 {
     _bitset.reset(bufferIndex);
 }
 
 
 unsigned int
-HdEmbreeRTCBufferAllocator::NumBuffers()
+Hd_USTC_CG_RTCBufferAllocator::NumBuffers()
 {
     // Technically this may overcount, since a buffer may have been freed
     // but we don't move back to fill the slot, however it will be filled
@@ -69,10 +69,10 @@ HdEmbreeRTCBufferAllocator::NumBuffers()
     return 0;
 }
 
-// HdEmbreeConstantSampler
+// Hd_USTC_CG_ConstantSampler
 
 bool
-HdEmbreeConstantSampler::Sample(
+Hd_USTC_CG_ConstantSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -82,10 +82,10 @@ HdEmbreeConstantSampler::Sample(
     return _sampler.Sample(0, value, dataType);
 }
 
-// HdEmbreeUniformSampler
+// Hd_USTC_CG_UniformSampler
 
 bool
-HdEmbreeUniformSampler::Sample(
+Hd_USTC_CG_UniformSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -107,10 +107,10 @@ HdEmbreeUniformSampler::Sample(
         dataType);
 }
 
-// HdEmbreeTriangleVertexSampler
+// Hd_USTC_CG_TriangleVertexSampler
 
 bool
-HdEmbreeTriangleVertexSampler::Sample(
+Hd_USTC_CG_TriangleVertexSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -121,7 +121,7 @@ HdEmbreeTriangleVertexSampler::Sample(
     {
         return false;
     }
-    HdEmbreeTypeHelper::PrimvarTypeContainer corners[3];
+    Hd_USTC_CG_TypeHelper::PrimvarTypeContainer corners[3];
     if (!_sampler.Sample(_indices[element][0], &corners[0], dataType) ||
         !_sampler.Sample(_indices[element][1], &corners[1], dataType) ||
         !_sampler.Sample(_indices[element][2], &corners[2], dataType))
@@ -137,17 +137,17 @@ HdEmbreeTriangleVertexSampler::Sample(
     return _Interpolate(value, samples, weights, 3, dataType);
 }
 
-// HdEmbreeTriangleFaceVaryingSampler
+// Hd_USTC_CG_TriangleFaceVaryingSampler
 
 bool
-HdEmbreeTriangleFaceVaryingSampler::Sample(
+Hd_USTC_CG_TriangleFaceVaryingSampler::Sample(
     unsigned int element,
     float u,
     float v,
     void* value,
     HdTupleType dataType) const
 {
-    HdEmbreeTypeHelper::PrimvarTypeContainer corners[3];
+    Hd_USTC_CG_TypeHelper::PrimvarTypeContainer corners[3];
     if (!_sampler.Sample(element * 3 + 0, &corners[0], dataType) ||
         !_sampler.Sample(element * 3 + 1, &corners[1], dataType) ||
         !_sampler.Sample(element * 3 + 2, &corners[2], dataType))
@@ -165,7 +165,7 @@ HdEmbreeTriangleFaceVaryingSampler::Sample(
 
 /* static */
 VtValue
-HdEmbreeTriangleFaceVaryingSampler::_Triangulate(
+Hd_USTC_CG_TriangleFaceVaryingSampler::_Triangulate(
     const TfToken& name,
     const VtValue& value,
     HdMeshUtil& meshUtil)
@@ -186,14 +186,14 @@ HdEmbreeTriangleFaceVaryingSampler::_Triangulate(
     return triangulated;
 }
 
-// HdEmbreeSubdivVertexSampler
+// Hd_USTC_CG_SubdivVertexSampler
 
-HdEmbreeSubdivVertexSampler::HdEmbreeSubdivVertexSampler(
+Hd_USTC_CG_SubdivVertexSampler::Hd_USTC_CG_SubdivVertexSampler(
     const TfToken& name,
     const VtValue& value,
     RTCScene meshScene,
     unsigned meshId,
-    HdEmbreeRTCBufferAllocator* allocator)
+    Hd_USTC_CG_RTCBufferAllocator* allocator)
     : _embreeBufferId(-1)
       , _buffer(name, value)
       , _meshScene(meshScene)
@@ -234,7 +234,7 @@ HdEmbreeSubdivVertexSampler::HdEmbreeSubdivVertexSampler(
         TF_WARN(
             "Embree subdivision meshes only support %d primvars"
             " in vertex interpolation mode, excceded for rprim ",
-            HdEmbreeRTCBufferAllocator::PXR_MAX_USER_VERTEX_BUFFERS);
+            Hd_USTC_CG_RTCBufferAllocator::PXR_MAX_USER_VERTEX_BUFFERS);
         return;
     }
 
@@ -267,7 +267,7 @@ HdEmbreeSubdivVertexSampler::HdEmbreeSubdivVertexSampler(
         _buffer.GetNumElements() /* size_t itemCount */);
 }
 
-HdEmbreeSubdivVertexSampler::~HdEmbreeSubdivVertexSampler()
+Hd_USTC_CG_SubdivVertexSampler::~Hd_USTC_CG_SubdivVertexSampler()
 {
     if (_embreeBufferId != -1)
     {
@@ -276,7 +276,7 @@ HdEmbreeSubdivVertexSampler::~HdEmbreeSubdivVertexSampler()
 }
 
 bool
-HdEmbreeSubdivVertexSampler::Sample(
+Hd_USTC_CG_SubdivVertexSampler::Sample(
     unsigned int element,
     float u,
     float v,

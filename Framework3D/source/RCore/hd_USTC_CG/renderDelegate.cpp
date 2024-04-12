@@ -39,7 +39,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-TF_DEFINE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DEFINE_PUBLIC_TOKENS(Hd_USTC_CG_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
     HdPrimTypeTokens->mesh,
@@ -81,22 +81,22 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     // Initialize the settings and settings descriptors.
     _settingDescriptors.resize(5);
     _settingDescriptors[0] = { "Enable Scene Colors",
-                               HdEmbreeRenderSettingsTokens->enableSceneColors,
-                               VtValue(HdEmbreeConfig::GetInstance().useFaceColors) };
+                               Hd_USTC_CG_RenderSettingsTokens->enableSceneColors,
+                               VtValue(Hd_USTC_CG_Config::GetInstance().useFaceColors) };
     _settingDescriptors[1] = { "Enable Ambient Occlusion",
-                               HdEmbreeRenderSettingsTokens->enableAmbientOcclusion,
-                               VtValue(HdEmbreeConfig::GetInstance().ambientOcclusionSamples > 0) };
+                               Hd_USTC_CG_RenderSettingsTokens->enableAmbientOcclusion,
+                               VtValue(Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples > 0) };
     _settingDescriptors[2] = { "Ambient Occlusion Samples",
-                               HdEmbreeRenderSettingsTokens->ambientOcclusionSamples,
+                               Hd_USTC_CG_RenderSettingsTokens->ambientOcclusionSamples,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().ambientOcclusionSamples)) };
+                                   Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples)) };
     _settingDescriptors[3] = { "Samples To Convergence",
                                HdRenderSettingsTokens->convergedSamplesPerPixel,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().samplesToConvergence)) };
+                                   Hd_USTC_CG_Config::GetInstance().samplesToConvergence)) };
 
     _settingDescriptors[4] = { "Render Mode",
-                               HdEmbreeRenderSettingsTokens->renderMode,
+                               Hd_USTC_CG_RenderSettingsTokens->renderMode,
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
@@ -105,7 +105,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
     // Set the background render thread's rendering entrypoint to
-    // HdEmbreeRenderer::Render.
+    // Hd_USTC_CG_Renderer::Render.
     _renderThread.SetRenderCallback(std::bind(_RenderCallback, _renderer.get(), &_renderThread));
     _renderThread.StartThread();
 
@@ -282,7 +282,7 @@ HdInstancer* Hd_USTC_CG_RenderDelegate::CreateInstancer(
     HdSceneDelegate* delegate,
     const SdfPath& id)
 {
-    return new HdEmbreeInstancer(delegate, id);
+    return new Hd_USTC_CG_Instancer(delegate, id);
 }
 
 void Hd_USTC_CG_RenderDelegate::DestroyInstancer(HdInstancer* instancer)

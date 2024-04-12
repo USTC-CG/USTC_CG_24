@@ -36,7 +36,7 @@ using namespace pxr;
     (enableAmbientOcclusion)(enableSceneColors)(ambientOcclusionSamples)(renderMode)
 // Also: HdRenderSettingsTokens->convergedSamplesPerPixel
 
-TF_DECLARE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DECLARE_PUBLIC_TOKENS(Hd_USTC_CG_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
    public:

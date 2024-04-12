@@ -29,7 +29,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
 bool
-HdEmbreeBufferSampler::Sample(int index, void* value,
+Hd_USTC_CG_BufferSampler::Sample(int index, void* value,
                               HdTupleType dataType) const
 {
     // Sanity checks: index is within the bounds of buffer,
@@ -72,7 +72,7 @@ _InterpolateImpl(void* out, void** samples, float* weights,
 }
 
 /* static */ bool
-HdEmbreePrimvarSampler::_Interpolate(void* out, void** samples, float* weights,
+Hd_USTC_CG_PrimvarSampler::_Interpolate(void* out, void** samples, float* weights,
     size_t sampleCount, HdTupleType dataType)
 {
     // Combine maps from component type tag to C++ type, and delegates to

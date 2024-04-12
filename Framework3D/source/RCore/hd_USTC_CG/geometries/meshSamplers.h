@@ -36,15 +36,15 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-/// \class HdEmbreeRTCBufferAllocator
+/// \class Hd_USTC_CG_RTCBufferAllocator
 ///
 /// Utility class to track which embree user vertex buffers are currently
 /// in use.
-class HdEmbreeRTCBufferAllocator
+class Hd_USTC_CG_RTCBufferAllocator
 {
 public:
     /// Constructor. By default, set everything to unallocated.
-    HdEmbreeRTCBufferAllocator()
+    Hd_USTC_CG_RTCBufferAllocator()
         : _bitset(0)
     {
     }
@@ -72,23 +72,23 @@ private:
 
 
 // ----------------------------------------------------------------------
-// The classes below implement the HdEmbreePrimvarSampler interface for
+// The classes below implement the Hd_USTC_CG_PrimvarSampler interface for
 // the different interpolation modes that hydra supports. In some cases,
 // implementations are broken out by geometry type (e.g. triangles vs
 // subdiv).
 
-/// \class HdEmbreeConstantSampler
+/// \class Hd_USTC_CG_ConstantSampler
 ///
-/// This class implements the HdEmbreePrimvarSampler interface for primvars
+/// This class implements the Hd_USTC_CG_PrimvarSampler interface for primvars
 /// with "constant" interpolation mode. This means that the buffer only has
 /// one item, which should be returned for any (element, u, v) tuple.
-class HdEmbreeConstantSampler : public HdEmbreePrimvarSampler
+class Hd_USTC_CG_ConstantSampler : public Hd_USTC_CG_PrimvarSampler
 {
 public:
     /// Constructor.
     /// \param name The name of the primvar.
     /// \param value The buffer data for the primvar.
-    HdEmbreeConstantSampler(
+    Hd_USTC_CG_ConstantSampler(
         const TfToken& name,
         const VtValue& value)
         : _buffer(name, value)
@@ -114,19 +114,19 @@ public:
 
 private:
     const HdVtBufferSource _buffer;
-    const HdEmbreeBufferSampler _sampler;
+    const Hd_USTC_CG_BufferSampler _sampler;
 };
 
-/// \class HdEmbreeUniformSampler
+/// \class Hd_USTC_CG_UniformSampler
 ///
-/// This class implements the HdEmbreePrimvarSampler interface for primvars
+/// This class implements the Hd_USTC_CG_PrimvarSampler interface for primvars
 /// with "uniform" interpolation mode. This means that the buffer has one
-/// item per authored face. For unrefined meshes, HdEmbree will convert
+/// item per authored face. For unrefined meshes, Hd_USTC_CG_ will convert
 /// mesh polygons to triangles, so this class optionally takes an array
 /// called "primitiveParams" which maps from the face index embree reports
 /// to the original authored face in the scene data. If primitiveParams is not
 /// provided, this translation step is skipped.
-class HdEmbreeUniformSampler : public HdEmbreePrimvarSampler
+class Hd_USTC_CG_UniformSampler : public Hd_USTC_CG_PrimvarSampler
 {
 public:
     /// Constructor.
@@ -134,7 +134,7 @@ public:
     /// \param value The buffer data for the primvar.
     /// \param primitiveParams A mapping from geometry face index to authored
     ///                        face index.
-    HdEmbreeUniformSampler(
+    Hd_USTC_CG_UniformSampler(
         const TfToken& name,
         const VtValue& value,
         const VtIntArray& primitiveParams)
@@ -147,7 +147,7 @@ public:
     /// Constructor.
     /// \param name The name of the primvar.
     /// \param value The buffer data for the primvar.
-    HdEmbreeUniformSampler(
+    Hd_USTC_CG_UniformSampler(
         const TfToken& name,
         const VtValue& value)
         : _buffer(name, value)
@@ -175,19 +175,19 @@ public:
 
 private:
     const HdVtBufferSource _buffer;
-    const HdEmbreeBufferSampler _sampler;
+    const Hd_USTC_CG_BufferSampler _sampler;
     const VtIntArray _primitiveParams;
 };
 
-/// \class HdEmbreeTriangleVertexSampler
+/// \class Hd_USTC_CG_TriangleVertexSampler
 ///
-/// This class implements the HdEmbreePrimvarSampler interface for primvars on
+/// This class implements the Hd_USTC_CG_PrimvarSampler interface for primvars on
 /// triangle meshes with "vertex" or "varying" interpolation modes. This means
 /// the buffer has one item per vertex, and the result of sampling is a
 /// barycentric interpolation of the hit face vertices. This class
 /// requires the triangulated mesh topology, to map from the triangle index
 /// (in "element") to the triangle vertices.
-class HdEmbreeTriangleVertexSampler : public HdEmbreePrimvarSampler
+class Hd_USTC_CG_TriangleVertexSampler : public Hd_USTC_CG_PrimvarSampler
 {
 public:
     /// Constructor.
@@ -195,7 +195,7 @@ public:
     /// \param value The buffer data for the primvar.
     /// \param indices A map from triangle index to vertex indices in the
     ///                triangulated geometry.
-    HdEmbreeTriangleVertexSampler(
+    Hd_USTC_CG_TriangleVertexSampler(
         const TfToken& name,
         const VtValue& value,
         const VtVec3iArray& indices)
@@ -226,13 +226,13 @@ public:
 
 private:
     const HdVtBufferSource _buffer;
-    const HdEmbreeBufferSampler _sampler;
+    const Hd_USTC_CG_BufferSampler _sampler;
     const VtVec3iArray _indices;
 };
 
-/// \class HdEmbreeTriangleFaceVaryingSampler
+/// \class Hd_USTC_CG_TriangleFaceVaryingSampler
 ///
-/// This class implements the HdEmbreePrimvarSampler interface for primvars on
+/// This class implements the Hd_USTC_CG_PrimvarSampler interface for primvars on
 /// triangle meshes with "face-varying" interpolation modes. This means that
 /// each vertex of each face gets its own buffer item: vertex 0 as part of
 /// face 0 might have value 1.0f, but vertex 0 as part of face 1 might have
@@ -246,7 +246,7 @@ private:
 /// Face-varying primvars are provided to the sampler un-triangulated, but
 /// the size of the buffer is tied to the size of the topology, so
 /// this class triangulates the input buffer before sampling.
-class HdEmbreeTriangleFaceVaryingSampler : public HdEmbreePrimvarSampler
+class Hd_USTC_CG_TriangleFaceVaryingSampler : public Hd_USTC_CG_PrimvarSampler
 {
 public:
     /// Constructor. Triangulates the provided buffer data.
@@ -254,7 +254,7 @@ public:
     /// \param value The buffer data for the primvar.
     /// \param meshUtil An HdMeshUtil instance that knows how to triangulate
     ///                 the input buffer data.
-    HdEmbreeTriangleFaceVaryingSampler(
+    Hd_USTC_CG_TriangleFaceVaryingSampler(
         const TfToken& name,
         const VtValue& value,
         HdMeshUtil& meshUtil)
@@ -285,7 +285,7 @@ public:
 
 private:
     const HdVtBufferSource _buffer;
-    const HdEmbreeBufferSampler _sampler;
+    const Hd_USTC_CG_BufferSampler _sampler;
 
     // Pass the "value" parameter through HdMeshUtils'
     // ComputeTriangulatedFaceVaryingPrimvar(), which adjusts the primvar
@@ -298,14 +298,14 @@ private:
         HdMeshUtil& meshUtil);
 };
 
-/// \class HdEmbreeSubdivVertexSampler
+/// \class Hd_USTC_CG_SubdivVertexSampler
 ///
-/// This class implements the HdEmbreePrimvarSampler interface for primvars on
+/// This class implements the Hd_USTC_CG_PrimvarSampler interface for primvars on
 /// subdiv meshes with "vertex" interpolation mode. This means
 /// the buffer has one item per vertex, and the result of sampling is a
 /// reconstruction using the subdivision scheme basis weights. It uses embree's
 /// user vertex buffers and rtcInterpolate API to accomplish the sampling.
-class HdEmbreeSubdivVertexSampler : public HdEmbreePrimvarSampler
+class Hd_USTC_CG_SubdivVertexSampler : public Hd_USTC_CG_PrimvarSampler
 {
 public:
     /// Constructor. Allocates an embree user vertex buffer, and uploads
@@ -318,15 +318,15 @@ public:
     /// \param meshScene The owning mesh's embree prototype scene.
     /// \param meshId The owning mesh's geometry id in the prototype scene.
     /// \param allocator A mesh-global object that tracks buffer usage.
-    HdEmbreeSubdivVertexSampler(
+    Hd_USTC_CG_SubdivVertexSampler(
         const TfToken& name,
         const VtValue& value,
         RTCScene meshScene,
         unsigned meshId,
-        HdEmbreeRTCBufferAllocator* allocator);
+        Hd_USTC_CG_RTCBufferAllocator* allocator);
 
     /// Destructor. Frees the embree user vertex buffer.
-    ~HdEmbreeSubdivVertexSampler() override;
+    ~Hd_USTC_CG_SubdivVertexSampler() override;
 
     /// Sample the primvar at an (element, u, v) location. This implementation
     /// delegates to rtcInterpolate(). Only float-based types (float, GfVec3f,
@@ -350,7 +350,7 @@ private:
     const HdVtBufferSource _buffer;
     RTCScene _meshScene;
     unsigned _meshId;
-    HdEmbreeRTCBufferAllocator* _allocator;
+    Hd_USTC_CG_RTCBufferAllocator* _allocator;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

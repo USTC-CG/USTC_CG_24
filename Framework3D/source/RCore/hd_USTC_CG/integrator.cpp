@@ -69,7 +69,7 @@ void SamplingIntegrator::_RenderTiles(
     minY = height - minY;
     maxY = height - maxY;
 
-    const unsigned int tileSize = HdEmbreeConfig::GetInstance().tileSize;
+    const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
     const unsigned int numTilesX =
         (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
 
@@ -122,7 +122,7 @@ void SamplingIntegrator::_RenderTiles(
 void SamplingIntegrator::Render()
 {
     camera_->film->Map();
-    const unsigned int tileSize = HdEmbreeConfig::GetInstance().tileSize;
+    const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
 
     const unsigned int numTilesX =
         (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;

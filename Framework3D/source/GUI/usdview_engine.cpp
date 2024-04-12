@@ -20,7 +20,7 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 1;           // 0 for 1st personal, 1 for 3rd personal
+        unsigned renderer_id = 2;
     } engine_status;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)

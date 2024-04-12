@@ -73,10 +73,10 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // Get the instance and prototype context structures for the hit prim.
     // We don't use embree's multi-level instancing; we
     // flatten everything in hydra. So instID[0] should always be correct.
-    const HdEmbreeInstanceContext* instanceContext = static_cast<HdEmbreeInstanceContext*>(
+    const Hd_USTC_CG_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_InstanceContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(_scene, rayHit.hit.instID[0])));
 
-    const HdEmbreePrototypeContext* prototypeContext = static_cast<HdEmbreePrototypeContext*>(
+    const Hd_USTC_CG_PrototypeContext* prototypeContext = static_cast<Hd_USTC_CG_PrototypeContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
 
     // Compute the worldspace location of the rayHit hit.

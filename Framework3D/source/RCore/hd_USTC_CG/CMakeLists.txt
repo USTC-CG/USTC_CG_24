@@ -17,6 +17,7 @@ pxr_plugin(${PXR_PACKAGE}
         embree
         usdLux
         RCore
+        usdImaging
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}
