@@ -27,7 +27,7 @@ void main() {
     texcoords = vTexcoord;
 
     diffuseColor = texture2D(diffuseColorSampler, vTexcoord).xyz;
-    metallicRoughness = texture2D(metallicRoughnessSampler, vTexcoord).yz;
+    metallicRoughness = texture2D(metallicRoughnessSampler, vTexcoord).zy;
 
     vec3 normalmap_value = texture2D(normalMapSampler, vTexcoord).xyz;
     normal = normalize(vertexNormal);
