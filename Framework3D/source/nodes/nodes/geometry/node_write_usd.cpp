@@ -165,7 +165,7 @@ static void node_exec(ExeParams params)
                     .CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
                     .Set(pxr::SdfAssetPath(texture_name));
                 diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->Float2)
+                    .CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
                     .ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
                 diffuseTextureSampler.CreateOutput(
                     pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);

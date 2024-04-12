@@ -1,4 +1,20 @@
 # Q&A
+## 什么是metallic 和 roughness？
+
+这个和上课介绍的可能有点出入，但此次同学们在本次作业中可以对此进行简单处理：
+
+- ks = metallic*0.8
+- kd = 1-ks
+- blinn-phong中的指数 = (1-roughness)*某个常数
+- ka = 某个你喜欢的常数
+
+调整这些常数都不需要重新编译，只需保存shader即可看到结果的变化，因此可以快速迭代。
+
+在这个链接（[specular-roughness工作流转换](https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows/)）的源代码（在网页上按F12进入）中，有一份标准的转换方式。
+
+![alt text](image-7.png)
+
+
 ## 为什么我的图像看起来有点糊？尤其是从斜视表面的视角进行观察时？
 ![alt text](image-6.png)
 
