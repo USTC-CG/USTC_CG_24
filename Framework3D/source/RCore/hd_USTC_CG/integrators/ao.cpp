@@ -34,44 +34,20 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         si.normal *= -1;
     }
 
-    const int _ambientOcclusionSamples = 16;
-
-    // 0 ambient occlusion samples means disable the ambient occlusion term.
-    if (_ambientOcclusionSamples < 1) {
-        return VtValue(GfVec4f(1.0f));
-    }
-
     float color = 0.0f;
 
-    // For hemisphere sampling we need to choose a coordinate frame at this
-    // point. For the purposes of _CosineWeightedDirection, the normal needs
-    // to map to (0,0,1), but since the distribution is radially symmetric
-    // we don't care about the other axes.
-    GfMatrix3f basis(1);
-    GfVec3f xAxis;
-    if (fabsf(GfDot(si.normal, GfVec3f(0, 0, 1))) < 0.9f) {
-        xAxis = GfCross(si.normal, GfVec3f(0, 0, 1));
-    }
-    else {
-        xAxis = GfCross(si.normal, GfVec3f(0, 1, 0));
-    }
-    GfVec3f yAxis = GfCross(si.normal, xAxis);
-    basis.SetColumn(0, xAxis.GetNormalized());
-    basis.SetColumn(1, yAxis.GetNormalized());
-    basis.SetColumn(2, si.normal);
-
     std::vector<GfVec2f> samples;
-    samples.resize(_ambientOcclusionSamples);
-    for (int i = 0; i < _ambientOcclusionSamples; ++i) {
-        samples[i][0] = (float(i) + uniform_float()) / _ambientOcclusionSamples;
+    samples.resize(spp);
+    for (int i = 0; i < spp; ++i) {
+        samples[i][0] = (float(i) + uniform_float()) / spp;
     }
     std::shuffle(samples.begin(), samples.end(), random);
-    for (int i = 0; i < _ambientOcclusionSamples; ++i) {
-        samples[i][1] = (float(i) + uniform_float()) / _ambientOcclusionSamples;
+    for (int i = 0; i < spp; ++i) {
+        samples[i][1] = (float(i) + uniform_float()) / spp;
     }
 
-    for (int i = 0; i < _ambientOcclusionSamples; i++) {
-        GfVec3f shadowDir = basis * _CosineWeightedDirection(samples[i]);
+    for (int i = 0; i < spp; i++) {
+        GfVec3f shadowDir = si.TangentToWorld(_CosineWeightedDirection(samples[i]));
         GfRay shadow_ray;
         shadow_ray.SetPointAndDirection(si.position, shadowDir);
 
@@ -79,7 +55,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
             color += GfDot(shadowDir, si.normal);
     }
     // Compute the average of the occlusion samples.
-    color /= _ambientOcclusionSamples;
+    color /= spp;
 
     return VtValue(GfVec4f(color, color, color, 1));
 }

@@ -102,6 +102,7 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
     si.normal = normal;
     si.position = hitPos;
     si.uv = { rayHit.hit.u, rayHit.hit.v };
+    si.PrepareTransforms();
     return true;
 }
 

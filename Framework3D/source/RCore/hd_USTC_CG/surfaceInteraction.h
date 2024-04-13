@@ -17,7 +17,14 @@ class SurfaceInteraction {
     Color Eval(GfVec3f wi, GfVec3f wo) const;
     float Pdf(GfVec3f wi, GfVec3f wo) const;
 
+    void PrepareTransforms();
+    // This is for transforming vector! It would be different for transforming points.
+    GfVec3f TangentToWorld(const GfVec3f& v_tangent_space);
+
     Hd_USTC_CG_Material* material;
+
+   protected:
+    GfMatrix3f basis;
 };
 
 inline Color SurfaceInteraction::Sample(GfVec3f& wi, float& pdf) const
@@ -33,6 +40,27 @@ inline Color SurfaceInteraction::Eval(GfVec3f wi, GfVec3f wo) const
 inline float SurfaceInteraction::Pdf(GfVec3f wi, GfVec3f wo) const
 {
     return material->Pdf(wi, wo, uv);
+}
+
+inline void SurfaceInteraction::PrepareTransforms()
+{
+    basis = GfMatrix3f(1);
+    GfVec3f xAxis;
+    if (fabsf(GfDot(normal, GfVec3f(0, 0, 1))) < 0.9f) {
+        xAxis = GfCross(normal, GfVec3f(0, 0, 1));
+    }
+    else {
+        xAxis = GfCross(normal, GfVec3f(0, 1, 0));
+    }
+    GfVec3f yAxis = GfCross(normal, xAxis);
+    basis.SetColumn(0, xAxis.GetNormalized());
+    basis.SetColumn(1, yAxis.GetNormalized());
+    basis.SetColumn(2, normal);
+}
+
+inline GfVec3f SurfaceInteraction::TangentToWorld(const GfVec3f& v_tangent_space)
+{
+    return basis* v_tangent_space;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

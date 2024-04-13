@@ -30,6 +30,9 @@ class Integrator {
     RTCScene _scene;
 
    protected:
+
+    unsigned spp = 16;
+
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);
 
