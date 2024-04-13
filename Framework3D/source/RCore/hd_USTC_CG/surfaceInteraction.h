@@ -4,7 +4,6 @@
 #include "material.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_Material;
 
 class SurfaceInteraction {
    public:

@@ -27,6 +27,12 @@ HdMaterialNode2 Hd_USTC_CG_Material::get_input_connection(
     return upstream;
 }
 
+Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(GfVec2f uv)
+{
+    MaterialRecord ret;
+    return ret;
+}
+
 void Hd_USTC_CG_Material::TryLoadTexture(
     const char* name,
     InputDescriptor& descriptor,
@@ -79,8 +85,6 @@ void Hd_USTC_CG_Material::TryLoadParameter(
     }
 }
 
-
-
 #define INPUT_LIST                                                                       \
     diffuseColor, specularColor, emissiveColor, displacement, opacity, opacityThreshold, \
         roughness, metallic, clearcoat, clearcoatRoughness, occlusion, normal, ior
@@ -100,7 +104,7 @@ Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
     metallic.value = VtValue(0.0f);
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
 
-    MACRO_MAP(NAME_IT,INPUT_LIST);
+    MACRO_MAP(NAME_IT, INPUT_LIST);
 }
 
 void Hd_USTC_CG_Material::Sync(
@@ -152,6 +156,21 @@ TfToken Hd_USTC_CG_Material::requireTexcoordName()
 void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)
 {
     HdMaterial::Finalize(renderParam);
+}
+
+Color Hd_USTC_CG_Material::Sample(GfVec3f& wi, float& pdf, GfVec2f uv)
+{
+    return {};
+}
+
+GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv)
+{
+    return {};
+}
+
+float Hd_USTC_CG_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv)
+{
+    return 0;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

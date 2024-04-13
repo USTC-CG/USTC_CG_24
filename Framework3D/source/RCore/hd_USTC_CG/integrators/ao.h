@@ -7,6 +7,7 @@
 #include "pxr/base/gf/ray.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class SurfaceInteraction;
 using namespace pxr;
 class AOIntegrator : public SamplingIntegrator
 {
@@ -20,6 +21,8 @@ public:
     }
 
 protected:
+    bool Intersect(const GfRay& ray,SurfaceInteraction& si);
+    
     VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float)
     override;
 };

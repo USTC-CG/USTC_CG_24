@@ -1,9 +1,8 @@
 #pragma once
 #include "USTC_CG.h"
-#include "color.h"
-#include "surfaceInteraction.h"
 #include "Utils/Logging/Logging.h"
 #include "Utils/Macro/map.h"
+#include "color.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/material.h"
 #include "pxr/imaging/hio/image.h"
@@ -62,6 +61,23 @@ class Hd_USTC_CG_Material : public HdMaterial {
     InputDescriptor ior;
 
    private:
+    struct MaterialRecord {
+        GfVec3f diffuseColor;
+        GfVec3f specularColor;
+        GfVec3f emissiveColor;
+        GfVec3f displacement;
+        float opacity;
+        float opacityThreshold;
+        float roughness;
+        float metallic;
+        float clearcoat;
+        float clearcoatRoughness;
+        float occlusion;
+        GfVec3f normal;
+        float ior;
+    };
+
+    MaterialRecord SampleMaterialRecord(GfVec2f uv);
     HdMaterialNetwork2 surfaceNetwork;
 
     void TryLoadTexture(

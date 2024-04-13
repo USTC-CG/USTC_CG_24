@@ -3,8 +3,8 @@
 #include "context.h"
 #include "embree4/rtcore.h"
 #include "pxr/base/gf/matrix3f.h"
-#include "surfaceInteraction.h"
 #include "pxr/imaging/hd/rprim.h"
+#include "surfaceInteraction.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -50,12 +50,9 @@ static GfVec3f _CosineWeightedDirection(const GfVec2f& uniform_float)
     return dir;
 }
 
-VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
+bool AOIntegrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
 {
-    std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
-    std::function<float()> uniform_float = std::bind(uniform_dist, random);
-
-    RTCRayHit rayHit;  // EMBREE_FIXME: use RTCRay for occlusion rays
+    RTCRayHit rayHit;
     rayHit.ray.flags = 0;
     _PopulateRayHit(&rayHit, ray.GetStartPoint(), ray.GetDirection(), 0.0f);
     {
@@ -67,7 +64,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     }
 
     if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
-        return VtValue(GfVec4f(0.0f));
+        return false;
     }
 
     const Hd_USTC_CG_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_InstanceContext*>(
@@ -76,15 +73,12 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     const Hd_USTC_CG_PrototypeContext* prototypeContext = static_cast<Hd_USTC_CG_PrototypeContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
 
-    // Compute the worldspace location of the rayHit hit.
     auto hitPos = GfVec3f(
         rayHit.ray.org_x + rayHit.ray.tfar * rayHit.ray.dir_x,
         rayHit.ray.org_y + rayHit.ray.tfar * rayHit.ray.dir_y,
         rayHit.ray.org_z + rayHit.ray.tfar * rayHit.ray.dir_z);
 
-    // If a normal primvar is present (e.g. from smooth shading), use that
-    // for shading; otherwise use the flat face normal.
-    GfVec3f normal = -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
+    auto normal = -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
 
     // Transform the normal from object space to world space.
     normal = instanceContext->objectToWorldMatrix.TransformDir(normal);
@@ -94,19 +88,26 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         assert(it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal));
     }
 
-    GfVec2f uv = { rayHit.hit.u, rayHit.hit.v };
     normal.Normalize();
     auto materialId = prototypeContext->rprim->GetMaterialId();
-    
-    
 
-    SurfaceInteraction si;
     si.normal = normal;
     si.position = hitPos;
-    si.uv = uv;
+    si.uv = { rayHit.hit.u, rayHit.hit.v };
+    return true;
+}
 
-    if (GfDot(normal, ray.GetDirection()) > 0) {
-        normal *= -1;
+VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
+{
+    std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
+    std::function<float()> uniform_float = std::bind(uniform_dist, random);
+
+    SurfaceInteraction si;
+    if (!Intersect(ray, si))
+        return VtValue(GfVec4f{ 0, 0, 0, 1 });
+
+    if (GfDot(si.normal, ray.GetDirection()) > 0) {
+        si.normal *= -1;
     }
 
     const int _ambientOcclusionSamples = 16;
@@ -124,16 +125,16 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // we don't care about the other axes.
     GfMatrix3f basis(1);
     GfVec3f xAxis;
-    if (fabsf(GfDot(normal, GfVec3f(0, 0, 1))) < 0.9f) {
-        xAxis = GfCross(normal, GfVec3f(0, 0, 1));
+    if (fabsf(GfDot(si.normal, GfVec3f(0, 0, 1))) < 0.9f) {
+        xAxis = GfCross(si.normal, GfVec3f(0, 0, 1));
     }
     else {
-        xAxis = GfCross(normal, GfVec3f(0, 1, 0));
+        xAxis = GfCross(si.normal, GfVec3f(0, 1, 0));
     }
-    GfVec3f yAxis = GfCross(normal, xAxis);
+    GfVec3f yAxis = GfCross(si.normal, xAxis);
     basis.SetColumn(0, xAxis.GetNormalized());
     basis.SetColumn(1, yAxis.GetNormalized());
-    basis.SetColumn(2, normal);
+    basis.SetColumn(2, si.normal);
 
     // Generate random samples, stratified with Latin Hypercube Sampling.
     // https://en.wikipedia.org/wiki/Latin_hypercube_sampling
@@ -163,7 +164,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         // we only care about intersection status, not intersection id.
         RTCRay shadow;
         shadow.flags = 0;
-        _PopulateRay(&shadow, hitPos, shadowDir, 0.001f);
+        _PopulateRay(&shadow, si.position, shadowDir, 0.001f);
         {
             rtcOccluded1(_scene, &shadow);
         }
@@ -174,12 +175,11 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         // notice this is reversed since "it's a visibility ray, and
         // the occlusionFactor is really an ambientLightFactor."
         if (shadow.tfar > 0.0f)
-            color += GfDot(shadowDir, normal);
+            color += GfDot(shadowDir, si.normal);
     }
     // Compute the average of the occlusion samples.
     color /= _ambientOcclusionSamples;
 
-    color = 0.5;
     return VtValue(GfVec4f(color, color, color, 1));
 }
 
