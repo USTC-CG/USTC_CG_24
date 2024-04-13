@@ -1,5 +1,7 @@
 #pragma once
 #include "USTC_CG.h"
+#include "color.h"
+#include "surfaceInteraction.h"
 #include "Utils/Logging/Logging.h"
 #include "Utils/Macro/map.h"
 #include "pxr/imaging/garch/glApi.h"
@@ -41,6 +43,9 @@ class Hd_USTC_CG_Material : public HdMaterial {
     TfToken requireTexcoordName();
 
     void Finalize(HdRenderParam* renderParam) override;
+    Color Sample(GfVec3f& wi, float& pdf, GfVec2f uv);
+    GfVec3f Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv);
+    float Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv);
 
     InputDescriptor diffuseColor;
     InputDescriptor specularColor;

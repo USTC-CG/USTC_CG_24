@@ -1,9 +1,10 @@
 #include "ao.h"
 
-#include "surfaceInteraction.h"
 #include "context.h"
 #include "embree4/rtcore.h"
 #include "pxr/base/gf/matrix3f.h"
+#include "surfaceInteraction.h"
+#include "pxr/imaging/hd/rprim.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -51,12 +52,9 @@ static GfVec3f _CosineWeightedDirection(const GfVec2f& uniform_float)
 
 VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 {
-    // auto dir = GfVec3f(ray.GetDirection());
-    // return VtValue(GfVec4f(abs(dir[0]), abs(dir[1]), abs(dir[2]), 1));
-
-    // Create a uniform random distribution for AO calculations.
     std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
     std::function<float()> uniform_float = std::bind(uniform_dist, random);
+
     RTCRayHit rayHit;  // EMBREE_FIXME: use RTCRay for occlusion rays
     rayHit.ray.flags = 0;
     _PopulateRayHit(&rayHit, ray.GetStartPoint(), ray.GetDirection(), 0.0f);
@@ -71,9 +69,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
         return VtValue(GfVec4f(0.0f));
     }
-    // Get the instance and prototype context structures for the hit prim.
-    // We don't use embree's multi-level instancing; we
-    // flatten everything in hydra. So instID[0] should always be correct.
+
     const Hd_USTC_CG_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_InstanceContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(_scene, rayHit.hit.instID[0])));
 
@@ -98,13 +94,20 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         assert(it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal));
     }
 
+    GfVec2f uv = { rayHit.hit.u, rayHit.hit.v };
+    normal.Normalize();
+    auto materialId = prototypeContext->rprim->GetMaterialId();
+    
+    
+
+    SurfaceInteraction si;
+    si.normal = normal;
+    si.position = hitPos;
+    si.uv = uv;
 
     if (GfDot(normal, ray.GetDirection()) > 0) {
         normal *= -1;
     }
-
-    // Make sure the normal is unit-length.
-    normal.Normalize();
 
     const int _ambientOcclusionSamples = 16;
 
@@ -176,7 +179,8 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     // Compute the average of the occlusion samples.
     color /= _ambientOcclusionSamples;
 
-    return VtValue(GfVec4f(normal[0], normal[1], normal[2], 1));
+    color = 0.5;
+    return VtValue(GfVec4f(color, color, color, 1));
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
