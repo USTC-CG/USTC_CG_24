@@ -33,7 +33,7 @@ class Hd_USTC_CG_Renderer {
     bool _enableSceneColors;
     std::atomic<int> _completedSamples;
 
-    int _ambientOcclusionSamples = 16;
+    Hd_USTC_CG_RenderParam* render_param;
     // A callback that interprets embree error codes and injects them into
     // the hydra logging system.
     static void HandleRtcError(void* userPtr, RTCError code, const char* msg);

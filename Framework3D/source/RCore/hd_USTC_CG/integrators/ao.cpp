@@ -5,21 +5,10 @@
 #include "pxr/base/gf/matrix3f.h"
 #include "pxr/imaging/hd/rprim.h"
 #include "surfaceInteraction.h"
+#include "utils/sampling.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-
-static GfVec3f _CosineWeightedDirection(const GfVec2f& uniform_float)
-{
-    GfVec3f dir;
-    float theta = 2.0f * M_PI * uniform_float[0];
-    float eta = uniform_float[1];
-    float sqrteta = sqrtf(eta);
-    dir[0] = cosf(theta) * sqrteta;
-    dir[1] = sinf(theta) * sqrteta;
-    dir[2] = sqrtf(1.0f - eta);
-    return dir;
-}
 
 VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 {
@@ -30,6 +19,7 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     if (!Intersect(ray, si))
         return VtValue(GfVec4f{ 0, 0, 0, 1 });
 
+    // Flip the normal if opposite
     if (GfDot(si.normal, ray.GetDirection()) > 0) {
         si.normal *= -1;
     }
@@ -47,14 +37,14 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
     }
 
     for (int i = 0; i < spp; i++) {
-        GfVec3f shadowDir = si.TangentToWorld(_CosineWeightedDirection(samples[i]));
+        float pdf;
+        GfVec3f shadowDir = si.TangentToWorld(CosineWeightedDirection(samples[i], pdf));
         GfRay shadow_ray;
         shadow_ray.SetPointAndDirection(si.position, shadowDir);
 
         if (VisibilityTest(shadow_ray))
-            color += GfDot(shadowDir, si.normal);
+            color += GfDot(shadowDir, si.normal) / pdf;
     }
-    // Compute the average of the occlusion samples.
     color /= spp;
 
     return VtValue(GfVec4f(color, color, color, 1));

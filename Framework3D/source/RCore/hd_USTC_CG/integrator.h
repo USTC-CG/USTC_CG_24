@@ -2,6 +2,7 @@
 #include <random>
 
 #include "camera.h"
+#include "color.h"
 #include "embree4/rtcore_geometry.h"
 #include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/renderThread.h"
@@ -10,6 +11,7 @@
 #include "renderBuffer.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_RenderParam;
 class SurfaceInteraction;
 using namespace pxr;
 class Integrator {
@@ -27,15 +29,24 @@ class Integrator {
     virtual ~Integrator() = default;
     virtual void Render() = 0;
 
-    RTCScene _scene;
+    RTCScene rtc_scene;
+    Hd_USTC_CG_RenderParam* render_param;
 
    protected:
+
+    /**
+     * \brief Sample light in scene
+     * \param pos position on an object. Used to calculate pdf.
+     * \param dir sampled direction
+     * \param pdf returning the pdf of sampling such a direction. could be 0, which stands for delta lights.
+     * \return 
+     */
+    Color SampleLights(const GfVec3f& pos, GfVec3f& dir, float& pdf,std::default_random_engine& random);
 
     unsigned spp = 16;
 
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);
-
     const Hd_USTC_CG_Camera* camera_;
     HdRenderThread* render_thread_;
 };

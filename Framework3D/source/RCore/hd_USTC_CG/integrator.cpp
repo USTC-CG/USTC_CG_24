@@ -6,10 +6,12 @@
 
 #include "config.h"
 #include "context.h"
+#include "light.h"
 #include "pxr/base/gf/matrix3f.h"
 #include "pxr/base/work/loops.h"
 #include "pxr/imaging/hd/rprim.h"
 #include "pxr/pxr.h"
+#include "renderParam.h"
 #include "surfaceInteraction.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -58,13 +60,38 @@ _PopulateRayHit(RTCRayHit* rayHit, const GfVec3d& origin, const GfVec3d& dir, fl
     rayHit->hit.geomID = RTC_INVALID_GEOMETRY_ID;
 }
 
+Color Integrator::SampleLights(
+    const GfVec3f& pos,
+    GfVec3f& dir,
+    float& pdf,
+    std::default_random_engine& random)
+{
+    std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
+    std::function<float()> uniform_float = std::bind(uniform_dist, random);
+    auto N = render_param->lights->size();
+    if (N == 0) {
+        pdf = 0;
+        return Color{ 0 };
+    }
+
+    // Currently, we uniformly choose one light to calculate contribution. However, a more
+    // appropriate approach is to sample according to power.
+    float select_light_pdf = 1.0 / N;
+    auto light_id = size_t(std::floor(uniform_float() * N));
+    auto light = (*render_param->lights)[light_id];
+
+    float sample_light_pdf;
+    light->Sample(pos, dir, sample_light_pdf);
+    pdf = sample_light_pdf * select_light_pdf;
+}
+
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
 {
     RTCRayHit rayHit;
     rayHit.ray.flags = 0;
     _PopulateRayHit(&rayHit, ray.GetStartPoint(), ray.GetDirection(), 0.0f);
     {
-        rtcIntersect1(_scene, &rayHit);
+        rtcIntersect1(rtc_scene, &rayHit);
 
         rayHit.hit.Ng_x = -rayHit.hit.Ng_x;
         rayHit.hit.Ng_y = -rayHit.hit.Ng_y;
@@ -76,7 +103,7 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
     }
 
     const Hd_USTC_CG_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_InstanceContext*>(
-        rtcGetGeometryUserData(rtcGetGeometry(_scene, rayHit.hit.instID[0])));
+        rtcGetGeometryUserData(rtcGetGeometry(rtc_scene, rayHit.hit.instID[0])));
 
     const Hd_USTC_CG_PrototypeContext* prototypeContext = static_cast<Hd_USTC_CG_PrototypeContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
@@ -111,12 +138,12 @@ bool Integrator::VisibilityTest(const GfRay& ray)
     RTCRay test_ray;
     _PopulateRay(&test_ray, ray.GetStartPoint(), ray.GetDirection(), 0.0001);
 
-    rtcOccluded1(_scene, &test_ray);
+    rtcOccluded1(rtc_scene, &test_ray);
 
     if (test_ray.tfar > 0.0f) {  // Then this is visible
         return true;
     }
-    return false; // Not visible
+    return false;  // Not visible
 }
 
 void SamplingIntegrator::_writeBuffer(unsigned x, unsigned y, VtValue color)

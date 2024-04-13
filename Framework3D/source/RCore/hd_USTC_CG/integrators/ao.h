@@ -3,6 +3,8 @@
 #include <random>
 
 #include "integrator.h"
+#include "renderParam.h"
+#include "renderer.h"
 #include "pxr/pxr.h"
 #include "pxr/base/gf/ray.h"
 

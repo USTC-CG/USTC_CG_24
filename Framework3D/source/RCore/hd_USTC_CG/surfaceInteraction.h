@@ -2,6 +2,7 @@
 #include "USTC_CG.h"
 #include "color.h"
 #include "material.h"
+#include "pxr/base/gf/matrix3f.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
