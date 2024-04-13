@@ -2,18 +2,18 @@
 #include <random>
 
 #include "camera.h"
-#include "renderBuffer.h"
 #include "embree4/rtcore_geometry.h"
-#include "pxr/pxr.h"
 #include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
+#include "pxr/pxr.h"
+#include "renderBuffer.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class SurfaceInteraction;
 using namespace pxr;
-class Integrator
-{
-public:
+class Integrator {
+   public:
     Integrator(
         const Hd_USTC_CG_Camera* camera,
         Hd_USTC_CG_RenderBuffer* render_buffer,
@@ -29,15 +29,16 @@ public:
 
     RTCScene _scene;
 
-protected:
+   protected:
+    bool Intersect(const GfRay& ray, SurfaceInteraction& si);
+    bool VisibilityTest(const GfRay& ray);
+
     const Hd_USTC_CG_Camera* camera_;
     HdRenderThread* render_thread_;
 };
 
-
-class SamplingIntegrator : public Integrator
-{
-public:
+class SamplingIntegrator : public Integrator {
+   public:
     SamplingIntegrator(
         const Hd_USTC_CG_Camera* camera,
         Hd_USTC_CG_RenderBuffer* render_buffer,
@@ -46,20 +47,14 @@ public:
     {
     }
 
-protected:
+   protected:
     void _writeBuffer(unsigned x, unsigned y, VtValue color);
 
-    virtual VtValue Li(
-        const GfRay& ray,
-        std::default_random_engine& uniform_float) = 0;
-    void _RenderTiles(
-        HdRenderThread* renderThread,
-        size_t tileStart,
-        size_t tileEnd);
+    virtual VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float) = 0;
+    void _RenderTiles(HdRenderThread* renderThread, size_t tileStart, size_t tileEnd);
 
-public:
+   public:
     void Render() override;
 };
-
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

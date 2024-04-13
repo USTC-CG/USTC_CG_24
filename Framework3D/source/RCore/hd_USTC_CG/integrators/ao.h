@@ -21,7 +21,6 @@ public:
     }
 
 protected:
-    bool Intersect(const GfRay& ray,SurfaceInteraction& si);
     
     VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float)
     override;
