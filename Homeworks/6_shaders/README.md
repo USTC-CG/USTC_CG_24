@@ -47,11 +47,6 @@
 
 ```
 ID_姓名_Homework*/
-├── data/                         // 测试模型和纹理
-│   ├── xxx.usda
-│   ├── yyy.usda
-│   ├── zzz.png
-│   └── ...  
 ├── utils/                        // 辅助代码文件
 │   ├── some_algorithm.h
 │   ├── some_algorithm.cpp
