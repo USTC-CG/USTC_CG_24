@@ -142,12 +142,12 @@ MakeType(Int, int, 1, Buffer);
 MakeType(Int, pxr::GfVec2i, 2, Buffer);
 MakeType(Int, pxr::GfVec3i, 3, Buffer);
 MakeType(Int, pxr::GfVec4i, 4, Buffer);
-MakeType(Float, pxr::GfVec2f, 2);
-MakeType(Float, pxr::GfVec3f, 3);
-MakeType(Float, pxr::GfVec4f, 4);
-MakeType(Int, pxr::GfVec2i, 2);
-MakeType(Int, pxr::GfVec3i, 3);
-MakeType(Int, pxr::GfVec4i, 4);
+MakeType(Float, pxr::GfVec2f, 2, );
+MakeType(Float, pxr::GfVec3f, 3, );
+MakeType(Float, pxr::GfVec4f, 4, );
+MakeType(Int, pxr::GfVec2i, 2, );
+MakeType(Int, pxr::GfVec3i, 3, );
+MakeType(Int, pxr::GfVec4i, 4, );
 #undef MakeTypeBuffer
 
 static SocketTypeInfo* make_socket_type_Int()
