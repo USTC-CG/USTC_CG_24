@@ -165,7 +165,7 @@ Color Hd_USTC_CG_Material::Sample(GfVec3f& wi, float& pdf, GfVec2f uv)
 
 GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv)
 {
-    return {};
+    return diffuseColor.value.Get<GfVec3f>() / M_PI;
 }
 
 float Hd_USTC_CG_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv)

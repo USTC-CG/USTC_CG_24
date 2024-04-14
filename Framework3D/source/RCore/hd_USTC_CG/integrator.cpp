@@ -8,6 +8,8 @@
 #include "context.h"
 #include "light.h"
 #include "pxr/base/gf/matrix3f.h"
+#include "pxr/base/tf/hash.h"
+#include "pxr/base/tf/hashmap.h"
 #include "pxr/base/work/loops.h"
 #include "pxr/imaging/hd/rprim.h"
 #include "pxr/pxr.h"
@@ -66,7 +68,8 @@ Color Integrator::SampleLights(
     float& pdf,
     std::default_random_engine& random)
 {
-    std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> uniform_dist(
+        0.0f, 1.0f - std::numeric_limits<float>::epsilon());
     std::function<float()> uniform_float = std::bind(uniform_dist, random);
     auto N = render_param->lights->size();
     if (N == 0) {
@@ -76,13 +79,28 @@ Color Integrator::SampleLights(
 
     // Currently, we uniformly choose one light to calculate contribution. However, a more
     // appropriate approach is to sample according to power.
-    float select_light_pdf = 1.0 / N;
+    float select_light_pdf = 1.0f / N;
     auto light_id = size_t(std::floor(uniform_float() * N));
     auto light = (*render_param->lights)[light_id];
 
     float sample_light_pdf;
-    light->Sample(pos, dir, sample_light_pdf, uniform_float);
+    auto color = light->Sample(pos, dir, sample_light_pdf, uniform_float);
     pdf = sample_light_pdf * select_light_pdf;
+    return color;
+}
+
+Color Integrator::IntersectLights(const GfRay& ray)
+{
+    //float currentDepth;
+    //Color color;
+    //for (auto light: (*render_param->lights)) {
+    //    float depth=0;
+    //    if(light->Intersect(ray,depth))
+    //        if (depth<currentDepth) {
+    //            color = 
+    //        }
+    //}
+    return {};
 }
 
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
@@ -125,6 +143,7 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
 
     normal.Normalize();
     auto materialId = prototypeContext->rprim->GetMaterialId();
+    si.material = (*render_param->materials)[materialId];
 
     si.normal = normal;
     si.position = hitPos;
@@ -154,6 +173,35 @@ void SamplingIntegrator::_writeBuffer(unsigned x, unsigned y, VtValue color)
         case 4: camera_->film->Write(GfVec3i(x, y, 1), 4, color.Get<GfVec4f>().data()); break;
         default:;
     }
+}
+
+void SamplingIntegrator::accumulate_color(VtValue& color, const VtValue& vt_value)
+{
+    if (color.IsEmpty()) {
+        color = vt_value;
+    }
+    else {
+        switch (channel(vt_value)) {
+            case 1: color = VtValue(color.Get<float>() + vt_value.Get<float>()); return;
+            case 3: color = VtValue(color.Get<GfVec3f>() + vt_value.Get<GfVec3f>()); return;
+            case 4: color = VtValue(color.Get<GfVec4f>() + vt_value.Get<GfVec4f>()); return;
+            default:;
+        }
+    }
+}
+
+VtValue SamplingIntegrator::average_samples(const VtValue& color, unsigned spp)
+{
+    assert(!color.IsEmpty());
+    VtValue ret;
+
+    switch (channel(color)) {
+        case 1: ret = VtValue(color.Get<float>() / spp); break;
+        case 3: ret = VtValue(color.Get<GfVec3f>() / spp); break;
+        case 4: ret = VtValue(color.Get<GfVec4f>() / spp); break;
+        default: assert(false);
+    }
+    return ret;
 }
 
 void SamplingIntegrator::_RenderTiles(
@@ -206,9 +254,16 @@ void SamplingIntegrator::_RenderTiles(
         // Loop over pixels casting rays.
         for (unsigned int y = y0; y < y1; ++y) {
             for (unsigned int x = x0; x < x1; ++x) {
-                auto pixel_center_uv = GfVec2f(x, y);
-                auto ray = camera_->generateRay(pixel_center_uv, uniform_float);
-                auto color = Li(ray, random);
+                VtValue color;
+
+                for (int sample = 0; sample < spp; ++sample) {
+                    auto pixel_center_uv = GfVec2f(x, y);
+                    auto ray = camera_->generateRay(pixel_center_uv, uniform_float);
+                    auto sampled_color = Li(ray, random);
+                    accumulate_color(color, sampled_color);
+                }
+                color = average_samples(color, spp);
+
                 _writeBuffer(x, y, color);
             }
         }
@@ -223,10 +278,6 @@ void SamplingIntegrator::Render()
     const unsigned int numTilesX = (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
     const unsigned int numTilesY = (camera_->_dataWindow.GetHeight() + tileSize - 1) / tileSize;
 
-    // Render by scheduling square tiles of the sample buffer in a parallel
-    // for loop.
-    // Always pass the renderThread to _RenderTiles to allow the first frame
-    // to be interrupted.
     WorkParallelForN(
         numTilesX * numTilesY,
         std::bind(

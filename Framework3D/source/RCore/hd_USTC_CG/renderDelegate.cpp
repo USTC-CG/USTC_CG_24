@@ -50,6 +50,8 @@ const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_SPRIM_TYPES = {
     HdPrimTypeTokens->camera,
     HdPrimTypeTokens->simpleLight,
     HdPrimTypeTokens->sphereLight,
+    HdPrimTypeTokens->material,
+
 };
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_BPRIM_TYPES = {
@@ -103,6 +105,8 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     _PopulateDefaultSettings(_settingDescriptors);
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion);
+    _renderParam->lights = &lights;
+    _renderParam->materials = &materials;
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
@@ -123,7 +127,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken& name) const
 {
     if (name == HdAovTokens->color) {
-        return HdAovDescriptor(HdFormatUNorm8Vec4, true, VtValue(GfVec4f(0.0f)));
+        return HdAovDescriptor(HdFormatFloat32Vec4, false, VtValue(GfVec4f(0.0f)));
     }
     if (name == HdAovTokens->normal || name == HdAovTokens->Neye) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(-1.0f)));
@@ -218,7 +222,9 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(sprimId, typeId);
+        auto light = new Hd_USTC_CG_Light(sprimId, typeId);
+        lights.push_back(light);
+        return light;
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
@@ -236,6 +242,11 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
     }
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(SdfPath::EmptyPath());
+    }
+    else if (typeId == HdPrimTypeTokens->material) {
+        auto material = new Hd_USTC_CG_Material(SdfPath::EmptyPath());
+        materials[SdfPath::EmptyPath()] = material;
+        return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
         return new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);

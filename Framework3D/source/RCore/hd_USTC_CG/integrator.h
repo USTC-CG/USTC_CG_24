@@ -43,6 +43,14 @@ class Integrator {
      */
     Color SampleLights(const GfVec3f& pos, GfVec3f& dir, float& pdf,std::default_random_engine& random);
 
+    /**
+     * \brief for now, we only use very limited count of lights, thus we don't use any BVH on lights
+     * \param ray the brdf sampled ray
+     * \return 
+     */
+    Color IntersectLights(const GfRay& ray);
+    
+
     unsigned spp = 16;
 
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
@@ -65,6 +73,8 @@ class SamplingIntegrator : public Integrator {
     void _writeBuffer(unsigned x, unsigned y, VtValue color);
 
     virtual VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float) = 0;
+    void accumulate_color(VtValue& color, const VtValue& vt_value);
+    VtValue average_samples(const VtValue& color, unsigned spp);
     void _RenderTiles(HdRenderThread* renderThread, size_t tileStart, size_t tileEnd);
 
    public:

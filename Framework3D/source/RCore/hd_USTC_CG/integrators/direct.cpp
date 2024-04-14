@@ -12,7 +12,7 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
 
     SurfaceInteraction si;
     if (!Intersect(ray, si))
-        return VtValue(GfVec4f{ 0, 0, 0, 1 });
+        return VtValue(GfVec3f{ 0, 0, 0 });
 
     // Flip the normal if opposite
     if (GfDot(si.normal, ray.GetDirection()) > 0) {
@@ -22,13 +22,23 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
     // Do the multiple importance sampling here.
 
     GfVec3f color;
-    for (int i = 0; i < spp; ++i) {
-        GfVec3f dir;
-        float sample_light;
-        auto luminance = SampleLights(si.position, dir, sample_light, random);
+    GfVec3f wi;
+    float sample_light_pdf;
+    auto luminance = SampleLights(si.position, wi, sample_light_pdf, random);
+    auto wo = -GfVec3f(ray.GetDirection());
+
+    auto brdfVal = si.Eval(wo, wi);
+
+    if (this->VisibilityTest(GfRay(si.position, wi))) {
+        color = GfCompMult(luminance, brdfVal) * abs(GfDot(si.normal, wi)) / sample_light_pdf;
+    }
+    else {
+        color = Color{ 0 };
     }
 
-    return VtValue(GfVec4f(color[0], color[1], color[2], 1));
+    // color = {0.3,0.0,0.5};
+    // color = luminance;
+    return VtValue(GfVec3f(color[0], color[1], color[2]));
     // SampleLights(lights,)
 }
 

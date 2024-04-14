@@ -186,11 +186,11 @@ static void _WriteSample(HdFormat format, uint8_t *dst, size_t valueComponents, 
     {
         if (componentFormat == HdFormatInt32)
         {
-            ((int32_t *)dst)[c] += (c < valueComponents) ? (int32_t)(value[c]) : 0;
+            ((int32_t *)dst)[c] = (c < valueComponents) ? (int32_t)(value[c]) : 0;
         }
         else
         {
-            ((float *)dst)[c] += (c < valueComponents) ? (float)(value[c]) : 0.0f;
+            ((float *)dst)[c] = (c < valueComponents) ? (float)(value[c]) : 0.0f;
         }
     }
 }
@@ -213,7 +213,7 @@ static void _WriteOutput(HdFormat format, uint8_t *dst, size_t valueComponents, 
         }
         else if (componentFormat == HdFormatFloat32)
         {
-            ((float *)dst)[c] = (c < valueComponents) ? (float)(value[c]) : 0.0f;
+            ((float *)dst)[c] = (c < valueComponents) ? (float)(value[c]) : 1.0f;
         }
         else if (componentFormat == HdFormatUNorm8)
         {

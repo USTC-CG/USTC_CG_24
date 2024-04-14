@@ -90,6 +90,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     HdRenderThread _renderThread;
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
 
+    pxr::VtArray<Hd_USTC_CG_Light*> lights;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
 
     static std::mutex _mutexResourceRegistry;

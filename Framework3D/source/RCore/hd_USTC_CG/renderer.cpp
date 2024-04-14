@@ -2,6 +2,7 @@
 
 #include "embree4/rtcore_scene.h"
 #include "integrators/ao.h"
+#include "integrators/direct.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
@@ -44,7 +45,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    auto integrator = std::make_shared<AOIntegrator>(
+    auto integrator = std::make_shared<DirectLightIntegrator>(
         camera_, static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
 
     integrator->rtc_scene = _rtcScene;

@@ -1,6 +1,7 @@
 #include "light.h"
 
 #include "Utils/Logging/Logging.h"
+#include "pxr/base/gf/ray.h"
 #include "pxr/base/gf/vec2f.h"
 #include "pxr/imaging/glf/simpleLight.h"
 #include "pxr/imaging/hd/changeTracker.h"
@@ -199,7 +200,7 @@ Color Hd_USTC_CG_Light::Sample(
             UniformSampleHemiSphere(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
         auto worldSampledDir = basis * sampledDir;
 
-        auto sampledPosOnSurface = worldSampledDir + lightPos3;
+        auto sampledPosOnSurface = worldSampledDir * radius + lightPos3;
 
         // Then we can decide the direction.
         dir = (sampledPosOnSurface - pos).GetNormalized();
@@ -219,7 +220,25 @@ Color Hd_USTC_CG_Light::Sample(
         if (cosVal < 0) {
             return Color{ 0 };
         }
-        return irradiance * cosVal / M_PI;
+        return irradiance * cosVal / distance / distance / M_PI;
+    }
+    else {
+        return { 1, 0., 1 };
+    }
+}
+
+Color Hd_USTC_CG_Light::Intersect(const GfRay& ray, float& depth)
+{
+    if (_lightType == HdPrimTypeTokens->sphereLight) {
+        auto simplelight = Get(HdLightTokens->params).Get<GlfSimpleLight>();
+        auto radius = Get(HdLightTokens->radius).Get<float>();
+
+        auto lightPos = simplelight.GetPosition();
+        auto lightPos3 = GfVec3d(lightPos[0], lightPos[1], lightPos[2]);
+        double enterdistance;
+        ray.Intersect(lightPos3, radius, &enterdistance);
+        depth = enterdistance;
+        return true;
     }
 }
 
