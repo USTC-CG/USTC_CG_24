@@ -249,7 +249,7 @@ UsdviewEngine::~UsdviewEngine()
 {
 }
 
-void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
+void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_executor)
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
@@ -264,7 +264,7 @@ void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
 
         impl_->OnResize(size.x, size.y);
 
-        impl_->OnFrame(delta_time, node_tree, get_executor);
+        impl_->OnFrame(delta_time, render_node_tree, get_executor);
     }
     else {
         ImGui::PopStyleVar(1);

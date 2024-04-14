@@ -91,16 +91,20 @@ Color Integrator::SampleLights(
 
 Color Integrator::IntersectLights(const GfRay& ray)
 {
-    //float currentDepth;
-    //Color color;
-    //for (auto light: (*render_param->lights)) {
-    //    float depth=0;
-    //    if(light->Intersect(ray,depth))
-    //        if (depth<currentDepth) {
-    //            color = 
-    //        }
-    //}
-    return {};
+    float currentDepth = std::numeric_limits<float>::infinity();
+    Color color;
+    for (auto light : (*render_param->lights)) {
+        float depth = std::numeric_limits<float>::infinity();
+        auto intersected_radiance = light->Intersect(ray, depth);
+        if (depth < currentDepth) {
+            currentDepth = depth;
+            color = intersected_radiance;
+        }
+    }
+    if (currentDepth < std::numeric_limits<float>::infinity()) {
+        return color;
+    }
+    return { 0, 0, 0 };
 }
 
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
@@ -149,6 +153,8 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
     si.position = hitPos;
     si.uv = { rayHit.hit.u, rayHit.hit.v };
     si.PrepareTransforms();
+    si.wo = si.WorldToTangent(GfVec3f(-ray.GetDirection().GetNormalized()));
+
     return true;
 }
 

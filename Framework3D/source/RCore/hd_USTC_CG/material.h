@@ -1,9 +1,7 @@
 #pragma once
+
 #include "USTC_CG.h"
-#include "Utils/Logging/Logging.h"
-#include "Utils/Macro/map.h"
 #include "color.h"
-#include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/material.h"
 #include "pxr/imaging/hio/image.h"
 
@@ -42,7 +40,7 @@ class Hd_USTC_CG_Material : public HdMaterial {
     TfToken requireTexcoordName();
 
     void Finalize(HdRenderParam* renderParam) override;
-    Color Sample(GfVec3f& wi, float& pdf, GfVec2f uv);
+    Color Sample(const GfVec3f& wo, GfVec3f& wi, float& pdf, GfVec2f uv, const std::function<float()>& uniform_float);
     GfVec3f Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv);
     float Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv);
 

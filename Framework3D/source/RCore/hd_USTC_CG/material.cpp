@@ -4,11 +4,13 @@
 
 #include "RCore/internal/gl/GLResources.hpp"
 #include "Utils/Logging/Logging.h"
+#include "Utils/Macro/map.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
 #include "pxr/imaging/hio/image.h"
 #include "pxr/usd/sdr/shaderNode.h"
 #include "pxr/usd/usd/tokens.h"
 #include "pxr/usdImaging/usdImaging/tokens.h"
+#include "utils/sampling.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -158,9 +160,18 @@ void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)
     HdMaterial::Finalize(renderParam);
 }
 
-Color Hd_USTC_CG_Material::Sample(GfVec3f& wi, float& pdf, GfVec2f uv)
+Color Hd_USTC_CG_Material::Sample(
+    const GfVec3f& wo,
+    GfVec3f& wi,
+    float& pdf,
+    GfVec2f uv,
+    const std::function<float()>& uniform_float)
 {
-    return {};
+    auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
+
+    wi = CosineWeightedDirection(sample2D, pdf);
+
+    return Eval(wi, wo, uv);
 }
 
 GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv)

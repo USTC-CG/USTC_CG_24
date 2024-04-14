@@ -28,11 +28,6 @@ void Hd_USTC_CG_Light::Sync(
 
     const SdfPath& id = GetId();
 
-    // HdStLight communicates to the scene graph and caches all interesting
-    // values within this class. Later on Get() is called from
-    // TaskState (RenderPass) to perform aggregation/pre-computation,
-    // in order to make the shader execution efficient.
-
     // Change tracking
     HdDirtyBits bits = *dirtyBits;
 
@@ -40,11 +35,6 @@ void Hd_USTC_CG_Light::Sync(
     if (bits & DirtyTransform) {
         _params[HdTokens->transform] = VtValue(sceneDelegate->GetTransform(id));
     }
-
-    std::ostringstream val;
-    val << VtValue(sceneDelegate->GetTransform(id)).Cast<GfMatrix4d>();
-
-    USTC_CG::logging(val.str(), USTC_CG::Info);
 
     // Lighting Params
     if (bits & DirtyParams) {
@@ -86,77 +76,43 @@ void Hd_USTC_CG_Light::Sync(
     }
 
     if (bits & (DirtyTransform | DirtyParams)) {
-        auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
         // Update cached light objects.  Note that simpleLight ignores
         // scene-delegate transform, in favor of the transform passed in by
         // params...
-        if (_lightType == HdPrimTypeTokens->domeLight) {
-            // Apply domeOffset if present
-            VtValue domeOffset = sceneDelegate->GetLightParamValue(id, HdLightTokens->domeOffset);
-            if (domeOffset.IsHolding<GfMatrix4d>()) {
-                transform = domeOffset.UncheckedGet<GfMatrix4d>() * transform;
-            }
-            auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
-            light.SetTransform(transform);
-            _params[HdLightTokens->params] = VtValue(light);
-        }
-        else if (_lightType != HdPrimTypeTokens->simpleLight) {
-            // e.g. area light
-            auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
-            GfVec3d p = transform.ExtractTranslation();
-            GfVec4f pos(p[0], p[1], p[2], 1.0f);
-            // Convention is to emit light along -Z
-            GfVec4d zDir = transform.GetRow(2);
-            if (_lightType == HdPrimTypeTokens->rectLight ||
-                _lightType == HdPrimTypeTokens->diskLight) {
-                light.SetSpotDirection(GfVec3f(-zDir[0], -zDir[1], -zDir[2]));
-            }
-            else if (_lightType == HdPrimTypeTokens->distantLight) {
-                // For a distant light, translate to +Z homogeneous limit
-                // See simpleLighting.glslfx : integrateLightsDefault.
-                pos = GfVec4f(zDir[0], zDir[1], zDir[2], 0.0f);
-            }
-            else if (_lightType == HdPrimTypeTokens->sphereLight) {
-                _params[HdLightTokens->radius] =
-                    sceneDelegate->GetLightParamValue(id, HdLightTokens->radius);
-            }
-            auto diffuse =
-                sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
-            auto color =
-                sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() *
-                diffuse;
-            light.SetDiffuse(GfVec4f(color[0], color[1], color[2], 0));
-            light.SetPosition(pos);
-            _params[HdLightTokens->params] = VtValue(light);
-        }
-    }
+        // if (_lightType == HdPrimTypeTokens->domeLight) {
+        //    // Apply domeOffset if present
+        //    VtValue domeOffset = sceneDelegate->GetLightParamValue(id, HdLightTokens->domeOffset);
+        //    if (domeOffset.IsHolding<GfMatrix4d>()) {
+        //        transform = domeOffset.UncheckedGet<GfMatrix4d>() * transform;
+        //    }
+        //    auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
+        //    light.SetTransform(transform);
+        //    _params[HdLightTokens->params] = VtValue(light);
+        //}
+        // else if (_lightType != HdPrimTypeTokens->simpleLight)
+        //{
+        //    // e.g. area light
+        //    auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
+        //    GfVec3d p = transform.ExtractTranslation();
+        //    GfVec4f pos(p[0], p[1], p[2], 1.0f);
+        //    // Convention is to emit light along -Z
+        //    GfVec4d zDir = transform.GetRow(2);
+        //    if (_lightType == HdPrimTypeTokens->rectLight ||
+        //        _lightType == HdPrimTypeTokens->diskLight) {
+        //        light.SetSpotDirection(GfVec3f(-zDir[0], -zDir[1], -zDir[2]));
+        //    }
+        //    else if (_lightType == HdPrimTypeTokens->distantLight) {
+        //        // For a distant light, translate to +Z homogeneous limit
+        //        // See simpleLighting.glslfx : integrateLightsDefault.
+        //        pos = GfVec4f(zDir[0], zDir[1], zDir[2], 0.0f);
+        //    }
+        //    else if (_lightType == HdPrimTypeTokens->sphereLight) {
+        //    }
 
-    // Shadow Params
-    if (bits & DirtyShadowParams) {
-        _params[HdLightTokens->shadowParams] =
-            sceneDelegate->GetLightParamValue(id, HdLightTokens->shadowParams);
-    }
-
-    // Shadow Collection
-    if (bits & DirtyCollection) {
-        VtValue vtShadowCollection =
-            sceneDelegate->GetLightParamValue(id, HdLightTokens->shadowCollection);
-
-        // Optional
-        if (vtShadowCollection.IsHolding<HdRprimCollection>()) {
-            auto newCollection = vtShadowCollection.UncheckedGet<HdRprimCollection>();
-
-            if (_params[HdLightTokens->shadowCollection] != newCollection) {
-                _params[HdLightTokens->shadowCollection] = VtValue(newCollection);
-
-                HdChangeTracker& changeTracker = sceneDelegate->GetRenderIndex().GetChangeTracker();
-
-                changeTracker.MarkCollectionDirty(newCollection.GetName());
-            }
-        }
-        else {
-            _params[HdLightTokens->shadowCollection] = VtValue(HdRprimCollection());
-        }
+        //    light.SetDiffuse(GfVec4f(color[0], color[1], color[2], 0));
+        //    light.SetPosition(pos);
+        //    _params[HdLightTokens->params] = VtValue(light);
+        //}
     }
 
     *dirtyBits = Clean;
@@ -173,80 +129,88 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
     }
 }
 
-Color Hd_USTC_CG_Light::Sample(
-    const GfVec3f& pos,
-    GfVec3f& dir,
-    float& sample_light_pdf,
-    const std::function<float()>& uniform_float)
-{
-    if (_lightType == HdPrimTypeTokens->sphereLight) {
-        auto simplelight = Get(HdLightTokens->params).Get<GlfSimpleLight>();
-        auto radius = Get(HdLightTokens->radius).Get<float>();
-
-        auto lightPos = simplelight.GetPosition();
-        auto lightPos3 = GfVec3f(lightPos[0], lightPos[1], lightPos[2]);
-
-        auto distanceVec = lightPos3 - pos;
-
-        auto basis = constructONB(-distanceVec.GetNormalized());
-
-        auto distance = distanceVec.GetLength();
-
-        // A sphere light is treated as all points on the surface spreads energy uniformly:
-
-        float sample_pos_pdf;
-        // First we sample a point on the hemi sphere:
-        auto sampledDir =
-            UniformSampleHemiSphere(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
-        auto worldSampledDir = basis * sampledDir;
-
-        auto sampledPosOnSurface = worldSampledDir * radius + lightPos3;
-
-        // Then we can decide the direction.
-        dir = (sampledPosOnSurface - pos).GetNormalized();
-
-        // and the pdf (with the measure of solid angle):
-        float cosVal = GfDot(-dir, worldSampledDir.GetNormalized());
-
-        float area = 4 * M_PI * radius * radius;
-
-        sample_light_pdf = sample_pos_pdf / radius / radius * cosVal / distance / distance;
-
-        // Finally we calculate the radiance
-        auto powerIntotal4 = simplelight.GetDiffuse();
-        auto powerIntotal = GfVec3f(powerIntotal4[0], powerIntotal4[1], powerIntotal4[2]);
-
-        auto irradiance = powerIntotal / area;
-        if (cosVal < 0) {
-            return Color{ 0 };
-        }
-        return irradiance * cosVal / distance / distance / M_PI;
-    }
-    else {
-        return { 1, 0., 1 };
-    }
-}
-
-Color Hd_USTC_CG_Light::Intersect(const GfRay& ray, float& depth)
-{
-    if (_lightType == HdPrimTypeTokens->sphereLight) {
-        auto simplelight = Get(HdLightTokens->params).Get<GlfSimpleLight>();
-        auto radius = Get(HdLightTokens->radius).Get<float>();
-
-        auto lightPos = simplelight.GetPosition();
-        auto lightPos3 = GfVec3d(lightPos[0], lightPos[1], lightPos[2]);
-        double enterdistance;
-        ray.Intersect(lightPos3, radius, &enterdistance);
-        depth = enterdistance;
-        return true;
-    }
-}
-
 VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
 {
     VtValue val;
     TfMapLookup(_params, token, &val);
     return val;
+}
+
+Color Hd_USTC_CG_Sphere_Light::Sample(
+    const GfVec3f& pos,
+    GfVec3f& dir,
+    float& sample_light_pdf,
+    const std::function<float()>& uniform_float)
+{
+    auto distanceVec = position - pos;
+
+    auto basis = constructONB(-distanceVec.GetNormalized());
+
+    auto distance = distanceVec.GetLength();
+
+    // A sphere light is treated as all points on the surface spreads energy uniformly:
+    float sample_pos_pdf;
+    // First we sample a point on the hemi sphere:
+    auto sampledDir =
+        UniformSampleHemiSphere(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
+    auto worldSampledDir = basis * sampledDir;
+
+    auto sampledPosOnSurface = worldSampledDir * radius + position;
+
+    // Then we can decide the direction.
+    dir = (sampledPosOnSurface - pos).GetNormalized();
+
+    // and the pdf (with the measure of solid angle):
+    float cosVal = GfDot(-dir, worldSampledDir.GetNormalized());
+
+    sample_light_pdf = sample_pos_pdf / radius / radius * cosVal / distance / distance;
+
+    // Finally we calculate the radiance
+    if (cosVal < 0) {
+        return Color{ 0 };
+    }
+    return irradiance * cosVal / distance / distance / M_PI;
+}
+
+Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
+{
+    double distance;
+    if (ray.Intersect(position, radius, &distance)) {
+        depth = distance;
+        auto hitPos = ray.GetPoint(distance);
+        auto lightVec = (hitPos - position).GetNormalized();
+
+        float cosVal = abs(GfDot(ray.GetDirection(), lightVec));
+        return irradiance * cosVal / distance / distance / M_PI;
+    }
+
+    else {
+        depth = std::numeric_limits<float>::infinity();
+        return { 0, 0, 0 };
+    }
+}
+
+void Hd_USTC_CG_Sphere_Light::Sync(
+    HdSceneDelegate* sceneDelegate,
+    HdRenderParam* renderParam,
+    HdDirtyBits* dirtyBits)
+{
+    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+    auto id = GetId();
+
+    radius = sceneDelegate->GetLightParamValue(id, HdLightTokens->radius).Get<float>();
+
+    auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
+    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
+
+    auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
+
+    GfVec3d p = transform.ExtractTranslation();
+    position = GfVec3f(p[0], p[1], p[2]);
+
+    area = 4 * M_PI * radius * radius;
+
+    irradiance = power / area;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

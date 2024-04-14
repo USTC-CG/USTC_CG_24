@@ -10,28 +10,35 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 class SurfaceInteraction {
    public:
     GfVec3f position;
+    GfVec3f wo;
     GfVec3f normal;
     GfVec3f tangent;
 
     GfVec2f uv;
 
-    Color Sample(GfVec3f& dir, float& pdf) const;
+    Color Sample(GfVec3f& dir, float& pdf, const std::function<float()>& function) const;
     Color Eval(GfVec3f wi, GfVec3f wo) const;
     float Pdf(GfVec3f wi, GfVec3f wo) const;
 
     void PrepareTransforms();
     // This is for transforming vector! It would be different for transforming points.
-    GfVec3f TangentToWorld(const GfVec3f& v_tangent_space);
+    GfVec3f TangentToWorld(const GfVec3f& v_tangent_space) const;
+    GfVec3f WorldToTangent(const GfVec3f& v_world_space) const;
 
     Hd_USTC_CG_Material* material;
 
    protected:
-    GfMatrix3f basis;
+    GfMatrix3f tangentToWorld;
+    GfMatrix3f worldToTangent;
 };
 
-inline Color SurfaceInteraction::Sample(GfVec3f& wi, float& pdf) const
+inline Color
+SurfaceInteraction::Sample(GfVec3f& dir, float& pdf, const std::function<float()>& function) const
 {
-    return material->Sample(wi, pdf, uv);
+    GfVec3f sampled_dir;
+    const auto color = material->Sample(wo, sampled_dir, pdf, uv, function);
+    dir = TangentToWorld(sampled_dir);
+    return color;
 }
 
 inline Color SurfaceInteraction::Eval(GfVec3f wi, GfVec3f wo) const
@@ -46,12 +53,18 @@ inline float SurfaceInteraction::Pdf(GfVec3f wi, GfVec3f wo) const
 
 inline void SurfaceInteraction::PrepareTransforms()
 {
-    basis = constructONB(normal);
+    tangentToWorld = constructONB(normal);
+    worldToTangent = tangentToWorld.GetInverse();
 }
 
-inline GfVec3f SurfaceInteraction::TangentToWorld(const GfVec3f& v_tangent_space)
+inline GfVec3f SurfaceInteraction::TangentToWorld(const GfVec3f& v_tangent_space) const
 {
-    return basis * v_tangent_space;
+    return tangentToWorld * v_tangent_space;
+}
+
+inline GfVec3f SurfaceInteraction::WorldToTangent(const GfVec3f& v_world_space) const
+{
+    return worldToTangent * v_world_space;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -221,8 +221,8 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
 
         return material;
     }
-    else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        auto light = new Hd_USTC_CG_Light(sprimId, typeId);
+    else if (typeId == HdPrimTypeTokens->sphereLight) {
+        auto light = new Hd_USTC_CG_Sphere_Light(sprimId, typeId);
         lights.push_back(light);
         return light;
     }
@@ -249,7 +249,7 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
         return material;
     }
     else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
+        return new Hd_USTC_CG_Sphere_Light(SdfPath::EmptyPath(), typeId);
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());

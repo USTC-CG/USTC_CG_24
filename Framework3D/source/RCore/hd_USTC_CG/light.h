@@ -17,20 +17,44 @@ class Hd_USTC_CG_Light : public HdLight {
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
     HdDirtyBits GetInitialDirtyBitsMask() const override;
-    Color Sample(
+    virtual Color Sample(
         const GfVec3f& pos,
         GfVec3f& dir,
         float& sample_light_pdf,
-        const std::function<float()>& uniform_float);
-    Color Intersect(const GfRay& ray, float& depth);
+        const std::function<float()>& uniform_float) = 0;
+    virtual Color Intersect(const GfRay& ray, float& depth) = 0;
 
-private:
+   protected:
     VtValue Get(TfToken const& token) const;
-    // Stores the internal light type of this light. Of course, we can use polymorphism to do this. But let's just keep it simple here.
+    // Stores the internal light type of this light. Of course, we can use polymorphism to do this.
+    // But let's just keep it simple here.
     TfToken _lightType;
     // Cached states.
     TfHashMap<TfToken, VtValue, TfToken::HashFunctor> _params;
 };
 
+class Hd_USTC_CG_Sphere_Light : public Hd_USTC_CG_Light {
+   public:
+    Hd_USTC_CG_Sphere_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_Light(id, lightType)
+    {
+    }
+
+    Color Sample(
+        const GfVec3f& pos,
+        GfVec3f& dir,
+        float& sample_light_pdf,
+        const std::function<float()>& uniform_float) override;
+    Color Intersect(const GfRay& ray, float& depth) override;
+    void Sync(
+        HdSceneDelegate* sceneDelegate,
+        HdRenderParam* renderParam,
+        HdDirtyBits* dirtyBits) override;
+    float radius;
+    GfVec3f power;
+    GfVec3f position;
+    float area;
+    GfVec3f irradiance;
+};
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
