@@ -21,6 +21,14 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
 
     // Do the multiple importance sampling here.
 
+    GfVec3f color;
+    for (int i = 0; i < spp; ++i) {
+        GfVec3f dir;
+        float sample_light;
+        auto luminance = SampleLights(si.position, dir, sample_light, random);
+    }
+
+    return VtValue(GfVec4f(color[0], color[1], color[2], 1));
     // SampleLights(lights,)
 }
 

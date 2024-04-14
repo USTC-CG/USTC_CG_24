@@ -1,10 +1,13 @@
 #include "light.h"
 
 #include "Utils/Logging/Logging.h"
+#include "pxr/base/gf/vec2f.h"
 #include "pxr/imaging/glf/simpleLight.h"
 #include "pxr/imaging/hd/changeTracker.h"
 #include "pxr/imaging/hd/rprimCollection.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
+#include "utils/math.hpp"
+#include "utils/sampling.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -112,6 +115,16 @@ void Hd_USTC_CG_Light::Sync(
                 // See simpleLighting.glslfx : integrateLightsDefault.
                 pos = GfVec4f(zDir[0], zDir[1], zDir[2], 0.0f);
             }
+            else if (_lightType == HdPrimTypeTokens->sphereLight) {
+                _params[HdLightTokens->radius] =
+                    sceneDelegate->GetLightParamValue(id, HdLightTokens->radius);
+            }
+            auto diffuse =
+                sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
+            auto color =
+                sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() *
+                diffuse;
+            light.SetDiffuse(GfVec4f(color[0], color[1], color[2], 0));
             light.SetPosition(pos);
             _params[HdLightTokens->params] = VtValue(light);
         }
@@ -159,10 +172,54 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
     }
 }
 
-void Hd_USTC_CG_Light::Sample(GfVec3f& pos, GfVec3f& dir, float& sample_light_pdf)
+Color Hd_USTC_CG_Light::Sample(
+    const GfVec3f& pos,
+    GfVec3f& dir,
+    float& sample_light_pdf,
+    const std::function<float()>& uniform_float)
 {
-    if (_lightType == ) {
-        
+    if (_lightType == HdPrimTypeTokens->sphereLight) {
+        auto simplelight = Get(HdLightTokens->params).Get<GlfSimpleLight>();
+        auto radius = Get(HdLightTokens->radius).Get<float>();
+
+        auto lightPos = simplelight.GetPosition();
+        auto lightPos3 = GfVec3f(lightPos[0], lightPos[1], lightPos[2]);
+
+        auto distanceVec = lightPos3 - pos;
+
+        auto basis = constructONB(-distanceVec.GetNormalized());
+
+        auto distance = distanceVec.GetLength();
+
+        // A sphere light is treated as all points on the surface spreads energy uniformly:
+
+        float sample_pos_pdf;
+        // First we sample a point on the hemi sphere:
+        auto sampledDir =
+            UniformSampleHemiSphere(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
+        auto worldSampledDir = basis * sampledDir;
+
+        auto sampledPosOnSurface = worldSampledDir + lightPos3;
+
+        // Then we can decide the direction.
+        dir = (sampledPosOnSurface - pos).GetNormalized();
+
+        // and the pdf (with the measure of solid angle):
+        float cosVal = GfDot(-dir, worldSampledDir.GetNormalized());
+
+        float area = 4 * M_PI * radius * radius;
+
+        sample_light_pdf = sample_pos_pdf / radius / radius * cosVal / distance / distance;
+
+        // Finally we calculate the radiance
+        auto powerIntotal4 = simplelight.GetDiffuse();
+        auto powerIntotal = GfVec3f(powerIntotal4[0], powerIntotal4[1], powerIntotal4[2]);
+
+        auto irradiance = powerIntotal / area;
+        if (cosVal < 0) {
+            return Color{ 0 };
+        }
+        return irradiance * cosVal / M_PI;
     }
 }
 

@@ -1,7 +1,9 @@
 #include "USTC_CG.h"
+#include "pxr/base/gf/math.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
+using namespace pxr;
 inline GfVec3f CosineWeightedDirection(const GfVec2f& uniform_float, float& pdf)
 {
     GfVec3f dir;
@@ -14,6 +16,24 @@ inline GfVec3f CosineWeightedDirection(const GfVec2f& uniform_float, float& pdf)
 
     pdf = dir[2];
     return dir;
+}
+
+inline GfVec3f UniformSampleSphere(const GfVec2f& uniform_float, float& pdf)
+{
+    float theta = 2.0f * M_PI * uniform_float[0];
+    float phi = acosf(2.0f * uniform_float[1] - 1.0f);
+    float sin_phi = sinf(phi);
+
+    pdf = 1.0 / 4 / M_PI;
+    return GfVec3f(sin_phi * cosf(theta), sin_phi * sinf(theta), cosf(phi));
+}
+
+inline GfVec3f UniformSampleHemiSphere(const GfVec2f& uniform_float, float& pdf)
+{
+    auto ret = UniformSampleSphere(uniform_float, pdf);
+    pdf *= 2;
+    ret[2] = abs(ret[2]);
+    return ret;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

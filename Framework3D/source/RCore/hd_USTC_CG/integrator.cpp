@@ -81,7 +81,7 @@ Color Integrator::SampleLights(
     auto light = (*render_param->lights)[light_id];
 
     float sample_light_pdf;
-    light->Sample(pos, dir, sample_light_pdf);
+    light->Sample(pos, dir, sample_light_pdf, uniform_float);
     pdf = sample_light_pdf * select_light_pdf;
 }
 

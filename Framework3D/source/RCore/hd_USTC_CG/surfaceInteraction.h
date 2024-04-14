@@ -3,6 +3,7 @@
 #include "color.h"
 #include "material.h"
 #include "pxr/base/gf/matrix3f.h"
+#include "utils/math.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -45,23 +46,12 @@ inline float SurfaceInteraction::Pdf(GfVec3f wi, GfVec3f wo) const
 
 inline void SurfaceInteraction::PrepareTransforms()
 {
-    basis = GfMatrix3f(1);
-    GfVec3f xAxis;
-    if (fabsf(GfDot(normal, GfVec3f(0, 0, 1))) < 0.9f) {
-        xAxis = GfCross(normal, GfVec3f(0, 0, 1));
-    }
-    else {
-        xAxis = GfCross(normal, GfVec3f(0, 1, 0));
-    }
-    GfVec3f yAxis = GfCross(normal, xAxis);
-    basis.SetColumn(0, xAxis.GetNormalized());
-    basis.SetColumn(1, yAxis.GetNormalized());
-    basis.SetColumn(2, normal);
+    basis = constructONB(normal);
 }
 
 inline GfVec3f SurfaceInteraction::TangentToWorld(const GfVec3f& v_tangent_space)
 {
-    return basis* v_tangent_space;
+    return basis * v_tangent_space;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

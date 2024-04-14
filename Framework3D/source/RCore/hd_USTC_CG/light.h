@@ -1,5 +1,6 @@
 #pragma once
 #include "USTC_CG.h"
+#include "color.h"
 
 #include "pxr/pxr.h"
 #include "pxr/imaging/hd/light.h"
@@ -19,7 +20,7 @@ public:
         HdRenderParam* renderParam,
         HdDirtyBits* dirtyBits) override;
     HdDirtyBits GetInitialDirtyBitsMask() const override;
-    void Sample(GfVec3f& pos, GfVec3f& dir, float& sample_light_pdf);
+    Color Sample(const GfVec3f& pos, GfVec3f& dir, float& sample_light_pdf,const std::function<float()>& uniform_float);
 
 private:
     VtValue Get(TfToken const& token) const;
