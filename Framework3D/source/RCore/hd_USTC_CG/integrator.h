@@ -51,7 +51,7 @@ class Integrator {
     Color IntersectLights(const GfRay& ray);
     
 
-    unsigned spp = 16;
+    unsigned spp = 256;
 
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);

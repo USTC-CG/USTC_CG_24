@@ -82,7 +82,7 @@ void Hd_USTC_CG_Material::TryLoadParameter(
     for (auto&& parameter : usd_preview_surface.parameters) {
         if (parameter.first == name) {
             descriptor.value = parameter.second;
-            logging("Loading parameter: " + parameter.first.GetString(), Info);
+            logging("Loading parameter: " + parameter.first.GetString(), Warning);
         }
     }
 }

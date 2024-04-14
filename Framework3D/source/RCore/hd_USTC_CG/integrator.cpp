@@ -92,7 +92,7 @@ Color Integrator::SampleLights(
 Color Integrator::IntersectLights(const GfRay& ray)
 {
     float currentDepth = std::numeric_limits<float>::infinity();
-    Color color;
+    Color color{ 0, 0, 0 };
     for (auto light : (*render_param->lights)) {
         float depth = std::numeric_limits<float>::infinity();
         auto intersected_radiance = light->Intersect(ray, depth);
@@ -101,10 +101,7 @@ Color Integrator::IntersectLights(const GfRay& ray)
             color = intersected_radiance;
         }
     }
-    if (currentDepth < std::numeric_limits<float>::infinity()) {
-        return color;
-    }
-    return { 0, 0, 0 };
+    return color;
 }
 
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)

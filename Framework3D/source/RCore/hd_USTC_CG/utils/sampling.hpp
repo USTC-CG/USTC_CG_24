@@ -14,7 +14,7 @@ inline GfVec3f CosineWeightedDirection(const GfVec2f& uniform_float, float& pdf)
     dir[1] = sinf(theta) * sqrteta;
     dir[2] = sqrtf(1.0f - eta);
 
-    pdf = dir[2];
+    pdf = dir[2] / M_PI;
     return dir;
 }
 

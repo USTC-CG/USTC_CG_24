@@ -1,6 +1,7 @@
 #include "light.h"
 
 #include "Utils/Logging/Logging.h"
+#include "pxr/base/gf/plane.h"
 #include "pxr/base/gf/ray.h"
 #include "pxr/base/gf/vec2f.h"
 #include "pxr/imaging/glf/simpleLight.h"
@@ -152,7 +153,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     float sample_pos_pdf;
     // First we sample a point on the hemi sphere:
     auto sampledDir =
-        UniformSampleHemiSphere(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
+        CosineWeightedDirection(GfVec2f(uniform_float(), uniform_float()), sample_pos_pdf);
     auto worldSampledDir = basis * sampledDir;
 
     auto sampledPosOnSurface = worldSampledDir * radius + position;
@@ -163,31 +164,27 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     // and the pdf (with the measure of solid angle):
     float cosVal = GfDot(-dir, worldSampledDir.GetNormalized());
 
-    sample_light_pdf = sample_pos_pdf / radius / radius * cosVal / distance / distance;
+    sample_light_pdf = sample_pos_pdf / radius / radius * cosVal * distance * distance;
 
     // Finally we calculate the radiance
     if (cosVal < 0) {
         return Color{ 0 };
     }
-    return irradiance * cosVal / distance / distance / M_PI;
+    return irradiance * cosVal / M_PI;
 }
 
 Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
 {
     double distance;
-    if (ray.Intersect(position, radius, &distance)) {
-        depth = distance;
-        auto hitPos = ray.GetPoint(distance);
-        auto lightVec = (hitPos - position).GetNormalized();
+    if (ray.Intersect(GfRange3d{ position - GfVec3d{ radius }, position + GfVec3d{ radius } })) {
+        if (ray.Intersect(position, radius, &distance)) {
+            depth = distance;
 
-        float cosVal = abs(GfDot(ray.GetDirection(), lightVec));
-        return irradiance * cosVal / distance / distance / M_PI;
+            return irradiance / M_PI;
+        }
     }
-
-    else {
-        depth = std::numeric_limits<float>::infinity();
-        return { 0, 0, 0 };
-    }
+    depth = std::numeric_limits<float>::infinity();
+    return { 0, 0, 0 };
 }
 
 void Hd_USTC_CG_Sphere_Light::Sync(
