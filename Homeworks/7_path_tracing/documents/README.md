@@ -16,6 +16,15 @@
 
 我们可以在这里，将其中的`DirectLightIntegrator`切换为`PathIntegrator`来开始下一步的实现。
 
-  - Russian Roullete
-- (Optional) 添加一种材质，对材质进行重要性采样，并进行多重重要性采样，与单种采样的结果进行比较
-- (Optional) 透明材质
+此部分需按照课上所讲内容，实现`EstimateOutGoingRadiance`函数。如果一切顺利，同学们会看到：
+
+![alt text](image-2.png)
+
+可以实现Russian Roullete来提高采样器的效率。需注意效率和低方差并不等价，事实上RR会增大采样的方差。
+
+
+### 添加材质
+
+同学们有两种选择。第一种是参考[Raytracing in One weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/mirroredlightreflection)中的方式来添加材质。它提供的方案在视觉观感上足够好，同时也能够参与到重要性采样中，但在物理正确性上则没有很好的保证，同时也有透明的材质。
+
+另一种是使用标准的微表面模型材质。此种方案较为复杂，难以将结果调对，建议留到最后考虑。
