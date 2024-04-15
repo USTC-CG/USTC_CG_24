@@ -362,7 +362,7 @@ pxr::GfQuatf rotationQuat(const pxr::GfVec3f& euler)
 void ThirdPersonCamera::Animate(float deltaT)
 {
     SetPerspectiveFromAspectRatioAndFieldOfView(
-        m_ViewportSize[0] / m_ViewportSize[1], 67, FOVHorizontal);
+        m_ViewportSize[0] / m_ViewportSize[1], 130, FOVHorizontal);
     m_ProjectionMatrix = pxr::GfMatrix4f(GetFrustum().ComputeProjectionMatrix());
     m_InverseProjectionMatrix = m_ProjectionMatrix.GetInverse();
     AnimateOrbit(deltaT);

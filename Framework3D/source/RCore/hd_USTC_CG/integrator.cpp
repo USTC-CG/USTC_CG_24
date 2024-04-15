@@ -119,7 +119,7 @@ Color Integrator::IntersectDomeLight(const GfRay& ray)
         }
     }
 
-    return Color{ 0 };
+    return Color{ 0.0 };
 }
 
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)

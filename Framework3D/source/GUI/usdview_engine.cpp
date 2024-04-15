@@ -126,6 +126,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
     _renderParams.showRender = true;
     _renderParams.frame = UsdTimeCode::Default();
     _renderParams.drawMode = UsdImagingGLDrawMode::DRAW_WIREFRAME_ON_SURFACE;
+    _renderParams.colorCorrectionMode = TfToken("sRGB");
 
     _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
 

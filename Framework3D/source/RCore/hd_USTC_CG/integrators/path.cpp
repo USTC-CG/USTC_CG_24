@@ -27,8 +27,13 @@ GfVec3f PathIntegrator::EstimateOutGoingRadiance(
     }
 
     SurfaceInteraction si;
-    if (!Intersect(ray, si))
+    if (!Intersect(ray, si)) {
+        if (recursion_depth == 0) {
+            return IntersectDomeLight(ray);
+        }
+
         return GfVec3f{ 0, 0, 0 };
+    }
 
     // This can be defined: Do we want to see the light?
     if (recursion_depth == 0) {

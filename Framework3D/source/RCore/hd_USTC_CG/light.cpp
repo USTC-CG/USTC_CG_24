@@ -247,11 +247,14 @@ void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate
         if (v.IsHolding<SdfAssetPath>()) {
             textureFileName = v.UncheckedGet<SdfAssetPath>();
             texture = std::make_unique<Texture2D>(textureFileName);
+            if (!texture->isValid()) {
+                texture = nullptr;
+            }
 
             logging("Attempting to load file " + textureFileName.GetAssetPath(), Warning);
         }
         else {
-            TF_CODING_ERROR("Dome light texture file not an asset path.");
+            texture = nullptr;
         }
     }
     auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
@@ -271,12 +274,12 @@ void Hd_USTC_CG_Dome_Light::Sync(
 
 Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
 {
-    if (texture->isValid()) {
-        auto uv = GfVec2f((M_PI + std::atan2(dir[1], dir[0])) / 2.0 / M_PI, dir[2]);
+    if (texture) {
+        auto uv = GfVec2f((M_PI + std::atan2(dir[1], dir[0])) / 2.0 / M_PI, 0.5 - dir[2] * 0.5);
 
         auto value = texture->Evaluate(uv);
 
-        if (texture->component_conut() == 3) {
+        if (texture->component_conut() >= 3) {
             return Color{ value[0], value[1], value[2] };
         }
     }

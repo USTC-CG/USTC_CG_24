@@ -91,8 +91,8 @@ GfVec4f Texture2D::Evaluate(const GfVec2f &uv) const
     v = std::clamp(v, 0.0f, 1.0f);
 
     // Calculate texture coordinates in pixel space
-    float x = u * (texture->GetWidth() - 1);
-    float y = v * (texture->GetHeight() - 1);
+    float x = u * (texture->GetWidth() - 2);
+    float y = v * (texture->GetHeight() - 2);
 
     // Get the four nearest texel coordinates
     int x0 = static_cast<int>(std::floor(x));

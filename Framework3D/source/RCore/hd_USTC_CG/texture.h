@@ -12,6 +12,8 @@ class Texture2D {
     Texture2D();
     Texture2D(SdfAssetPath path);
 
+    bool isValid(){return texture!=nullptr;}
+
     // Texture Interface
     GfVec4f Evaluate(const GfVec2f& uv) const;
     ~Texture2D();
@@ -19,11 +21,6 @@ class Texture2D {
     unsigned component_conut() const
     {
         return _component_count;
-    }
-
-    bool isValid() const
-    {
-        return texture != nullptr;
     }
 
    private:
