@@ -2,6 +2,7 @@
 #include <pxr/usd/usdGeom/xform.h>
 #include <pxr/usd/usdLux/domeLight.h>
 #include <pxr/usd/usdLux/sphereLight.h>
+#include <pxr/usd/usdLux/rectLight.h>
 #include <pxr/base/gf/rotation.h>
 
 #include "Nodes/GlobalUsdStage.h"

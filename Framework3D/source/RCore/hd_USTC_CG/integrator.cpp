@@ -236,7 +236,8 @@ Color Integrator::EstimateDirectLight(
     SurfaceInteraction& si,
     const std::function<float()>& uniform_float)
 {
-    GfVec3f color;
+
+    // Sample the lights.
     GfVec3f wi;
     float sample_light_pdf;
     GfVec3f sampled_light_pos;
@@ -250,27 +251,9 @@ Color Integrator::EstimateDirectLight(
                                         abs(GfDot(si.shadingNormal, wi)) / sample_light_pdf;
     }
 
-    // Sample BRDF
-    GfVec3f sampled_brdf_dir;
-    float sample_brdf_pdf;
-    brdfVal = si.Sample(sampled_brdf_dir, sample_brdf_pdf, uniform_float);
-    GfRay light_ray{ si.position, sampled_brdf_dir.GetNormalized() };
-    GfVec3f intersect_pos;
-    auto sample_brdf_luminance = IntersectLights(light_ray, intersect_pos);
-    GfVec3f contribution_by_sample_brdf{ 0 };
+    // HW7_TODO: Sample BRDF (optional)
 
-    if (this->VisibilityTest(si.position + 0.0001f * si.geometricNormal, intersect_pos)) {
-        contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
-                                      abs(GfDot(si.shadingNormal, sampled_brdf_dir)) /
-                                      sample_brdf_pdf;
-    }
-
-    float light_sample_weight = PowerHeuristic(sample_light_pdf, sample_brdf_pdf);
-
-    color = light_sample_weight * contribution_by_sample_lights +
-            (1 - light_sample_weight) * contribution_by_sample_brdf;
-
-    return color;
+    return contribution_by_sample_lights;
 }
 
 void SamplingIntegrator::_writeBuffer(unsigned x, unsigned y, VtValue color)

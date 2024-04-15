@@ -92,11 +92,42 @@ class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
 };
 
 class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
-public:
+   public:
     Hd_USTC_CG_Distant_Light(const SdfPath& id, const TfToken& lightType)
         : Hd_USTC_CG_Light(id, lightType)
     {
     }
+
+    // TA will finish this.
+};
+
+class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
+   public:
+    Hd_USTC_CG_Rect_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_Light(id, lightType)
+    {
+    }
+
+    Color Sample(
+        const GfVec3f& pos,
+        GfVec3f& dir,
+        GfVec3f& sampled_light_pos,
+        float& sample_light_pdf,
+        const std::function<float()>& uniform_float) override;
+    Color Intersect(const GfRay& ray, float& depth) override;
+    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
+        override;
+
+    Color Le(const GfVec3f& dir);
+
+   private:
+    GfVec3f corner0;
+    GfVec3f corner1;
+    GfVec3f corner2;
+    GfVec3f corner3;
+    float width;
+    float height;
+    GfVec3f power;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

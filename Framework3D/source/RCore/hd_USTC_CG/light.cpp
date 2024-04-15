@@ -55,18 +55,6 @@ void Hd_USTC_CG_Light::Sync(
         if (_lightType == HdPrimTypeTokens->simpleLight) {
             _params[HdLightTokens->params] = sceneDelegate->Get(id, HdLightTokens->params);
         }
-        // else if (_lightType == HdPrimTypeTokens->domeLight)
-        //{
-        //     _params[HdLightTokens->params] =
-        //         _PrepareDomeLight(id, sceneDelegate);
-        // }
-        //// If it is an area light we will extract the parameters and convert
-        //// them to a GlfSimpleLight that approximates the light source.
-        // else
-        //{
-        //     _params[HdLightTokens->params] =
-        //         _ApproximateAreaLight(id, sceneDelegate);
-        // }
 
         // Add new dependencies
         val = Get(HdTokens->filters);
@@ -76,46 +64,6 @@ void Hd_USTC_CG_Light::Sync(
                 changeTracker.AddSprimSprimDependency(filterPath, id);
             }
         }
-    }
-
-    if (bits & (DirtyTransform | DirtyParams)) {
-        // Update cached light objects.  Note that simpleLight ignores
-        // scene-delegate transform, in favor of the transform passed in by
-        // params...
-        // if (_lightType == HdPrimTypeTokens->domeLight) {
-        //    // Apply domeOffset if present
-        //    VtValue domeOffset = sceneDelegate->GetLightParamValue(id, HdLightTokens->domeOffset);
-        //    if (domeOffset.IsHolding<GfMatrix4d>()) {
-        //        transform = domeOffset.UncheckedGet<GfMatrix4d>() * transform;
-        //    }
-        //    auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
-        //    light.SetTransform(transform);
-        //    _params[HdLightTokens->params] = VtValue(light);
-        //}
-        // else if (_lightType != HdPrimTypeTokens->simpleLight)
-        //{
-        //    // e.g. area light
-        //    auto light = Get(HdLightTokens->params).GetWithDefault<GlfSimpleLight>();
-        //    GfVec3d p = transform.ExtractTranslation();
-        //    GfVec4f pos(p[0], p[1], p[2], 1.0f);
-        //    // Convention is to emit light along -Z
-        //    GfVec4d zDir = transform.GetRow(2);
-        //    if (_lightType == HdPrimTypeTokens->rectLight ||
-        //        _lightType == HdPrimTypeTokens->diskLight) {
-        //        light.SetSpotDirection(GfVec3f(-zDir[0], -zDir[1], -zDir[2]));
-        //    }
-        //    else if (_lightType == HdPrimTypeTokens->distantLight) {
-        //        // For a distant light, translate to +Z homogeneous limit
-        //        // See simpleLighting.glslfx : integrateLightsDefault.
-        //        pos = GfVec4f(zDir[0], zDir[1], zDir[2], 0.0f);
-        //    }
-        //    else if (_lightType == HdPrimTypeTokens->sphereLight) {
-        //    }
-
-        //    light.SetDiffuse(GfVec4f(color[0], color[1], color[2], 0));
-        //    light.SetPosition(pos);
-        //    _params[HdLightTokens->params] = VtValue(light);
-        //}
     }
 
     *dirtyBits = Clean;
@@ -292,6 +240,52 @@ void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)
 {
     texture = nullptr;
     Hd_USTC_CG_Light::Finalize(renderParam);
+}
+
+// HW7_TODO: write the following, you should refer to the sphere light.
+
+Color Hd_USTC_CG_Rect_Light::Sample(
+    const GfVec3f& pos,
+    GfVec3f& dir,
+    GfVec3f& sampled_light_pos,
+    float& sample_light_pdf,
+    const std::function<float()>& uniform_float)
+{
+    return {};
+}
+
+Color Hd_USTC_CG_Rect_Light::Intersect(const GfRay& ray, float& depth)
+{
+    return {};
+}
+
+Color Hd_USTC_CG_Rect_Light::Le(const GfVec3f& dir)
+{
+    return {};
+}
+
+void Hd_USTC_CG_Rect_Light::Sync(
+    HdSceneDelegate* sceneDelegate,
+    HdRenderParam* renderParam,
+    HdDirtyBits* dirtyBits)
+{
+    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+
+    auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
+
+    auto id = GetId();
+    width = sceneDelegate->Get(id, HdLightTokens->width).Get<float>();
+    height = sceneDelegate->Get(id, HdLightTokens->height).Get<float>();
+
+    corner0 = transform.TransformAffine(GfVec3f(-0.5 * width, -0.5 * height, 0));
+    corner1 = transform.TransformAffine(GfVec3f(-0.5 * width, 0.5 * height, 0));
+    corner2 = transform.TransformAffine(GfVec3f(0.5 * width, -0.5 * height, 0));
+    corner3 = transform.TransformAffine(GfVec3f(0.5 * width, 0.5 * height, 0));
+
+    auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
+    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
+
+    // HW7_TODO: calculate irradiance
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

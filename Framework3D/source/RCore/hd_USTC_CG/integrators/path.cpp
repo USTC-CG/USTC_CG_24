@@ -48,15 +48,8 @@ GfVec3f PathIntegrator::EstimateOutGoingRadiance(
     GfVec3f color{ 0 };
     GfVec3f directLight = EstimateDirectLight(si, uniform_float);
 
-    GfVec3f dir;
-    float bounrcePdf;
-    auto bounceBRDF = si.Sample(dir, bounrcePdf, uniform_float);
-    auto bounceRay = GfRay{ si.position + 0.00001f * si.geometricNormal, dir };
-
-    auto globalLight =
-        GfDot(dir, si.geometricNormal) / bounrcePdf *
-        GfCompMult(
-            bounceBRDF, EstimateOutGoingRadiance(bounceRay, uniform_float, recursion_depth + 1));
+    // HW7_TODO: Estimate global lighting here.
+    GfVec3f globalLight;
 
     color = directLight + globalLight;
 
