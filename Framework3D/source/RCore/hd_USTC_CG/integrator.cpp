@@ -4,6 +4,7 @@
 #include <functional>
 #include <random>
 
+#include "Utils/Logging/Logging.h"
 #include "config.h"
 #include "context.h"
 #include "light.h"
@@ -33,7 +34,12 @@ static unsigned channel(VtValue val)
     return 0;
 }
 /// Fill in an RTCRay structure from the given parameters.
-static void _PopulateRay(RTCRay* ray, const GfVec3d& origin, const GfVec3d& dir, float nearest)
+static void _PopulateRay(
+    RTCRay* ray,
+    const GfVec3d& origin,
+    const GfVec3d& dir,
+    float nearest,
+    float tfar = std::numeric_limits<float>::infinity())
 {
     ray->org_x = origin[0];
     ray->org_y = origin[1];
@@ -45,7 +51,7 @@ static void _PopulateRay(RTCRay* ray, const GfVec3d& origin, const GfVec3d& dir,
     ray->dir_z = dir[2];
     ray->time = 0.0f;
 
-    ray->tfar = std::numeric_limits<float>::infinity();
+    ray->tfar = tfar;
     ray->mask = -1;
 }
 
@@ -65,12 +71,10 @@ _PopulateRayHit(RTCRayHit* rayHit, const GfVec3d& origin, const GfVec3d& dir, fl
 Color Integrator::SampleLights(
     const GfVec3f& pos,
     GfVec3f& dir,
+    GfVec3f& sampled_light_pos,
     float& pdf,
-    std::default_random_engine& random)
+    const std::function<float()>& uniform_float)
 {
-    std::uniform_real_distribution<float> uniform_dist(
-        0.0f, 1.0f - std::numeric_limits<float>::epsilon());
-    std::function<float()> uniform_float = std::bind(uniform_dist, random);
     auto N = render_param->lights->size();
     if (N == 0) {
         pdf = 0;
@@ -84,12 +88,12 @@ Color Integrator::SampleLights(
     auto light = (*render_param->lights)[light_id];
 
     float sample_light_pdf;
-    auto color = light->Sample(pos, dir, sample_light_pdf, uniform_float);
+    auto color = light->Sample(pos, dir, sampled_light_pos, sample_light_pdf, uniform_float);
     pdf = sample_light_pdf * select_light_pdf;
     return color;
 }
 
-Color Integrator::IntersectLights(const GfRay& ray)
+Color Integrator::IntersectLights(const GfRay& ray, GfVec3f& intersectPos)
 {
     float currentDepth = std::numeric_limits<float>::infinity();
     Color color{ 0, 0, 0 };
@@ -98,6 +102,7 @@ Color Integrator::IntersectLights(const GfRay& ray)
         auto intersected_radiance = light->Intersect(ray, depth);
         if (depth < currentDepth) {
             currentDepth = depth;
+            intersectPos = GfVec3f(ray.GetPoint(depth));
             color = intersected_radiance;
         }
     }
@@ -146,11 +151,11 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
     auto materialId = prototypeContext->rprim->GetMaterialId();
     si.material = (*render_param->materials)[materialId];
 
-    si.normal = normal;
+    si.geometricNormal = normal;
     si.position = hitPos;
     si.uv = { rayHit.hit.u, rayHit.hit.v };
     si.PrepareTransforms();
-    si.wo = si.WorldToTangent(GfVec3f(-ray.GetDirection().GetNormalized()));
+    si.wo = GfVec3f(-ray.GetDirection().GetNormalized());
 
     return true;
 }
@@ -158,14 +163,34 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
 bool Integrator::VisibilityTest(const GfRay& ray)
 {
     RTCRay test_ray;
-    _PopulateRay(&test_ray, ray.GetStartPoint(), ray.GetDirection(), 0.0001);
+    _PopulateRay(&test_ray, ray.GetStartPoint(), ray.GetDirection(), 0);
 
     rtcOccluded1(rtc_scene, &test_ray);
 
-    if (test_ray.tfar > 0.0f) {  // Then this is visible
+    if (test_ray.tfar > 0) {  // Then this is visible
         return true;
     }
-    return false;  // Not visible
+    return false;
+}
+
+bool Integrator::VisibilityTest(const GfVec3f& begin, const GfVec3f& end)
+{
+    GfRay ray;
+    ray.SetEnds(begin, end);
+    RTCRay test_ray;
+    _PopulateRay(
+        &test_ray,
+        ray.GetStartPoint(),
+        ray.GetDirection().GetNormalized(),
+        0.0,
+        (end - begin).GetLength() - 0.0001f);
+
+    rtcOccluded1(rtc_scene, &test_ray);
+
+    if (test_ray.tfar > 0)
+        // Hit at nothing, so visible.
+        return true;
+    return false;
 }
 
 void SamplingIntegrator::_writeBuffer(unsigned x, unsigned y, VtValue color)

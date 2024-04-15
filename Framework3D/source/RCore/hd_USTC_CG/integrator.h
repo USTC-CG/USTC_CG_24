@@ -33,28 +33,32 @@ class Integrator {
     Hd_USTC_CG_RenderParam* render_param;
 
    protected:
-
     /**
      * \brief Sample light in scene
      * \param pos position on an object. Used to calculate pdf.
      * \param dir sampled direction
-     * \param pdf returning the pdf of sampling such a direction. could be 0, which stands for delta lights.
-     * \return 
+     * \param pdf returning the pdf of sampling such a direction. could be 0, which stands for delta
+     * lights. \return
      */
-    Color SampleLights(const GfVec3f& pos, GfVec3f& dir, float& pdf,std::default_random_engine& random);
+    Color SampleLights(
+        const GfVec3f& pos,
+        GfVec3f& dir,
+        GfVec3f& sampled_light_pos,
+        float& pdf,
+        const std::function<float()>& function);
 
     /**
      * \brief for now, we only use very limited count of lights, thus we don't use any BVH on lights
      * \param ray the brdf sampled ray
-     * \return 
+     * \return
      */
-    Color IntersectLights(const GfRay& ray);
-    
+    Color IntersectLights(const GfRay& ray, GfVec3f& intersectPos);
 
-    unsigned spp = 256;
+    unsigned spp = 16;
 
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);
+    bool VisibilityTest(const GfVec3f& begin, const GfVec3f& end);
     const Hd_USTC_CG_Camera* camera_;
     HdRenderThread* render_thread_;
 };

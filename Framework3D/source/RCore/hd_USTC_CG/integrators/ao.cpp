@@ -20,8 +20,9 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         return VtValue(GfVec4f{ 0, 0, 0, 1 });
 
     // Flip the normal if opposite
-    if (GfDot(si.normal, ray.GetDirection()) > 0) {
-        si.normal *= -1;
+    if (GfDot(si.geometricNormal, ray.GetDirection()) > 0) {
+        si.geometricNormal *= -1;
+        si.PrepareTransforms();
     }
 
     float color = 0.0f;
@@ -40,10 +41,10 @@ VtValue AOIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
         float pdf;
         GfVec3f shadowDir = si.TangentToWorld(CosineWeightedDirection(samples[i], pdf));
         GfRay shadow_ray;
-        shadow_ray.SetPointAndDirection(si.position, shadowDir);
+        shadow_ray.SetPointAndDirection(si.position + 0.0001 * si.geometricNormal, shadowDir);
 
         if (VisibilityTest(shadow_ray))
-            color += GfDot(shadowDir, si.normal) / pdf;
+            color += GfDot(shadowDir, si.geometricNormal) / pdf;
     }
     color /= spp;
 

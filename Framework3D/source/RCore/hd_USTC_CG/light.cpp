@@ -140,6 +140,8 @@ VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
 Color Hd_USTC_CG_Sphere_Light::Sample(
     const GfVec3f& pos,
     GfVec3f& dir,
+    GfVec3f& sampled_light_pos,
+
     float& sample_light_pdf,
     const std::function<float()>& uniform_float)
 {
@@ -157,6 +159,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     auto worldSampledDir = basis * sampledDir;
 
     auto sampledPosOnSurface = worldSampledDir * radius + position;
+    sampled_light_pos = sampledPosOnSurface;
 
     // Then we can decide the direction.
     dir = (sampledPosOnSurface - pos).GetNormalized();

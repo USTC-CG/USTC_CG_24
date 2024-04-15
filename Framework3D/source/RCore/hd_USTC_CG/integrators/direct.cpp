@@ -21,47 +21,46 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
         return VtValue(GfVec3f{ 0, 0, 0 });
 
     // Flip the normal if opposite
-    if (GfDot(si.normal, ray.GetDirection()) > 0) {
-        si.normal *= -1;
+    if (GfDot(si.geometricNormal, ray.GetDirection()) > 0) {
+        si.geometricNormal *= -1;
         si.PrepareTransforms();
     }
 
     //// Do the multiple importance sampling here.
-
     //// Sample Lights
     GfVec3f color;
     GfVec3f wi;
     float sample_light_pdf;
-    auto sample_light_luminance = SampleLights(si.position, wi, sample_light_pdf, random);
+    GfVec3f sampled_light_pos;
+    auto sample_light_luminance =
+        SampleLights(si.position, wi, sampled_light_pos, sample_light_pdf, uniform_float);
     auto wo = -GfVec3f(ray.GetDirection());
-    auto brdfVal = si.Eval(wo, wi);
+    auto brdfVal = si.Eval(wo);
     GfVec3f contribution_by_sample_lights{ 0 };
 
-    if (this->VisibilityTest(GfRay(si.position, wi))) {
+    if (this->VisibilityTest(sampled_light_pos, si.position + 0.0001f * si.geometricNormal)) {
         contribution_by_sample_lights = GfCompMult(sample_light_luminance, brdfVal) *
-                                        abs(GfDot(si.normal, wi)) / sample_light_pdf;
+                                        abs(GfDot(si.geometricNormal, wi)) / sample_light_pdf;
     }
 
     // Sample BRDF
-
     GfVec3f sampled_brdf_dir;
     float sample_brdf_pdf;
     brdfVal = si.Sample(sampled_brdf_dir, sample_brdf_pdf, uniform_float);
     GfRay light_ray{ si.position, sampled_brdf_dir.GetNormalized() };
-    auto sample_brdf_luminance = IntersectLights(light_ray);
+    GfVec3f intersect_pos;
+    auto sample_brdf_luminance = IntersectLights(light_ray, intersect_pos);
     GfVec3f contribution_by_sample_brdf{ 0 };
 
-    if (this->VisibilityTest(GfRay(si.position, sampled_brdf_dir))) {
+    if (this->VisibilityTest(si.position + 0.0001 * si.geometricNormal, intersect_pos)) {
         contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
-                                      abs(GfDot(si.normal, sampled_brdf_dir)) / sample_brdf_pdf;
+                                      abs(GfDot(si.geometricNormal, sampled_brdf_dir)) / sample_brdf_pdf;
     }
 
     float light_sample_weight = PowerHeuristic(sample_light_pdf, sample_brdf_pdf);
 
     color = light_sample_weight * contribution_by_sample_lights +
             (1 - light_sample_weight) * contribution_by_sample_brdf;
-
-    color = brdfVal;
 
     return VtValue(GfVec3f(color[0], color[1], color[2]));
 }

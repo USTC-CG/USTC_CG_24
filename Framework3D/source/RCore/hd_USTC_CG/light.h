@@ -19,6 +19,7 @@ class Hd_USTC_CG_Light : public HdLight {
     HdDirtyBits GetInitialDirtyBitsMask() const override;
     virtual Color Sample(
         const GfVec3f& pos,
+        GfVec3f& sampled_light_pos,
         GfVec3f& dir,
         float& sample_light_pdf,
         const std::function<float()>& uniform_float) = 0;
@@ -43,13 +44,12 @@ class Hd_USTC_CG_Sphere_Light : public Hd_USTC_CG_Light {
     Color Sample(
         const GfVec3f& pos,
         GfVec3f& dir,
+        GfVec3f& sampled_light_pos,
         float& sample_light_pdf,
         const std::function<float()>& uniform_float) override;
     Color Intersect(const GfRay& ray, float& depth) override;
-    void Sync(
-        HdSceneDelegate* sceneDelegate,
-        HdRenderParam* renderParam,
-        HdDirtyBits* dirtyBits) override;
+    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
+        override;
     float radius;
     GfVec3f power;
     GfVec3f position;

@@ -11,13 +11,13 @@ class SurfaceInteraction {
    public:
     GfVec3f position;
     GfVec3f wo;
-    GfVec3f normal;
+    GfVec3f geometricNormal;
     GfVec3f tangent;
 
     GfVec2f uv;
 
     Color Sample(GfVec3f& dir, float& pdf, const std::function<float()>& function) const;
-    Color Eval(GfVec3f wi, GfVec3f wo) const;
+    Color Eval(GfVec3f wi) const;
     float Pdf(GfVec3f wi, GfVec3f wo) const;
 
     void PrepareTransforms();
@@ -36,13 +36,15 @@ inline Color
 SurfaceInteraction::Sample(GfVec3f& dir, float& pdf, const std::function<float()>& function) const
 {
     GfVec3f sampled_dir;
+    auto wo = WorldToTangent(this->wo);
     const auto color = material->Sample(wo, sampled_dir, pdf, uv, function);
     dir = TangentToWorld(sampled_dir);
     return color;
 }
 
-inline Color SurfaceInteraction::Eval(GfVec3f wi, GfVec3f wo) const
+inline Color SurfaceInteraction::Eval(GfVec3f wi) const
 {
+    auto wo = WorldToTangent(this->wo);
     return material->Eval(wi, wo, uv);
 }
 
@@ -53,7 +55,7 @@ inline float SurfaceInteraction::Pdf(GfVec3f wi, GfVec3f wo) const
 
 inline void SurfaceInteraction::PrepareTransforms()
 {
-    tangentToWorld = constructONB(normal);
+    tangentToWorld = constructONB(geometricNormal);
     worldToTangent = tangentToWorld.GetInverse();
 }
 

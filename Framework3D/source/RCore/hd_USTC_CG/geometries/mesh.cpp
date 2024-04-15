@@ -65,7 +65,8 @@ HdDirtyBits Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
                HdChangeTracker::DirtyVisibility | HdChangeTracker::DirtyCullStyle |
                HdChangeTracker::DirtyDoubleSided | HdChangeTracker::DirtyDisplayStyle |
                HdChangeTracker::DirtySubdivTags | HdChangeTracker::DirtyPrimvar |
-               HdChangeTracker::DirtyNormals | HdChangeTracker::DirtyInstancer;
+               HdChangeTracker::DirtyNormals | HdChangeTracker::DirtyInstancer |
+               HdChangeTracker::DirtyMaterialId;
 
     return (HdDirtyBits)mask;
 }
@@ -773,7 +774,6 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
         }
     }
 
-
     *dirtyBits &= ~HdChangeTracker::AllSceneDirtyBits;
 }
 
@@ -833,11 +833,20 @@ Hd_USTC_CG_PrototypeContext* Hd_USTC_CG_Mesh::_GetPrototypeContext()
 
 Hd_USTC_CG_InstanceContext* Hd_USTC_CG_Mesh::_GetInstanceContext(RTCScene scene, size_t i)
 {
-    return static_cast<Hd_USTC_CG_InstanceContext*>(rtcGetGeometryUserData(_rtcInstanceGeometries[i]));
+    return static_cast<Hd_USTC_CG_InstanceContext*>(
+        rtcGetGeometryUserData(_rtcInstanceGeometries[i]));
 }
 
 void Hd_USTC_CG_Mesh::_InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits)
 {
+}
+
+void Hd_USTC_CG_Mesh::_SetMaterialId(HdSceneDelegate* delegate, Hd_USTC_CG_Mesh* rprim)
+{
+    SdfPath const& newMaterialId = delegate->GetMaterialId(rprim->GetId());
+    if (rprim->GetMaterialId() != newMaterialId) {
+        rprim->SetMaterialId(newMaterialId);
+    }
 }
 
 void Hd_USTC_CG_Mesh::Sync(
@@ -849,6 +858,9 @@ void Hd_USTC_CG_Mesh::Sync(
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
 
+    if (*dirtyBits & HdChangeTracker::DirtyMaterialId) {
+        _SetMaterialId(sceneDelegate, this);
+    }
     // XXX: A mesh repr can have multiple repr decs; this is done, for example,
     // when the drawstyle specifies different rasterizing modes between front
     // faces and back faces.
