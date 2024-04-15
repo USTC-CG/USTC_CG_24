@@ -13,7 +13,8 @@ inline float PowerHeuristic(float f, float g)
 
 VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 {
-    std::uniform_real_distribution<float> uniform_dist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> uniform_dist(
+        0.0f, 1.0f - std::numeric_limits<float>::epsilon());
     std::function<float()> uniform_float = std::bind(uniform_dist, random);
 
     SurfaceInteraction si;
@@ -34,8 +35,7 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
     GfVec3f sampled_light_pos;
     auto sample_light_luminance =
         SampleLights(si.position, wi, sampled_light_pos, sample_light_pdf, uniform_float);
-    auto wo = -GfVec3f(ray.GetDirection());
-    auto brdfVal = si.Eval(wo);
+    auto brdfVal = si.Eval(wi);
     GfVec3f contribution_by_sample_lights{ 0 };
 
     if (this->VisibilityTest(sampled_light_pos, si.position + 0.0001f * si.geometricNormal)) {
@@ -54,7 +54,8 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
 
     if (this->VisibilityTest(si.position + 0.0001 * si.geometricNormal, intersect_pos)) {
         contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
-                                      abs(GfDot(si.geometricNormal, sampled_brdf_dir)) / sample_brdf_pdf;
+                                      abs(GfDot(si.geometricNormal, sampled_brdf_dir)) /
+                                      sample_brdf_pdf;
     }
 
     float light_sample_weight = PowerHeuristic(sample_light_pdf, sample_brdf_pdf);
