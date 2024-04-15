@@ -280,7 +280,7 @@ Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
         auto value = texture->Evaluate(uv);
 
         if (texture->component_conut() >= 3) {
-            return Color{ value[0], value[1], value[2] };
+            return GfCompMult(Color{ value[0], value[1], value[2] },radiance);
         }
     }
     else {
