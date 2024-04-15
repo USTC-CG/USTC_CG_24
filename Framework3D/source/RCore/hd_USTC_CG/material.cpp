@@ -245,6 +245,8 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     float F = FresnelSchlick(HdotWo, ior);
     float G = SmithGGX(NdotWi, NdotWo, roughness);
 
+    F =1.0f;
+    G = 1.0f;
     auto val = G * F * D / (4.0 * NdotWi * NdotWo);
 
     GfVec3f specularColor = GfVec3f(val);
