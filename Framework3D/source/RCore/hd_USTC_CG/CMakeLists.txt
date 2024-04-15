@@ -35,6 +35,7 @@ pxr_plugin(${PXR_PACKAGE}
         material
         camera
         light
+        texture
 
         integrators/ao
         integrators/direct

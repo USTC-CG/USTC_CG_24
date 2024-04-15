@@ -83,7 +83,8 @@ Color Integrator::SampleLights(
 
     // Currently, we uniformly choose one light to calculate contribution. However, a more
     // appropriate approach is to sample according to power.
-    float select_light_pdf = 1.0f / N;
+    float select_light_pdf = 1.0f / float(N);
+
     auto light_id = size_t(std::floor(uniform_float() * N));
     auto light = (*render_param->lights)[light_id];
 
@@ -107,6 +108,18 @@ Color Integrator::IntersectLights(const GfRay& ray, GfVec3f& intersectPos)
         }
     }
     return color;
+}
+
+Color Integrator::IntersectDomeLight(const GfRay& ray)
+{
+    for (auto light : (*render_param->lights)) {
+        if (light->IsDomeLight()) {
+            float depth;
+            return light->Intersect(ray, depth);
+        }
+    }
+
+    return Color{ 0 };
 }
 
 bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
@@ -198,7 +211,9 @@ static float PowerHeuristic(float f, float g)
     return f * f / (f * f + g * g);
 }
 
-Color Integrator::EstimateDirectLight(SurfaceInteraction& si, std::function<float()> uniform_float)
+Color Integrator::EstimateDirectLight(
+    SurfaceInteraction& si,
+    const std::function<float()>& uniform_float)
 {
     GfVec3f color;
     GfVec3f wi;
@@ -209,11 +224,11 @@ Color Integrator::EstimateDirectLight(SurfaceInteraction& si, std::function<floa
     auto brdfVal = si.Eval(wi);
     GfVec3f contribution_by_sample_lights{ 0 };
 
-    if (this->VisibilityTest(sampled_light_pos, si.position + 0.0001f * si.geometricNormal)) {
+    if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, sampled_light_pos)) {
         contribution_by_sample_lights = GfCompMult(sample_light_luminance, brdfVal) *
                                         abs(GfDot(si.geometricNormal, wi)) / sample_light_pdf;
     }
-
+    return contribution_by_sample_lights;
     // Sample BRDF
     GfVec3f sampled_brdf_dir;
     float sample_brdf_pdf;
@@ -223,7 +238,7 @@ Color Integrator::EstimateDirectLight(SurfaceInteraction& si, std::function<floa
     auto sample_brdf_luminance = IntersectLights(light_ray, intersect_pos);
     GfVec3f contribution_by_sample_brdf{ 0 };
 
-    if (this->VisibilityTest(si.position + 0.0001 * si.geometricNormal, intersect_pos)) {
+    if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, intersect_pos)) {
         contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
                                       abs(GfDot(si.geometricNormal, sampled_brdf_dir)) /
                                       sample_brdf_pdf;

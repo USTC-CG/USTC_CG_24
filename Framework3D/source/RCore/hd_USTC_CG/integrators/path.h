@@ -17,6 +17,11 @@ class PathIntegrator : public SamplingIntegrator {
 
    protected:
     VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float) override;
+
+    GfVec3f EstimateOutGoingRadiance(
+        const GfRay& ray,
+        const std::function<float()>& uniform_float,
+        int recursion_depth);
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

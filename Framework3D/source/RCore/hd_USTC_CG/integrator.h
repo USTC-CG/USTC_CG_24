@@ -56,14 +56,14 @@ class Integrator {
      * \return
      */
     Color IntersectLights(const GfRay& ray, GfVec3f& intersectPos);
+    Color IntersectDomeLight(const GfRay& ray);
 
-    unsigned spp = 16;
 
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);
     bool VisibilityTest(const GfVec3f& begin, const GfVec3f& end);
 
-    Color EstimateDirectLight(SurfaceInteraction& si, std::function<float()> uniform_float);
+    Color EstimateDirectLight(SurfaceInteraction& si, const std::function<float()>& uniform_float);
 
     const Hd_USTC_CG_Camera* camera_;
     HdRenderThread* render_thread_;
@@ -80,6 +80,8 @@ class SamplingIntegrator : public Integrator {
     }
 
    protected:
+    unsigned spp = 256;
+
     void _writeBuffer(unsigned x, unsigned y, VtValue color);
 
     virtual VtValue Li(const GfRay& ray, std::default_random_engine& uniform_float) = 0;

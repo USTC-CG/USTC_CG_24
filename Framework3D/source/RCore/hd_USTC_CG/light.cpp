@@ -8,6 +8,8 @@
 #include "pxr/imaging/hd/changeTracker.h"
 #include "pxr/imaging/hd/rprimCollection.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
+#include "pxr/imaging/hio/image.h"
+#include "texture.h"
 #include "utils/math.hpp"
 #include "utils/sampling.hpp"
 
@@ -130,6 +132,11 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
     }
 }
 
+bool Hd_USTC_CG_Light::IsDomeLight()
+{
+    return _lightType == HdPrimTypeTokens->domeLight;
+}
+
 VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
 {
     VtValue val;
@@ -211,6 +218,71 @@ void Hd_USTC_CG_Sphere_Light::Sync(
     area = 4 * M_PI * radius * radius;
 
     irradiance = power / area;
+}
+
+Color Hd_USTC_CG_Dome_Light::Sample(
+    const GfVec3f& pos,
+    GfVec3f& dir,
+    GfVec3f& sampled_light_pos,
+    float& sample_light_pdf,
+    const std::function<float()>& uniform_float)
+{
+    dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf);
+    sampled_light_pos = dir * std::numeric_limits<float>::max()/100.f;
+    return radiance;
+}
+
+Color Hd_USTC_CG_Dome_Light::Intersect(const GfRay& ray, float& depth)
+{
+    depth = std::numeric_limits<float>::max();  // max is smaller than infinity, lol
+
+    if (texture->isValid()) {
+        auto vec = ray.GetDirection();
+
+        auto uv = GfVec2f((M_PI + std::atan2(vec[1], vec[0])) / 2.0 / M_PI, vec[2]);
+
+        auto value = texture->Evaluate(uv);
+
+        if (texture->component_conut() == 3) {
+            return Color{ value[0], value[1], value[2] };
+        }
+    }
+    else {
+        return radiance;
+    }
+}
+
+void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
+{
+    const VtValue v = sceneDelegate->GetLightParamValue(id, HdLightTokens->textureFile);
+    if (!v.IsEmpty()) {
+        if (v.IsHolding<SdfAssetPath>()) {
+            textureFileName = v.UncheckedGet<SdfAssetPath>();
+            texture = std::make_unique<Texture2D>(textureFileName);
+        }
+        else {
+            TF_CODING_ERROR("Dome light texture file not an asset path.");
+        }
+    }
+    auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
+    radiance = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
+}
+
+void Hd_USTC_CG_Dome_Light::Sync(
+    HdSceneDelegate* sceneDelegate,
+    HdRenderParam* renderParam,
+    HdDirtyBits* dirtyBits)
+{
+    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+
+    auto id = GetId();
+    _PrepareDomeLight(id, sceneDelegate);
+}
+
+void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)
+{
+    texture = nullptr;
+    Hd_USTC_CG_Light::Finalize(renderParam);
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

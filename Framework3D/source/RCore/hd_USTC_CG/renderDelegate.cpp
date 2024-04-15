@@ -48,8 +48,8 @@ const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_SPRIM_TYPES = {
     HdPrimTypeTokens->camera,
-    HdPrimTypeTokens->simpleLight,
     HdPrimTypeTokens->sphereLight,
+    HdPrimTypeTokens->domeLight,
     HdPrimTypeTokens->material,
 
 };
@@ -226,6 +226,12 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
         lights.push_back(light);
         return light;
     }
+
+    else if (typeId == HdPrimTypeTokens->domeLight) {
+        auto light = new Hd_USTC_CG_Dome_Light(sprimId, typeId);
+        lights.push_back(light);
+        return light;
+    }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
     }
@@ -248,8 +254,11 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
         materials[SdfPath::EmptyPath()] = material;
         return material;
     }
-    else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
+    else if (typeId == HdPrimTypeTokens->sphereLight) {
         return new Hd_USTC_CG_Sphere_Light(SdfPath::EmptyPath(), typeId);
+    }
+    else if (typeId == HdPrimTypeTokens->domeLight) {
+        return new Hd_USTC_CG_Dome_Light(SdfPath::EmptyPath(), typeId);
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
@@ -261,6 +270,8 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
 void Hd_USTC_CG_RenderDelegate::DestroySprim(HdSprim* sPrim)
 {
     logging(sPrim->GetId().GetAsString() + " destroyed", USTC_CG::Info);
+    lights.erase(std::remove(lights.begin(), lights.end(), sPrim), lights.end());
+    materials.erase(sPrim->GetId());
     delete sPrim;
 }
 
