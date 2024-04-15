@@ -1,4 +1,6 @@
-#include "direct.h"
+#include "path.h"
+
+#include <random>
 
 #include "Utils/Logging/Logging.h"
 #include "pxr/pxr.h"
@@ -6,7 +8,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
-VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
+VtValue PathIntegrator::Li(const GfRay& ray, std::default_random_engine& random)
 {
     std::uniform_real_distribution<float> uniform_dist(
         0.0f, 1.0f - std::numeric_limits<float>::epsilon());

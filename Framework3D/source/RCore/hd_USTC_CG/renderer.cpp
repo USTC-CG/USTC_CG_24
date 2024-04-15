@@ -7,6 +7,7 @@
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
 #include "renderParam.h"
+#include "integrators/path.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -45,7 +46,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    auto integrator = std::make_shared<DirectLightIntegrator>(
+    auto integrator = std::make_shared<PathIntegrator>(
         camera_, static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
 
     integrator->rtc_scene = _rtcScene;

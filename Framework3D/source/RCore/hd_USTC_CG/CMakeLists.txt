@@ -38,6 +38,7 @@ pxr_plugin(${PXR_PACKAGE}
 
         integrators/ao
         integrators/direct
+        integrators/path
 
         geometries/mesh
         geometries/meshSamplers

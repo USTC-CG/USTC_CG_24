@@ -33,6 +33,9 @@ class Integrator {
     Hd_USTC_CG_RenderParam* render_param;
 
    protected:
+    // All the following utility functions, it is not best practice for all of them to be here.
+    // However, for educational purpose I shall just keep it simple and put them together.
+
     /**
      * \brief Sample light in scene
      * \param pos position on an object. Used to calculate pdf.
@@ -59,6 +62,9 @@ class Integrator {
     bool Intersect(const GfRay& ray, SurfaceInteraction& si);
     bool VisibilityTest(const GfRay& ray);
     bool VisibilityTest(const GfVec3f& begin, const GfVec3f& end);
+
+    Color EstimateDirectLight(SurfaceInteraction& si, std::function<float()> uniform_float);
+
     const Hd_USTC_CG_Camera* camera_;
     HdRenderThread* render_thread_;
 };
