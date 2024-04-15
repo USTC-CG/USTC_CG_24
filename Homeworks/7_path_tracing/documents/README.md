@@ -27,4 +27,4 @@
 
 同学们有两种选择。第一种是参考[Raytracing in One weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/mirroredlightreflection)中的方式来添加材质。它提供的方案在视觉观感上足够好，同时也能够参与到重要性采样中，但在物理正确性上则没有很好的保证，同时也有透明的材质。
 
-另一种是使用标准的微表面模型材质。此种方案较为复杂，难以将结果调对，建议留到最后考虑。
+另一种方案是使用标准的微表面模型材质。此种方案较为复杂，难以将结果调对，建议留到最后考虑。
