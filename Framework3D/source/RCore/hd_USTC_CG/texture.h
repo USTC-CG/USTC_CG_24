@@ -10,9 +10,12 @@ using namespace pxr;
 class Texture2D {
    public:
     Texture2D();
-    Texture2D(SdfAssetPath path);
+    Texture2D(SdfAssetPath path, HioImage::SourceColorSpace colorSpace = HioImage::Auto);
 
-    bool isValid(){return texture!=nullptr;}
+    bool isValid()
+    {
+        return texture != nullptr;
+    }
 
     // Texture Interface
     GfVec4f Evaluate(const GfVec2f& uv) const;

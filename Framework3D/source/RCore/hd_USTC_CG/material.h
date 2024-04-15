@@ -11,6 +11,7 @@ class Hio_OpenEXRImage;
 }
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Texture2D;
 class Shader;
 using namespace pxr;
 
@@ -18,7 +19,7 @@ class Hio_StbImage;
 class Hd_USTC_CG_Material : public HdMaterial {
    public:
     struct InputDescriptor {
-        HioImageSharedPtr image = nullptr;
+        std::unique_ptr<Texture2D> image = nullptr;
 
         TfToken wrapS;
         TfToken wrapT;
@@ -40,9 +41,9 @@ class Hd_USTC_CG_Material : public HdMaterial {
     TfToken requireTexcoordName();
 
     void Finalize(HdRenderParam* renderParam) override;
-    Color Sample(const GfVec3f& wo, GfVec3f& wi, float& pdf, GfVec2f uv, const std::function<float()>& uniform_float);
-    GfVec3f Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv);
-    float Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv);
+    Color Sample(const GfVec3f& wo, GfVec3f& wi, float& pdf, GfVec2f texcoord, const std::function<float()>& uniform_float);
+    GfVec3f Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord);
+    float Pdf(GfVec3f wi, GfVec3f wo, GfVec2f texcoord);
 
     InputDescriptor diffuseColor;
     InputDescriptor specularColor;
@@ -75,7 +76,7 @@ class Hd_USTC_CG_Material : public HdMaterial {
         float ior;
     };
 
-    MaterialRecord SampleMaterialRecord(GfVec2f uv);
+    MaterialRecord SampleMaterialRecord(GfVec2f texcoord);
     HdMaterialNetwork2 surfaceNetwork;
 
     void TryLoadTexture(

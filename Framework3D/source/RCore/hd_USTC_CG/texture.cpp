@@ -8,9 +8,10 @@ Texture2D::Texture2D()
     texture = nullptr;
 }
 
-Texture2D::Texture2D(SdfAssetPath path) : textureFileName(path)
+Texture2D::Texture2D(SdfAssetPath path, HioImage::SourceColorSpace colorSpace)
+    : textureFileName(path)
 {
-    texture = HioImage::OpenForReading(path.GetAssetPath(), 0, 0);
+    texture = HioImage::OpenForReading(path.GetAssetPath(), 0, 0, colorSpace);
     if (texture) {
         logging(textureFileName.GetAssetPath() + " successfully loaded", Info);
         // Step 1: Get image information
@@ -53,7 +54,9 @@ static void _Interpolate(
 
     std::function<float(const uint8_t *, int bias)> preprocess;
     switch (componentFormat) {
-        case HioTypeUnsignedByte: break;
+        case HioTypeUnsignedByte:
+            preprocess = [](const uint8_t *texel, int bias) { return texel[bias] / 256.0f; };
+            break;
         case HioTypeUnsignedByteSRGB: break;
         case HioTypeSignedByte: break;
         case HioTypeUnsignedShort: break;
@@ -72,6 +75,9 @@ static void _Interpolate(
     for (int i = 0; i < componentCount; ++i) {
         dst[i] = preprocess(texel00, i) * (1 - s) * (1 - t) + preprocess(texel10, i) * s * (1 - t) +
                  preprocess(texel01, i) * (1 - s) * t + preprocess(texel11, i) * s * t;
+    }
+    for (int i = componentCount; i < 4; ++i) {
+        dst[i] = 1.0f;
     }
 }
 
@@ -118,7 +124,6 @@ GfVec4f Texture2D::Evaluate(const GfVec2f &uv) const
 
     auto *dst = value4f.data();
     _Interpolate(format, s, t, texel00, texel01, texel10, texel11, dst);
-
     return value4f;
 }
 

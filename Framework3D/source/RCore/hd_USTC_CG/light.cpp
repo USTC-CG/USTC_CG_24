@@ -274,13 +274,13 @@ void Hd_USTC_CG_Dome_Light::Sync(
 
 Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
 {
-    if (texture) {
+    if (texture != nullptr) {
         auto uv = GfVec2f((M_PI + std::atan2(dir[1], dir[0])) / 2.0 / M_PI, 0.5 - dir[2] * 0.5);
 
         auto value = texture->Evaluate(uv);
 
         if (texture->component_conut() >= 3) {
-            return GfCompMult(Color{ value[0], value[1], value[2] },radiance);
+            return GfCompMult(Color{ value[0], value[1], value[2] }, radiance);
         }
     }
     else {

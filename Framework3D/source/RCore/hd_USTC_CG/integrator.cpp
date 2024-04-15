@@ -150,23 +150,44 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
         rayHit.ray.org_y + rayHit.ray.tfar * rayHit.ray.dir_y,
         rayHit.ray.org_z + rayHit.ray.tfar * rayHit.ray.dir_z);
 
-    auto normal = -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
+    auto geometricNormal = -GfVec3f(rayHit.hit.Ng_x, rayHit.hit.Ng_y, rayHit.hit.Ng_z);
 
+    GfVec3f shadingNormal;
     // Transform the normal from object space to world space.
-    normal = instanceContext->objectToWorldMatrix.TransformDir(normal);
-
     auto it = prototypeContext->primvarMap.find(HdTokens->normals);
     if (it != prototypeContext->primvarMap.end()) {
-        assert(it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &normal));
+        it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &shadingNormal);
     }
 
-    normal.Normalize();
+    else {
+        shadingNormal = geometricNormal;
+    }
+    geometricNormal = instanceContext->objectToWorldMatrix.TransformDir(geometricNormal);
+    shadingNormal = instanceContext->objectToWorldMatrix.TransformDir(shadingNormal);
+
+    shadingNormal.Normalize();
+    geometricNormal.Normalize();
+
     auto materialId = prototypeContext->rprim->GetMaterialId();
     si.material = (*render_param->materials)[materialId];
 
-    si.geometricNormal = normal;
+    auto texcoord_name = si.material->requireTexcoordName();
+    // Transform the normal from object space to world space.
+    it = prototypeContext->primvarMap.find(texcoord_name);
+    GfVec2f texcoord;
+    if (it != prototypeContext->primvarMap.end()) {
+        it->second->Sample(rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v, &texcoord);
+        texcoord[1] = 1.0f - texcoord[1];
+    }
+    else {
+        texcoord = { 0.5, 0.5 };
+    }
+
+    si.geometricNormal = geometricNormal;
+    si.shadingNormal = shadingNormal;
     si.position = hitPos;
-    si.uv = { rayHit.hit.u, rayHit.hit.v };
+    si.barycentric = { rayHit.hit.u, rayHit.hit.v };
+    si.texcoord = texcoord;
     si.PrepareTransforms();
     si.wo = GfVec3f(-ray.GetDirection().GetNormalized());
 
@@ -226,7 +247,7 @@ Color Integrator::EstimateDirectLight(
 
     if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, sampled_light_pos)) {
         contribution_by_sample_lights = GfCompMult(sample_light_luminance, brdfVal) *
-                                        abs(GfDot(si.geometricNormal, wi)) / sample_light_pdf;
+                                        abs(GfDot(si.shadingNormal, wi)) / sample_light_pdf;
     }
 
     // Sample BRDF
@@ -240,7 +261,7 @@ Color Integrator::EstimateDirectLight(
 
     if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, intersect_pos)) {
         contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
-                                      abs(GfDot(si.geometricNormal, sampled_brdf_dir)) /
+                                      abs(GfDot(si.shadingNormal, sampled_brdf_dir)) /
                                       sample_brdf_pdf;
     }
 

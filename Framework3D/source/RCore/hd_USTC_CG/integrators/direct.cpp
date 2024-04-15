@@ -17,8 +17,8 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
         return VtValue(GfVec3f{ 0, 0, 0 });
 
     // Flip the normal if opposite
-    if (GfDot(si.geometricNormal, ray.GetDirection()) > 0) {
-        si.geometricNormal *= -1;
+    if (GfDot(si.shadingNormal, ray.GetDirection()) > 0) {
+        si.flipNormal();
         si.PrepareTransforms();
     }
 

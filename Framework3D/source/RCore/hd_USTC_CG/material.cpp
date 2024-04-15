@@ -10,6 +10,7 @@
 #include "pxr/usd/sdr/shaderNode.h"
 #include "pxr/usd/usd/tokens.h"
 #include "pxr/usdImaging/usdImaging/tokens.h"
+#include "texture.h"
 #include "utils/sampling.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -29,9 +30,17 @@ HdMaterialNode2 Hd_USTC_CG_Material::get_input_connection(
     return upstream;
 }
 
-Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(GfVec2f uv)
+Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(GfVec2f texcoord)
 {
     MaterialRecord ret;
+    if (diffuseColor.image) {
+        auto val4 = diffuseColor.image->Evaluate(texcoord);
+        ret.diffuseColor = { val4[0], val4[1], val4[2] };
+    }
+    else {
+        ret.diffuseColor = diffuseColor.value.Get<GfVec3f>();
+    }
+
     return ret;
 }
 
@@ -46,9 +55,7 @@ void Hd_USTC_CG_Material::TryLoadTexture(
             auto texture_node = get_input_connection(surfaceNetwork, input_connection);
             assert(texture_node.nodeTypeId == UsdImagingTokens->UsdUVTexture);
 
-            auto file_name =
-                texture_node.parameters[TfToken("file")].Get<SdfAssetPath>().GetAssetPath();
-            logging("Texture file name: " + file_name, Info);
+            auto assetPath = texture_node.parameters[TfToken("file")].Get<SdfAssetPath>();
 
             HioImage::SourceColorSpace colorSpace;
 
@@ -59,7 +66,10 @@ void Hd_USTC_CG_Material::TryLoadTexture(
                 colorSpace = HioImage::Raw;
             }
 
-            descriptor.image = HioImage::OpenForReading(file_name, 0, 0, colorSpace);
+            descriptor.image = std::make_unique<Texture2D>(assetPath);
+            if (!descriptor.image->isValid()) {
+                descriptor.image = nullptr;
+            }
             descriptor.wrapS = texture_node.parameters[TfToken("wrapS")].Get<TfToken>();
             descriptor.wrapT = texture_node.parameters[TfToken("wrapT")].Get<TfToken>();
 
@@ -164,22 +174,26 @@ Color Hd_USTC_CG_Material::Sample(
     const GfVec3f& wo,
     GfVec3f& wi,
     float& pdf,
-    GfVec2f uv,
+    GfVec2f texcoord,
     const std::function<float()>& uniform_float)
 {
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
-    wi = CosineWeightedDirection(sample2D, pdf);
+    auto record = SampleMaterialRecord(texcoord);
 
-    return Eval(wi, wo, uv);
+    wi = GGXWeightedDirection(sample2D, record.roughness, pdf);
+
+    return Eval(wi, wo, texcoord);
 }
 
-GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f uv)
+GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
-    return diffuseColor.value.Get<GfVec3f>() / M_PI;
+    auto record = SampleMaterialRecord(texcoord);
+
+    return record.diffuseColor / M_PI;
 }
 
-float Hd_USTC_CG_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f uv)
+float Hd_USTC_CG_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     return 0;
 }
