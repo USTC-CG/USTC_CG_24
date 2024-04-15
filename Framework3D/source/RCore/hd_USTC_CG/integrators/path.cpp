@@ -22,7 +22,7 @@ GfVec3f PathIntegrator::EstimateOutGoingRadiance(
     const std::function<float()>& uniform_float,
     int recursion_depth)
 {
-    if (recursion_depth >= 20) {
+    if (recursion_depth >= 5) {
         return {};
     }
 

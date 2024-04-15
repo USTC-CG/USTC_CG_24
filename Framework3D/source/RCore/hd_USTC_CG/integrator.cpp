@@ -183,7 +183,7 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
         texcoord = { 0.5, 0.5 };
     }
 
-    si.geometricNormal = geometricNormal;
+    si.geometricNormal = shadingNormal;
     si.shadingNormal = shadingNormal;
     si.position = hitPos;
     si.barycentric = { rayHit.hit.u, rayHit.hit.v };
@@ -245,7 +245,7 @@ Color Integrator::EstimateDirectLight(
     auto brdfVal = si.Eval(wi);
     GfVec3f contribution_by_sample_lights{ 0 };
 
-    if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, sampled_light_pos)) {
+    if (this->VisibilityTest(si.position + 0.0001f * si.geometricNormal, sampled_light_pos)) {
         contribution_by_sample_lights = GfCompMult(sample_light_luminance, brdfVal) *
                                         abs(GfDot(si.shadingNormal, wi)) / sample_light_pdf;
     }
@@ -259,7 +259,7 @@ Color Integrator::EstimateDirectLight(
     auto sample_brdf_luminance = IntersectLights(light_ray, intersect_pos);
     GfVec3f contribution_by_sample_brdf{ 0 };
 
-    if (this->VisibilityTest(si.position + 0.00001f * si.geometricNormal, intersect_pos)) {
+    if (this->VisibilityTest(si.position + 0.0001f * si.geometricNormal, intersect_pos)) {
         contribution_by_sample_brdf = GfCompMult(sample_brdf_luminance, brdfVal) *
                                       abs(GfDot(si.shadingNormal, sampled_brdf_dir)) /
                                       sample_brdf_pdf;

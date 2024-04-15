@@ -41,6 +41,30 @@ Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(Gf
         ret.diffuseColor = diffuseColor.value.Get<GfVec3f>();
     }
 
+    if (roughness.image) {
+        auto val4 = roughness.image->Evaluate(texcoord);
+        ret.roughness = val4[1];
+    }
+    else {
+        ret.roughness = roughness.value.Get<float>();
+    }
+
+    if (ior.image) {
+        auto val4 = ior.image->Evaluate(texcoord);
+        ret.ior = val4[0];
+    }
+    else {
+        ret.ior = ior.value.Get<float>();
+    }
+
+    if (metallic.image) {
+        auto val4 = metallic.image->Evaluate(texcoord);
+        ret.metallic = val4[2];
+    }
+    else {
+        ret.metallic = metallic.value.Get<float>();
+    }
+
     return ret;
 }
 
@@ -66,7 +90,7 @@ void Hd_USTC_CG_Material::TryLoadTexture(
                 colorSpace = HioImage::Raw;
             }
 
-            descriptor.image = std::make_unique<Texture2D>(assetPath);
+            descriptor.image = std::make_unique<Texture2D>(assetPath, colorSpace);
             if (!descriptor.image->isValid()) {
                 descriptor.image = nullptr;
             }
@@ -110,11 +134,12 @@ void Hd_USTC_CG_Material::TryLoadParameter(
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
     logging("Creating material " + id.GetString());
-    diffuseColor.value = VtValue(GfVec3f(0.8, 0.8, 0.8));
+    diffuseColor.value = VtValue(GfVec3f(0.8f));
     roughness.value = VtValue(0.8f);
 
     metallic.value = VtValue(0.0f);
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
+    ior.value = VtValue(1.5f);
 
     MACRO_MAP(NAME_IT, INPUT_LIST);
 }
@@ -181,12 +206,14 @@ Color Hd_USTC_CG_Material::Sample(
 
     auto record = SampleMaterialRecord(texcoord);
 
-    wi = GGXWeightedDirection(sample2D, record.roughness, pdf);
+    auto H = GGXWeightedDirection(sample2D, record.roughness, pdf);
+    wi = 2 * wo * H * H - wo;
 
+    //wi = CosineWeightedDirection(sample2D,pdf);
     return Eval(wi, wo, texcoord);
 }
 
-GfVec3f Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
+Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     auto record = SampleMaterialRecord(texcoord);
 
