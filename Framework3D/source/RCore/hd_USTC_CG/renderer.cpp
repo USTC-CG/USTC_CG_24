@@ -2,15 +2,18 @@
 
 #include "embree4/rtcore_scene.h"
 #include "integrators/ao.h"
+#include "integrators/direct.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
 #include "renderParam.h"
+#include "integrators/path.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
 Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
+    : render_param(render_param)
 {
     _rtcDevice = rtcNewDevice(nullptr);
     rtcSetDeviceErrorFunction(_rtcDevice, HandleRtcError, NULL);
@@ -43,10 +46,11 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         return;
     }
 
-    auto integrator = std::make_shared<AOIntegrator>(
+    auto integrator = std::make_shared<PathIntegrator>(
         camera_, static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
 
-    integrator->_scene = _rtcScene;
+    integrator->rtc_scene = _rtcScene;
+    integrator->render_param = render_param;
 
     integrator->Render();
 }

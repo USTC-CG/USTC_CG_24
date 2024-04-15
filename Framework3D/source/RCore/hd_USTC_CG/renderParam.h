@@ -31,13 +31,15 @@
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_Light;
+class Hd_USTC_CG_Material;
 using namespace pxr;
 
 ///
 /// \class Hd_USTC_CG_RenderParam
 ///
 /// The render delegate can create an object of type HdRenderParam, to pass
-/// to each prim during Sync(). HdEmbree uses this class to pass top-level
+/// to each prim during Sync(). Hd_USTC_CG_ uses this class to pass top-level
 /// embree state around.
 ///
 class Hd_USTC_CG_RenderParam final : public HdRenderParam {
@@ -62,6 +64,8 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     }
 
     friend class Hd_USTC_CG_Renderer;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
+    pxr::VtArray<Hd_USTC_CG_Light *> *lights = nullptr;
 
    private:
     /// A handle to the top-level embree scene.

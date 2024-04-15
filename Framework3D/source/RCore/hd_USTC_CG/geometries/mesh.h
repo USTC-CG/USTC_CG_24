@@ -25,12 +25,12 @@
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 
 #include "context.h"
-#include "meshSamplers.h"
 #include "embree4/rtcore.h"
-#include "pxr/pxr.h"
+#include "meshSamplers.h"
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/imaging/hd/mesh.h"
 #include "pxr/imaging/hd/vertexAdjacency.h"
+#include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -53,9 +53,8 @@ using namespace pxr;
 /// can do the heavy work of releasing state (such as handles into the top-level
 /// scene), so that object population and existence aren't tied to each other.
 ///
-class Hd_USTC_CG_Mesh final : public HdMesh
-{
-public:
+class Hd_USTC_CG_Mesh final : public HdMesh {
+   public:
     HF_MALLOC_TAG_NEW("new Hd_USTC_CG_Mesh");
 
     /// Hd_USTC_CG_Mesh constructor.
@@ -84,7 +83,7 @@ public:
 
     void Finalize(HdRenderParam* renderParam) override;
 
-protected:
+   protected:
     // Initialize the given representation of this Rprim.
     // This is called prior to syncing the prim, the first time the repr
     // is used.
@@ -97,9 +96,9 @@ protected:
     // repr is synced.  InitRepr occurs before dirty bit propagation.
     //
     // See HdRprim::InitRepr()
-    void _InitRepr(
-        const TfToken& reprToken,
-        HdDirtyBits* dirtyBits) override;
+    void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
+
+    void _SetMaterialId(HdSceneDelegate* scene_delegate, Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
 
     // This callback from Rprim gives the prim an opportunity to set
     // additional dirty bits based on those already set.  This is done
@@ -115,25 +114,23 @@ protected:
     TfTokenVector _UpdateComputedPrimvarSources(
         HdSceneDelegate* sceneDelegate,
         HdDirtyBits dirtyBits);
-    void _UpdatePrimvarSources(
-        HdSceneDelegate* sceneDelegate,
-        HdDirtyBits dirtyBits);
+    void _UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDirtyBits dirtyBits);
     RTCGeometry _CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice device);
     RTCGeometry _CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device);
 
     // This class does not support copying.
     Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
-    Hd_USTC_CG_Mesh& operator =(const Hd_USTC_CG_Mesh&) = delete;
+    Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
 
-private:
+   private:
     void _PopulateRtMesh(
         HdSceneDelegate* sceneDelegate,
         RTCScene scene,
         RTCDevice device,
         HdDirtyBits* dirtyBits,
         const HdMeshReprDesc& desc);
-    HdEmbreePrototypeContext* _GetPrototypeContext();
-    HdEmbreeInstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
+    Hd_USTC_CG_PrototypeContext* _GetPrototypeContext();
+    Hd_USTC_CG_InstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
 
     // Cached scene data. VtArrays are reference counted, so as long as we
     // only call const accessors keeping them around doesn't incur a buffer
@@ -185,15 +182,13 @@ private:
     // An embree intersection filter callback, for doing backface culling.
     static void _EmbreeCullFaces(const RTCFilterFunctionNArguments* args);
 
-    HdEmbreeRTCBufferAllocator _embreeBufferAllocator;
-
+    Hd_USTC_CG_RTCBufferAllocator _embreeBufferAllocator;
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to
     // the actual primvar buffer, and "interpolation" is the interpolation mode
     // to be used. This cache is used in _PopulateRtMesh to populate the
     // primvar sampler map in the prototype context, which is used for shading.
-    struct PrimvarSource
-    {
+    struct PrimvarSource {
         VtValue data;
         HdInterpolation interpolation;
     };
@@ -203,4 +198,4 @@ private:
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
 
-#endif // EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
+#endif  // EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H

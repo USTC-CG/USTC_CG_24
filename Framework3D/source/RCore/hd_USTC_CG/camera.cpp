@@ -29,9 +29,8 @@ GfRay Hd_USTC_CG_Camera::generateRay(
     float x = pixel_center[0];
     float y = pixel_center[1];
     GfVec2f jitter(0.0f, 0.0f);
-    if (HdEmbreeConfig::GetInstance().jitterCamera)
-    {
-        jitter = GfVec2f(uniform_float(), uniform_float());
+    if (Hd_USTC_CG_Config::GetInstance().jitterCamera) {
+        jitter = GfVec2f(uniform_float() - 0.5, uniform_float() - 0.5);
     }
 
     // Un-transform the pixel's NDC coordinates through the
@@ -41,24 +40,20 @@ GfRay Hd_USTC_CG_Camera::generateRay(
     const float h(_dataWindow.GetHeight());
 
     const GfVec3f ndc(
-        2 * ((x + jitter[0] - minX) / w) - 1,
-        2 * ((y + jitter[1] - minY) / h) - 1,
-        -1);
+        2 * ((x + jitter[0] - minX) / w) - 1, 2 * ((y + jitter[1] - minY) / h) - 1, -1);
     const GfVec3f nearPlaneTrace = _inverseProjMatrix.Transform(ndc);
 
     GfVec3f origin;
     GfVec3f dir;
 
     const bool isOrthographic = round(_projMatrix[3][3]) == 1;
-    if (isOrthographic)
-    {
+    if (isOrthographic) {
         // During orthographic projection: trace parallel rays
         // from the near plane trace.
         origin = nearPlaneTrace;
         dir = GfVec3f(0, 0, -1);
     }
-    else
-    {
+    else {
         // Otherwise, assume this is a perspective projection;
         // project from the camera origin through the
         // near plane trace.
@@ -71,23 +66,19 @@ GfRay Hd_USTC_CG_Camera::generateRay(
     return { origin, dir };
 }
 
-static GfRect2i _GetDataWindow(
-    const HdRenderPassStateSharedPtr& renderPassState)
+static GfRect2i _GetDataWindow(const HdRenderPassStateSharedPtr& renderPassState)
 {
     const CameraUtilFraming& framing = renderPassState->GetFraming();
-    if (framing.IsValid())
-    {
+    if (framing.IsValid()) {
         return framing.dataWindow;
     }
-    else
-    {
+    else {
         const GfVec4f vp = renderPassState->GetViewport();
         return GfRect2i(GfVec2i(0), int(vp[2]), int(vp[3]));
     }
 }
 
-void Hd_USTC_CG_Camera::update(
-    const HdRenderPassStateSharedPtr& renderPassState) const
+void Hd_USTC_CG_Camera::update(const HdRenderPassStateSharedPtr& renderPassState) const
 {
     _projMatrix = renderPassState->GetProjectionMatrix();
     _inverseProjMatrix = _projMatrix.GetInverse();
@@ -100,6 +91,5 @@ void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const
 {
     film = new_film;
 }
-
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

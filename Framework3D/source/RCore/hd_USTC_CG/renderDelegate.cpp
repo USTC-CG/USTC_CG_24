@@ -31,6 +31,7 @@
 #include "geometries/mesh.h"
 #include "instancer.h"
 #include "light.h"
+#include "material.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
@@ -39,7 +40,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-TF_DEFINE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DEFINE_PUBLIC_TOKENS(Hd_USTC_CG_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
     HdPrimTypeTokens->mesh,
@@ -47,8 +48,10 @@ const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_SPRIM_TYPES = {
     HdPrimTypeTokens->camera,
-    HdPrimTypeTokens->simpleLight,
     HdPrimTypeTokens->sphereLight,
+    HdPrimTypeTokens->domeLight,
+    HdPrimTypeTokens->material,
+
 };
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_BPRIM_TYPES = {
@@ -81,31 +84,34 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     // Initialize the settings and settings descriptors.
     _settingDescriptors.resize(5);
     _settingDescriptors[0] = { "Enable Scene Colors",
-                               HdEmbreeRenderSettingsTokens->enableSceneColors,
-                               VtValue(HdEmbreeConfig::GetInstance().useFaceColors) };
+                               Hd_USTC_CG_RenderSettingsTokens->enableSceneColors,
+                               VtValue(Hd_USTC_CG_Config::GetInstance().useFaceColors) };
     _settingDescriptors[1] = { "Enable Ambient Occlusion",
-                               HdEmbreeRenderSettingsTokens->enableAmbientOcclusion,
-                               VtValue(HdEmbreeConfig::GetInstance().ambientOcclusionSamples > 0) };
+                               Hd_USTC_CG_RenderSettingsTokens->enableAmbientOcclusion,
+                               VtValue(
+                                   Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples > 0) };
     _settingDescriptors[2] = { "Ambient Occlusion Samples",
-                               HdEmbreeRenderSettingsTokens->ambientOcclusionSamples,
+                               Hd_USTC_CG_RenderSettingsTokens->ambientOcclusionSamples,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().ambientOcclusionSamples)) };
+                                   Hd_USTC_CG_Config::GetInstance().ambientOcclusionSamples)) };
     _settingDescriptors[3] = { "Samples To Convergence",
                                HdRenderSettingsTokens->convergedSamplesPerPixel,
                                VtValue(static_cast<int>(
-                                   HdEmbreeConfig::GetInstance().samplesToConvergence)) };
+                                   Hd_USTC_CG_Config::GetInstance().samplesToConvergence)) };
 
     _settingDescriptors[4] = { "Render Mode",
-                               HdEmbreeRenderSettingsTokens->renderMode,
+                               Hd_USTC_CG_RenderSettingsTokens->renderMode,
                                VtValue(0) };
     _PopulateDefaultSettings(_settingDescriptors);
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion);
+    _renderParam->lights = &lights;
+    _renderParam->materials = &materials;
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
     // Set the background render thread's rendering entrypoint to
-    // HdEmbreeRenderer::Render.
+    // Hd_USTC_CG_Renderer::Render.
     _renderThread.SetRenderCallback(std::bind(_RenderCallback, _renderer.get(), &_renderThread));
     _renderThread.StartThread();
 
@@ -121,7 +127,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken& name) const
 {
     if (name == HdAovTokens->color) {
-        return HdAovDescriptor(HdFormatUNorm8Vec4, true, VtValue(GfVec4f(0.0f)));
+        return HdAovDescriptor(HdFormatFloat32Vec4, false, VtValue(GfVec4f(0.0f)));
     }
     if (name == HdAovTokens->normal || name == HdAovTokens->Neye) {
         return HdAovDescriptor(HdFormatFloat32Vec3, false, VtValue(GfVec3f(-1.0f)));
@@ -147,7 +153,7 @@ HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken
 Hd_USTC_CG_RenderDelegate::~Hd_USTC_CG_RenderDelegate()
 {
     _resourceRegistry.reset();
-    std::cout << "Destroying Tiny RenderDelegate" << std::endl;
+    std::cout << "Destroying RenderDelegate" << std::endl;
 }
 
 const TfTokenVector& Hd_USTC_CG_RenderDelegate::GetSupportedRprimTypes() const
@@ -186,7 +192,7 @@ HdRenderPassSharedPtr Hd_USTC_CG_RenderDelegate::CreateRenderPass(
 
 HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const SdfPath& rprimId)
 {
-    std::cout << "Create Tiny Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
+    std::cout << "Create Rprim type=" << typeId.GetText() << " id=" << rprimId << std::endl;
 
     if (typeId == HdPrimTypeTokens->mesh) {
         return new Hd_USTC_CG_Mesh(rprimId);
@@ -197,7 +203,7 @@ HdRprim* Hd_USTC_CG_RenderDelegate::CreateRprim(const TfToken& typeId, const Sdf
 
 void Hd_USTC_CG_RenderDelegate::DestroyRprim(HdRprim* rPrim)
 {
-    logging("Destroy Tiny Rprim id=" + rPrim->GetId().GetString(), USTC_CG::Info);
+    logging("Destroy Rprim id=" + rPrim->GetId().GetString(), USTC_CG::Info);
     delete rPrim;
 }
 
@@ -209,8 +215,22 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateSprim(const TfToken& typeId, const Sdf
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(sprimId);
     }
-    else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(sprimId, typeId);
+    else if (typeId == HdPrimTypeTokens->material) {
+        auto material = new Hd_USTC_CG_Material(sprimId);
+        materials[sprimId] = material;
+
+        return material;
+    }
+    else if (typeId == HdPrimTypeTokens->sphereLight) {
+        auto light = new Hd_USTC_CG_Sphere_Light(sprimId, typeId);
+        lights.push_back(light);
+        return light;
+    }
+
+    else if (typeId == HdPrimTypeTokens->domeLight) {
+        auto light = new Hd_USTC_CG_Dome_Light(sprimId, typeId);
+        lights.push_back(light);
+        return light;
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
@@ -229,8 +249,16 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
     else if (typeId == HdPrimTypeTokens->extComputation) {
         return new HdExtComputation(SdfPath::EmptyPath());
     }
-    else if (typeId == HdPrimTypeTokens->simpleLight || typeId == HdPrimTypeTokens->sphereLight) {
-        return new Hd_USTC_CG_Light(SdfPath::EmptyPath(), typeId);
+    else if (typeId == HdPrimTypeTokens->material) {
+        auto material = new Hd_USTC_CG_Material(SdfPath::EmptyPath());
+        materials[SdfPath::EmptyPath()] = material;
+        return material;
+    }
+    else if (typeId == HdPrimTypeTokens->sphereLight) {
+        return new Hd_USTC_CG_Sphere_Light(SdfPath::EmptyPath(), typeId);
+    }
+    else if (typeId == HdPrimTypeTokens->domeLight) {
+        return new Hd_USTC_CG_Dome_Light(SdfPath::EmptyPath(), typeId);
     }
     else {
         TF_CODING_ERROR("Unknown Sprim Type %s", typeId.GetText());
@@ -242,6 +270,8 @@ HdSprim* Hd_USTC_CG_RenderDelegate::CreateFallbackSprim(const TfToken& typeId)
 void Hd_USTC_CG_RenderDelegate::DestroySprim(HdSprim* sPrim)
 {
     logging(sPrim->GetId().GetAsString() + " destroyed", USTC_CG::Info);
+    lights.erase(std::remove(lights.begin(), lights.end(), sPrim), lights.end());
+    materials.erase(sPrim->GetId());
     delete sPrim;
 }
 
@@ -282,7 +312,7 @@ HdInstancer* Hd_USTC_CG_RenderDelegate::CreateInstancer(
     HdSceneDelegate* delegate,
     const SdfPath& id)
 {
-    return new HdEmbreeInstancer(delegate, id);
+    return new Hd_USTC_CG_Instancer(delegate, id);
 }
 
 void Hd_USTC_CG_RenderDelegate::DestroyInstancer(HdInstancer* instancer)

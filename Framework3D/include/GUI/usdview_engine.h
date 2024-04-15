@@ -14,7 +14,7 @@ class USTC_CG_API UsdviewEngine {
 public:
     explicit UsdviewEngine(pxr::UsdStageRefPtr root_stage);
     ~UsdviewEngine();
-    void render(NodeTree* node_tree = nullptr, NodeTreeExecutor* get_executor = nullptr);
+    void render(NodeTree* render_node_tree = nullptr, NodeTreeExecutor* get_executor = nullptr);
 
 protected:
     std::unique_ptr<UsdviewEngineImpl> impl_;

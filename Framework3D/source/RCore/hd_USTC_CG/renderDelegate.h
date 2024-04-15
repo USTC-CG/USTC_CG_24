@@ -36,7 +36,7 @@ using namespace pxr;
     (enableAmbientOcclusion)(enableSceneColors)(ambientOcclusionSamples)(renderMode)
 // Also: HdRenderSettingsTokens->convergedSamplesPerPixel
 
-TF_DECLARE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DECLARE_PUBLIC_TOKENS(Hd_USTC_CG_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
 class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
    public:
@@ -89,6 +89,9 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     std::shared_ptr<Hd_USTC_CG_RenderParam> _renderParam;
     HdRenderThread _renderThread;
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
+
+    pxr::VtArray<Hd_USTC_CG_Light*> lights;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;

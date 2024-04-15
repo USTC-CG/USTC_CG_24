@@ -212,7 +212,7 @@ void CompositionNodeSystemExecution::try_execution()
 {
     if (required_execution) {
         auto& stage = GlobalUsdStage::global_usd_stage;
-        // stage->RemovePrim(pxr::SdfPath("/Reference"));
+         stage->RemovePrim(pxr::SdfPath("/Reference"));
         pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->z);
 
         executor->execute(node_tree.get());

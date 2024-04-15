@@ -20,7 +20,7 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 1;           // 0 for 1st personal, 1 for 3rd personal
+        unsigned renderer_id = 2;
     } engine_status;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
@@ -126,6 +126,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
     _renderParams.showRender = true;
     _renderParams.frame = UsdTimeCode::Default();
     _renderParams.drawMode = UsdImagingGLDrawMode::DRAW_WIREFRAME_ON_SURFACE;
+    _renderParams.colorCorrectionMode = TfToken("sRGB");
 
     _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
 
@@ -249,7 +250,7 @@ UsdviewEngine::~UsdviewEngine()
 {
 }
 
-void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
+void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_executor)
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
@@ -264,7 +265,7 @@ void UsdviewEngine::render(NodeTree* node_tree, NodeTreeExecutor* get_executor)
 
         impl_->OnResize(size.x, size.y);
 
-        impl_->OnFrame(delta_time, node_tree, get_executor);
+        impl_->OnFrame(delta_time, render_node_tree, get_executor);
     }
     else {
         ImGui::PopStyleVar(1);
