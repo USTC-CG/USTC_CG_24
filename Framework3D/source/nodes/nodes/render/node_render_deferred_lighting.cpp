@@ -161,6 +161,11 @@ static void node_exec(ExeParams params)
     glDeleteBuffers(1, &lightBuffer);
     glDeleteFramebuffers(1, &framebuffer);
     params.set_output("Color", color_texture);
+
+    auto shader_error = shader->shader.get_error();
+    if (!shader_error.empty()) {
+        throw std::runtime_error(shader_error);
+    }
 }
 
 static void node_register()
