@@ -204,58 +204,17 @@ Color Hd_USTC_CG_Material::Sample(
 {
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
-    auto record = SampleMaterialRecord(texcoord);
-
-    auto H = GGXWeightedDirection(sample2D, record.roughness, pdf);
-    wi = 2 * wo * H * H - wo;
-
-    // wi = CosineWeightedDirection(sample2D,pdf);
+     wi = CosineWeightedDirection(sample2D, pdf);
     return Eval(wi, wo, texcoord);
-}
-
-float FresnelSchlick(float cosTheta, float ior)
-{
-    float F0 = pow((1.0 - ior) / (1.0 + ior), 2.0);
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
-float SmithGGX(float NdotWi, float NdotWo, float roughness)
-{
-    float alpha = roughness * roughness;
-    float lambdaWo = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWo * NdotWo) / (NdotWo * NdotWo))) / 2.0;
-    float lambdaWi = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWi * NdotWi) / (NdotWi * NdotWi))) / 2.0;
-    return 2.0 / (1.0 + sqrt(1.0 + lambdaWi)) * 2.0 / (1.0 + sqrt(1.0 + lambdaWo));
 }
 
 Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     auto record = SampleMaterialRecord(texcoord);
-    auto roughness = record.roughness;
-    auto ior = record.ior;
-    auto metallic = record.metallic;
+
     GfVec3f diffuseColor = record.diffuseColor;
 
-    // Specular BRDF
-    GfVec3f H = (wi + wo).GetNormalized();
-    float NdotH = std::max(0.0f, H[2]);
-    float HdotWo = std::max(0.0f, H * wo);
-    float NdotWi = std::max(0.0f, wi[2]);
-    float NdotWo = std::max(0.0f, wo[2]);
-    float D = GGX(NdotH, roughness);
-    float F = FresnelSchlick(HdotWo, ior);
-    float G = SmithGGX(NdotWi, NdotWo, roughness);
-
-    F =1.0f;
-    G = 1.0f;
-    auto val = G * F * D / (4.0 * NdotWi * NdotWo);
-
-    GfVec3f specularColor = GfVec3f(val);
-    if (std::isnan(val)) {
-        specularColor = GfVec3f(0);
-    }
-
-    // Calculate final BRDF
-    GfVec3f result = (1.0 - metallic) * diffuseColor / M_PI + metallic * specularColor;
+    GfVec3f result = diffuseColor / M_PI;
 
     return result;
 }

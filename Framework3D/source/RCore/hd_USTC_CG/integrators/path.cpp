@@ -35,7 +35,7 @@ GfVec3f PathIntegrator::EstimateOutGoingRadiance(
         return GfVec3f{ 0, 0, 0 };
     }
 
-    // This can be defined: Do we want to see the light?
+    // This can be customized : Do we want to see the lights? (Other than dome lights?)
     if (recursion_depth == 0) {
     }
 
@@ -53,12 +53,12 @@ GfVec3f PathIntegrator::EstimateOutGoingRadiance(
     auto bounceBRDF = si.Sample(dir, bounrcePdf, uniform_float);
     auto bounceRay = GfRay{ si.position + 0.00001f * si.geometricNormal, dir };
 
-    auto GI =
+    auto globalLight =
         GfDot(dir, si.geometricNormal) / bounrcePdf *
         GfCompMult(
             bounceBRDF, EstimateOutGoingRadiance(bounceRay, uniform_float, recursion_depth + 1));
 
-    color = directLight + GI;
+    color = directLight + globalLight;
 
     return color;
 }

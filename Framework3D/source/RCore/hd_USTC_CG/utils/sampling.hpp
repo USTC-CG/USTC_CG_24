@@ -28,16 +28,17 @@ inline float GGX(float cosTheta, float alpha)
 
 inline GfVec3f GGXWeightedDirection(const GfVec2f& uniform_float, float roughness, float& pdf)
 {
+    float alpha = roughness * roughness;
     float phi = 2.0 * M_PI * uniform_float[0];
     float cosTheta =
-        sqrt((1.0 - uniform_float[1]) / (1.0 + (roughness * roughness - 1.0) * uniform_float[1]));
+        sqrt((1.0 - uniform_float[1]) / (1.0 + (alpha * alpha - 1.0) * uniform_float[1]));
     float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
     float x = sinTheta * cos(phi);
     float y = sinTheta * sin(phi);
     float z = cosTheta;
 
-    pdf = GGX(cosTheta, roughness) * cosTheta;
+    pdf = GGX(cosTheta, alpha);
 
     return GfVec3f(x, y, z);
 }
