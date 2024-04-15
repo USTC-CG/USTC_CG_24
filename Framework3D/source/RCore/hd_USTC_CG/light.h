@@ -82,12 +82,21 @@ class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
 
+    Color Le(const GfVec3f& dir);
     void Finalize(HdRenderParam* renderParam) override;
 
    private:
     SdfAssetPath textureFileName;
     GfVec3f radiance;
     std::unique_ptr<Texture2D> texture;
+};
+
+class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
+public:
+    Hd_USTC_CG_Distant_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_Light(id, lightType)
+    {
+    }
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

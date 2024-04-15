@@ -228,28 +228,16 @@ Color Hd_USTC_CG_Dome_Light::Sample(
     const std::function<float()>& uniform_float)
 {
     dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf);
-    sampled_light_pos = dir * std::numeric_limits<float>::max()/100.f;
-    return radiance;
+    sampled_light_pos = dir * std::numeric_limits<float>::max() / 100.f;
+
+    return Le(dir);
 }
 
 Color Hd_USTC_CG_Dome_Light::Intersect(const GfRay& ray, float& depth)
 {
-    depth = std::numeric_limits<float>::max();  // max is smaller than infinity, lol
+    depth = std::numeric_limits<float>::max() / 100.f;  // max is smaller than infinity, lol
 
-    if (texture->isValid()) {
-        auto vec = ray.GetDirection();
-
-        auto uv = GfVec2f((M_PI + std::atan2(vec[1], vec[0])) / 2.0 / M_PI, vec[2]);
-
-        auto value = texture->Evaluate(uv);
-
-        if (texture->component_conut() == 3) {
-            return Color{ value[0], value[1], value[2] };
-        }
-    }
-    else {
-        return radiance;
-    }
+    return Le(GfVec3f(ray.GetDirection()));
 }
 
 void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
@@ -259,6 +247,8 @@ void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate
         if (v.IsHolding<SdfAssetPath>()) {
             textureFileName = v.UncheckedGet<SdfAssetPath>();
             texture = std::make_unique<Texture2D>(textureFileName);
+
+            logging("Attempting to load file " + textureFileName.GetAssetPath(), Warning);
         }
         else {
             TF_CODING_ERROR("Dome light texture file not an asset path.");
@@ -277,6 +267,22 @@ void Hd_USTC_CG_Dome_Light::Sync(
 
     auto id = GetId();
     _PrepareDomeLight(id, sceneDelegate);
+}
+
+Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
+{
+    if (texture->isValid()) {
+        auto uv = GfVec2f((M_PI + std::atan2(dir[1], dir[0])) / 2.0 / M_PI, dir[2]);
+
+        auto value = texture->Evaluate(uv);
+
+        if (texture->component_conut() == 3) {
+            return Color{ value[0], value[1], value[2] };
+        }
+    }
+    else {
+        return radiance;
+    }
 }
 
 void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)

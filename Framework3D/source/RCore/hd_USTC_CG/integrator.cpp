@@ -228,7 +228,7 @@ Color Integrator::EstimateDirectLight(
         contribution_by_sample_lights = GfCompMult(sample_light_luminance, brdfVal) *
                                         abs(GfDot(si.geometricNormal, wi)) / sample_light_pdf;
     }
-    return contribution_by_sample_lights;
+
     // Sample BRDF
     GfVec3f sampled_brdf_dir;
     float sample_brdf_pdf;

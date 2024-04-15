@@ -1,5 +1,7 @@
 #include "texture.h"
 
+#include "Utils/Logging/Logging.h"
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 Texture2D::Texture2D()
 {
@@ -10,6 +12,7 @@ Texture2D::Texture2D(SdfAssetPath path) : textureFileName(path)
 {
     texture = HioImage::OpenForReading(path.GetAssetPath(), 0, 0);
     if (texture) {
+        logging(textureFileName.GetAssetPath() + " successfully loaded", Info);
         // Step 1: Get image information
         int width = texture->GetWidth();
         int height = texture->GetHeight();
@@ -29,6 +32,9 @@ Texture2D::Texture2D(SdfAssetPath path) : textureFileName(path)
         if (!texture->Read(storageSpec)) {
             free(storageSpec.data);
         }
+    }
+    else {
+        logging(textureFileName.GetAssetPath() + " not loaded", Info);
     }
 }
 
