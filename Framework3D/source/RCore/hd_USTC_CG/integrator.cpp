@@ -183,7 +183,7 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
         texcoord = { 0.5, 0.5 };
     }
 
-    si.geometricNormal = shadingNormal;
+    si.geometricNormal = geometricNormal;
     si.shadingNormal = shadingNormal;
     si.position = hitPos;
     si.barycentric = { rayHit.hit.u, rayHit.hit.v };

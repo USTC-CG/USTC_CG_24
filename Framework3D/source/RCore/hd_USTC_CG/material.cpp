@@ -135,7 +135,7 @@ Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
     logging("Creating material " + id.GetString());
     diffuseColor.value = VtValue(GfVec3f(1.0f));
-    roughness.value = VtValue(0.5f);
+    roughness.value = VtValue(0.9f);
 
     metallic.value = VtValue(1.0f);
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
@@ -202,9 +202,24 @@ Color Hd_USTC_CG_Material::Sample(
     GfVec2f texcoord,
     const std::function<float()>& uniform_float)
 {
+    auto record = SampleMaterialRecord(texcoord);
+    auto roughness = record.roughness;
+    auto ior = record.ior;
+    auto metallic = record.metallic;
+    GfVec3f diffuseColor = record.diffuseColor;
+
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
+#if 1
+    auto H = GGXWeightedDirection(wo, sample2D, roughness, pdf);
+
+    wi = 2 * wo * H * H - wo;
+
+    // Jacobian of the half-direction mapping
+    pdf /= 4.f * (wi * H);
+#else
     wi = CosineWeightedDirection(sample2D, pdf);
+#endif
     return Eval(wi, wo, texcoord);
 }
 
@@ -227,29 +242,25 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     auto metallic = record.metallic;
     GfVec3f diffuseColor = record.diffuseColor;
 
-    // Specular BRDF
-    GfVec3f H = (wi + wo).GetNormalized();
-    float WodotH = std::max(0.0f, H * (wo));
-    float NdotH = std::max(0.0f, H[2]);
-    float NdotWi = std::max(0.0f, wi[2]);
-    float NdotWo = std::max(0.0f, wo[2]);
-    float D = GGX(NdotH, roughness * roughness);
-    float F = FresnelSchlick(NdotWo, ior);
-    float G = SmithGGX(NdotWi, NdotWo, NdotH, roughness);
+#if 1
+    float alpha = roughness * roughness;
 
-    float val = std::max(G * F * D / (4.0f * NdotWi * NdotWo), 0.f);
+    // Calculate the half-direction vector
+    Vector3f H = normalize(wo + wi);
 
-    val = G * D / NdotWo / NdotWi/4.0f;
+    // Evaluate the microfacet normal distribution
+    Float D = GGXEval(H, alpha);
 
-    if (std::isinf(val) || std::isnan(val)) {
-        val = 0.f;
-    }
+    Float F = FresnelSchlick(wo[2], 1.5f);
 
-    GfVec3f specularColor = GfVec3f(val);
+    // Evaluate Smith's shadow-masking function
+    Float G = smith_g1(wi, H, alpha) * smith_g1(wo, H, alpha);
 
-    // Calculate final BRDF
-    GfVec3f result = (1.0 - metallic) * diffuseColor / M_PI + metallic * specularColor;
-
+    // Evaluate the full microfacet model (except Fresnel)
+    Color result = diffuseColor * (F * D * G / (4.0f * wi[2] * wo[2]));
+#else
+    Color result = diffuseColor / M_PI;
+#endif
     return result;
 }
 

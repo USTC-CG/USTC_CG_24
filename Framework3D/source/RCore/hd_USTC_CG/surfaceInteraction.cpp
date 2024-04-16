@@ -14,8 +14,9 @@ Color SurfaceInteraction::Sample(GfVec3f& dir, float& pdf, const std::function<f
 
 Color SurfaceInteraction::Eval(GfVec3f wi) const
 {
-    auto wo = WorldToTangent(this->wo);
-    return material->Eval(wi, wo, texcoord);
+    auto wo_tangent_space = WorldToTangent(this->wo);
+    auto wi_tangent_space = WorldToTangent(wi);
+    return material->Eval(wi_tangent_space, wo_tangent_space, texcoord);
 }
 
 float SurfaceInteraction::Pdf(GfVec3f wi, GfVec3f wo) const
