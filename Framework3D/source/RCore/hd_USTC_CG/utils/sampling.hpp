@@ -1,5 +1,7 @@
+#pragma once
 #include "USTC_CG.h"
 #include "pxr/base/gf/math.h"
+#include "pxr/base/gf/vec2f.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
