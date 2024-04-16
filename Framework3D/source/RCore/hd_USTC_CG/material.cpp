@@ -208,12 +208,9 @@ Color Hd_USTC_CG_Material::Sample(
     return Eval(wi, wo, texcoord);
 }
 
-float SmithGGX(float NdotWi, float NdotWo, float roughness)
+float SmithGGX(float NdotL, float NdotV, float NdotH, float roughness)
 {
-    float alpha = roughness * roughness;
-    float lambdaWo = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWo * NdotWo) / (NdotWo * NdotWo))) / 2.0;
-    float lambdaWi = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWi * NdotWi) / (NdotWi * NdotWi))) / 2.0;
-    return 2.0 / (1.0 + sqrt(1.0 + lambdaWi)) * 2.0 / (1.0 + sqrt(1.0 + lambdaWo));
+    return std::min(1.0f, std::min(2 * NdotH * NdotV / NdotV, 2 * NdotH * NdotL / NdotL));
 }
 
 float FresnelSchlick(float cosTheta, float ior)
@@ -237,12 +234,12 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     float NdotWi = std::max(0.0f, wi[2]);
     float NdotWo = std::max(0.0f, wo[2]);
     float D = GGX(NdotH, roughness);
-    float F = FresnelSchlick(WodotH, ior);
-    float G = SmithGGX(NdotWi, NdotWo, roughness);
-
-    F = 1.0f;
+    float F = FresnelSchlick(NdotWo, ior);
+    float G = SmithGGX(NdotWi, NdotWo, NdotH, roughness);
 
     float val = std::max(G * F * D / (4.0f * NdotWi * NdotWo), 0.f);
+
+    val = D;
 
     GfVec3f specularColor = GfVec3f(val);
 
