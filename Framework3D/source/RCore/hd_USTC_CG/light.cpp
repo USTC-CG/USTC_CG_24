@@ -259,11 +259,6 @@ Color Hd_USTC_CG_Rect_Light::Intersect(const GfRay& ray, float& depth)
     return {};
 }
 
-Color Hd_USTC_CG_Rect_Light::Le(const GfVec3f& dir)
-{
-    return {};
-}
-
 void Hd_USTC_CG_Rect_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,

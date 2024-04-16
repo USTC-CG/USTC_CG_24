@@ -118,8 +118,6 @@ class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
 
-    Color Le(const GfVec3f& dir);
-
    private:
     GfVec3f corner0;
     GfVec3f corner1;
