@@ -274,8 +274,8 @@ void Hd_USTC_CG_Rect_Light::Sync(
     auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
 
     auto id = GetId();
-    width = sceneDelegate->Get(id, HdLightTokens->width).Get<float>();
-    height = sceneDelegate->Get(id, HdLightTokens->height).Get<float>();
+    width = sceneDelegate->GetLightParamValue(id, HdLightTokens->width).Get<float>();
+    height = sceneDelegate->GetLightParamValue(id, HdLightTokens->height).Get<float>();
 
     corner0 = transform.TransformAffine(GfVec3f(-0.5 * width, -0.5 * height, 0));
     corner1 = transform.TransformAffine(GfVec3f(-0.5 * width, 0.5 * height, 0));
