@@ -19,7 +19,7 @@ int main()
         0.0f, 1.0f - std::numeric_limits<float>::epsilon());
     std::function<float()> uniform_float = std::bind(uniform_dist, random);
 
-    float spp = 10000.0f;
+    float spp = 50000.0f;
     Color result = Color{ 0.f };
 
     for (int i = 0; i < spp; ++i) {
@@ -27,11 +27,11 @@ int main()
 
         float pdf;
 
-#if 1
+#if 0
         auto H = GGXWeightedDirection(sample, 0.5f, pdf);
         auto wi = 2 * wo * H * H - wo;
 #else
-        auto wo = CosineWeightedDirection(sample, pdf);
+        auto wi = CosineWeightedDirection(sample, pdf);
 #endif
 
         result += material->Eval(wi, wo, GfVec2f(0, 0)) * wo[2] / pdf / spp;

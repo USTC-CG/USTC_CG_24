@@ -233,13 +233,17 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     float NdotH = std::max(0.0f, H[2]);
     float NdotWi = std::max(0.0f, wi[2]);
     float NdotWo = std::max(0.0f, wo[2]);
-    float D = GGX(NdotH, roughness);
+    float D = GGX(NdotH, roughness * roughness);
     float F = FresnelSchlick(NdotWo, ior);
     float G = SmithGGX(NdotWi, NdotWo, NdotH, roughness);
 
     float val = std::max(G * F * D / (4.0f * NdotWi * NdotWo), 0.f);
 
-    val = D;
+    val = G * D / NdotWo / NdotWi/4.0f;
+
+    if (std::isinf(val) || std::isnan(val)) {
+        val = 0.f;
+    }
 
     GfVec3f specularColor = GfVec3f(val);
 
