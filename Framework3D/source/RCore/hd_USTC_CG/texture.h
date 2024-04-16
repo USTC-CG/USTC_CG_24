@@ -7,7 +7,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-class Texture2D {
+class USTC_CG_API Texture2D {
    public:
     Texture2D();
     Texture2D(SdfAssetPath path, HioImage::SourceColorSpace colorSpace = HioImage::Auto);

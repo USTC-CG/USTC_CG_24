@@ -134,10 +134,10 @@ void Hd_USTC_CG_Material::TryLoadParameter(
 Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
 {
     logging("Creating material " + id.GetString());
-    diffuseColor.value = VtValue(GfVec3f(0.8f));
-    roughness.value = VtValue(0.8f);
+    diffuseColor.value = VtValue(GfVec3f(1.0f));
+    roughness.value = VtValue(0.5f);
 
-    metallic.value = VtValue(0.0f);
+    metallic.value = VtValue(1.0f);
     normal.value = VtValue(GfVec3f(0.5, 0.5, 1.0));
     ior.value = VtValue(1.5f);
 
@@ -204,17 +204,50 @@ Color Hd_USTC_CG_Material::Sample(
 {
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
-     wi = CosineWeightedDirection(sample2D, pdf);
+    wi = CosineWeightedDirection(sample2D, pdf);
     return Eval(wi, wo, texcoord);
+}
+
+float SmithGGX(float NdotWi, float NdotWo, float roughness)
+{
+    float alpha = roughness * roughness;
+    float lambdaWo = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWo * NdotWo) / (NdotWo * NdotWo))) / 2.0;
+    float lambdaWi = (-1.0 + sqrt(1.0 + alpha * (1.0 - NdotWi * NdotWi) / (NdotWi * NdotWi))) / 2.0;
+    return 2.0 / (1.0 + sqrt(1.0 + lambdaWi)) * 2.0 / (1.0 + sqrt(1.0 + lambdaWo));
+}
+
+float FresnelSchlick(float cosTheta, float ior)
+{
+    float F0 = pow((1.0 - ior) / (1.0 + ior), 2.0);
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     auto record = SampleMaterialRecord(texcoord);
-
+    auto roughness = record.roughness;
+    auto ior = record.ior;
+    auto metallic = record.metallic;
     GfVec3f diffuseColor = record.diffuseColor;
 
-    GfVec3f result = diffuseColor / M_PI;
+    // Specular BRDF
+    GfVec3f H = (wi + wo).GetNormalized();
+    float WodotH = std::max(0.0f, H * (wo));
+    float NdotH = std::max(0.0f, H[2]);
+    float NdotWi = std::max(0.0f, wi[2]);
+    float NdotWo = std::max(0.0f, wo[2]);
+    float D = GGX(NdotH, roughness);
+    float F = FresnelSchlick(WodotH, ior);
+    float G = SmithGGX(NdotWi, NdotWo, roughness);
+
+    F = 1.0f;
+
+    float val = std::max(G * F * D / (4.0f * NdotWi * NdotWo), 0.f);
+
+    GfVec3f specularColor = GfVec3f(val);
+
+    // Calculate final BRDF
+    GfVec3f result = (1.0 - metallic) * diffuseColor / M_PI + metallic * specularColor;
 
     return result;
 }

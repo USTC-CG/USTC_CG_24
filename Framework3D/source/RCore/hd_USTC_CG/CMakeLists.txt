@@ -36,6 +36,7 @@ pxr_plugin(${PXR_PACKAGE}
         camera
         light
         texture
+        surfaceInteraction
 
         integrators/ao
         integrators/direct

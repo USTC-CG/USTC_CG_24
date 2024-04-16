@@ -1,8 +1,10 @@
-#include <random>
 #include <iostream>
+#include <random>
+
+#include "pxr/base/gf/vec2f.h"
+using namespace pxr;
 #include "RCore/hd_USTC_CG/material.h"
 #include "RCore/hd_USTC_CG/utils/sampling.hpp"
-#include "pxr/base/gf/vec2f.h"
 
 int main()
 {
@@ -20,13 +22,13 @@ int main()
     float spp = 10000.0f;
     Color result = Color{ 0.f };
 
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < spp; ++i) {
         auto sample = GfVec2f{ uniform_float(), uniform_float() };
 
         float pdf;
         auto wo = CosineWeightedDirection(sample, pdf);
 
-        result += material->Eval(wi, wo, GfVec2f(0, 0)) / pdf;
+        result += material->Eval(wi, wo, GfVec2f(0, 0)) * wo[2] / pdf / spp;
     }
 
     std::cout << result << std::endl;
