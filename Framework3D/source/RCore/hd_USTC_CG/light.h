@@ -32,7 +32,9 @@ class Hd_USTC_CG_Light : public HdLight {
 
     bool IsDomeLight();
 
-   protected:
+    void Finalize(HdRenderParam* renderParam) override;
+
+protected:
     VtValue Get(TfToken const& token) const;
     // Stores the internal light type of this light. Of course, we can use polymorphism to do this.
     // But let's just keep it simple here.
@@ -88,7 +90,7 @@ class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
    private:
     SdfAssetPath textureFileName;
     GfVec3f radiance;
-    std::unique_ptr<Texture2D> texture;
+    std::unique_ptr<Texture2D> texture = nullptr;
 };
 
 class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
@@ -98,7 +100,20 @@ class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
     {
     }
 
-    // TA will finish this.
+    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
+        override;
+    Color Sample(
+        const GfVec3f& pos,
+        GfVec3f& dir,
+        GfVec3f& sampled_light_pos,
+        float& sample_light_pdf,
+        const std::function<float()>& uniform_float) override;
+    Color Intersect(const GfRay& ray, float& depth) override;
+
+   private:
+    float angle;
+    GfVec3f direction;
+    GfVec3f radiance;
 };
 
 class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
@@ -117,8 +132,6 @@ class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
     Color Intersect(const GfRay& ray, float& depth) override;
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;
-
-    Color Le(const GfVec3f& dir);
 
    private:
     GfVec3f corner0;
