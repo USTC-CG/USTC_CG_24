@@ -103,6 +103,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     _PopulateDefaultSettings(_settingDescriptors);
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(&_renderThread, &_sceneVersion);
+    lights.reserve(16);
     _renderParam->lights = &lights;
     _renderParam->materials = &materials;
 

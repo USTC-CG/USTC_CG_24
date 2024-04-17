@@ -10,6 +10,7 @@
 #include "pxr/usd/sdr/shaderNode.h"
 #include "pxr/usd/usd/tokens.h"
 #include "pxr/usdImaging/usdImaging/tokens.h"
+#include "renderParam.h"
 #include "texture.h"
 #include "utils/sampling.hpp"
 
@@ -149,6 +150,8 @@ void Hd_USTC_CG_Material::Sync(
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
+    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+
     VtValue vtMat = sceneDelegate->GetMaterialResource(GetId());
     if (vtMat.IsHolding<HdMaterialNetworkMap>()) {
         const HdMaterialNetworkMap& hdNetworkMap = vtMat.UncheckedGet<HdMaterialNetworkMap>();
@@ -192,6 +195,8 @@ TfToken Hd_USTC_CG_Material::requireTexcoordName()
 
 void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)
 {
+    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+
     HdMaterial::Finalize(renderParam);
 }
 
@@ -204,7 +209,7 @@ Color Hd_USTC_CG_Material::Sample(
 {
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
-     wi = CosineWeightedDirection(sample2D, pdf);
+    wi = CosineWeightedDirection(sample2D, pdf);
     return Eval(wi, wo, texcoord);
 }
 
