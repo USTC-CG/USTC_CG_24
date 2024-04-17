@@ -140,7 +140,7 @@ static void node_declare_add_rect_light(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("Width").default_val(0.5).min(0.1).max(5);
     b.add_input<decl::Float>("Height").default_val(0.5).min(0.1).max(5);
 
-    b.add_input<decl::String>("Path").default_val("DomeLight");
+    b.add_input<decl::String>("Path").default_val("RectLight");
 }
 
 static void node_exec_add_rect_light(ExeParams params)
