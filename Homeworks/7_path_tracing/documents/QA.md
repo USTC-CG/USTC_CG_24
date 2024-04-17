@@ -11,3 +11,9 @@
 
 在`管理配置`中，点击+号，并将配置类型更改为release（默认状态会是RelWithDebInfo）
 ![alt text](image-4.png)
+
+使用VSCode的同学，
+![alt text](image-6.png)
+
+且需要勾选
+![alt text](image-5.png)
