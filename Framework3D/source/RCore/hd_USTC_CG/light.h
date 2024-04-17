@@ -32,7 +32,9 @@ class Hd_USTC_CG_Light : public HdLight {
 
     bool IsDomeLight();
 
-   protected:
+    void Finalize(HdRenderParam* renderParam) override;
+
+protected:
     VtValue Get(TfToken const& token) const;
     // Stores the internal light type of this light. Of course, we can use polymorphism to do this.
     // But let's just keep it simple here.

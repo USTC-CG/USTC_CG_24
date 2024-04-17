@@ -10,6 +10,7 @@
 #include "pxr/imaging/hd/rprimCollection.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
 #include "pxr/imaging/hio/image.h"
+#include "renderParam.h"
 #include "texture.h"
 #include "utils/math.hpp"
 #include "utils/sampling.hpp"
@@ -21,6 +22,8 @@ void Hd_USTC_CG_Light::Sync(
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
+    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+
     TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
 
@@ -84,6 +87,13 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
 bool Hd_USTC_CG_Light::IsDomeLight()
 {
     return _lightType == HdPrimTypeTokens->domeLight;
+}
+
+void Hd_USTC_CG_Light::Finalize(HdRenderParam* renderParam)
+{
+    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+
+    HdLight::Finalize(renderParam);
 }
 
 VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
