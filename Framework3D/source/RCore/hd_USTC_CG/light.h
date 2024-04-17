@@ -98,7 +98,20 @@ class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
     {
     }
 
-    // TA will finish this.
+    void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
+        override;
+    Color Sample(
+        const GfVec3f& pos,
+        GfVec3f& dir,
+        GfVec3f& sampled_light_pos,
+        float& sample_light_pdf,
+        const std::function<float()>& uniform_float) override;
+    Color Intersect(const GfRay& ray, float& depth) override;
+
+   private:
+    float angle;
+    GfVec3f direction;
+    GfVec3f radiance;
 };
 
 class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
