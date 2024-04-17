@@ -88,7 +88,7 @@ class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
    private:
     SdfAssetPath textureFileName;
     GfVec3f radiance;
-    std::unique_ptr<Texture2D> texture;
+    std::unique_ptr<Texture2D> texture = nullptr;
 };
 
 class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {

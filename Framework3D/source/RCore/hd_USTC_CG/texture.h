@@ -30,7 +30,7 @@ class Texture2D {
     unsigned _component_count;
 
     SdfAssetPath textureFileName;
-    HioImageSharedPtr texture;
+    HioImageSharedPtr texture = nullptr;
     HioImage::StorageSpec storageSpec;
 };
 
