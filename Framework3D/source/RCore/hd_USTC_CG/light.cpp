@@ -152,7 +152,7 @@ Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
             return irradiance / M_PI;
         }
     }
-    depth = std::numeric_limits<float>::infinity();
+    depth = std::numeric_limits<float>::max();
     return { 0, 0, 0 };
 }
 
@@ -186,7 +186,7 @@ Color Hd_USTC_CG_Dome_Light::Sample(
     float& sample_light_pdf,
     const std::function<float()>& uniform_float)
 {
-    dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf);
+    dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf).GetNormalized();
     sampled_light_pos = dir * std::numeric_limits<float>::max() / 100.f;
 
     return Le(dir);
@@ -195,8 +195,8 @@ Color Hd_USTC_CG_Dome_Light::Sample(
 Color Hd_USTC_CG_Dome_Light::Intersect(const GfRay& ray, float& depth)
 {
     depth = std::numeric_limits<float>::max() / 100.f;  // max is smaller than infinity, lol
-
-    return Le(GfVec3f(ray.GetDirection()));
+    depth = 100000;
+    return Le(GfVec3f(ray.GetDirection()).GetNormalized());
 }
 
 void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)

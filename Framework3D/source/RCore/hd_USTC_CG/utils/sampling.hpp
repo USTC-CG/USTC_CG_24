@@ -110,7 +110,7 @@ inline float safe_sqrt(float f)
 inline float smith_g1(const GfVec3f& v, const GfVec3f& m, float alpha)
 {
     float xy_alpha_2 = alpha * v[0] * (alpha * v[0]) + alpha * v[1] * (alpha * v[1]);
-    float tan_theta_alpha_2 = xy_alpha_2 / v[2] * v[2];
+    float tan_theta_alpha_2 = xy_alpha_2 / (v[2] * v[2]);
     float result;
 
     result = 2.f / (1.f + sqrt(1.f + tan_theta_alpha_2));
@@ -137,6 +137,12 @@ inline float GGXEval(const GfVec3f& m, float alpha)
 
     // Prevent potential numerical issues in other stages of the model
     return result * cos_theta > 1e-20f ? result : 0.f;
+}
+
+inline float GGXPdf(const GfVec3f& m, const GfVec3f& wo, float roughness)
+{
+    float alpha = roughness * roughness;
+    return GGXEval(m, alpha) * smith_g1(wo, m, alpha) * abs(wo * m) / wo[2];
 }
 
 inline GfVec3f
@@ -169,7 +175,7 @@ GGXWeightedDirection(const GfVec3f& wo, const GfVec2f& rand, float roughness, fl
     GfVec3f H_ = t[0] * T1 + t[1] * T2 + safe_sqrt(1.0f - t.GetLengthSq()) * wo_p;
     auto m = normalize(GfVec3f(alpha * H_[0], alpha * H_[1], std::max(0.0f, H_[2])));
 
-    pdf = GGXEval(m, alpha) * smith_g1(wo, m, alpha) * abs(wo * m) / wo[2];
+    pdf = GGXPdf(m, wo, roughness);
 
     /* Section 3.4: Transforming the normal back to the ellipsoid configuration. */
     return m;

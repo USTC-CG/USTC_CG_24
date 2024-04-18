@@ -1,6 +1,7 @@
 #include "direct.h"
 
 #include "Utils/Logging/Logging.h"
+#include "pxr/base/gf/vec3f.h"
 #include "pxr/pxr.h"
 #include "surfaceInteraction.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -23,6 +24,10 @@ VtValue DirectLightIntegrator::Li(const GfRay& ray, std::default_random_engine& 
     }
 
     GfVec3f color = EstimateDirectLight(si, uniform_float);
+
+    color[0] = std::clamp(color[0],0.f,50.f);
+    color[1] = std::clamp(color[1],0.f,50.f);
+    color[2] = std::clamp(color[2],0.f,50.f);
 
     return VtValue(GfVec3f(color[0], color[1], color[2]));
 }

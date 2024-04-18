@@ -208,14 +208,41 @@ Color Hd_USTC_CG_Material::Sample(
     const std::function<float()>& uniform_float)
 {
     auto record = SampleMaterialRecord(texcoord);
-    auto roughness = record.roughness;
+    auto roughness = std::clamp(record.roughness, 0.04f, 1.0f);
     auto ior = record.ior;
     auto metallic = record.metallic;
     GfVec3f diffuseColor = record.diffuseColor;
 
+    auto DielectricSpecular = pow((1.0 - ior) / (1.0 + ior), 2.0);
+    auto diffuseAlbedo = (1 - metallic) * diffuseColor * (1.0f - DielectricSpecular);
+
+    auto F0 = GfVec3f(DielectricSpecular) * (1 - metallic) + metallic * diffuseColor;
+    auto F = F0 + (GfVec3f(1.0f) - F0) * pow(1.0 - wo[2], 5.0);
+
+    auto diffuseMax = std::max(std::max(diffuseAlbedo[0], diffuseAlbedo[1]), diffuseAlbedo[2]);
+    auto specularMax = std::max(std::max(F[0], F[1]), F[2]);
+
+    float sample_diffuse_bar = diffuseMax / (diffuseMax + specularMax);
+
+    bool sample_diffuse = uniform_float() < sample_diffuse_bar;
+
     auto sample2D = GfVec2f{ uniform_float(), uniform_float() };
 
-    wi = CosineWeightedDirection(sample2D, pdf);
+    if (sample_diffuse) {
+        float cosPdf;
+        wi = CosineWeightedDirection(sample2D, cosPdf);
+        auto m = (wi + wo).GetNormalized();
+        pdf = cosPdf * sample_diffuse_bar +
+              (1.0f - sample_diffuse_bar) * GGXPdf(m, wo, roughness) / 4.f / (wi * m);
+    }
+    else {
+        float ggxPdf;
+        auto m = GGXWeightedDirection(wo, sample2D, roughness, ggxPdf);
+        wi = 2 * GfDot(m, wo) * m - wo;
+        ggxPdf /= 4.f * (wi * m);
+        pdf = wi[2] / M_PI * sample_diffuse_bar + (1.0f - sample_diffuse_bar) * ggxPdf;
+    }
+
     return Eval(wi, wo, texcoord);
 }
 
@@ -230,10 +257,27 @@ float FresnelSchlick(float cosTheta, float ior)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+//// Suppose we only handle reflection.
+// Float FrDielectric(Float cosThetaI, Float etaI, Float etaT) {
+//            Float sinThetaI = std::sqrt(std::max((Float)0,
+//                                             1 - cosThetaI * cosThetaI));
+//        Float sinThetaT = etaI / etaT * sinThetaI;
+//            Float cosThetaT = std::sqrt(std::max((Float)0,
+//                                             1 - sinThetaT * sinThetaT));
+//     cosThetaI = Clamp(cosThetaI, -1, 1);
+//     <<Potentially swap indices of refraction>>
+//     <<Compute cosThetaT using Snell¡¯s law>>
+//     Float Rparl = ((etaT * cosThetaI) - (etaI * cosThetaT)) /
+//                   ((etaT * cosThetaI) + (etaI * cosThetaT));
+//     Float Rperp = ((etaI * cosThetaI) - (etaT * cosThetaT)) /
+//                   ((etaI * cosThetaI) + (etaT * cosThetaT));
+//     return (Rparl * Rparl + Rperp * Rperp) / 2;
+// }
+
 Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     auto record = SampleMaterialRecord(texcoord);
-    auto roughness = record.roughness;
+    auto roughness = std::clamp(record.roughness, 0.04f, 1.0f);
     auto ior = record.ior;
     auto metallic = record.metallic;
     GfVec3f diffuseColor = record.diffuseColor;
@@ -247,13 +291,18 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     // Evaluate the microfacet normal distribution
     Float D = GGXEval(H, alpha);
 
-    Float F = FresnelSchlick(wo[2], 1.5f);
+    auto DielectricSpecular = pow((1.0 - ior) / (1.0 + ior), 2.0);
+    auto diffuseAlbedo = (1 - metallic) * diffuseColor * (1.0f - DielectricSpecular);
+
+    auto F0 = GfVec3f(DielectricSpecular) * (1 - metallic) + metallic * diffuseColor;
+
+    auto F = F0 + (GfVec3f(1.0f) - F0) * pow(1.0 - wo * H, 5.0);
 
     // Evaluate Smith's shadow-masking function
     Float G = smith_g1(wi, H, alpha) * smith_g1(wo, H, alpha);
 
     // Evaluate the full microfacet model (except Fresnel)
-    Color result = diffuseColor * (F * D * G / (4.0f * wi[2] * wo[2]));
+    Color result = F * D * G / (4.0f * wi[2] * wo[2]) + diffuseAlbedo / M_PI;
 #else
     Color result = diffuseColor / M_PI;
 #endif
