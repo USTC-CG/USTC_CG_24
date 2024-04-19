@@ -30,3 +30,19 @@
 同学们有两种选择。第一种是参考[Raytracing in One weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/mirroredlightreflection)中的方式来添加材质。它提供的方案在视觉观感上足够好，同时也能够参与到重要性采样中，但在物理正确性上则没有很好的保证，同时也有透明的材质。
 
 另一种方案是使用标准的微表面模型材质，比如对于金属常用的GGX Model等。此种方案较为复杂，难以将结果调对，建议留到最后考虑。
+
+## 多重重要性采样
+
+为了帮助同学们实现多重重要性采样，我们在分支 microfacet 中提供了微表面模型的材质。在未实现多重重要性采样时，在直接光照下我们会看到：
+
+![alt text](image-7.png)
+
+在正确实现多重重要性采样后，能够看到
+
+![alt text](305b4adbf5ad171f0056b35217ef2e1.png)
+
+注意，切换到microfacet分支后，
+
+![alt text](image-9.png)
+
+Cornell的光滑金属球在没有多重重要性采样的情况下，环境光照部分也会有很多噪点。
