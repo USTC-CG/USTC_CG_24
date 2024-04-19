@@ -46,3 +46,12 @@
 ![alt text](image-9.png)
 
 Cornell的光滑金属球在没有多重重要性采样的情况下，环境光照部分也会有很多噪点。
+
+在MIS.usda例子中，对光源进行采样：
+![alt text](sample_light.png)
+
+对BRDF进行采样：
+![alt text](sample_brdf.png)
+
+多重重要性采样：
+![alt text](MIS.png)
