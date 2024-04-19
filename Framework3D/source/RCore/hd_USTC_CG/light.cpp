@@ -139,7 +139,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     if (cosVal < 0) {
         return Color{ 0 };
     }
-    return irradiance * cosVal / M_PI;
+    return irradiance / M_PI;
 }
 
 Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
@@ -170,8 +170,9 @@ void Hd_USTC_CG_Sphere_Light::Sync(
 
     auto intensity =
         sceneDelegate->GetLightParamValue(id, HdLightTokens->intensity).GetWithDefault<float>();
-    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse * intensity;
-     
+    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse *
+            intensity;
+
     auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
 
     GfVec3d p = transform.ExtractTranslation();
@@ -189,7 +190,8 @@ Color Hd_USTC_CG_Dome_Light::Sample(
     float& sample_light_pdf,
     const std::function<float()>& uniform_float)
 {
-    dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf).GetNormalized();
+    dir = UniformSampleSphere(GfVec2f{ uniform_float(), uniform_float() }, sample_light_pdf)
+              .GetNormalized();
     sampled_light_pos = dir * std::numeric_limits<float>::max() / 100.f;
 
     return Le(dir);
