@@ -139,7 +139,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     if (cosVal < 0) {
         return Color{ 0 };
     }
-    return irradiance * cosVal / M_PI;
+    return irradiance / M_PI;
 }
 
 Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
