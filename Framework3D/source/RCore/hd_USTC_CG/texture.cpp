@@ -93,8 +93,12 @@ GfVec4f Texture2D::Evaluate(const GfVec2f &uv) const
     float v = uv[1];
 
     // Clamp texture coordinates to [0, 1]
-    u = std::clamp(u, 0.0f, 1.0f);
-    v = std::clamp(v, 0.0f, 1.0f);
+    u += int(abs(u)) + 1;
+    v += int(abs(v)) + 1;
+    u = fmodf(u, 1.0f);
+    v = fmodf(v, 1.0f);
+    // u = std::clamp(u, 0.0f, 1.0f);
+    // v = std::clamp(v, 0.0f, 1.0f);
 
     // Calculate texture coordinates in pixel space
     float x = u * (texture->GetWidth() - 2);
