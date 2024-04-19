@@ -133,7 +133,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     // and the pdf (with the measure of solid angle):
     float cosVal = GfDot(-dir, worldSampledDir.GetNormalized());
 
-    sample_light_pdf = sample_pos_pdf / radius / radius * cosVal * distance * distance;
+    sample_light_pdf = sample_pos_pdf / radius / radius / cosVal * distance * distance;
 
     // Finally we calculate the radiance
     if (cosVal < 0) {
@@ -167,8 +167,11 @@ void Hd_USTC_CG_Sphere_Light::Sync(
     radius = sceneDelegate->GetLightParamValue(id, HdLightTokens->radius).Get<float>();
 
     auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
-    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
 
+    auto intensity =
+        sceneDelegate->GetLightParamValue(id, HdLightTokens->intensity).GetWithDefault<float>();
+    power = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse * intensity;
+     
     auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
 
     GfVec3d p = transform.ExtractTranslation();
