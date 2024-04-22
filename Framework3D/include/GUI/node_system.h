@@ -25,7 +25,10 @@ class USTC_CG_API NodeSystem {
     NodeTree* get_tree();
     NodeTreeExecutor* get_executor() const;
 
-   protected:
+    float cached_last_time_code();
+    void set_required_time_code(float time_code_to_render);
+
+protected:
     std::string window_name;
     NodeSystemType node_system_type;
     std::unique_ptr<NodeSystemImpl> impl_;

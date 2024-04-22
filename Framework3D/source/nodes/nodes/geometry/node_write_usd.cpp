@@ -22,7 +22,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Geometry>("Geometry");
     b.add_input<decl::String>("File Name").default_val("Default");
     b.add_input<decl::String>("Prim Path").default_val("geometry");
-    b.add_input<decl::Int>("Time Code").default_val(0).min(0).max(240);
+    b.add_input<decl::Float>("Time Code").default_val(0).min(0).max(240);
 }
 
 bool legal(const std::string& string)
@@ -47,7 +47,7 @@ static void node_exec(ExeParams params)
 
     auto mesh = geometry.get_component<MeshComponent>();
 
-    auto t = params.get_input<int>("Time Code");
+    auto t = params.get_input<float>("Time Code");
     pxr::UsdTimeCode time = pxr::UsdTimeCode(t);
     if (t == 0) {
         time = pxr::UsdTimeCode::Default();
@@ -128,8 +128,11 @@ static void node_exec(ExeParams params)
                 final_transform = final_transform * transform;
             }
 
-            auto xform_op = usdgeom.AddTransformOp();
-            xform_op.Set(final_transform);
+            auto xform_op = usdgeom.GetTransformOp();
+            if (!xform_op) {
+                xform_op = usdgeom.AddTransformOp();
+            }
+            xform_op.Set(final_transform, time);
         }
 
         // Material and Texture

@@ -9,9 +9,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
-enum class SocketType : uint32_t {
-    ALL_SOCKET_TYPES
-};
+enum class SocketType : uint32_t { ALL_SOCKET_TYPES };
 
 #undef TypeSizeEnum
 
@@ -32,6 +30,8 @@ struct SocketTypeInfo {
     char type_name[64];
     const CPPType* cpp_type;
     SocketType type;
+
+    std::function<bool(SocketType)> canLinkTo = [this](SocketType other) { return type == other; };
 };
 
 struct NodeSocket {

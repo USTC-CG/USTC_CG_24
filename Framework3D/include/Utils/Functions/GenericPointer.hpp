@@ -14,16 +14,13 @@ class GMutablePointer {
    public:
     GMutablePointer() = default;
 
-    GMutablePointer(const CPPType *type, void *data = nullptr)
-        : type_(type),
-          data_(data)
+    GMutablePointer(const CPPType *type, void *data = nullptr) : type_(type), data_(data)
     {
         /* If there is data, there has to be a type. */
         assert(data_ == nullptr || type_ != nullptr);
     }
 
-    GMutablePointer(const CPPType &type, void *data = nullptr)
-        : GMutablePointer(&type, data)
+    GMutablePointer(const CPPType &type, void *data = nullptr) : GMutablePointer(&type, data)
     {
     }
 
@@ -35,6 +32,12 @@ class GMutablePointer {
     void *get() const
     {
         return data_;
+    }
+
+    // this is dangerous. call it cautiously
+    void set_type(const CPPType *type)
+    {
+        type_ = type;
     }
 
     const CPPType *type() const
@@ -94,17 +97,13 @@ class GPointer {
     {
     }
 
-    GPointer(const CPPType *type, const void *data = nullptr)
-        : type_(type),
-          data_(data)
+    GPointer(const CPPType *type, const void *data = nullptr) : type_(type), data_(data)
     {
         /* If there is data, there has to be a type. */
         assert(data_ == nullptr || type_ != nullptr);
     }
 
-    GPointer(const CPPType &type, const void *data = nullptr)
-        : type_(&type),
-          data_(data)
+    GPointer(const CPPType &type, const void *data = nullptr) : type_(&type), data_(data)
     {
     }
 

@@ -19,7 +19,7 @@ ExeParams EagerNodeTreeExecutor::prepare_params(NodeTree* tree, Node* node)
             // Is set by previous node
             input_ptr = input_states[index_cache[input]].value;
         }
-        else if (input->default_value) {
+        else if (input->directly_linked_sockets.empty() && input->default_value) {
             // Has default value
             input_states[index_cache[input]].value.type()->copy_construct(
                 default_value_storage(input), input_states[index_cache[input]].value.get());
@@ -85,16 +85,26 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
 
                     auto& output_state = output_states[index_cache[output]];
 
-                    auto& cpp_type = *output->type_info->cpp_type;
+                    auto cpp_type = output->type_info->cpp_type;
                     auto is_last_target = i == output->directly_linked_sockets.size() - 1;
 
                     auto dst_buffer = input_state.value.get();
+                    if (directly_linked_input_socket->type_info->type == SocketType::Any) {
+                        auto ptr = (GMutablePointer*)(input_state.value.get());
+                        dst_buffer = ptr->get();
+                    }
+
                     auto value_to_forward = output_state.value;
+                    if (output_state.value.is_type<GMutablePointer>()) {
+                        // Down one level
+                        value_to_forward = *static_cast<GMutablePointer*>(output_state.value.get());
+                        cpp_type = value_to_forward.type();
+                    }
                     if (is_last_target) {
-                        cpp_type.move_construct(value_to_forward.get(), dst_buffer);
+                        cpp_type->move_assign(value_to_forward.get(), dst_buffer);
                     }
                     else {
-                        cpp_type.copy_construct(value_to_forward.get(), dst_buffer);
+                        cpp_type->copy_assign(value_to_forward.get(), dst_buffer);
                     }
                     input_state.is_forwarded = true;
                 }
@@ -114,15 +124,17 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
 void EagerNodeTreeExecutor::clear()
 {
     for (auto&& input_state : input_states) {
-        if (input_state.value.get())
+        if (input_state.value.get()) {
             input_state.value.destruct();
-        free(input_state.value.get());
+            free(input_state.value.get());
+        }
     }
 
     for (auto&& output_state : output_states) {
-        if (output_state.value.get())
+        if (output_state.value.get()) {
             output_state.value.destruct();
-        free(output_state.value.get());
+            free(output_state.value.get());
+        }
     }
 
     input_states.clear();
@@ -199,6 +211,25 @@ void EagerNodeTreeExecutor::prepare_memory()
         output_states[i].value = { type, malloc(type->size()) };
         output_states[i].value.default_construct();
     }
+
+    for (int i = 0; i < input_states.size(); ++i) {
+        // If the input is an 'Any' type, the value type is a GMutablePointer. If the input is
+        // connected, we need to prepare the memory it points to.
+        if (input_states[i].value.is_type<GMutablePointer>()) {
+            auto& linked_sockets = input_of_nodes_to_execute[i]->directly_linked_sockets;
+            assert(linked_sockets.size() <= 1);
+
+            if (!linked_sockets.empty()) {
+                auto output_state = output_states[index_cache[linked_sockets[0]]];
+
+                auto storage_ptr = GMutablePointer{ output_state.value.type(),
+                                                    malloc(output_state.value.type()->size()) };
+                storage_ptr.default_construct();
+                input_states[i].value.type()->move_assign(
+                    &storage_ptr, input_states[i].value.get());
+            }
+        }
+    }
 }
 
 void EagerNodeTreeExecutor::prepare_tree(NodeTree* tree)
@@ -241,7 +272,7 @@ void EagerNodeTreeExecutor::sync_node_from_external_storage(NodeSocket* socket, 
 {
     if (index_cache.find(socket) != index_cache.end()) {
         GMutablePointer ptr = FindPtr(socket);
-        ptr.type()->copy_construct(data, ptr.get());
+        ptr.type()->copy_assign(data, ptr.get());
     }
 }
 
@@ -249,7 +280,7 @@ void EagerNodeTreeExecutor::sync_node_to_external_storage(NodeSocket* socket, vo
 {
     if (index_cache.find(socket) != index_cache.end()) {
         GMutablePointer ptr = FindPtr(socket);
-        ptr.type()->copy_construct(ptr.get(), data);
+        ptr.type()->copy_assign(ptr.get(), data);
     }
 }
 

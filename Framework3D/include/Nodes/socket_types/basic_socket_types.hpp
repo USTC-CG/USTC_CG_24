@@ -1,7 +1,7 @@
 #pragma once
 
-#include "USTC_CG.h"
 #include "Nodes/pin.hpp"
+#include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
@@ -119,6 +119,21 @@ class StringBuilder : public SocketDeclarationBuilder<String> {
         return *this;
     }
 };
+
+class AnyBuilder;
+
+class Any : public SocketDeclaration {
+   public:
+    Any()
+    {
+        type = SocketType::Any;
+    }
+    NodeSocket* build(NodeTree* ntree, Node* node) const override;
+    using Builder = AnyBuilder;
+};
+
+class AnyBuilder : public SocketDeclarationBuilder<Any> { };
+
 }  // namespace decl
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -1,5 +1,7 @@
 #include "node_system_exec.h"
 
+#include <imgui_internal.h>
+
 #include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_register.h"
@@ -10,12 +12,16 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace ed = ax::NodeEditor;
 
+float NodeSystemExecution::cached_last_frame() const
+{
+    return std::numeric_limits<float>::max();
+}
+
 NodeSystemExecution::NodeSystemExecution()
 {
     static std::once_flag register_flag;
     std::call_once(register_flag, register_all);
     node_tree = std::make_unique<NodeTree>();
-    executor = std::make_unique<EagerNodeTreeExecutor>();
 }
 
 Node* NodeSystemExecution::create_node_menu()
@@ -145,6 +151,35 @@ Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTyp
     return node;
 }
 
+GeoNodeSystemExecution::GeoNodeSystemExecution()
+{
+    NodeSystemExecution();
+    executor = CreateEagerNodeTreeExecutorSimulation();
+}
+
+float GeoNodeSystemExecution::cached_last_frame() const
+{
+    return cached_last_frame_;
+}
+
+void GeoNodeSystemExecution::MarkDirty()
+{
+    // It is marked dirty from outside, which means the cache is all outdated.
+    NodeSystemExecution::MarkDirty();
+    cached_last_frame_ = 0;
+    time_code_to_render_ = 0;
+    just_renewed = true;
+}
+
+void GeoNodeSystemExecution::set_required_time_code(float time_code_to_render)
+{
+    if (!just_renewed) {
+        time_code_to_render_ = time_code_to_render;
+    }
+
+    just_renewed = false;
+}
+
 // This is NOT best practice.
 void GeoNodeSystemExecution::try_execution()
 {
@@ -152,8 +187,59 @@ void GeoNodeSystemExecution::try_execution()
         auto& stage = GlobalUsdStage::global_usd_stage;
         stage->RemovePrim(pxr::SdfPath("/geom"));
         stage->RemovePrim(pxr::SdfPath("/TexModel"));
+    }
 
-        executor->execute(node_tree.get());
+    if (cached_last_frame_ < time_code_to_render_ || required_execution) {
+        executor->prepare_tree(node_tree.get());
+
+        for (auto&& node : node_tree->nodes) {
+            auto try_fill_info = [&node, this](const char* id_name, void* data) {
+                if (std::string(node->typeinfo->id_name) == id_name) {
+                    assert(node->outputs.size() == 1);
+                    auto output_socket = node->outputs[0];
+                    executor->sync_node_from_external_storage(output_socket, data);
+                }
+            };
+            try_fill_info("geom_time_code", &cached_last_frame_);
+        }
+
+        executor->execute_tree(node_tree.get());
+
+        float time_advected = 0;
+
+        bool has_time_advection = false;
+
+        for (auto&& node : node_tree->nodes) {
+            auto try_fetch_info = [&node, this](const char* id_name, void* data) {
+                if (std::string(node->typeinfo->id_name) == id_name) {
+                    assert(node->inputs.size() == 1);
+                    auto output_socket = node->inputs[0];
+                    executor->sync_node_to_external_storage(output_socket, data);
+                    return true;
+                }
+                return false;
+            };
+
+            if (try_fetch_info("geom_time_gain", &time_advected)) {
+                has_time_advection = true;
+                break;
+            }
+        }
+
+        if (has_time_advection) {
+            if (cached_last_frame_ == 0) {  // Means this is the first frame.
+                cached_last_frame_ = std::numeric_limits<float>::epsilon();
+                time_code_to_render_ = cached_last_frame_;  // Avoid repeated running
+            }
+            else
+                cached_last_frame_ += time_advected * GlobalUsdStage::timeCodesPerSecond;
+        }
+        else {
+            cached_last_frame_ = std::numeric_limits<float>::max();
+        }
+
+        executor->finalize(node_tree.get());
+
         required_execution = false;
     }
 }
@@ -183,6 +269,11 @@ Node* GeoNodeSystemExecution::create_node_menu()
     return node;
 }
 
+RenderNodeSystemExecution::RenderNodeSystemExecution()
+{
+    executor = CreateEagerNodeTreeExecutorRender();
+}
+
 Node* RenderNodeSystemExecution::create_node_menu()
 {
     auto& render_registry = get_render_node_registry();
@@ -208,11 +299,17 @@ Node* RenderNodeSystemExecution::create_node_menu()
     return node;
 }
 
+CompositionNodeSystemExecution::CompositionNodeSystemExecution()
+{
+    NodeSystemExecution();
+    executor = std::make_unique<EagerNodeTreeExecutor>();
+}
+
 void CompositionNodeSystemExecution::try_execution()
 {
     if (required_execution) {
         auto& stage = GlobalUsdStage::global_usd_stage;
-         stage->RemovePrim(pxr::SdfPath("/Reference"));
+        stage->RemovePrim(pxr::SdfPath("/Reference"));
         pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->z);
 
         executor->execute(node_tree.get());

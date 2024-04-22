@@ -29,6 +29,14 @@ NodeDeclare(Float, f, 2);
 NodeDeclare(Float, f, 3);
 NodeDeclare(Float, f, 4);
 
+static void node_declare_create_float3f(NodeDeclarationBuilder& b)
+{
+    for (int i = 0; i < 3; ++i) {
+        b.add_input<decl::Float>(socket_name(i).c_str()).min(-10).max(10).default_val(0);
+    }
+    b.add_output<decl::Float3>("Buffer");
+};
+
 NodeDeclare(Int, i, 1);
 NodeDeclare(Int, i, 2);
 NodeDeclare(Int, i, 3);
@@ -55,6 +63,17 @@ NodeExec(pxr::GfVec2f, float, f, 2);
 NodeExec(pxr::GfVec3f, float, f, 3);
 NodeExec(pxr::GfVec4f, float, f, 4);
 
+static void node_exec_create_float3f(ExeParams params)
+{
+    float val[3];
+    for (int i = 0; i < 3; ++i) {
+        val[i] = params.get_input<float>(socket_name(i).c_str());
+    }
+    pxr::GfVec3f data;
+    memcpy(&data, val, sizeof(pxr::GfVec3f));
+    params.set_output("Buffer", data);
+};
+
 NodeExec(int, int, i, 1);
 NodeExec(pxr::GfVec2i, int, i, 2);
 NodeExec(pxr::GfVec3i, int, i, 3);
@@ -77,6 +96,24 @@ static void node_register()
     NodeRegister(2, f);
     NodeRegister(3, f);
     NodeRegister(4, f);
+
+    static NodeTypeInfo ntype_float3f;
+    strcpy(
+        ntype_float3f.ui_name,
+        "Create float"
+        "3"
+        "f");
+    strcpy_s(
+        ntype_float3f.id_name,
+        "func_create_float"
+        "3"
+        "f");
+    func_node_type_base(&ntype_float3f);
+    ntype_float3f.node_execute = node_exec_create_float3f;
+    ntype_float3f.declare = node_declare_create_float3f;
+    nodeRegisterType(&ntype_float3f);
+    ;
+
 
     NodeRegister(1, i);
     NodeRegister(2, i);

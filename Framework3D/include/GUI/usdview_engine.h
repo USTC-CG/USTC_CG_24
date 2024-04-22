@@ -15,6 +15,8 @@ public:
     explicit UsdviewEngine(pxr::UsdStageRefPtr root_stage);
     ~UsdviewEngine();
     void render(NodeTree* render_node_tree = nullptr, NodeTreeExecutor* get_executor = nullptr);
+    float current_time_code();
+    void set_current_time_code(float time_code);
 
 protected:
     std::unique_ptr<UsdviewEngineImpl> impl_;

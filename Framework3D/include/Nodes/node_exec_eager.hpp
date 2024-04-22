@@ -36,7 +36,7 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     void sync_node_to_external_storage(NodeSocket* socket, void* data) override;
 
    protected:
-    ExeParams prepare_params(NodeTree* tree, Node* node);
+    virtual ExeParams prepare_params(NodeTree* tree, Node* node);
     virtual bool execute_node(NodeTree* tree, Node* node);
     void forward_output_to_input(Node* node);
     void clear();
@@ -51,5 +51,6 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
 };
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorSimulation();
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

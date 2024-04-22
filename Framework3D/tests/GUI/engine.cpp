@@ -45,6 +45,15 @@ void NodeWindow::BuildUI()
 {
     composition_graph->draw_imgui();
     geonode_system->draw_imgui();
+
+    float time_code_to_render = renderer->current_time_code();
+    if (time_code_to_render > geonode_system->cached_last_time_code()) {
+        auto cached_time = geonode_system->cached_last_time_code();
+        renderer->set_current_time_code(cached_time);
+
+        geonode_system->set_required_time_code(time_code_to_render);
+    }
+
     file_viewer->ShowFileTree();
     file_viewer->ShowPrimInfo();
 }

@@ -9,6 +9,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {
 
 DECLARE_SOCKET_TYPE(Geometry)
+DECLARE_SOCKET_TYPE(MassSpringSocket)
 
 }  // namespace decl
 

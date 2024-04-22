@@ -20,8 +20,13 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 2;
+        unsigned renderer_id = 0;
     } engine_status;
+
+    float timecode = 0;
+    float frame_per_second;
+    const float time_code_max = 250;
+    bool playing = false;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
@@ -44,6 +49,8 @@ class UsdviewEngineImpl {
     void refresh_platform_texture();
     void refresh_viewport(int x, int y);
     void OnResize(int x, int y);
+    void time_controller(float delta_time);
+    void set_current_time_code(float time_code);
 
    private:
     unsigned fbo = 0;
@@ -129,6 +136,7 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
     _renderParams.colorCorrectionMode = TfToken("sRGB");
 
     _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
+    _renderParams.frame = UsdTimeCode(timecode);
 
     for (int i = 0; i < free_camera_->GetClippingPlanes().size(); ++i) {
         _renderParams.clipPlanes[i] = free_camera_->GetClippingPlanes()[i];
@@ -155,9 +163,10 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
     renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"), pxr::VtValue(fbo));
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    ImGui::BeginChild("ViewPort", ImGui::GetContentRegionAvail(), 0, ImGuiWindowFlags_NoMove);
-    ImGui::Image(
-        ImTextureID(tex), ImGui::GetContentRegionAvail(), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    auto imgui_frame_size = ImVec2(renderBufferSize_[0], renderBufferSize_[1]);
+
+    ImGui::BeginChild("ViewPort", imgui_frame_size, 0, ImGuiWindowFlags_NoMove);
+    ImGui::Image(ImTextureID(tex), imgui_frame_size, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
     is_active_ = ImGui::IsWindowFocused();
     is_hovered_ = ImGui::IsItemHovered();
     ImGui::EndChild();
@@ -211,6 +220,28 @@ void UsdviewEngineImpl::OnResize(int x, int y)
     }
 }
 
+void UsdviewEngineImpl::time_controller(float delta_time)
+{
+    if (is_active_ && ImGui::IsKeyPressed(ImGuiKey_Space)) {
+        playing = !playing;
+    }
+    if (playing) {
+        timecode += delta_time * GlobalUsdStage::timeCodesPerSecond;
+        if (timecode > time_code_max) {
+            timecode = 0;
+        }
+    }
+
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    if (ImGui::SliderFloat("Time##timecode", &timecode, 0, time_code_max)) {
+    }
+}
+
+void UsdviewEngineImpl::set_current_time_code(float time_code)
+{
+    timecode = time_code;
+}
+
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -262,15 +293,27 @@ void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_exe
         ImGui::PopStyleVar(1);
 
         auto size = ImGui::GetContentRegionAvail();
+        size.y -= 28;
 
         impl_->OnResize(size.x, size.y);
 
         impl_->OnFrame(delta_time, render_node_tree, get_executor);
+        impl_->time_controller(delta_time);
     }
     else {
         ImGui::PopStyleVar(1);
     }
     ImGui::End();
+}
+
+float UsdviewEngine::current_time_code()
+{
+    return impl_->timecode;
+}
+
+void UsdviewEngine::set_current_time_code(float time_code)
+{
+    impl_->set_current_time_code(time_code);
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
