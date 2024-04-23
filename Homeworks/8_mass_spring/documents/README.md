@@ -133,6 +133,12 @@ dirichlet_bc_mask[n_fix - 1] = true;
 
 所需要连接的节点图如下，需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算。如果需要reset，将时间拖动为0即可。按空格可以自动播放。
 
+<div  align="center">    
+ <img src="../images/nodes0.png" style="zoom:80%"/>
+</div>
+
+
+
 > 本次作业为了几何表示的方便，我们没有使用交叉型的网格表示弹簧质点系统（如下所示），只使用了三角网格。交叉型网格能够考虑更多布料在弯曲时的约束，如果你有兴趣，也可以在程序中加入这些额外的边连接，并比较它和三角网格的仿真效果的区别。
 > <div  align="center">    
 > <img src="../images/cross_mesh.png" style="zoom:40%"/>
