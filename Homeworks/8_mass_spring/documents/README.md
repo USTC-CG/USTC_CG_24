@@ -29,7 +29,7 @@
 为了让这些离散点动起来，我们需要做时间上的离散:
 
 
-假设我们有n个顶点，将所有顶点拼成一个矩阵 $\mathbf{x} \in \R^{3n\times 1}$，
+假设我们有n个顶点，将所有顶点拼成一个矩阵 $\mathbf{x} \in \mathbb{R}^{3n\times 1}$，
 
 为了让物体运动起来，一种思路是我们可以让每个顶点有一个运动的速度。如果使用半隐式时间积分：
 
@@ -37,16 +37,17 @@ $$
 \mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n+1} \tag{1}
 $$
 
-那么速度$\mathbf{v}^{n+1} \in \R^{3n\times 1}$要怎么确定呢? 根据牛顿第二定律，我们有：
+那么速度 $\mathbf{v}^{n+1} \in \mathbf{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
+
 $$
-\mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f}_{\text{int}}(\mathbf{x}^n) + \mathbf{f}_{\text{ext}} )  \tag{2}
+\mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^n) + \mathbf{f} _ {\text{ext}} )  \tag{2}
 $$
 
-其中的$\mathbf{M} \in \R^{3n \times 3n}$为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵。
+其中的 $\mathbf{M} \in \mathbf{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵。
 
-> 扩展知识：质量矩阵$\mathbf{M}$实际上描述了一个有限单元的质量与其顶点质量的关系，有两种类别：1. Lump Mass Matrix. 质量全部加到对角项上，也是我们本次作业选择的版本）2. Consistant Mass Matrix. 包含非对角项，是通过型函数(Shape Function)推导出来的。具体可以阅读[Consistent vs Lumped Mass](https://www.strand7.com/strand7r3help/Content/Topics/Elements/ElementsMassMatrix.htm). 
+> 扩展知识：质量矩阵 $\mathbf{M}$ 实际上描述了一个有限单元的质量与其顶点质量的关系，有两种类别：1. Lump Mass Matrix. 质量全部加到对角项上，也是我们本次作业选择的版本）2. Consistant Mass Matrix. 包含非对角项，是通过型函数(Shape Function)推导出来的。具体可以阅读[Consistent vs Lumped Mass](https://www.strand7.com/strand7r3help/Content/Topics/Elements/ElementsMassMatrix.htm). 
 
-根据能量观点，记$E$为系统的弹性能，那么弹性力$\mathbf{f}_{\text{int}}$：
+根据能量观点，记 $E$ 为系统的弹性能，那么弹性力 $\mathbf{f}_{\text{int}}$ ：
 
 $$
 \mathbf{f}_{\text{int}} = -\nabla E
@@ -56,23 +57,26 @@ $$
 
 ## 3. 能量是多少？
 
-首先我们定义一根弹簧$i$的能量为：
+首先我们定义一根弹簧 $i$ 的能量为：
+
 $$
-E_i = \frac{k}{2} (\|\mathbf{x}_{i1} - \mathbf{x}_{i2}\| - L)^2 
+E_i = \frac{k}{2} (\|\mathbf{x} _ {i1} - \mathbf{x}_{i2}\| - L)^2 
 $$
 
-我们记录$\mathbf{x}_{i} := \mathbf{x}_{i1} - \mathbf{x}_{i2}$
+我们记录 $\mathbf{x}_{i} := \mathbf{x} _ {i1} - \mathbf{x} _ {i2}$
 那么总体的能量为：
+
 $$
 E = \sum_{i} E_i = \sum_{i} \frac{k}{2} \left(\|\mathbf{x}_{i}\| - L\right)^2
 $$
 
 可以求出其梯度为：
+
 $$
 \nabla E = \sum_i k (\|\mathbf{x}_i\| - L)\frac{\mathbf{x}_i}{\|\mathbf{x}_i\|} \tag{3}
 $$
 
-只要在`MassSpring.cpp`（(在文件夹`Framework3D\source\nodes\nodes\geometry\mass_spring\`中)的`computeGrad`函数中填上这一部分梯度的计算:
+只要在`MassSpring.cpp`（(在文件夹[`Framework3D\source\nodes\nodes\geometry\mass_spring\`](../../../Framework3D/source/nodes/nodes/geometry/mass_spring/)中)的 `computeGrad` 函数中填上这一部分梯度的计算:
 
 
 ```C++
@@ -127,6 +131,8 @@ dirichlet_bc_mask[n_fix - 1] = true;
 
 你也可以尝试固定不同的点，并比较不同的劲度系数、时间步长、damping对结果的影响，不同规模的mesh也需要设置不同的仿真参数，**鼓励在报告中包含不同仿真参数的结果比较相关内容**。
 
+所需要连接的节点图如下，需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算。如果需要reset，将时间拖动为0即可。按空格可以自动播放。
+
 > 本次作业为了几何表示的方便，我们没有使用交叉型的网格表示弹簧质点系统（如下所示），只使用了三角网格。交叉型网格能够考虑更多布料在弯曲时的约束，如果你有兴趣，也可以在程序中加入这些额外的边连接，并比较它和三角网格的仿真效果的区别。
 > <div  align="center">    
 > <img src="../images/cross_mesh.png" style="zoom:40%"/>
@@ -159,11 +165,11 @@ dirichlet_bc_mask[n_fix - 1] = true;
 $$
 \begin{align}
 \mathbf{x}^{n+1} &= \mathbf{x}^{n} + h \mathbf{v}^{n+1} \\
-\mathbf{v}^{n+1} &=\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f}_{\text{int}}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}} ) 
+\mathbf{v}^{n+1} &=\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}} ) 
 \end{align} \tag{3}
 $$
 
-但是发现这个问题需要变成一个关于$\mathbf{x}^{n+1}$的方程。
+但是发现这个问题需要变成一个关于 $\mathbf{x}^{n+1}$ 的方程。
 
 我们下面介绍一种常用的思路来求解。
 
@@ -173,7 +179,7 @@ $$
 \mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n} + h^2 \mathbf{M}^{-1} (-\nabla E(\mathbf{x^{n+1}}) + \mathbf{f}_{\text{ext}} ) \tag{4}
 $$
 
-我们定义$\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$
+我们定义 $\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$
 
 可以把上面的公式(4)转变为：
 
@@ -182,7 +188,7 @@ $$
 $$
 
 这个公式可以视为一个优化问题的一阶最优条件（KKT），
-那么其实是在优化这个问题（记$\mathbf{x} = \mathbf{x}^{n+1} \in \R^{3n \times 1}$ ）：
+那么其实是在优化这个问题（记 $\mathbf{x} = \mathbf{x}^{n+1} \in \mathbf{R}^{3n \times 1}$ ）：
 
 $$
 \min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \tag{5}
@@ -190,9 +196,9 @@ $$
 
 这回到了大家（可能）学过的最优化领域。
 
-> 在图形学中，$g$的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$被称为惯性项(inertia term)，$E(\mathbf{x})$被称为弹性项(Elasticity). 
+> 在图形学中, $g$ 的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$ 被称为惯性项(inertia term)，$E(\mathbf{x})$ 被称为弹性项(Elasticity). 
 
-能量$g$的导数为：
+能量 $g$ 的导数为：
 
 $$
 \nabla g(\mathbf{x}) = \frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})
@@ -205,39 +211,40 @@ $$
  \mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla \mathbf{g} 
 $$
 
-那么需要求能量$g$的Hessian矩阵$\mathbf{H} = \nabla^2 g$。
+那么需要求能量 $g$ 的Hessian矩阵 $\mathbf{H} = \nabla^2 g$。
 
 首先我们来看一根弹簧能量的Hessian：
+
 $$
 \begin{align}
 \mathbf{H}_i &= \nabla^2 E_i  \\
 &=k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}+k\left(1-\frac{L}{\|\mathbf{x}_i\|}\right)\left(\mathbf{I}-\frac{\mathbf{x}_i \mathbf{x}_i^{\mathrm{T}}}{\|\mathbf{x}_i\|^2}\right) \\
-\text{or} &= k \left(1 - \frac{L}{\|\mathbf{x}_i\|}\right) \mathbf{I} + k \frac{L}{\|\mathbf{x}_i\|^3} \mathbf{x}_i\mathbf{x}_i^\top
 \end{align}
 $$
 
-那么总体的Hessian $\mathbf{H} \in \R^{3n\times 3n}$为单根弹簧Hessian $\mathbf{H} \in \R^{3 \times 3}$按照顶点索引组装起来：
+那么总体的Hessian $\mathbf{H} \in \mathbf{R}^{3n\times 3n}$ 为单根弹簧Hessian $\mathbf{H} \in \mathbf{R}^{3 \times 3}$ 按照顶点索引组装起来：
 
 <div  align="center">    
  <img src="../images/hessian_assemble.png" style="zoom:40%"/>
 </div>
 
 
-最后我们写出$g$的Hessian：
+最后我们写出 $g$ 的Hessian：
 
 $$
 \nabla^2 g = \frac{1}{h^2} \mathbf{M} + \mathbf{H}
 $$
 
 那么现在我们就可以使用牛顿法优化：
+
 $$
-\mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla g(\mathbf{x}^n)
+\mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla g (\mathbf{x}^n)
 $$
 
-> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向$\mathbf{p}$（我们这里$\mathbf{p} = \mathbf{H}^{-1}\mathbf{\nabla g}$），2. 然后确定要前进的步长$\alpha$（该步骤称为Line Search），3. 最后更新$\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p} $ 。
+> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = \mathbf{H}^{-1}\mathbf{\nabla g}$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
 >由于牛顿法的推荐步长是1，这里我们就不额外进行Line Search
 
-$\mathbf{H}$是一个稀疏矩阵（只有相邻的顶点才会在矩阵中有对应的非零元素），我们使用`Eigen::SparseMatrix`来存储。
+$\mathbf{H}$ 是一个稀疏矩阵（只有相邻的顶点才会在矩阵中有对应的非零元素），我们使用`Eigen::SparseMatrix`来存储。
 
 那么需要在本次作业中实现以下`MassSpring.cpp`部分的代码:
 
@@ -262,7 +269,7 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     return H;
 }
 ```
-然后实现`step`函数中隐式时间积分部分的代码，并且，我们提供了`flatten`与`unflatten`函数将$\R^{n \times 3}$与$\R^{3n}$的向量进行互相转换: 
+然后实现`step`函数中隐式时间积分部分的代码，并且，我们提供了`flatten`与`unflatten`函数将 $\mathbf{R}^{n \times 3}$ 与 $\mathbf{R}^{3n}$ 的向量进行互相转换: 
 
 ```C++
     if(time_integrator == IMPLICIT_EULER)
@@ -285,11 +292,11 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     }
 ```
 
-> Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足$(\mathbf{H}^{-1}\nabla g)^{\top} \nabla g > 0$. 只有Hessian正定的时候才能保证收敛。
+> Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足 $(\mathbf{H}^{-1}\nabla g)^{\top} \nabla g > 0$ . 只有Hessian正定的时候才能保证收敛。
 > 
 > 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让Hessian正定，你可以尝试：
-> 1. **在$L_i > \|\mathbf{x}_i \|$时**，令第$i$根弹簧$\mathbf{H}_i$近似为$\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$. 
-> 2. 为Hessian对角线加上$\epsilon \mathbf{I}$， $\epsilon$为可调参数，来让Hessian最小的特征值大于0. 
+> 1. **在 $L_i > \|\mathbf{x}_i \|$ 时**，令第$i$根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
+> 2. 为Hessian对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
 > 3. 对Hessian做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
 > 
 
@@ -302,13 +309,14 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
 
 问题根源还是要在求解的时候考虑硬约束。
 
-$$\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \\
+$$
+\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \\
 s.t. \quad c(\mathbf{x}) = \mathbf{S}\mathbf{x} = \mathbf{0}
 $$
 
 广义来说其实是一个带约束优化问题。那么我们需要使用引入拉格朗日乘子法来求解吗？
 
-其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程的时候修改Hessian矩阵，让固定点对应的系数为1就行。或者$\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中$S$为选择矩阵。
+其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程的时候修改Hessian矩阵，让固定点对应的系数为1就行。或者 $\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
 
 如果实现正确，将1. 劲度系数`stiffness`和2.时间步长`h`设置为合理的值（隐式时间积分不需要调阻尼系数），并考虑了Hessian的正定性：就可以看到下面的仿真结果（gif经过加速），可以实现比半隐式时间积分大20倍甚至更多的时间步长（但由于需要组装Hessian并求解线性方程组，隐式时间积分每一步的时间会比半隐式时间积分长）：
 
@@ -344,7 +352,7 @@ TOC(function to profile)
 ## 5. (Optional) 考虑与其他物体的交互
 
 > “没有碰撞的仿真是没有灵魂的！” 
->     ——Prof. 蒋成凡夫@UCLA
+>     ——Prof. 蒋陈凡夫@UCLA
 
 模拟碰撞与摩擦也是图形学中一个重要的课题，处理得不好就会出现游戏中常见的“穿模”问题。
 本次作业，我们还可以考虑弹簧质点系统与一个球的碰撞。甚至可以让这个球运动起来。
@@ -359,7 +367,7 @@ $$
 \mathbf{f} = k^{\text{penalty}} \max(s  r- \|\mathbf{x}-\mathbf{c}\|, 0)\frac{(\mathbf{x} - \mathbf{c})}{\|\mathbf{x} -\mathbf{c} \|}
 $$
 
-其中$\mathbf{c}$为球心，$r$为球半径，$s$为半径的一个放大系数（如让$s$=1.1），用于在实际未发生接触时就产生接触力以减少视觉上的穿透（程序中为`collsiion_scale_factor`）, $k^{\text{penalty}}$为可调参数。
+其中 $\mathbf{c}$ 为球心， $r$    为球半径， $s$   为半径的一个放大系数（如让 $s$ =1.1），用于在实际未发生接触时就产生接触力以减少视觉上的穿透（程序中为`collsiion_scale_factor`）, $k^{\text{penalty}}$ 为可调参数。
 
 
 需要在`MassSpring`的`getSphereCollisionForce`函数中实现下面的部分：
