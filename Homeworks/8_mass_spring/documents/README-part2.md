@@ -100,7 +100,7 @@ $$
 
 其中 $\mathbf{A} = \mathbf{M} + h^2 \mathbf{L} \in \mathbb{R}^{3n \times 3n}$ 以及 $\mathbf{b} = h^2 \mathbf{Jd} + \mathbf{My}\in \mathbb{R}^{3n}$, $\mathbf{x} \in \mathbb{R}^{3n}$. 
 
-这里我们就会发现 $\mathbf{A}$ 为正定的，并且在弹簧系统拓扑不变的情况下，$\mathbf{A}$ 也不会变，所以只需要在仿真一开始计算一次！因此我们可以对 $\mathbf{A}$ 进行预分解，然后每次迭代只需要更新 $\mathbf{b}$ ，然后不断调用预分解好的求解器计算即可！这就是该加速方法最为核心的地方。
+这里我们就会发现 $\mathbf{A}$ 为正定的，并且在弹簧系统拓扑不变的情况下， $\mathbf{A}$ 也不会变，所以只需要在仿真一开始计算一次！因此我们可以对 $\mathbf{A}$ 进行预分解，然后每次迭代只需要更新 $\mathbf{b}$ ，然后不断调用预分解好的求解器计算即可！这就是该加速方法最为核心的地方。
 
 并且本质上， $\mathbf{A} = \mathbf{M} + h^2 \mathbf{L}$ 是对系统能量的 Hessian矩阵的一种近似，其中 $\mathbf{L}$ 是系统的拉普拉斯（Laplacian）矩阵。
 
