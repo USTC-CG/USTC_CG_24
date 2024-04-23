@@ -18,11 +18,12 @@ FastMassSpring::FastMassSpring(const Eigen::MatrixXd& X, const EdgeSet& E) : Mas
 
 void FastMassSpring::step()
 {
-    // (HW Optional) Necessary preparation 
+    // (HW Optional) Necessary preparation
     // ...
     for (unsigned iter = 0; iter < max_iter; iter++) {
         // (HW Optional)
         // local_step and global_step alternating solving
-      
     }
+}
+
 }  // namespace USTC_CG::node_mass_spring
