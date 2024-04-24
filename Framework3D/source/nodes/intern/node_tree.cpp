@@ -166,23 +166,24 @@ void NodeTree::delete_node(NodeId nodeId)
 
 bool NodeTree::CanCreateLink(NodeSocket* a, NodeSocket* b)
 {
-    if (!a || !b || a == b || a->in_out == b->in_out || a->type_info != b->type_info ||
-        a->Node == b->Node)
+    if (!a || !b || a == b || a->in_out == b->in_out || a->Node == b->Node)
         return false;
 
-    if (a->in_out == PinKind::Input) {
-        if (!a->directly_linked_links.empty()) {
-            return false;
-        }
+    auto in = a->in_out == PinKind::Input ? a : b;
+    auto out = a->in_out == PinKind::Output ? a : b;
+
+    if (!in->directly_linked_sockets.empty()) {
+        return false;
+    }
+    if (in->type_info->canLinkTo(out->type_info->type)) {
+        return true;
     }
 
-    if (b->in_out == PinKind::Input) {
-        if (!b->directly_linked_links.empty()) {
-            return false;
-        }
+    if (out->type_info->canLinkTo(in->type_info->type)) {
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void NodeTree::delete_socket(SocketID socketId)

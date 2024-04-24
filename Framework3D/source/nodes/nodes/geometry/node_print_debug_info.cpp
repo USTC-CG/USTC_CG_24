@@ -9,17 +9,24 @@
 namespace USTC_CG::node_print_debug_info {
 static void node_declare(NodeDeclarationBuilder& b)
 {
-    b.add_input<decl::Geometry>("Geometry");
+    b.add_input<decl::Any>("Variable");
 }
 
 static void node_exec(ExeParams params)
 {
-    auto& stage = GlobalUsdStage::global_usd_stage;
-    std::string str;
-    stage->ExportToString(&str);
+    GMutablePointer storage = params.get_input<GMutablePointer>("Variable");
+    if (storage.is_type<float>()) {
+        float value;
+        storage.type()->copy_construct(storage.get(), &value);
+        std::cout << value << std::endl;
+    }
 
-    std::ofstream out("current_stage.usda");
-    out << str << std::endl;
+    //auto& stage = GlobalUsdStage::global_usd_stage;
+    //std::string str;
+    //stage->ExportToString(&str);
+
+    //std::ofstream out("current_stage.usda");
+    //out << str << std::endl;
 }
 
 static void node_register()
@@ -32,6 +39,7 @@ static void node_register()
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;
     ntype.declare = node_declare;
+    ntype.ALWAYS_REQUIRED = true;
     nodeRegisterType(&ntype);
 }
 

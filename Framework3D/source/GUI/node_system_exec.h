@@ -8,6 +8,10 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeSystemExecution {
    public:
     virtual ~NodeSystemExecution() = default;
+    virtual float cached_last_frame() const;
+    virtual void set_required_time_code(float time_code_to_render)
+    {
+    }
     NodeSystemExecution();
 
     virtual Node* create_node_menu();
@@ -29,7 +33,7 @@ class NodeSystemExecution {
 
     void CreateLink(SocketID startPinId, SocketID endPinId);
 
-    void MarkDirty()
+    virtual void MarkDirty()
     {
         required_execution = true;
     }
@@ -61,7 +65,6 @@ class NodeSystemExecution {
 
     bool CanCreateLink(NodeSocket* a, NodeSocket* b);
 
-
    protected:
     bool required_execution = false;
     Node* default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry);
@@ -69,17 +72,31 @@ class NodeSystemExecution {
     unsigned m_NextId = 1;
 };
 
-struct GeoNodeSystemExecution: public NodeSystemExecution{
+struct GeoNodeSystemExecution : public NodeSystemExecution {
+    GeoNodeSystemExecution();
+
+    float cached_last_frame() const override;
+
+    void MarkDirty() override;
+
+    void set_required_time_code(float time_code_to_render) override;
+
     void try_execution() override;
     Node* create_node_menu() override;
+
+   private:
+    float cached_last_frame_ = 0;
+    float time_code_to_render_ = 0;
+    bool just_renewed = true;
 };
 
-
 struct RenderNodeSystemExecution : public NodeSystemExecution {
+    RenderNodeSystemExecution();
     Node* create_node_menu() override;
 };
 
 struct CompositionNodeSystemExecution : public NodeSystemExecution {
+    CompositionNodeSystemExecution();
     void try_execution() override;
     Node* create_node_menu() override;
 };

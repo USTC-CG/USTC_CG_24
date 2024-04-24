@@ -10,6 +10,9 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 // This stage serves for sharing data from the nodes to the renderer
 struct USTC_CG_API GlobalUsdStage {
     static pxr::UsdStageRefPtr global_usd_stage;
+
+    static constexpr int timeCodesPerSecond = 30;
+
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

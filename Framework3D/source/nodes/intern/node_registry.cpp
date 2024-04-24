@@ -6,6 +6,10 @@
 #include "Utils/Macro/map.h"
 #include "rich_type_buffer.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
+namespace node_mass_spring {
+    class MassSpring;
+}
+
 static void reset_declaration(NodeDeclaration& declaration)
 {
     std::destroy_at(&declaration);
@@ -142,9 +146,24 @@ MakeType(Int, int, 1, Buffer);
 MakeType(Int, pxr::GfVec2i, 2, Buffer);
 MakeType(Int, pxr::GfVec3i, 3, Buffer);
 MakeType(Int, pxr::GfVec4i, 4, Buffer);
-MakeType(Float, pxr::GfVec2f, 2);
-MakeType(Float, pxr::GfVec3f, 3);
-MakeType(Float, pxr::GfVec4f, 4);
+static SocketTypeInfo* make_socket_type_Float2()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float2);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec2f>();
+    return socktype;
+};
+static SocketTypeInfo* make_socket_type_Float3()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float3);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec3f>();
+    return socktype;
+};
+static SocketTypeInfo* make_socket_type_Float4()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float4);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec4f>();
+    return socktype;
+};
 MakeType(Int, pxr::GfVec2i, 2);
 MakeType(Int, pxr::GfVec3i, 3);
 MakeType(Int, pxr::GfVec4i, 4);
@@ -170,6 +189,15 @@ static SocketTypeInfo* make_socket_type_String()
     socktype->cpp_type = &CPPType::get<std::string>();
     return socktype;
 }
+
+static SocketTypeInfo* make_socket_type_Any()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Any);
+    socktype->cpp_type = &CPPType::get<GMutablePointer>();
+    socktype->canLinkTo = [](SocketType type) { return type != SocketType::Any; };
+    return socktype;
+}
+
 static SocketTypeInfo* make_socket_type_Geometry()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Geometry);
@@ -216,6 +244,13 @@ static SocketTypeInfo* make_socket_type_Materials()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Materials);
     socktype->cpp_type = &CPPType::get<MaterialMap>();
+    return socktype;
+}
+
+static SocketTypeInfo* make_socket_type_MassSpringSocket()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::MassSpringSocket);
+    socktype->cpp_type = &CPPType::get<std::shared_ptr<node_mass_spring::MassSpring>>();
     return socktype;
 }
 

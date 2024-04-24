@@ -149,6 +149,15 @@ struct NodeSystemImpl {
     int GetTextureWidth(ImTextureID texture);
     int GetTextureHeight(ImTextureID texture);
     ImVector<ImTexture>::iterator FindTexture(ImTextureID texture);
+
+   private:
+    // Replace static storage
+    NodeId contextNodeId = 0;
+    LinkId contextLinkId = 0;
+    USTC_CG::SocketID contextPinId = 0;
+    bool createNewNode = false;
+    NodeSocket* newNodeLinkPin = nullptr;
+    NodeSocket* newLinkPin = nullptr;
 };
 
 Node* NodeSystemImpl::SpawnComment()
@@ -169,7 +178,6 @@ void NodeSystemImpl::OnStart()
     }
     else if (node_system_type == NodeSystemType::Render) {
         node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();
-        node_system_execution_->executor = CreateEagerNodeTreeExecutorRender();
     }
     else if (node_system_type == NodeSystemType::Composition) {
         node_system_execution_ = std::make_unique<CompositionNodeSystemExecution>();
@@ -296,13 +304,6 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     auto& io = ImGui::GetIO();
 
     ed::SetCurrentEditor(m_Editor);
-
-    static NodeId contextNodeId = 0;
-    static LinkId contextLinkId = 0;
-    static USTC_CG::SocketID contextPinId = 0;
-    static bool createNewNode = false;
-    static NodeSocket* newNodeLinkPin = nullptr;
-    static NodeSocket* newLinkPin = nullptr;
 
     // ShowLeftPane(leftPaneWidth - 4.0f);
 
@@ -465,7 +466,11 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         }
 
         for (auto& link : node_system_execution_->get_links()) {
-            ImColor color = GetIconColor(link->fromsock->type_info->type);
+            auto type = link->fromsock->type_info->type;
+            if (type == SocketType::Any)
+                type = link->tosock->type_info->type;
+
+            ImColor color = GetIconColor(type);
 
             ed::Link(link->ID, link->StartPinID, link->EndPinID, color, 2.0f);
         }
@@ -821,6 +826,16 @@ NodeTreeExecutor* NodeSystem::get_executor() const
     return impl_->node_system_execution_->executor.get();
 }
 
+float NodeSystem::cached_last_time_code()
+{
+    return impl_->node_system_execution_->cached_last_frame();
+}
+
+void NodeSystem::set_required_time_code(float time_code_to_render)
+{
+    impl_->node_system_execution_->set_required_time_code(time_code_to_render);
+}
+
 void NodeSystemImpl::ShowLeftPane(float paneWidth)
 {
     auto& io = ImGui::GetIO();
@@ -948,7 +963,15 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
 void NodeSystemImpl::DrawPinIcon(const NodeSocket& pin, bool connected, int alpha)
 {
     IconType iconType;
+
     ImColor color = GetIconColor(pin.type_info->type);
+
+    if (pin.type_info->type == SocketType::Any) {
+        if (pin.directly_linked_sockets.size() > 0) {
+            color = GetIconColor(pin.directly_linked_sockets[0]->type_info->type);
+        }
+    }
+
     color.Value.w = alpha / 255.0f;
     switch (pin.type_info->type) {
         case SocketType::Geometry: iconType = IconType::Circle; break;

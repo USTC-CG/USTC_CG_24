@@ -176,7 +176,8 @@ void Hd_USTC_CG_Mesh::Sync(
         _normalsValid = false;
         _adjacencyValid = false;
     }
-    if (HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
+    if (HdChangeTracker::IsInstancerDirty(*dirtyBits, id) ||
+        HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
         transform = GfMatrix4f(sceneDelegate->GetTransform(id));
     }
 
@@ -200,6 +201,7 @@ void Hd_USTC_CG_Mesh::Sync(
     }
     _UpdateComputedPrimvarSources(sceneDelegate, *dirtyBits);
     logging("Syncing mesh " + GetId().GetString(), Info);
+    *dirtyBits &= ~HdChangeTracker::AllSceneDirtyBits;
 }
 
 void Hd_USTC_CG_Mesh::RefreshGLBuffer()
