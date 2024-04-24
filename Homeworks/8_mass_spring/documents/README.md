@@ -121,7 +121,7 @@ dirichlet_bc_mask[n_fix - 1] = true;
 ```
 然后，直接将这些固定点的外力和速度设置为0就可以。
 
-如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, 如尝试`stiffness` = 5000, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
+如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, 如尝试`stiffness` = 10, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
 
 <div  align="center">    
  <img src="../images/semi-implicit.gif" style="zoom:100%" />
