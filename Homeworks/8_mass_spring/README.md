@@ -43,8 +43,17 @@
 
 ### 提交文件格式
 
-文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：
-
+文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：`Framework3D/source/nodes/nodes/geometry/mass_spring/`文件夹下的所有文件、`Framework3D/source/nodes/nodes/geometry/node_mass_spring.cpp`, 以及其他可能的自行添加or修改的其他代码文件：
+```
+ID_姓名_Homework*/
+├── mass_spring/                   
+│   ├── xxx.h
+│   ├── xxx.cpp
+|   └── ...
+├── node_mass_spring.cpp
+├── report.pdf                    // 实验报告
+└── ...                           // 其他补充文件
+```
 
 ### 注意事项
 
