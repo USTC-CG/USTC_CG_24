@@ -329,7 +329,7 @@ $$
 如果实现正确，将1. 劲度系数`stiffness`和2.时间步长`h`设置为合理的值（隐式时间积分不需要调阻尼系数），并考虑了Hessian的正定性：就可以看到下面的仿真结果（gif经过加速），可以实现比半隐式时间积分大20倍甚至更多的时间步长（但由于需要组装Hessian并求解线性方程组，隐式时间积分每一步的时间会比半隐式时间积分长）：
 
 <div  align="center">    
- <img src="../images/implicit-euler.gif" style="zoom:80%" alt="genshin cloth sim" />
+ <img src="../images/implicit-euler.gif" style="zoom:80%" />
 </div>
 
 如果你需要测量性能，我们在程序中提供了`TIC`和`TOC`宏来打印程序运行时间，使用方式如下（在`enable_time_profiling = true`的时候会print出结果）
@@ -400,16 +400,16 @@ Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, doub
 
 
 <div  align="center">    
- <img src="../images/implicit-with-collision.gif" style="zoom:80%" alt="genshin cloth sim" />
+ <img src="../images/implicit-with-collision.gif" style="zoom:80%" />
 </div>
 
 
 至此，你已经实现了一个基础的带与球碰撞的弹簧指导仿真系统。但是基于惩罚力的方式无法保证不穿透，需要手动调惩罚力的因子。
 
-所需要连接的节点图：
+所需要连接的节点图（注意球和布料的`Write USD`节点的`Prim Path`需要不一样，否则显示会出问题）：
 
 <div  align="center">    
- <img src="../images/nodes-collision.png" style="zoom:100%" alt="genshin cloth sim" />
+ <img src="../images/nodes-collision.png" style="zoom:100%" />
 </div>
 
 
