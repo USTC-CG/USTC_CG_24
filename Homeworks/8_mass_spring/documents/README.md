@@ -37,13 +37,13 @@ $$
 \mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n+1} \tag{1}
 $$
 
-那么速度 $\mathbf{v}^{n+1} \in \mathbf{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
+那么速度 $\mathbf{v}^{n+1} \in \mathbb{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
 
 $$
 \mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^n) + \mathbf{f} _ {\text{ext}} )  \tag{2}
 $$
 
-其中的 $\mathbf{M} \in \mathbf{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵。
+其中的 $\mathbf{M} \in \mathbb{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵（每个顶点对应的 $\mathbb{R}^{3\times 3}$ = `mass_per_vertex`乘3x3单位矩阵  ）。
 
 > 扩展知识：质量矩阵 $\mathbf{M}$ 实际上描述了一个有限单元的质量与其顶点质量的关系，有两种类别：1. Lump Mass Matrix. 质量全部加到对角项上，也是我们本次作业选择的版本）2. Consistant Mass Matrix. 包含非对角项，是通过型函数(Shape Function)推导出来的。具体可以阅读[Consistent vs Lumped Mass](https://www.strand7.com/strand7r3help/Content/Topics/Elements/ElementsMassMatrix.htm). 
 
@@ -131,7 +131,9 @@ dirichlet_bc_mask[n_fix - 1] = true;
 
 你也可以尝试固定不同的点，并比较不同的劲度系数、时间步长、damping对结果的影响，不同规模的mesh也需要设置不同的仿真参数，**鼓励在报告中包含不同仿真参数的结果比较相关内容**。
 
-所需要连接的节点图如下（建议在检查完`read usd`节点正确读取mesh后，再连接到MassSpring节点，否则会报错），需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算。如果需要reset，将时间拖动为0即可。按空格可以自动播放。
+并且**鼓励大家在提交的作业文件里面包含仿真结果的视频或gif**。
+
+所需要连接的节点图如下（建议在检查完`read usd`节点正确读取mesh后，再连接到MassSpring节点，否则会报错），需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算（因此回看的时候会播放速度很快）。如果需要reset，将时间拖动为0即可。**点击渲染窗口，按空格可以切换播放/暂停，如果当前帧之前没有计算缓存过，就会自动执行计算**。
 
 <div  align="center">    
  <img src="../images/nodes0.png" style="zoom:80%"/>

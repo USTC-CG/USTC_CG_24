@@ -1,6 +1,5 @@
 #include "MassSpring.h"
 #include <iostream>
-#include <chrono>
 
 namespace USTC_CG::node_mass_spring {
 MassSpring::MassSpring(const Eigen::MatrixXd& X, const EdgeSet& E)
@@ -62,7 +61,7 @@ void MassSpring::step()
     else if (time_integrator == SEMI_IMPLICIT_EULER) {
 
         // Semi-implicit Euler
-        Eigen::MatrixXd acceleration = -computeGrad(stiffness);
+        Eigen::MatrixXd acceleration = -computeGrad(stiffness) / mass_per_vertex;
         acceleration.rowwise() += acceleration_ext.transpose();
 
         // -----------------------------------------------

@@ -9,7 +9,7 @@ class FastMassSpring : public MassSpring {
     FastMassSpring() = default;
     ~FastMassSpring() = default; 
 
-    FastMassSpring(const Eigen::MatrixXd& X, const EdgeSet& E);
+    FastMassSpring(const Eigen::MatrixXd& X, const EdgeSet& E, const float stiffness);
     void step() override;
     unsigned max_iter = 100; // (HW Optional) add UI for this parameter
 
