@@ -230,7 +230,7 @@ $$
 % \end{align}
 $$
 
-那么总体的Hessian $\mathbf{H} \in \mathbf{R}^{3n\times 3n}$ 为单根弹簧Hessian $\mathbf{H} \in \mathbf{R}^{3 \times 3}$ 按照顶点索引组装起来：
+那么总体的Hessian $\mathbf{H} \in \mathbf{R}^{3n\times 3n}$ 为单根弹簧Hessian $\mathbf{H} \in \mathbf{R}^{3 \times 3}$ 按照顶点索引组装起来（比如第i个顶点通过弹簧和第j、k个顶点相连，那么3nx3n的Hessian中第3i行3i列、第3i行3j列，第3j行3i列，第3j行3j列对应的3x3 block会有值，同理第3i行3i列、第3i行3k列，第3k行3i列，第3k行3k列对应的3x3 block也会有值，那么第3i行3i列的3x3 Hessian block就有多个弹簧的贡献加在一起）：
 
 <div  align="center">    
  <img src="../images/hessian_assemble.png" style="zoom:40%"/>
