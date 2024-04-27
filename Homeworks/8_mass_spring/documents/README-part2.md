@@ -104,6 +104,8 @@ $$
 
 并且本质上， $\mathbf{A} = \mathbf{M} + h^2 \mathbf{L}$ 是对系统能量的 Hessian矩阵的一种近似，其中 $\mathbf{L}$ 是系统的拉普拉斯（Laplacian）矩阵。
 
+需要注意的是：求解的时候因为 $\mathbf{y}$ 的定义为  $\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$，而每次迭代求解的 $\mathbf{x}$ 为 $\mathbf{x}^{n+1}$，所以 $\mathbf{y}$ 不需要更新，仍然用上一步的 $\mathbf{x}^n$ 和 $\mathbf{v}^n$。
+
 整个方法的流程示意图如下：
 
 <div  align="center">    

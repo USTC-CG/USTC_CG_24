@@ -123,6 +123,11 @@ static void node_mass_spring_exec(ExeParams params)
 
     auto geometry = params.get_input<GOperandBase>("Mesh");
     auto mesh = geometry.get_component<MeshComponent>();
+    if (mesh->faceVertexCounts.size() == 0)
+    {
+        throw std::runtime_error("Read USD error.");
+    }
+
 
     if (time_code == 0) {  // If time = 0, reset and initialize the mass spring class
         if (mesh) {
@@ -133,11 +138,12 @@ static void node_mass_spring_exec(ExeParams params)
                 get_edges(usd_faces_to_eigen(mesh->faceVertexCounts, mesh->faceVertexIndices));
             auto vertices = usd_vertices_to_eigen(mesh->vertices);
             const float k = params.get_input<float>("stiffness");
+            const float h = params.get_input<float>("h");
 
             bool enable_liu13 =  params.get_input<int>("enable Liu13") == 1 ? true : false;
             if (enable_liu13) { 
                 // HW Optional 
-				mass_spring = std::make_shared<FastMassSpring>(vertices, edges, k);
+				mass_spring = std::make_shared<FastMassSpring>(vertices, edges, k, h);
 			}
 			else
 				mass_spring = std::make_shared<MassSpring>(vertices, edges);
