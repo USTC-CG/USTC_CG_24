@@ -216,10 +216,10 @@ $$
 为了求解优化问题，我们可以使用梯度下降，但是其收敛速度比较慢（线性收敛速度）。在图形学中，更加常用的做法是使用牛顿法：
 
 $$
- \mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla \mathbf{g} 
+ \mathbf{x}^{n+1} = \mathbf{x}^n - (\nabla^2 g)^{-1} \nabla \mathbf{g} 
 $$
 
-那么需要求能量 $g$ 的Hessian矩阵 $\mathbf{H} = \nabla^2 g$。
+那么需要求能量 $g$ 的Hessian矩阵 $\nabla^2 g$ 。
 
 首先我们来看一根弹簧能量的Hessian：
 
