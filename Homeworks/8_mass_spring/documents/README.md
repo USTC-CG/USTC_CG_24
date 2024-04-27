@@ -303,7 +303,7 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
 > Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足 $(\mathbf{H}^{-1}\nabla g)^{\top} \nabla g > 0$ . 只有Hessian正定的时候才能保证收敛。
 > 
 > 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让Hessian正定，你可以尝试：
-> 1. **在 $L_i > \|\mathbf{x}_i \|$ 时**，令第$i$根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
+> 1. **在 $L_i > \|\mathbf{x}_i \|$ 时**，令第 $i$ 根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
 > 2. 为Hessian对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
 > 3. 对Hessian做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
 > 
@@ -324,7 +324,7 @@ $$
 
 广义来说其实是一个带约束优化问题。那么我们需要使用引入拉格朗日乘子法来求解吗？
 
-其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程的时候修改Hessian矩阵，让固定点对应的系数为1就行。或者 $\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
+其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程的时候修改Hessian矩阵，让固定点对应的系数为1同时修改方程右端项的对应值为固定点的坐标（和hw2 image warping一样的边界处理技巧，都是线性方程组考虑边界条件的通用方法）。或者 $\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
 
 解出 $\mathbf{X}^{\text{new}}$ 后，新的速度可以直接计算为： 
 
