@@ -121,7 +121,7 @@ dirichlet_bc_mask[n_fix - 1] = true;
 ```
 然后，直接将这些固定点的外力和速度设置为0就可以。
 
-如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, 如尝试`stiffness` = 10, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
+如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, `stiffness`越大则时间步长`h`就需要越小，如尝试`stiffness` = 10, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
 
 <div  align="center">    
  <img src="../images/semi-implicit.gif" style="zoom:100%" />
@@ -204,7 +204,7 @@ $$
 
 这回到了大家（可能）学过的最优化领域。
 
-> 在图形学中, $g$ 的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$ 被称为惯性项(inertia term)，$E(\mathbf{x})$ 被称为弹性项(Elasticity). 
+> 在图形学中, $g$ 的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$ 被称为惯性项(inertia term)， $E(\mathbf{x})$ 被称为弹性项(Elasticity). 
 
 能量 $g$ 的导数为：
 
@@ -216,10 +216,10 @@ $$
 为了求解优化问题，我们可以使用梯度下降，但是其收敛速度比较慢（线性收敛速度）。在图形学中，更加常用的做法是使用牛顿法：
 
 $$
- \mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla \mathbf{g} 
+ \mathbf{x}^{n+1} = \mathbf{x}^n - (\nabla^2 g)^{-1} \nabla \mathbf{g} 
 $$
 
-那么需要求能量 $g$ 的Hessian矩阵 $\mathbf{H} = \nabla^2 g$。
+那么需要求能量 $g$ 的Hessian矩阵 $\nabla^2 g$ 。
 
 首先我们来看一根弹簧能量的Hessian：
 
@@ -253,12 +253,10 @@ $$
 那么这里需要求解的方程组为: 
 
 $$ 
-
 \nabla^2 g \Delta \mathbf{x} = -\nabla g \tag{7}
-
 $$ 
 
-> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = (\nabla^2 g)^{-1}\mathbf{\nabla g}$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
+> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = (\nabla^2 g)^{-1}\mathbf{\nabla}g$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
 >由于牛顿法的推荐步长是1，这里我们就不额外进行Line Search
 
 弹簧能量的Hessian $\mathbf{H}$ 是一个稀疏矩阵（只有相邻的顶点才会在矩阵中有对应的非零元素），我们使用`Eigen::SparseMatrix`来存储。
@@ -311,10 +309,10 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
 
 > 能量 $g$ 的Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足 $((\nabla^2 g)^{-1}\nabla g)^{\top} \nabla g > 0$ . 只有 $\nabla^2 g$ 正定的时候才能保证收敛。
 > 
-> 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让Hessian正定，你可以尝试：
-> 1. **在 $L_i > \|\mathbf{x}_i \|$ 时**，令第 $i$ 根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
-> 2. 为Hessian对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
-> 3. 对Hessian做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
+> 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让 $\nabla^2 g$ 正定，你可以尝试：
+> 1. 在计算弹簧能量的Hessian时，**当$L_i > \|\mathbf{x}_i \|$ 时**，令第 $i$ 根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
+> 2. 为 $\nabla^2 g$ 对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
+> 3. 对 $\nabla^2 g$ 做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
 > 
 
 慢着，如果要在这个求解过程中固定点，怎么办？如果仍然是解完之后将固定点的位置简单地设置回去，就会出现下面边界区域被过度拉长的情况：
@@ -327,13 +325,12 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
 问题根源还是要在求解的时候考虑硬约束。
 
 $$
-\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \\
-s.t. \quad c(\mathbf{x}) = \mathbf{S}\mathbf{x} = \mathbf{0}
+\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \quad s.t. \quad c(\mathbf{x}) = \mathbf{S}\mathbf{x} = \mathbf{0}
 $$
 
 广义来说其实是一个带约束优化问题。那么我们需要使用引入拉格朗日乘子法来求解吗？
 
-其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程(7)的时候修改 $\nabla^2 g$ 矩阵，让固定点对应的系数为1同时修改方程右端项的对应值为0（和hw3一样的边界处理技巧，都是线性方程组考虑边界条件的通用方法）。或者 $\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
+其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程(7)的时候修改 $\nabla^2 g$ 矩阵，让固定点对应的系数为1同时修改方程右端项的对应值为0（和hw3一样的边界处理技巧，都是线性方程组考虑边界条件的通用方法）。或者 $(\nabla^2 g)^{\text{new}} = S^T\nabla^2 gS$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
 
 解出 $\mathbf{X}^{\text{new}}$ 后，新的速度可以直接计算为： 
 
