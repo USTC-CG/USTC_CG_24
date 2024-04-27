@@ -18,8 +18,6 @@ namespace USTC_CG::node_mass_spring {
 
 // -------------------- helper functions (No need to modify) --------------------
 
-using EdgeSet = std::unordered_set<Edge, hashEdge>;
-
 Eigen::MatrixXi usd_faces_to_eigen(
     const pxr::VtArray<int>& faceVertexCount,
     const pxr::VtArray<int>& faceVertexIndices)
