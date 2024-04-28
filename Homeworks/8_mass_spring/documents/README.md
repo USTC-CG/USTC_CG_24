@@ -256,6 +256,8 @@ $$
 \nabla^2 g \Delta \mathbf{x} = -\nabla g \tag{7}
 $$ 
 
+在最优化中，求解一个优化问题可能需要迭代多次，直到收敛（ $\|\nabla g\|$ 小于阈值 ），我们这里出于效率考虑，在一个时间步内只进行一次牛顿法的迭代，你也可以尝试在一个时间步内让牛顿法迭代多次直到收敛，并比较两种做法的仿真结果。
+
 > 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = (\nabla^2 g)^{-1}\mathbf{\nabla}g$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
 >由于牛顿法的推荐步长是1，这里我们就不额外进行Line Search
 
