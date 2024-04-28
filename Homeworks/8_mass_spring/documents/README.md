@@ -437,7 +437,7 @@ Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, doub
 
 在实践中，我们发现牛顿法求解弹簧质点仿真还是有点慢。（我们提供了`TIC`和`TOC`宏来打印程序运行时间）
 
-如何加速？我们将在Part2进行介绍，这也是本次作业的选做内容。
+如何加速？我们将在[Part2](./README-part2.md)进行介绍，这也是本次作业的选做内容。
 
 ## 参考资料
 1. GAMES 103 Lecture 2 & 5 
