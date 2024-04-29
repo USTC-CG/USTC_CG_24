@@ -106,7 +106,7 @@ $$
 
 需要注意的是：求解的时候因为 $\mathbf{y}$ 的定义为  $\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$，而每次迭代求解的 $\mathbf{x}$ 为 $\mathbf{x}^{n+1}$，所以 $\mathbf{y}$ 不需要更新，仍然用上一步的 $\mathbf{x}^n$ 和 $\mathbf{v}^n$。
 
-整个方法的流程示意图如下，鼓励大家在了解基础思想之后阅读原论文获得更深的理解。
+整个方法的流程示意图如下，鼓励大家在通过本文档了解基本思想后，自己阅读原论文获得更全面的理解。
 
 <div  align="center">    
  <img src="../images/liu13-pipeline.png" style="zoom:100%" />
