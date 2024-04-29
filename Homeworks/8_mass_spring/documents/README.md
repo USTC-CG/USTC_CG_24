@@ -63,7 +63,7 @@ $$
 E_i = \frac{k}{2} (\|\mathbf{x} _ {i1} - \mathbf{x}_{i2}\| - L)^2 
 $$
 
-我们记录 $\mathbf{x}_{i} := \mathbf{x} _ {i1} - \mathbf{x} _ {i2}$
+我们记 $\mathbf{x}_{i} := \mathbf{x} _ {i1} - \mathbf{x} _ {i2}$
 那么总体的能量为：
 
 $$
