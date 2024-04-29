@@ -52,6 +52,9 @@ ID_姓名_Homework*/
 |   └── ...
 ├── node_mass_spring.cpp
 ├── report.pdf                    // 实验报告
+├── CompositionGraph.json               // 节点连接信息
+├── GeoNodeSystem.json
+├── RenderGraph.json
 └── ...                           // 其他补充文件
 ```
 
