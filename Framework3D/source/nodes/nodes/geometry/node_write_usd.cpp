@@ -1,12 +1,14 @@
 // #define __GNUC__
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/PointsComponent.h"
 #include "GCore/Components/XformComponent.h"
 #include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
@@ -47,6 +49,9 @@ static void node_exec(ExeParams params)
 
     auto mesh = geometry.get_component<MeshComponent>();
 
+    auto points = geometry.get_component<PointsComponent>();
+    assert(!(points && mesh));
+
     auto t = params.get_input<float>("Time Code");
     pxr::UsdTimeCode time = pxr::UsdTimeCode(t);
     if (t == 0) {
@@ -60,11 +65,11 @@ static void node_exec(ExeParams params)
     // Here 'c_str' call is necessary since prim_path
     auto sdf_path = pxr::SdfPath(prim_path.c_str());
 
-    if (mesh) {
-        if (stage->GetPrimAtPath(sdf_path)) {
-            stage->RemovePrim(sdf_path);
-        }
+    if (stage->GetPrimAtPath(sdf_path)) {
+        stage->RemovePrim(sdf_path);
+    }
 
+    if (mesh) {
         pxr::UsdGeomMesh usdgeom =
             pxr::UsdGeomMesh::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
         if (usdgeom) {
@@ -199,9 +204,14 @@ static void node_exec(ExeParams params)
             }
         }
     }
-    else {
-        if (stage->GetPrimAtPath(sdf_path)) {
-            stage->RemovePrim(sdf_path);
+    else if (points) {
+        pxr::UsdGeomPoints usdpoints =
+            pxr::UsdGeomPoints::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+
+        usdpoints.CreatePointsAttr().Set(points->vertices, time);
+
+        if (points->width.size() > 0) {
+            usdpoints.CreateWidthsAttr().Set(points->width, time);
         }
     }
 }
