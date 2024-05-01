@@ -319,6 +319,9 @@ void SPHBase::advect()
 代码已经提供在`SPHBase::check_collision()`，反弹的速度可以通过参数`restitution`调整能量保持的比例。
 
 ## 6. 实例结果 & 节点图
+
+我们提供了` ParticleSystem::sample_particle_pos_in_a_box`函数来从一个给定的box区域采样粒子，具体使用请见 [`node_sph_fluid.cpp`](../../../Framework3D/source/nodes/nodes/geometry/node_sph_fluid.cpp).
+
 如果实现正确，并且调整了合适的参数（如`stiffness` = 500, `exponent`=7, 时间步 `dt`=0.005, `viscosity` = 0.03），可以看到类似下面的结果：
 
 <div  align="center">    
