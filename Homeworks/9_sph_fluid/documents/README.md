@@ -1,11 +1,12 @@
-# SPH流体仿真简明教程 Part 1. 
-本次作业我们将进入流体的世界，你将学习使用光滑粒子流体动力学（SPH: Smoothed Particle Hydrodynamics）这种经典的基于粒子表示的仿真方法计算并呈现流体的运动。
+# SPH流体仿真简明教程 Part 1 
+本次作业我们将进入流体的世界，你将学习使用光滑粒子流体动力学（SPH: Smoothed Particle Hydrodynamics）这种经典的基于粒子表示的仿真方法计算流体的运动。
 
 > 用>包裹的引用格式呈现的内容为扩展阅读/思考内容，为了实现本次作业可以不看
 
-## 1. 流体如何运动：从Navier-Stokes方程说起 
+## 1. 水之道：从Navier-Stokes方程说起 
 
-在游戏与电影中有大量的流体仿真, 下图展示了当前影视界流体仿真的巅峰之作《阿凡达2-水之道》。为了模拟流体多样的运动及其与固体的交互、获得逼真的视觉效果，我们需要从物理出发，考虑最本质的运动方程。
+在游戏与电影中有大量对流体仿真的需求, 下图展示了当前影视界流体仿真的巅峰之作《阿凡达2-水之道》中以假乱真的视觉效果。
+为了模拟流体多样的运动及其与固体的交互，我们需要从物理出发，考虑最本质的运动方程。
 
 <div  align="center">    
  <img src="../images/avatar2.gif" style="zoom:96%" />
@@ -15,7 +16,7 @@
  <img src="../images/avatar2-3.gif" style="zoom:100%" />
 </div>
 
-流体仿真与一般PDE的求解别无二致，都是基于合适的时间离散与空间离散格式，通过数值方法求解描述其运动的PDE。在流体里面我们求解的是Navier-Stokes方程: 
+流体仿真与一般PDE的求解别无二致，都是基于合适的时间离散与空间离散格式，通过数值方法求解描述其运动的PDE。在流体里面，我们求解的是Navier-Stokes方程: 
 
 $$
 \begin{aligned}
@@ -24,68 +25,112 @@ $$
 \end{aligned}
 $$
 
-其中 $\rho$ 为流体的密度， $\mathbf{v}$ 为速度场， $g$ 是重力加速度, $p$ 为流体内部压强， $\mu$ 为黏度系数。
+其中 $\rho$ 为流体的密度， $\mathbf{v}$ 为速度场， $g$ 是重力加速度，  $p$ 为流体内部压强， $\mu$ 为黏度系数。
 第一个方程的右端项分别对应着重力 $\rho g$ 、压力 $-\nabla p$ 、粘性力 $\mu \nabla^2 \mathbf{v}$ 。
 
-> 扩展阅读：我们这里和课上只使用了NS方程的微分形式，但实际上，根据数学建模的不同，NS方程还有其他微分与积分形式。更多内容可以阅读
+> 扩展阅读：我们这里和课上只使用了NS方程的微分形式，但实际上，根据数学建模的不同，NS方程还有其他微分与积分形式。
 
-值得一提的是，(1)式中的 $\frac{D \cdot}{D t}$ 被称为“物质导数 (Material derivative)”：
+值得一提的是，(1)式中的 $\frac{D \cdot}{D t}$ 被称为“物质导数 (Material derivative)” 或 “随体导数 (derivative following the motion)”，是全导数在流体力学中的特例：
  
-假设考虑一个以空间位置 $\mathbf{x}$ 和时间 $t$ 为自变量的4维物理场 $f = f(\mathbf{x}, t)$ ，空间位置 $\mathbf{x} = \mathbf{x}(t)$ 也是时间的函数，那么采样点上的 $f$ 关于 $t$ 的全导数为： $\frac{d f}{d t} = \frac{\partial f}{\partial t} + \frac{\partial f}{\partial x}\frac{\partial x}{\partial t} = \frac{\partial f}{\partial t} + \mathbf{v}\cdot \nabla f$ , 我们将这个全导数称为 $f$ 的物质导数，记为 $\frac{D f}{Dt}$，它同时考虑了 $f$ 由于时间推移和采样点空间移动两个原因带来的变化。
+考虑一个跟随流体运动的流体微团，以其为采样点，采样一个空间位置 $\mathbf{x}$ 和时间 $t$ 为自变量的4维物理场 $f = f(\mathbf{x}, t)$（如流体的密度场、压强场、速度场等），流体微团的空间位置 $\mathbf{x} = \mathbf{x}(t)$ 也是时间的函数。那么采样点上的 $f$ 关于 $t$ 的全导数为： $\frac{d f}{d t} = \frac{\partial f}{\partial t} + \frac{\partial f}{\partial x}\frac{\partial x}{\partial t} = \frac{\partial f}{\partial t} + \mathbf{v}\cdot \nabla f$ , 我们将其称为运动的流体微团上物理场 $f$ 的物质导数，记为 $\frac{D f}{Dt}$，它同时考虑了 $f$ 由于时间推移自身的变化和采样点空间运动两个原因带来的变化。
 
-举个例子：坐火车早上从广州出发，晚上到北京，温度场 $T$ 的变化量不仅与时间 $t$ 有关（早上到晚上），也与火车的位置 $\mathbf{x}(t)$ 有关（广州到北京）。
+> 举两个例子：
+> 
+> 1. 测量风速：风速仪固定在气象站上，或风速仪随气象气球而飘动。“前者测量的是风经过固定点的速度，称为空间导数或者欧拉导数。后者测量的是跟随风运动时产生的速度变化，称为物质导数或拉格朗日导数。” ——[来自知乎](
+https://www.zhihu.com/question/26992291/answer/1448275421)
+> 
+> <div  align="center">    
+> <img src="../images/material_derivative.png" style="zoom:50%" />
+> </div>
+> 
+> 2. 坐火车早上从广州出发，晚上到北京，温度场  $T$  的变化量不仅与时间 $t$ 有关（早上到晚上），也与火车的位置 $\mathbf{x}(t)$ 有关（广州到北京）。
+>
+> 关于物质导数更多内容可以看 [南开大学任博老师在21年USTC计算机图形学前沿课程上的视频（5分钟）](https://www.bilibili.com/video/BV1Kf4y157WW?t=664.9&p=8) 。
 
-> 和拉格朗日视角 & 欧拉视角的关系？
- 
->  $\frac{D \cdot}{D t}$ 还有很多其他名字，如“随体导数 (derivative following the motion)”，这个名字更加直观地反映了其物理含义。[链接](https://www.bilibili.com/video/BV1934y1X7MD/?p=3&share_source=copy_web&vd_source=19d965dd50171e7e3327ff6e149567c2)
+NS方程的第一行无法独立求解，为了确定压强 $p$ ， 我们需要考虑流体的不可压缩性条件：
 
-NS方程的第一行无法独立求解，为了确定压强 $p$ ， 我们需要考虑流体的不可压缩性条件。
+$$
+\nabla \cdot \mathbf{v} = 0 
+$$
+
+结合散度的物理意义（流体的汇聚与发散），我们可以看到不可压缩性其实等价于质量守恒，即空间中任意位置流体的密度的物质导数为0（如果散度不等于0，也就是流体会汇聚到一点 or 从一点流出，那么这一点上流体的质量肯定就会增加 or 减少，不满足质量守恒），如下图所示：
 
 <div  align="center">    
  <img src="../images/div_v.png" style="zoom:80%" />
 </div>
 
-在时间离散上，流体仿真中常用的是一种称为“算子分裂”（Operator Splitting）的做法。
+那么有了NS方程，我们就可以考虑如何在计算机中求解了！
 
-// 根据PPT内容，介绍operator splitting 四步走
+## 2. 时空离散，启动！
 
-1. 不考虑压力更新 $\mathbf{v}$
-2. 计算压强
-3. 考虑压力更新 $\mathbf{v}$
-4. 更新位置
+在时间离散上，流体仿真中常用的是一种称为“算子分裂”（Operator Splitting）的做法，将NS方程拆分为两部分：
 
+1. 不考虑压力，更新 $\mathbf{v}$
 
-## 2. 如何离散？粒子！
+$$
+\rho \frac{D \mathbf{v}}{D t} =\rho g+\mu \nabla^2 \mathbf{v} 
+$$
 
-这里我们简要介绍一下SPH的离散方式。都是使用粒子去采样物理场。这些SPH粒子
+2. 考虑压强，计算压力，更新 $\mathbf{v}$
+$$
+\rho \frac{D \mathbf{v}}{D t} = -\nabla p
+$$
 
-// 这里需要一个SPH的示意图
+3. 根据最终的速度，更新粒子位置
+
+在空间离散上，SPH使用粒子去采样物理场，并通过核函数来拟合未采样到的位置的物理量。
 
 <div  align="center">    
- <img src="../images/div_v.png" style="zoom:80%" />
+ <img src="../images/sph.png" style="zoom:80%" />
 </div>
 
-我们也提供了核函数的代码。
+SPH中常用的核函数如下（ $d$ 为仿真的维度 ）：
+
+$$
+\begin{aligned}
+& W(r, h)=\sigma_d \begin{cases}6\left(q^3-q^2\right)+1 & \text { for } 0 \leq q \leq \frac{1}{2} \\
+2(1-q)^3 & \text { for } \frac{1}{2} \leq q \leq 1 \\
+0 & \text { otherwise }\end{cases} \\
+& \text { with } q=\frac{1}{h}\|r\|, \sigma_1=\frac{4}{3 h}, \sigma_2=\frac{40}{7 \pi h^2}, \sigma_3=\frac{8}{\pi h^3}
+\end{aligned}
+$$
+
+在本次作业框架[`sph_base.cpp`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/sph_base.cpp)中，我们提供了核函数的代码。
 
 ```C++
-W()
-grad_W()
+// SPH kernel function: h is the support radius, instead of time step size 
+static double W(const Eigen::Vector3d& r, double h);
+static Eigen::Vector3d grad_W(const Eigen::Vector3d& r, double h);
+static double W_zero(double h);
 ```
 
+在SPH中，由于不像弹簧质点系统有固定的拓扑，每一个粒子的邻居都在不断地变化。
 为了查找邻居粒子，这里我们使用了一个空间网格结构。
 
-// 空间加速结构的图
+<div  align="center">    
+ <img src="../images/grid.png" style="zoom:30%" />
+</div>
 
 在每一步的开始，我们需要把粒子分配到网格中，然后更新所有粒子的邻居。
 
 ```C++
-code 
+
 ```
 
-下面的代码给出了遍历粒子`p`的所有邻居的方法：
+下面的代码给出了遍历每个粒子`p`的所有邻居，并访问相关物理量的示例：
 
 ```C++
-// Search neighbors
+for (auto& p : ps_.particles()) {
+    auto v_i = p->vel(); 
+
+    // Then traverse all neighbor fluid particles of p
+    for (auto& q : p->neighbors()) {
+        auto v_j = q->vel(); 
+        double w_ij = W(p->x() - q->x(), ps_.h());
+        Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
+        // ... other code 
+    }
+}
 ```
 
 为了向大家清楚地展示查找的过程，我们自己编写了邻居粒子查找的代码。如果有兴趣进一步提高程序的性能，你可以尝试使用hw2 image warping中使用过的ANN库。
