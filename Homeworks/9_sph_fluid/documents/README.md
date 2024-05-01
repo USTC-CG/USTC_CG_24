@@ -106,6 +106,8 @@ static double W_zero(double h);
 ```
 在作业框架中，我们使用了`ParticleSystem`这个类去管理粒子系统，每个粒子作为一个类`Particle`携带速度、位置、密度、压强等相关物理量，代码请见[`particle_system.h`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/particle_system.h)。
 
+### 2.1  邻居粒子查找
+
 在SPH中，由于不像弹簧质点系统有固定的拓扑，每一个粒子的邻居都在不断地变化。
 为了查找邻居粒子，这里我们使用了一个空间网格结构。
 
@@ -142,7 +144,7 @@ for (auto& p : ps_.particles()) {
 
 为了向大家清楚地展示查找的过程，我们自己编写了邻居粒子查找的代码。如果有兴趣进一步提高程序的性能，你可以尝试使用hw2 image warping中使用过的ANN库。
 
-### 2.1  SPH中的物理量
+### 2.2  SPH中的物理量
 
 SPH中密度的计算公式为：
 
@@ -230,7 +232,7 @@ Vector3d SPHBase::compute_viscosity_acceleration(
 
 下面，我们进一步介绍压力的求解，不同的SPH方法在这里开始有了区别。
 
-## 4. 压强是多少？
+## 3. 压强是多少？
 
 本次作业你需要实现的是一种经典的 “弱可压缩的SPH方法” (WCSPH: Weakly Compressible SPH)
 
@@ -307,7 +309,7 @@ void SPHBase::advect()
 }
 ```
 
-## 5. 边界处理
+## 4. 边界处理
 
 边界处理有多种方式。本次作业我们提供了边界处理的代码。我们采用了简单的反弹策略。
 
@@ -318,7 +320,7 @@ void SPHBase::advect()
 
 代码已经提供在`SPHBase::check_collision()`，反弹的速度可以通过参数`restitution`调整能量保持的比例。
 
-## 6. 实例结果 & 节点图
+## 5. 实例结果 & 节点图
 
 我们提供了` ParticleSystem::sample_particle_pos_in_a_box`函数来从一个给定的box区域采样粒子，具体使用请见 [`node_sph_fluid.cpp`](../../../Framework3D/source/nodes/nodes/geometry/node_sph_fluid.cpp). 我们默认的粒子采样数是xyz三个轴25x25x25，可以根据机器性能自行调整（注意粒子采样数会影响一开始的密度估计，对仿真结果有影响）。
 
@@ -344,7 +346,7 @@ void SPHBase::advect()
 
 但是WCSPH不够稳定，在时间步长调大的时候就会爆炸。
 
-## (Optional) 表面重建与渲染
+## 6. (Optional) 表面重建与渲染
 
 我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染。(目前框架中透明物体的渲染正在施工中，会晚几天发布)
 
@@ -359,7 +361,7 @@ void SPHBase::advect()
 </div>
 
 
-## (Optional) OpenMP 并行
+## 7. (Optional) OpenMP 并行
 
 遍历粒子时，可以考虑使用并行来提高程序的性能，这里大家可以考虑使用OpenMP实现多线程并行。
 
