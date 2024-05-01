@@ -14,14 +14,14 @@
 #include "rich_type_buffer.hpp"
 #include "utils/draw_fullscreen.h"
 
-namespace USTC_CG::node_environment_pass {
+namespace USTC_CG::node_transparent_refraction {
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Texture>("Color");
     b.add_input<decl::Texture>("Depth");
     b.add_input<decl::Lights>("Lights");
 
-    b.add_input<decl::String>("Shader").default_val("shaders/environment_map.fs");
+    b.add_input<decl::String>("Shader").default_val("shaders/transparent_refraction.fs");
     b.add_output<decl::Texture>("Color");
 }
 
@@ -75,8 +75,8 @@ static void node_register()
 {
     static NodeTypeInfo ntype;
 
-    strcpy(ntype.ui_name, "Environment Pass");
-    strcpy_s(ntype.id_name, "render_environment_pass");
+    strcpy(ntype.ui_name, "Transparent Refraction");
+    strcpy_s(ntype.id_name, "render_transparent_refraction");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
@@ -85,4 +85,4 @@ static void node_register()
 }
 
 NOD_REGISTER_NODE(node_register)
-}  // namespace USTC_CG::node_environment_pass
+}  // namespace USTC_CG::node_transparent_refraction

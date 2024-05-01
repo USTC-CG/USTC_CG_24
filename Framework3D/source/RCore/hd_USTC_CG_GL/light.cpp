@@ -1,10 +1,15 @@
 #include "light.h"
 
+#include "RCore/internal/gl/GLResources.hpp"
 #include "Utils/Logging/Logging.h"
 #include "pxr/imaging/glf/simpleLight.h"
 #include "pxr/imaging/hd/changeTracker.h"
 #include "pxr/imaging/hd/rprimCollection.h"
 #include "pxr/imaging/hd/sceneDelegate.h"
+#include "pxr/imaging/hio/image.h"
+#include "pxr/usd/sdr/shaderNode.h"
+#include "pxr/usd/usd/tokens.h"
+#include "pxr/usdImaging/usdImaging/tokens.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -172,6 +177,114 @@ VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
     VtValue val;
     TfMapLookup(_params, token, &val);
     return val;
+}
+
+GLuint Hd_USTC_CG_Dome_Light::createTextureFromHioImage(const InputDescriptor& env_texture)
+{
+    // Step 4: Create an OpenGL texture object
+    GLuint texture;
+    glGenTextures(1, &texture);
+
+    // Step 5: Bind the texture object and specify its parameters
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    auto image = env_texture.image;
+    if (image) {
+        // Step 1: Get image information
+        int width = image->GetWidth();
+        int height = image->GetHeight();
+        HioFormat format = image->GetFormat();
+
+        HioImage::StorageSpec storageSpec;
+        storageSpec.width = width;
+        storageSpec.height = height;
+        storageSpec.format = format;
+        storageSpec.data = malloc(width * height * image->GetBytesPerPixel());
+        if (!storageSpec.data) {
+            return 0;
+        }
+
+        // Step 3: Read the image data
+        if (!image->Read(storageSpec)) {
+            free(storageSpec.data);
+            return 0;
+        }
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLInternalFormat(format),
+            width,
+            height,
+            0,
+            GetGLFormat(format),
+            GetGLType(format),
+            storageSpec.data);
+        free(storageSpec.data);
+    }
+    else {
+        auto val = radiance;
+        float color[4] = { val[0], val[1], val[2], 1.0f };
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GetGLInternalFormat(HioFormatFloat32Vec4),
+            1,
+            1,
+            0,
+            GetGLFormat(HioFormatFloat32Vec4),
+            GetGLType(HioFormatFloat32Vec4),
+            color);
+    }
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    float aniso = 0.0f;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return texture;
+}
+
+void Hd_USTC_CG_Dome_Light::RefreshGLBuffer()
+{
+    if (env_texture.glTexture == 0) {
+        env_texture.glTexture = createTextureFromHioImage(env_texture);
+    }
+}
+
+void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
+{
+    const VtValue v = sceneDelegate->GetLightParamValue(id, HdLightTokens->textureFile);
+    textureFileName = v.Get<pxr::SdfAssetPath>();
+
+    env_texture.image = HioImage::OpenForReading(textureFileName.GetAssetPath(), 0, 0);
+
+    auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
+    radiance = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
+}
+
+void Hd_USTC_CG_Dome_Light::Sync(
+    HdSceneDelegate* sceneDelegate,
+    HdRenderParam* renderParam,
+    HdDirtyBits* dirtyBits)
+{
+    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+
+    auto id = GetId();
+    _PrepareDomeLight(id, sceneDelegate);
+}
+
+void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)
+{
+    Hd_USTC_CG_Light::Finalize(renderParam);
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
