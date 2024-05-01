@@ -55,7 +55,7 @@ $$
 
 ## 2. 构建显式矩阵的困难
 
-但是求解的时候，我们发现一个巨大问题：$\nabla^2 p$ 是怎么构建的呢？在之前有固定拓扑的情况下， $\nabla^2$ 算子可以比较容易地写出。
+但是求解的时候，我们发现一个巨大问题： $\nabla^2 p$ 是怎么构建的呢？在之前有固定拓扑的情况下， $\nabla^2$ 算子可以比较容易地写出。
 
 首先我们回顾一下 $\nabla p$ :
 
@@ -89,11 +89,11 @@ $$
 
 ## 3. 迭代法
 
-我们知道，求解一个线性方程组我们可以使用迭代法（和前几次作业的区别与联系？），如共轭梯度法，Jacobi迭代法
+我们知道，求解一个线性方程组我们可以使用迭代法（和前几次作业的区别与联系？），如共轭梯度法，Jacobi迭代法等。
 
-介绍一下松弛Jacobi迭代
+下面，我们介绍一下松弛Jacobi迭代的做法。
 
-为了求解 $\mathbf{Ax = b}$ ，Jacobi迭代：
+为了求解 $\mathbf{Ax = b}$ ，Jacobi迭代的做法是：
 
 $$
 x^{(k+1)} = D^{-1} (\mathbf{b} - (L+U) x^{(k)})
@@ -102,9 +102,8 @@ $$
 写成每个元素的形式:
 
 $$
-\mathbf{x}_i^{(k+1)}=\frac{1}{a_{i i}}\left(b_i-\sum_{j \neq i} a_{i j} \mathbf{x}_j^{(k)}\right), \quad i=1,2, \ldots, n \tag{5}
+\mathbf{x} _ i^{(k+1)}=\frac{1}{a_{i i}}\left(b_i-\sum_{j \neq i} a_{i j} \mathbf{x}_j^{(k)}\right), \quad i=1,2, \ldots, n \tag{5}
 $$
-
 
 为了提高收敛效率，可以使用松弛Jacobi迭代：
 
@@ -112,7 +111,7 @@ $$
 \begin{aligned}
 \mathbf{x}^{(k+1)} &= \omega D^{-1} (\mathbf{b} - (L+U) \mathbf{x}^{(k)}) + (1 - \omega) \mathbf{x}^{(k)}  \\
 &=  \omega D^{-1} \mathbf{b} + (I - \omega D^{-1} \mathbf{A}) \mathbf{x}^{(k)} \\
-& = \mathbf{x}^{(k)} + \omega D^{-1}(\mathbf{b} - \mathbf{A} \mathbf{x}^{(k)})
+&= \mathbf{x}^{(k)} + \omega D^{-1}(\mathbf{b} - \mathbf{A} \mathbf{x}^{(k)})
 \end{aligned}
 $$
 
@@ -122,76 +121,78 @@ $$
 
 $$
 \begin{aligned}
-\mathbf{x}_i^{(k+1)} &=\mathbf{x}_i^{(k)} + \frac{\omega}{a_{i i}}\left(b_i- \sum_{j} a_{i j} \mathbf{x}_j^{(k)}\right), \\ 
-&= \mathbf{x}_i^{(k)} + \frac{\omega}{a_{i i}}\left(b_i- (\mathbf{A}\mathbf{x}^{(k)})_i \right),
+\mathbf{x}_ i^{(k+1)} &=\mathbf{x} _ i^{(k)} + \frac{\omega}{a _ {i i}}\left(b_i- \sum_{j} a_{i j} \mathbf{x}_ j^{(k)}\right), \\ 
+&= \mathbf{x}_ i^{(k)} + \frac{\omega}{a_{i i}}\left(b_i- (\mathbf{A}\mathbf{x}^{(k)})_i \right),
 \quad i=1,2, \ldots, n
 \end{aligned} \tag{6}
 $$
 
-其中 $(\mathbf{A}\mathbf{x}^{(k)})_i$ 表示 $(\mathbf{A}\mathbf{x}^{(k)})$ 这个向量的第 $i$ 个元素。
+其中  $(\mathbf{A}\mathbf{x}^{(k)})_i$  表示  $(\mathbf{A}\mathbf{x}^{(k)})$ 这个向量的第 $i$ 个元素。
 
-发现了吗？现在我们只需要知道 $\mathbf{Ax}$ 这个向量即可！
+发现了吗？现在我们只需要知道  $\mathbf{Ax}$  这个向量即可！
 
 那么，放在IISPH方法中，上面松弛Jacobi的思想是怎么实现的呢？
 
-我们很快会发现，$\nabla^2 p_i = \mathbf{Ap}_i$ 其实直接就是计算(4)式！而  $\mathbf{b}_i = \frac{\rho^* - \rho_0}{(\Delta t)^2}$ . 
+我们很快会发现， $\nabla^2 p_i = \mathbf{Ap} _ i$  其实直接就是计算(4)式！而  $\mathbf{b}_i = \frac{\rho^* - \rho_0}{(\Delta t)^2}$ . 
 
 
 不过，唯一麻烦的是，我们还是需要 $a_{ii}$ 的表达式，这里直接给出：
 
 $$
-a_{i i}=- \sum_j m_j\left(\mathbf{d}_{i i}-\mathbf{d}_{j i}\right) \nabla W_{ij}
+a_{i i}=- \sum_j m_j\left(\mathbf{d}_ {i i}-\mathbf{d} _ {j i}\right) \nabla W_{ij}
 $$
 
 其中，
 
 $$
-\mathbf{d}_{i i} = \sum_j \frac{m_j}{\rho_i^2} \nabla W_{i j} \\
-
-\mathbf{d}_{ji} = \frac{m_i}{\rho_i^2} \nabla W_{ji} \\
-
+\mathbf{d}_ {i i} = \sum _ j \frac{m_ j}{\rho_i^2} \nabla W_{i j} \\
+\mathbf{d}_ {ji} = \frac{m_i}{\rho_i^2} \nabla W_{ji} \\
 $$
 
 > $a_{ii}$ 推导如下，感兴趣的同学可以自己推导一遍：
 >
 > 因为:
+> 
 > $$
->\begin{aligned}
->& \mathbf{a}^p_i = -\frac{1}{\rho_i} \nabla p \\
-> &= - \sum_j m_j\left(\frac{p_i}{\rho_i^2}+\frac{p_j}{\rho_j^2}\right) \nabla W_{i j} \\
->& = - \left( \underbrace{\left( \sum_j \frac{m_j}{\rho_i^2} \nabla W_{i j}\right)}_{\text{记为} \mathbf{d} _ {i i}} p_i+\sum_j \underbrace{ \frac{m_j}{\rho_j^2} \nabla W_{i j}}_{\text{记为} \mathbf{d} _{i j}} p_j \right),
->\end{aligned}
-> $$
+\begin{aligned}
+& \mathbf{a}^p_i = -\frac{1}{\rho_i} \nabla p \\
+ &= - \sum_j m_j\left(\frac{p_i}{\rho_i^2}+\frac{p_j}{\rho_j^2}\right) \nabla W_{i j} \\
+& = - \left( \underbrace{\left( \sum_j \frac{m_j}{\rho_i^2} \nabla W_{i j}\right)}_ {\text{记为} \mathbf{d} _ {i i}} p_i+\sum_j \underbrace{ \frac{m_j}{\rho_j^2} \nabla W_{i j}}_ {\text{记为} \mathbf{d} _ {i j}} p_j \right),
+\end{aligned}
+$$
+> 
 > 那么，如果用下标 $k$ 来表示粒子 $j$ 的邻居们，
+> 
 > $$
-> \begin{aligned}
-> \nabla^2 p 
-> &= \sum_j m_j (\mathbf{a}^p_i - \mathbf{a}^p_j) \cdot \nabla W_{ij} \\
-> & = - \sum_j m_j \left((\mathbf{d} _ {ii} p_i + \mathbf{d} _{ij} p_j) - (\mathbf{d}_{jj} p_j + \mathbf{d}_{jk} p_k )\right) \cdot \nabla W_{ij}
-> \end{aligned} \tag{4}
+\begin{aligned}
+\nabla^2 p 
+&= \sum_j m_j (\mathbf{a}^p_i - \mathbf{a}^p_j) \cdot \nabla W_{ij} \\
+& = - \sum_j m_j \left((\mathbf{d} _ {ii} p_i + \mathbf{d} _ {ij} p_j) - (\mathbf{d}_ {jj} p_j + \mathbf{d} _ {jk} p_k )\right) \cdot \nabla W_{ij}
+\end{aligned} \tag{4}
 > $$
+> 
 > 为了求 $a_{ii}$，只需要关注 $k = i$ 的时候，然后挑出这些系数：
+> 
 > $$
-> \begin{aligned}
-> a_{i i} &= -\sum_j m_j\left(\mathbf{d} _ {i i}-\mathbf{d} _ {j i}\right) \nabla W_{ij} 
-> \end{aligned}
-> $$
+\begin{aligned}
+a_{i i} &= -\sum_j m_j\left(\mathbf{d} _ {i i}-\mathbf{d} _ {j i}\right) \nabla W_{ij} 
+\end{aligned}
+$$
+> 
 > 其中 $\mathbf{d} _ {j i} =  \frac{m_i}{\rho_i^2} \nabla W_{ji}$ .
-
 
 
 那么，最后使用松弛Jacobi迭代来求解关于压强的泊松方程（公式(2)）的算法如下（图片来自原论文）：
 
 <div  align="center">    
- <img src="../images/iisph-alg.png" style="zoom:100%" />
+ <img src="../images/iisph-alg.png" style="zoom:60%" />
 </div>
 
-
 ## 4. 总结与展望
-
+SPH方法还有很多变种。如果想进一步学习SPH方法在图形学中的应用，欢迎访问 [SPH Tutorial](https://sph-tutorial.physics-simulation.org/). 
 
 ## 参考资料
 1. [paper "Implicit Incompressible SPH"](https://cg.informatik.uni-freiburg.de/publications/2013_TVCG_IISPH.pdf)
-2. SPH Tutorial
+2. [SPH Tutorial](https://sph-tutorial.physics-simulation.org/). 
 
 
