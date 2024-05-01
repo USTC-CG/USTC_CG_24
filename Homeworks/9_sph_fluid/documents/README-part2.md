@@ -1,6 +1,6 @@
 # SPH流体仿真简明教程Part2 之 IISPH
 
-在Part1中，我们介绍了WCSPH这种弱可压缩的流体仿真方法，本章我们将介绍不可压缩性更好的IISPH方法。
+在Part1中，我们介绍了WCSPH这种弱可压缩的流体仿真方法，本章我们将介绍能够更好地求解不可压缩性约束从而提高仿真稳定性的IISPH方法。
 
 原论文链接：[2013_TVCG_IISPH](https://cg.informatik.uni-freiburg.de/publications/2013_TVCG_IISPH.pdf)
 
@@ -97,7 +97,7 @@ $$
 
 下面，我们介绍一下松弛Jacobi迭代的做法。
 
-为了求解 $\mathbf{Ax = b}$ ，Jacobi迭代的做法是：
+为了求解 $\mathbf{Ax = b}$ ，Jacobi迭代的做法是将 $\mathbf{A}$ 拆分为 对角线元素、上下三角组成的三个矩阵 $D, L, U$ ：
 
 $$
 x^{(k+1)} = D^{-1} (\mathbf{b} - (L+U) x^{(k)})
@@ -153,6 +153,8 @@ $$
 \mathbf{d}_ {ji} = \frac{m_i}{\rho_i^2} \nabla W_{ji} \\
 $$
 
+> 我们这里的 $a_{ii}, \mathbf{d}_{ii}, \mathbf{d}_{ji}$ 和原论文中的定义相差 $(\Delta t)^2$， 注意甄别。
+
 > $a_{ii}$ 推导如下，感兴趣的同学可以自己推导一遍：
 >
 > 因为:
@@ -192,8 +194,50 @@ $$
  <img src="../images/iisph-alg.png" style="zoom:60%" />
 </div>
 
+建议大家在看完文档后有了基础认识后，进一步阅读原论文中提到的实现细节(提醒：本算法公式下标比较繁杂，需要小心谨慎), 然后所需要写的代码为[`IISPH.cpp`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/iisph.cpp)的以下部分：
+
+
+```C++
+void IISPH::step()
+{
+    // (HW Optional)
+}
+
+void IISPH::compute_pressure()
+{
+    // (HW Optional) solve pressure using relaxed Jacobi iteration 
+    // Something like this: 
+
+    //double threshold = 0.001;
+    //for (unsigned iter = 0; iter < max_iter_; iter++) {
+    //    double avg_density_error = pressure_solve_iteration();
+    //    if (avg_density_error < threshold)
+    //        break;
+    //}
+}
+
+void IISPH::predict_advection()
+{
+    // (HW Optional)
+    // predict new density based on non-pressure forces,
+    // compute necessary variables for pressure solve, etc. 
+
+    // Note: feel free to remove or add functions based on your need,
+    // you can also rename this function. 
+}
+
+double IISPH::pressure_solve_iteration()
+{
+    // (HW Optional)   
+    // One step iteration to solve the pressure poisson equation of IISPH
+
+    return 1.0; 
+}
+```
+
+
 ## 4. 总结与展望
-SPH方法还有很多变种。如果想进一步学习SPH方法在图形学中的应用，欢迎访问 [SPH Tutorial](https://sph-tutorial.physics-simulation.org/). 
+SPH方法还有很多变种，覆盖了流体仿真与流固耦合甚至弹性体仿真的很多领域。如果想进一步学习SPH方法在图形学中的应用，欢迎访问 [SPH Tutorial](https://sph-tutorial.physics-simulation.org/). 
 
 ## 参考资料
 1. [paper "Implicit Incompressible SPH"](https://cg.informatik.uni-freiburg.de/publications/2013_TVCG_IISPH.pdf)
