@@ -4,6 +4,10 @@
 
 原论文链接：[2013_TVCG_IISPH](https://cg.informatik.uni-freiburg.de/publications/2013_TVCG_IISPH.pdf)
 
+<div  align="center">    
+ <img src="../images/iisph-teaser.png" style="zoom:96%" />
+</div>
+
 ## 1. Pressure Poisson Equation (PPE) 
 
 根据流体仿真的一般流程，
