@@ -1,4 +1,4 @@
-# SPH流体仿真简明教程 Part 1. The Way of Water
+# SPH流体仿真简明教程 Part 1. 
 本次作业我们将进入流体的世界，你将学习使用光滑粒子流体动力学（SPH: Smoothed Particle Hydrodynamics）这种经典的基于粒子表示的仿真方法计算并呈现流体的运动。
 
 > 用>包裹的引用格式呈现的内容为扩展阅读/思考内容，为了实现本次作业可以不看
@@ -19,12 +19,12 @@
 
 $$
 \begin{aligned}
-\rho \frac{D \mathbf{v}}{D t} & =\rho g-\nabla p+\mu \nabla^2 \mathbf{v} \tag{1} \\
+\rho \frac{D \mathbf{v}}{D t} & =\rho g-\nabla p+\mu \nabla^2 \mathbf{v}  \\
 \nabla \cdot \mathbf{v} & =0 
 \end{aligned}
 $$
 
-其中 $\rho$ 为流体的密度，$\mathbf{v}$ 为速度场，$g$ 是重力加速度, $p$ 为流体内部压强，$\mu$ 为黏度系数。
+其中 $\rho$ 为流体的密度， $\mathbf{v}$ 为速度场， $g$ 是重力加速度, $p$ 为流体内部压强， $\mu$ 为黏度系数。
 第一个方程的右端项分别对应着重力 $\rho g$ 、压力 $-\nabla p$ 、粘性力 $\mu \nabla^2 \mathbf{v}$ 。
 
 > 扩展阅读：我们这里和课上只使用了NS方程的微分形式，但实际上，根据数学建模的不同，NS方程还有其他微分与积分形式。更多内容可以阅读
@@ -40,8 +40,6 @@ $$
 >  $\frac{D \cdot}{D t}$ 还有很多其他名字，如“随体导数 (derivative following the motion)”，这个名字更加直观地反映了其物理含义。[链接](https://www.bilibili.com/video/BV1934y1X7MD/?p=3&share_source=copy_web&vd_source=19d965dd50171e7e3327ff6e149567c2)
 
 NS方程的第一行无法独立求解，为了确定压强 $p$ ， 我们需要考虑流体的不可压缩性条件。
-
-// PPT中的图，散度 和 密度
 
 <div  align="center">    
  <img src="../images/div_v.png" style="zoom:80%" />
@@ -66,7 +64,6 @@ NS方程的第一行无法独立求解，为了确定压强 $p$ ， 我们需要
 <div  align="center">    
  <img src="../images/div_v.png" style="zoom:80%" />
 </div>
-
 
 我们也提供了核函数的代码。
 
@@ -103,7 +100,7 @@ code
 SPH中密度的计算公式为：
 
 $$
- \rho_i = \sum_j \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_i - \mathbf{x}_j, h) =  \sum_j \left(\frac{m_j}{\rho_j} \right) m_j  W_{ij}
+ \rho_i = \sum_j \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_j \left(\frac{m_j}{\rho_j} \right) m_j  W_{ij}
 $$
 
 这里我们记 $W_{ij} = W(\mathbf{x}_i, \mathbf{x}_j, h)$。 在SPH方法中， $h$ 表示核函数半径，我们用 $\Delta t$ 来表示时间步长。
@@ -111,13 +108,13 @@ $$
 速度散度的计算公式为：
 
 $$
-\nabla \cdot \mathbf{v}_i = \sum_j \frac{m_j}{\rho_j} (\mathbf{v}_j - \mathbf{v}_i) \cdot \nabla W_{ij}
+\nabla \cdot \mathbf{v}_ i = \sum_ j \frac{m_j}{\rho_ j} (\mathbf{v}_ j - \mathbf{v}_ i) \cdot \nabla W_{ij}
 $$
 
 粘性力，我们使用计算公式：
 
 $$
-\nabla^2 \mathbf{v}_i=2(d+2) \sum_j \frac{m_j}{\rho_j} \frac{\mathbf{v}_{i j} \cdot \mathbf{x}_{i j}}{\left\|\mathbf{x}_{i j}\right\|^2+0.01 h^2} \nabla W_{i, j}
+\nabla^2 \mathbf{v}_ i=2(d+2) \sum_j \frac{m_j}{\rho_j} \frac{\mathbf{v}_ {i j} \cdot \mathbf{x}_ {i j}}{\left\|\mathbf{x}_ {i j}\right\|^2+0.01 h^2} \nabla W_{i, j}
 $$
 
 其中 $d$ 为仿真的维度，这里为3.
