@@ -1,12 +1,14 @@
 // #define __GNUC__
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/PointsComponent.h"
 #include "GCore/Components/XformComponent.h"
 #include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
@@ -47,6 +49,9 @@ static void node_exec(ExeParams params)
 
     auto mesh = geometry.get_component<MeshComponent>();
 
+    auto points = geometry.get_component<PointsComponent>();
+    assert(!(points && mesh));
+
     auto t = params.get_input<float>("Time Code");
     pxr::UsdTimeCode time = pxr::UsdTimeCode(t);
     if (t == 0) {
@@ -60,11 +65,11 @@ static void node_exec(ExeParams params)
     // Here 'c_str' call is necessary since prim_path
     auto sdf_path = pxr::SdfPath(prim_path.c_str());
 
-    if (mesh) {
-        if (stage->GetPrimAtPath(sdf_path)) {
-            stage->RemovePrim(sdf_path);
-        }
+    if (stage->GetPrimAtPath(sdf_path)) {
+        stage->RemovePrim(sdf_path);
+    }
 
+    if (mesh) {
         pxr::UsdGeomMesh usdgeom =
             pxr::UsdGeomMesh::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
         if (usdgeom) {
@@ -101,38 +106,6 @@ static void node_exec(ExeParams params)
                 colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
                 colorPrimvar.Set(mesh->displayColor);
             }
-        }
-
-        auto xform_component = geometry.get_component<XformComponent>();
-        if (xform_component) {
-            // Transform
-            assert(xform_component->translation.size() == xform_component->rotation.size());
-
-            pxr::GfMatrix4d final_transform;
-            final_transform.SetIdentity();
-
-            for (int i = 0; i < xform_component->translation.size(); ++i) {
-                pxr::GfMatrix4d t;
-                t.SetTranslate(xform_component->translation[i]);
-                pxr::GfMatrix4d s;
-                s.SetScale(xform_component->scale[i]);
-
-                pxr::GfMatrix4d r_x;
-                r_x.SetRotate(pxr::GfRotation{ { 1, 0, 0 }, xform_component->rotation[i][0] });
-                pxr::GfMatrix4d r_y;
-                r_y.SetRotate(pxr::GfRotation{ { 0, 1, 0 }, xform_component->rotation[i][1] });
-                pxr::GfMatrix4d r_z;
-                r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 }, xform_component->rotation[i][2] });
-
-                auto transform = r_x * r_y * r_z * s * t;
-                final_transform = final_transform * transform;
-            }
-
-            auto xform_op = usdgeom.GetTransformOp();
-            if (!xform_op) {
-                xform_op = usdgeom.AddTransformOp();
-            }
-            xform_op.Set(final_transform, time);
         }
 
         // Material and Texture
@@ -199,10 +172,58 @@ static void node_exec(ExeParams params)
             }
         }
     }
-    else {
-        if (stage->GetPrimAtPath(sdf_path)) {
-            stage->RemovePrim(sdf_path);
+    else if (points) {
+        pxr::UsdGeomPoints usdpoints =
+            pxr::UsdGeomPoints::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+
+        usdpoints.CreatePointsAttr().Set(points->vertices, time);
+
+        if (points->width.size() > 0) {
+            usdpoints.CreateWidthsAttr().Set(points->width, time);
         }
+
+        auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdpoints);
+		if (points->displayColor.size() > 0) {
+			pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
+				pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+			colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+			colorPrimvar.Set(points->displayColor, time);
+		}
+
+    }
+
+    auto xform_component = geometry.get_component<XformComponent>();
+    if (xform_component) {
+        auto usdgeom =
+            pxr::UsdGeomXformable ::Get(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+        // Transform
+        assert(xform_component->translation.size() == xform_component->rotation.size());
+
+        pxr::GfMatrix4d final_transform;
+        final_transform.SetIdentity();
+
+        for (int i = 0; i < xform_component->translation.size(); ++i) {
+            pxr::GfMatrix4d t;
+            t.SetTranslate(xform_component->translation[i]);
+            pxr::GfMatrix4d s;
+            s.SetScale(xform_component->scale[i]);
+
+            pxr::GfMatrix4d r_x;
+            r_x.SetRotate(pxr::GfRotation{ { 1, 0, 0 }, xform_component->rotation[i][0] });
+            pxr::GfMatrix4d r_y;
+            r_y.SetRotate(pxr::GfRotation{ { 0, 1, 0 }, xform_component->rotation[i][1] });
+            pxr::GfMatrix4d r_z;
+            r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 }, xform_component->rotation[i][2] });
+
+            auto transform = r_x * r_y * r_z * s * t;
+            final_transform = final_transform * transform;
+        }
+
+        auto xform_op = usdgeom.GetTransformOp();
+        if (!xform_op) {
+            xform_op = usdgeom.AddTransformOp();
+        }
+        xform_op.Set(final_transform, time);
     }
 }
 

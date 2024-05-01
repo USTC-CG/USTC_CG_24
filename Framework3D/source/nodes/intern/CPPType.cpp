@@ -15,6 +15,9 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
 class MassSpring;
 }
+namespace node_sph_fluid {
+class SPHBase;
+}
 /** Create a new #CPPType that can be accessed through `CPPType::get<T>()`. */
 #define BLI_CPP_TYPE_MAKE(TYPE_NAME, FLAGS)                       \
     template<>                                                    \
@@ -33,6 +36,7 @@ BLI_CPP_TYPE_MAKE(float, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(int32_t, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(std::string, CPPTypeFlags::BasicType)
 BLI_CPP_TYPE_MAKE(std::shared_ptr<node_mass_spring::MassSpring>, CPPTypeFlags::EqualityComparable)
+BLI_CPP_TYPE_MAKE(std::shared_ptr<node_sph_fluid::SPHBase>, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(GOperandBase, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(pxr::UsdStageRefPtr, CPPTypeFlags::EqualityComparable)
 BLI_CPP_TYPE_MAKE(GMutablePointer, CPPTypeFlags::None)
@@ -78,6 +82,7 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(CameraArray);
     BLI_CPP_TYPE_REGISTER(MaterialMap);
     BLI_CPP_TYPE_REGISTER(std::shared_ptr<node_mass_spring::MassSpring>);
+    BLI_CPP_TYPE_REGISTER(std::shared_ptr<node_sph_fluid::SPHBase>);
 
 #define WRAP_REGISTER(TYPE) BLI_CPP_TYPE_REGISTER(TYPE##Handle);
 

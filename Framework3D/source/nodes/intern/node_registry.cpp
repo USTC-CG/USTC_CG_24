@@ -8,6 +8,8 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
     class MassSpring;
+}namespace node_sph_fluid {
+    class SPHBase;
 }
 
 static void reset_declaration(NodeDeclaration& declaration)
@@ -164,9 +166,24 @@ static SocketTypeInfo* make_socket_type_Float4()
     socktype->cpp_type = &CPPType::get<pxr::GfVec4f>();
     return socktype;
 };
-MakeType(Int, pxr::GfVec2i, 2);
-MakeType(Int, pxr::GfVec3i, 3);
-MakeType(Int, pxr::GfVec4i, 4);
+static SocketTypeInfo* make_socket_type_Int2()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int2);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec2i>();
+    return socktype;
+};
+static SocketTypeInfo* make_socket_type_Int3()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int3);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec3i>();
+    return socktype;
+};
+static SocketTypeInfo* make_socket_type_Int4()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int4);
+    socktype->cpp_type = &CPPType::get<pxr::GfVec4i>();
+    return socktype;
+};
 #undef MakeTypeBuffer
 
 static SocketTypeInfo* make_socket_type_Int()
@@ -251,6 +268,13 @@ static SocketTypeInfo* make_socket_type_MassSpringSocket()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::MassSpringSocket);
     socktype->cpp_type = &CPPType::get<std::shared_ptr<node_mass_spring::MassSpring>>();
+    return socktype;
+}
+
+static SocketTypeInfo* make_socket_type_SPHFluidSocket()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::SPHFluidSocket);
+    socktype->cpp_type = &CPPType::get<std::shared_ptr<node_sph_fluid::SPHBase>>();
     return socktype;
 }
 
