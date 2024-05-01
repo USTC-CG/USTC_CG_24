@@ -320,7 +320,7 @@ void SPHBase::advect()
 
 ## 6. 实例结果 & 节点图
 
-我们提供了` ParticleSystem::sample_particle_pos_in_a_box`函数来从一个给定的box区域采样粒子，具体使用请见 [`node_sph_fluid.cpp`](../../../Framework3D/source/nodes/nodes/geometry/node_sph_fluid.cpp).
+我们提供了` ParticleSystem::sample_particle_pos_in_a_box`函数来从一个给定的box区域采样粒子，具体使用请见 [`node_sph_fluid.cpp`](../../../Framework3D/source/nodes/nodes/geometry/node_sph_fluid.cpp). 我们默认的粒子采样数是xyz三个轴25x25x25，可以根据机器性能自行调整（注意粒子采样数会影响一开始的密度估计，对仿真结果有影响）。
 
 如果实现正确，并且调整了合适的参数（如`stiffness` = 500, `exponent`=7, 时间步 `dt`=0.005, `viscosity` = 0.03），可以看到类似下面的结果：
 
@@ -361,7 +361,7 @@ void SPHBase::advect()
 
 ## (Optional) OpenMP 并行
 
-遍历粒子时，可以考虑使用并行，这里大家可以考虑使用OpenMP实现多线程并行。
+遍历粒子时，可以考虑使用并行来提高程序的性能，这里大家可以考虑使用OpenMP实现多线程并行。
 
 ```C++
 // This outer loop can be done in parallel!!
