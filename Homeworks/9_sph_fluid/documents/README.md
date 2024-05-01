@@ -72,11 +72,12 @@ $$
 $$
 
 2. 考虑压强，计算压力，更新 $\mathbf{v}$
+
 $$
 \rho \frac{D \mathbf{v}}{D t} = -\nabla p
 $$
 
-3. 根据最终的速度，更新粒子位置
+4. 根据最终的速度，更新粒子位置
 
 在空间离散上，SPH使用粒子去采样物理场，并通过核函数来拟合未采样到的位置的物理量。
 
@@ -145,10 +146,10 @@ for (auto& p : ps_.particles()) {
 SPH中密度的计算公式为：
 
 $$
- \rho_i = \sum_j \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_j \left(\frac{m_j}{\rho_j} \right) m_j  W_{ij}
+ \rho_i = \sum_j \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_j m_j  W_{ij}
 $$
 
-这里我们记 $W_{ij} = W(\mathbf{x}_i, \mathbf{x}_j, h)$。 在SPH方法中， $h$ 表示核函数半径，我们用 $\Delta t$ 来表示时间步长。
+这里我们记 $W_{ij} = W(\mathbf{x}_i, \mathbf{x}_j, h)$， $j$ 表示粒子 $i$ 的所有邻居粒子。 在SPH方法中， $h$ 表示核函数半径，我们用 $\Delta t$ 来表示时间步长。
 
 速度散度的计算公式为：
 
@@ -156,7 +157,7 @@ $$
 \nabla \cdot \mathbf{v}_ i = \sum_ j \frac{m_j}{\rho_ j} (\mathbf{v}_ j - \mathbf{v}_ i) \cdot \nabla W_{ij}
 $$
 
-粘性力，我们使用计算公式：
+对于粘性力，我们推荐使用计算公式：
 
 $$
 \nabla^2 \mathbf{v}_ i=2(d+2) \sum_j \frac{m_j}{\rho_j} \frac{\mathbf{v}_ {i j} \cdot \mathbf{x}_ {i j}}{\left\|\mathbf{x}_ {i j}\right\|^2+0.01 h^2} \nabla W_{i, j}
