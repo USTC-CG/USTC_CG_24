@@ -111,10 +111,15 @@ static double W_zero(double h);
  <img src="../images/grid.png" style="zoom:30%" />
 </div>
 
-在每一步的开始，我们需要把粒子分配到网格中，然后更新所有粒子的邻居。
+在每一个时间步的开始，我们需要把粒子分配到网格中，然后更新所有粒子的邻居。
 
 ```C++
-
+void step()
+{
+    ps_.assign_particles_to_cells(); 
+    ps_.searchNeighbors(); 
+    // ... other code 
+}
 ```
 
 下面的代码给出了遍历每个粒子`p`的所有邻居，并访问相关物理量的示例：
@@ -135,12 +140,7 @@ for (auto& p : ps_.particles()) {
 
 为了向大家清楚地展示查找的过程，我们自己编写了邻居粒子查找的代码。如果有兴趣进一步提高程序的性能，你可以尝试使用hw2 image warping中使用过的ANN库。
 
-## 3. 如何运动？
-
-和弹簧质点系统一样，为了让这些离散的粒子动起来，我们需要做一个时间上的离散。 
-
-下图展示了一个流体仿真的通用流程。
-
+### 2.1  SPH中的物理量
 
 SPH中密度的计算公式为：
 
@@ -164,13 +164,62 @@ $$
 
 其中 $d$ 为仿真的维度，这里为3.
 
-> 我们这里没有考虑流体的表面张力
+> 我们这里没有考虑流体的表面张力，如果感兴趣可以阅读，甚至可以自行选择方法实现在作业中，为可选内容。
 
-首先，你需要实现第x步，需要填空的代码为：
+首先，你需要实现第步，需要填空的代码为：
 
+```c++
+void SPHBase::compute_density()
+{
+    // (HW TODO) Traverse all particles to compute each particle's density
+    // (Optional) This operation can be done in parallel using OpenMP 
+    for (auto& p : ps_.particles()) {
+        // ... necessary initialization of particle p's density here  
+
+        // Then traverse all neighbor fluid particles of p
+        for (auto& q : p->neighbors()) {
+
+            // ... compute the density contribution from q to p
+
+        }
+    }
+}
+
+void SPHBase::compute_non_pressure_acceleration()
+{
+    // (HW TODO) Traverse all particles to compute each particle's non-pressure acceleration 
+    for (auto& p : ps_.particles()) {
+
+        // necessary code here to compute particle p's acceleration include gravity and viscosity
+        // We do not consider surface tension in this assignment, but you can add it if you like
+
+        //for (auto& q : p->neighbors()) {
+        // 
+        // Prompt: use the "compute_viscosity_acceleration" function to compute the viscosity acceleration between p and q"
+        // 
+        //}
+
+
+    }
+}
+
+// compute viscosity acceleration between two particles
+Vector3d SPHBase::compute_viscosity_acceleration(
+    const std::shared_ptr<Particle>& p,
+    const std::shared_ptr<Particle>& q)
+{
+    auto v_ij = p->vel() - q->vel();
+    auto x_ij = p->x() - q->x();
+    Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
+
+    // Vector3d laplace_v = ... 
+
+    //return this->viscosity_ * laplace_v;
+
+    return Vector3d::Zero();
+}
 ```
-代码片段
-```
+
 
 ## 4. 压强是多少？
 
@@ -182,6 +231,8 @@ $$
 p_i =k_1 \left( \left(\frac{\rho_i}{\rho_0} \right)^{k_2} -1 \right)
 $$
 
+程序中，  $k_1$ 为参数 `stiffness` ,  $k_2$ 为参数 `exponent`  。 
+
 压力的加速度： $-\frac{1}{\rho} \nabla p$ ， 其中：
 
 $$
@@ -192,8 +243,46 @@ $$
 
 那么，本次作业，你需要实现的是：
 
+```c++
+// Traverse all particles and compute pressure gradient acceleration
+void SPHBase::compute_pressure_gradient_acceleration()
+{
+    for (auto& p : ps_.particles()) {
+        // (HW TODO) Traverse all particles and compute each particle's acceleration from pressure gradient force
+    }
+}
 ```
-需要填空的代码
+
+最后，你需要实现一个时间步内完整的`step()`函数：
+
+
+<div  align="center">    
+ <img src="../images/step.png" style="zoom:40%" />
+</div>
+
+```c++
+void SPHBase::step()
+{
+    // Not implemented, should be implemented in children classes WCSPH, IISPH, etc. 
+}
+
+
+void SPHBase::advect()
+{
+    for (auto& p : ps_.particles())  
+    {
+
+        // ---------------------------------------------------------
+        // (HW TODO) Implement the advection step of each particle
+        // Remember to check collision after advection
+
+        // Your code here 
+
+        // ---------------------------------------------------------
+        vel_.row(p->idx()) = p->vel().transpose();
+        X_.row(p->idx()) = p->x().transpose();
+    }
+}
 ```
 
 ## 5. 边界处理
@@ -203,52 +292,63 @@ $$
 本次作业我们提供了边界处理的代码。我们采用了简单的反弹策略。
 
 
-你也可以考虑实现基于ghost particle的做法。
-
 
 ## 6. 实例结果 & 节点图
-如果实现正确，并且调整了合适的参数，可以看到下面的结果：
+如果实现正确，并且调整了合适的参数（如`stiffness` = 500, `exponent`=7, 时间步 `dt`=0.005, `viscosity` = 0.03），可以看到类似下面的结果：
 
 <div  align="center">    
  <img src="../images/wcsph-demo.gif" style="zoom:100%" />
 </div>
 
-粒子的颜色与速度相关，并考虑了当前帧的最大和最小速度进行了放缩（闪烁的原因）
+粒子的颜色与速度相关，并根据当前帧的速度的最大和最小范数进行了放缩（闪烁的原因：每一帧最大和最小速度不一样）。
 
-需要连接的节点图如下:
+**我们鼓励大家在报告中给出不同物理参数下的仿真结果，并分析物理参数的变化对结果的影响。**
+
+需要连接的节点图如下，
+我们在[`../data/`](../data/)文件夹下提供了一个示例节点图[`GeoNodeSystem.json`](../data/GeoNodeSystem.json)，可以直接拷贝到可执行文件`engine_test.exe`所在的 Debug 或 Release 目录下：
 
 <div  align="center">    
  <img src="../images/node1.png" style="zoom:100%" />
 </div>
 
 
+至此，你已经实现了一个基础的基于WCSPH的流体仿真系统，完成了本次作业的必做内容！
 
-我们在[`../data/`](../data/)文件夹下提供了一个示例节点图[`GeoNodeSystem.json`](../data/GeoNodeSystem.json). 
-
-至此，你已经实现了一个基础的基于SPH的流体仿真系统，但是WCSPH不够稳定，在时间不长调大的时候就会爆炸。
+但是WCSPH不够稳定，在时间步长调大的时候就会爆炸。
 
 ## (Optional) 表面重建与渲染
 
-我们提供了`Point to Mesh`节点来从粒子重建mesh，以用于后续的渲染。
+我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染。
 
 <div  align="center">    
  <img src="../images/wcsph-reconstruct-demo.gif" style="zoom:100%" />
 </div>
+
+节点图如下，只需要将上一个节点图 `Set Vertex Color`节点的输出连接到`Points to Mesh`的`Points`输入即可。注意当前points的width都设置为0.05，`Points to Mesh`节点的参数`Voxel Size`不能大于这个width。
 
 <div  align="center">    
  <img src="../images/node2.png" style="zoom:100%" />
 </div>
 
 
-
 ## (Optional) OpenMP 并行
 
-遍历粒子时，可以考虑使用并行。
+遍历粒子时，可以考虑使用并行，这里大家可以考虑使用OpenMP实现多线程并行。
 
 ```C++
+// This outer loop can be done in parallel!!
+for (auto& p : ps_.particles()) {
+
+    // This inner loop does not need to be done in parallel.
+    // Since the number of neighbors is not big,
+    // and most times we are doing a summation in this inner loop. 
+    for (auto& q : p->neighbors()) {
+        // ... other code 
+    }
+}
 ```
 
-关于OpenMP的更加详细的介绍可以阅读： // 链接
+关于OpenMP的更加详细的介绍可以阅读： [openmp tutorials and articles](https://www.openmp.org/resources/tutorials-articles/)
 
 
 ## 未完待续：Part2. 不可压缩性更好的SPH压力求解器
