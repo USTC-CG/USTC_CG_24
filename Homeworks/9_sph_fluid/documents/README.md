@@ -104,6 +104,7 @@ static double W(const Eigen::Vector3d& r, double h);
 static Eigen::Vector3d grad_W(const Eigen::Vector3d& r, double h);
 static double W_zero(double h);
 ```
+在作业框架中，我们使用了`ParticleSystem`这个类去管理粒子系统，每个粒子作为一个类`Particle`携带速度、位置、密度、压强等相关物理量，代码请见[`particle_system.h`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/particle_system.h)。
 
 在SPH中，由于不像弹簧质点系统有固定的拓扑，每一个粒子的邻居都在不断地变化。
 为了查找邻居粒子，这里我们使用了一个空间网格结构。
@@ -146,10 +147,14 @@ for (auto& p : ps_.particles()) {
 SPH中密度的计算公式为：
 
 $$
- \rho_i = \sum_j \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_j m_j  W_{ij}
+ \rho_i = \sum_{j+i} \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_{j+i} m_j  W_{ij}
 $$
 
 这里我们记 $W_{ij} = W(\mathbf{x}_i, \mathbf{x}_j, h)$， $j$ 表示粒子 $i$ 的所有邻居粒子。 在SPH方法中， $h$ 表示核函数半径，我们用 $\Delta t$ 来表示时间步长。
+
+注意在计算粒子的密度的时候，需要考虑它自身对密度的贡献 $m_i W(0, h)$ （使用 `W_zero` 函数）
+
+程序中，我们让每个流体粒子的质量都相同（等于体积乘以流体静止时的密度，这里静止密度为1000，粒子半径设置为0.025，粒子体积用立方体进行估计，代码请阅读`ParticleSystem`类的实现），可以使用`ps_.mass()` 来访问。
 
 速度散度的计算公式为：
 
@@ -157,17 +162,15 @@ $$
 \nabla \cdot \mathbf{v}_ i = \sum_ j \frac{m_j}{\rho_ j} (\mathbf{v}_ j - \mathbf{v}_ i) \cdot \nabla W_{ij}
 $$
 
-对于粘性力，我们推荐使用计算公式：
+对于黏性力，我们推荐使用计算公式：
 
 $$
 \nabla^2 \mathbf{v}_ i=2(d+2) \sum_j \frac{m_j}{\rho_j} \frac{\mathbf{v}_ {i j} \cdot \mathbf{x}_ {i j}}{\left\|\mathbf{x}_ {i j}\right\|^2+0.01 h^2} \nabla W_{i, j}
 $$
 
-其中 $d$ 为仿真的维度，这里为3.
+其中 $d$ 为仿真的维度，这里为3。我们将黏性系数  $\mu$ 除以粒子密度之后的值 $\nu = \frac{\mu}{\rho}$ （称为动黏性系数 kinematic viscosity）作为可调的仿真参数 `viscosity`。
 
-> 我们这里没有考虑流体的表面张力，如果感兴趣可以阅读，甚至可以自行选择方法实现在作业中，为可选内容。
-
-首先，你需要实现第步，需要填空的代码为：
+本次作业中，我们需要计算上面提到的这些物理量，以更新流体粒子在没有压力时的速度（时间离散的第一步）。由于这些代码是所有SPH方法共用的，我们使用了`SPHBase`作为基类，之后的WCSPH与IISPH方法都是作为子类继承自这个基类。你需要填空的代码为[`sph_base.cpp`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/sph_base.cpp)中的：
 
 ```c++
 void SPHBase::compute_density()
@@ -220,11 +223,16 @@ Vector3d SPHBase::compute_viscosity_acceleration(
     return Vector3d::Zero();
 }
 ```
+> 流体的表面张力对流体的视觉效果同样有着很大影响，如[这篇北京大学的工作](https://www.jiqizhixin.com/articles/2021-05-09)。我们这里没有表面张力，如果感兴趣可以阅读[SPH Tutorial综述中的第7节](https://sph-tutorial.physics-simulation.org/pdf/SPH_Tutorial.pdf)，可以自行选择方法实现在作业中，为可选内容。 
+> <div  align="center">    
+> <img src="../images/surface-tension.gif" style="zoom:40%" />
+></div>
 
+下面，我们进一步介绍压力的求解，不同的SPH方法在这里开始有了区别。
 
 ## 4. 压强是多少？
 
-我们首先介绍一种“弱可压缩的SPH方法” (WCSPH: Weakly Compressible SPH)
+本次作业你需要实现的是一种经典的 “弱可压缩的SPH方法” (WCSPH: Weakly Compressible SPH)
 
 所使用的压强计算方式为 
 
@@ -232,7 +240,7 @@ $$
 p_i =k_1 \left( \left(\frac{\rho_i}{\rho_0} \right)^{k_2} -1 \right)
 $$
 
-程序中，  $k_1$ 为参数 `stiffness` ,  $k_2$ 为参数 `exponent`  。 
+程序中，  $k_1$ 为参数 `stiffness` ,  $k_2$ 为参数 `exponent`  。注意，压强一般需要是大于0的，在粒子不足的时候，可以让 `p_i = max(0.0, p_i)`。  
 
 压力的加速度： $-\frac{1}{\rho} \nabla p$ ， 其中：
 
@@ -240,9 +248,9 @@ $$
  \nabla p_i = \rho_i \sum_j m_j \left(\frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \nabla W_{ij}
 $$
 
-> 对称形式与反对称形式，保证动量守恒
+> 基于SPH方法对 $\nabla$ 算子的离散还有其他形式，我们这里使用了对称形式以保证动量守恒，可以提高仿真的稳定性。
 
-那么，本次作业，你需要实现的是：
+那么，本次作业，你需要实现的是`SPHBase`类中的：
 
 ```c++
 // Traverse all particles and compute pressure gradient acceleration
@@ -254,20 +262,33 @@ void SPHBase::compute_pressure_gradient_acceleration()
 }
 ```
 
-最后，你需要实现一个时间步内完整的`step()`函数：
-
+最后，你需要切换到WCSPH子类，在[`wcsph.cpp`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/wcsph.cpp)中实现一个时间步内完整的`step()`函数。
 
 <div  align="center">    
  <img src="../images/step.png" style="zoom:40%" />
 </div>
 
+事实上，对于WCSPH，你可以在计算粒子密度的那个遍历所有粒子的循环中，直接把每个粒子的压强都求出来。为此，你可以在WCSPH类中重载`compute_density()`，函数，直接在计算完密度后算出压强并存储下来。
+
 ```c++
-void SPHBase::step()
+void WCSPH::step()
 {
     // Not implemented, should be implemented in children classes WCSPH, IISPH, etc. 
+
+    // 1. assign particle to cells & search neighbors 
+
+    // 2. compute density (actually, you can direct compute pressure here)
+
+    // 3. compute non-pressure accelerations, e.g. viscosity force, gravity
+    
+    // 4. compute pressure gradient acceleration
+
+    // 5. update velocity and positions, call advect()
 }
+```
 
-
+框架中，将最后更新速度并更新位置写为了`advect`函数，你可以自行修改函数名 or 增加/删减函数。
+```c++
 void SPHBase::advect()
 {
     for (auto& p : ps_.particles())  
@@ -288,11 +309,14 @@ void SPHBase::advect()
 
 ## 5. 边界处理
 
-边界处理有多种方式。
-
-本次作业我们提供了边界处理的代码。我们采用了简单的反弹策略。
+边界处理有多种方式。本次作业我们提供了边界处理的代码。我们采用了简单的反弹策略。
 
 
+<div  align="center">    
+ <img src="../images/boundary.png" style="zoom:50%" />
+</div>
+
+代码已经提供在`SPHBase::check_collision()`，反弹的速度可以通过参数`restitution`调整能量保持的比例。
 
 ## 6. 实例结果 & 节点图
 如果实现正确，并且调整了合适的参数（如`stiffness` = 500, `exponent`=7, 时间步 `dt`=0.005, `viscosity` = 0.03），可以看到类似下面的结果：
