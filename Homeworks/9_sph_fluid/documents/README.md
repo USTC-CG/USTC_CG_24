@@ -31,7 +31,7 @@ $$
 
 值得一提的是，(1)式中的 $\frac{D \cdot}{D t}$ 被称为“物质导数 (Material derivative)”：
  
-假设我们采样一个以空间位置 $\mathbf{x}$ 和时间 $t$ 为自变量的4维物理场 $f = f(\mathbf{x}, t)$ ，采样点的空间位置 $\mathbf{x} = \mathbf{x}(t)$ 也是时间的函数，那么采样点上的 $f$ 关于 $t$ 的全导数为： $\frac{d f}{d t} = \frac{\partial f}{\partial t} + \frac{\partial f}{\partial x}\frac{\partial x}{\partial t} = \frac{\partial f}{\partial t} + \mathbf{v}\cdot \nabla f$ , 我们将这个全导数称为 $f$ 的物质导数，记为 $\frac{D f}{Dt}$，它同时考虑了 $f$ 由于时间推移和采样点空间移动两个原因带来的变化。
+假设考虑一个以空间位置 $\mathbf{x}$ 和时间 $t$ 为自变量的4维物理场 $f = f(\mathbf{x}, t)$ ，空间位置 $\mathbf{x} = \mathbf{x}(t)$ 也是时间的函数，那么采样点上的 $f$ 关于 $t$ 的全导数为： $\frac{d f}{d t} = \frac{\partial f}{\partial t} + \frac{\partial f}{\partial x}\frac{\partial x}{\partial t} = \frac{\partial f}{\partial t} + \mathbf{v}\cdot \nabla f$ , 我们将这个全导数称为 $f$ 的物质导数，记为 $\frac{D f}{Dt}$，它同时考虑了 $f$ 由于时间推移和采样点空间移动两个原因带来的变化。
 
 举个例子：坐火车早上从广州出发，晚上到北京，温度场 $T$ 的变化量不仅与时间 $t$ 有关（早上到晚上），也与火车的位置 $\mathbf{x}(t)$ 有关（广州到北京）。
 
@@ -99,7 +99,6 @@ code
 
 下图展示了一个流体仿真的通用流程。
 
-// PPT中的通用流程的图。
 
 SPH中密度的计算公式为：
 
@@ -164,22 +163,43 @@ $$
 
 你也可以考虑实现基于ghost particle的做法。
 
+
+## 6. 实例结果 & 节点图
 如果实现正确，并且调整了合适的参数，可以看到下面的结果：
 
-// 结果的动图
+<div  align="center">    
+ <img src="../images/wcsph-demo.gif" style="zoom:100%" />
+</div>
+
+粒子的颜色与速度相关，并考虑了当前帧的最大和最小速度进行了放缩（闪烁的原因）
 
 需要连接的节点图如下:
 
 <div  align="center">    
- <img src="./images/result-with-texture.png" style="zoom:60%" />
+ <img src="../images/node1.png" style="zoom:100%" />
 </div>
 
 
-我们提供了一个示例节点图`GeoNodeSystem.json`. 
+
+我们在[`../data/`](../data/)文件夹下提供了一个示例节点图[`GeoNodeSystem.json`](../data/GeoNodeSystem.json). 
 
 至此，你已经实现了一个基础的基于SPH的流体仿真系统，但是WCSPH不够稳定，在时间不长调大的时候就会爆炸。
 
-## （Optional）OpenMP 并行
+## (Optional) 表面重建与渲染
+
+我们提供了`Point to Mesh`节点来从粒子重建mesh，以用于后续的渲染。
+
+<div  align="center">    
+ <img src="../images/wcsph-reconstruct-demo.gif" style="zoom:100%" />
+</div>
+
+<div  align="center">    
+ <img src="../images/node2.png" style="zoom:100%" />
+</div>
+
+
+
+## (Optional) OpenMP 并行
 
 遍历粒子时，可以考虑使用并行。
 
@@ -191,8 +211,6 @@ $$
 
 ## 未完待续：Part2. 不可压缩性更好的SPH压力求解器
 为了进一步提升仿真的效果和运行效率，我们将在[Part2](./README-part2.md)介绍一种更加稳定的SPH压力计算方法，这也是本次作业的选做内容。
-
-同时，为了让仿真结果更加酷炫，我们将在[Part3](./README-part3.md)介绍从粒子重建表面并进行流体渲染的方法，这也是本次作业的选做内容。
 
 ## 参考资料 & 扩展阅读材料
 1. [SPH Tutorial]()

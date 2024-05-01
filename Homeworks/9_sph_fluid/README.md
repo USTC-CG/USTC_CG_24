@@ -1,7 +1,7 @@
 # 9. 基于SPH的流体仿真 SPH Fluid
 
 <div  align="center">    
- <img src="./images/wcsph_result_demo.png" style="zoom:60%" />
+ <img src="./images/wcsph-demo.gif" style="zoom:100%" />
 </div>
 
 
@@ -20,9 +20,10 @@
 
 - 实现弱可压缩的SPH流体仿真方法 WCSPH 的完整流程（包括密度估计、粘性力计算、压力计算、速度与位置更新），主要原理见[文档：SPH流体仿真简明教程 Part 1](documents/README.md)
 
+- （Optional）从粒子重建表面并使用框架中的路径追踪渲染器渲染表面，说明见[文档：SPH流体仿真简明教程 Part 1](documents/README.md)
+
 - （Optional） 实现隐式不可压缩的SPH流体仿真方法 IISPH，主要原理见[文档：SPH流体仿真简明教程 Part 2](documents/README-part2.md)
 
-- （Optional）从粒子重建表面并使用框架中的路径追踪渲染器渲染表面，主要原理见[文档：SPH流体仿真简明教程 Part 3](documents/README-part3.md)
 
 ## 目的
 
