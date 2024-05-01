@@ -28,7 +28,7 @@ class WCSPH : public SPHBase {
     };
 
    protected:
-    double stiffness_ = 100.0;
+    double stiffness_ = 500.0;
     double exponent_ = 7.0;
 };
 }  // namespace USTC_CG::node_sph_fluid

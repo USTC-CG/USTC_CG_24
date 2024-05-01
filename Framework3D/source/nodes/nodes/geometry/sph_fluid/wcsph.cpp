@@ -24,12 +24,12 @@ void WCSPH::compute_density()
         }
 
         if (enable_debug_output) {
-            if (p->density() > 1000.0) {
+            //if (p->density() > ps_.density0()) {
                 std::cout << "density: " << p->density() << std::endl;
-            }
+            //}
         }
-        p->density() = std::max(p->density(), 1000.0);
-        p->pressure() = std::max(0.0, stiffness_ * (std::pow(p->density() / 1000, exponent_) - 1));
+        p->density() = std::max(p->density(),  ps_.density0());
+        p->pressure() = std::max(0.0, stiffness_ * (std::pow(p->density() / ps_.density0(), exponent_) - 1));
     }
 }
 

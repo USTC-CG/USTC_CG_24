@@ -181,6 +181,15 @@ static void node_exec(ExeParams params)
         if (points->width.size() > 0) {
             usdpoints.CreateWidthsAttr().Set(points->width, time);
         }
+
+        auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdpoints);
+		if (points->displayColor.size() > 0) {
+			pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
+				pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+			colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+			colorPrimvar.Set(points->displayColor, time);
+		}
+
     }
 
     auto xform_component = geometry.get_component<XformComponent>();

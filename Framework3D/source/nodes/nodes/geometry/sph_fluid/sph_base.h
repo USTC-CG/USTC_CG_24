@@ -63,8 +63,12 @@ class SPHBase {
     {
         return viscosity_;
     }
+    Vector3d& gravity()
+	{
+		return gravity_;
+	}
 
-    Vector3d gravity_ = Vector3d(0, -9.8, 0);
+    Vector3d gravity_ = Vector3d(0, 0, -9.8);
 
     // useful switches
     bool enable_debug_output = false;

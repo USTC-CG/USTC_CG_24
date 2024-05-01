@@ -67,6 +67,7 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
     // Output 
     b.add_output<decl::SPHFluidSocket>("SPH Class");
     b.add_output<decl::Geometry>("Points");
+    b.add_output<decl::Float3Buffer>("Point Colors");
 }
 
 static void node_sph_fluid_exec(ExeParams params)
@@ -87,7 +88,12 @@ static void node_sph_fluid_exec(ExeParams params)
     auto particle_box_min = params.get_input<pxr::GfVec3f>("particle box min"); 
     auto particle_box_max = params.get_input<pxr::GfVec3f>("particle box max"); 
     auto num_particle_per_axis = params.get_input<pxr::GfVec3f>("num particle per axis"); 
-    if (particle_box_max[0] <= particle_box_min[0] || particle_box_max[1] <= particle_box_min[1] || particle_box_max[2] <= particle_box_min[2]) {
+
+    if (particle_box_max[0] <= particle_box_min[0] || particle_box_max[1] <= particle_box_min[1] || particle_box_max[2] <= particle_box_min[2] 
+        || particle_box_max[0] > sim_box_max[0] || particle_box_min[0] < sim_box_min[0] 
+        || particle_box_max[1] > sim_box_max[1] || particle_box_min[1] < sim_box_min[1] 
+        || particle_box_max[2] > sim_box_max[2] || particle_box_min[2] < sim_box_min[2] 
+        ) {
 		throw std::runtime_error("Invalid particle samping box.");
 	}
     if (num_particle_per_axis[0] <= 0 || num_particle_per_axis[1] <= 0 ||
@@ -105,10 +111,11 @@ static void node_sph_fluid_exec(ExeParams params)
             Vector3d box_max{sim_box_max[0], sim_box_max[1], sim_box_max[2]};
 
             MatrixXd particle_pos = ParticleSystem::sample_particle_pos_in_a_box(
-                box_min, box_max, 
+                { particle_box_min[0],  particle_box_min[1],  particle_box_min[2]},
+                { particle_box_max[0],  particle_box_max[1],  particle_box_max[2]},
                 { static_cast<int>(num_particle_per_axis[0]), 
                   static_cast<int>(num_particle_per_axis[1]),
-                  static_cast<int>(num_particle_per_axis[2]) });         
+                  static_cast<int>(num_particle_per_axis[2]) }); //TODO:fix this and use Int3  
 
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
             
@@ -121,6 +128,9 @@ static void node_sph_fluid_exec(ExeParams params)
 
             const float dt = params.get_input<float>("dt");
             sph_base->dt() = dt; 
+
+            sph_base->enable_time_profiling = params.get_input<int>("enable time profiling") == 1 ? true : false;
+            sph_base->enable_debug_output = params.get_input<int>("enable debug output") == 1 ? true : false;
             //sph_base->gravity()  = { 0, 0, params.get_input<float>("gravity") };
 
             if (enable_IISPH) {
@@ -138,8 +148,7 @@ static void node_sph_fluid_exec(ExeParams params)
        sph_base->step(); 
     }
 
-   // mesh->vertices = eigen_to_usd_vertices(mass_spring->getX());
-
+    // ------------------------- construct necessary output (No need to modify) ---------------
     params.set_output("SPH Class", sph_base);
 
     auto geometry = GOperandBase();
@@ -148,9 +157,16 @@ static void node_sph_fluid_exec(ExeParams params)
 
 	auto vertices = sph_base->getX();
     points_component->vertices = eigen_to_usd_vertices(vertices);
-    points_component->width = pxr::VtArray<float>(vertices.rows(), 0.1);
+    float point_width = 0.05; 
+    points_component->width = pxr::VtArray<float>(vertices.rows(), point_width);
+    // ----------------------------------------------------------------------------------------
 
-    params.set_output("Points", geometry);
+    auto color = eigen_to_usd_vertices(sph_base->get_vel_color_jet());
+    //auto color = pxr::VtArray<pxr::GfVec3f>(vertices.rows(), pxr::GfVec3f(1, 0., 0.));
+
+	params.set_output("Point Colors", std::move(color));
+    params.set_output("Points", std::move(geometry));
+    // TODO: add an output of vertices color 
 
 }
 
