@@ -343,7 +343,7 @@ void SPHBase::advect()
 
 ## (Optional) 表面重建与渲染
 
-我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染。
+我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染 (目前框架中透明物体的渲染功能正在施工中，会在五一末尾发布)
 
 <div  align="center">    
  <img src="../images/wcsph-reconstruct-demo.gif" style="zoom:100%" />
@@ -380,7 +380,7 @@ for (auto& p : ps_.particles()) {
 为了进一步提升仿真的效果和运行效率，我们将在[Part2](./README-part2.md)介绍一种更加稳定的SPH压力计算方法，这也是本次作业的选做内容。
 
 ## 参考资料 & 扩展阅读材料
-1. [SPH Tutorial]()
+1. [SPH Tutorial](https://sph-tutorial.physics-simulation.org/pdf/SPH_Tutorial.pdf) 
 2. [游戏中的流体仿真](https://gamerant.com/video-games-best-water-physics/)
-3. [太极图形课]()
-4. [GAMES103: 基于物理的仿真和动画]()
+3. [太极图形课 Lec10 流体仿真-拉格朗日视角](https://www.bilibili.com/video/BV1mi4y1o7wz)
+4. [GAMES103: 基于物理的仿真和动画 Lec12 SPH and Position-based Fluids](https://www.bilibili.com/video/BV12Q4y1S73g/?p=12&share_source=copy_web&vd_source=19d965dd50171e7e3327ff6e149567c2)
