@@ -10,7 +10,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeTree;
 struct UsdviewEngineImpl;
 
-class USTC_CG_API UsdviewEngine {
+class UsdviewEngine {
 public:
     explicit UsdviewEngine(pxr::UsdStageRefPtr root_stage);
     ~UsdviewEngine();

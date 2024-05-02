@@ -14,7 +14,7 @@ namespace pxr {
 namespace USTC_CG {
 // Represents a window in a GUI application, providing basic functionalities
 // such as initialization and rendering.
-class USTC_CG_API Window {
+class Window {
 public:
     // Constructor that sets the window's title.
     explicit Window(const std::string& window_name);

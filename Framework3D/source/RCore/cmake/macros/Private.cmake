@@ -282,6 +282,7 @@ function(_pxr_library NAME)
     target_compile_definitions(${NAME} PUBLIC NOMINMAX=1)
     string(TOUPPER ${NAME} CAPITAL_NAME)
     target_compile_definitions(${NAME} PRIVATE ${CAPITAL_NAME}_EXPORTS=1)
+    target_compile_definitions(${NAME} PRIVATE -DUSTC_CG_BUILD_MODULE=1)
     target_include_directories(${NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 endfunction()

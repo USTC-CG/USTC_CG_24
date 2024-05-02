@@ -239,14 +239,14 @@ GLuint Hd_USTC_CG_Dome_Light::createTextureFromHioImage(const InputDescriptor& e
     }
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    float aniso = 0.0f;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+    //float aniso = 0.0f;
+    //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -260,12 +260,27 @@ void Hd_USTC_CG_Dome_Light::RefreshGLBuffer()
     }
 }
 
+void Hd_USTC_CG_Dome_Light::BindTextures(Shader& shader, unsigned& id)
+{
+    assert(env_texture.glTexture);
+
+    shader.setInt("env_texture", id);
+    glActiveTexture(GL_TEXTURE0 + id);
+    glBindTexture(GL_TEXTURE_2D, env_texture.glTexture);
+    id++;
+}
+
 void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
 {
     const VtValue v = sceneDelegate->GetLightParamValue(id, HdLightTokens->textureFile);
     textureFileName = v.Get<pxr::SdfAssetPath>();
 
     env_texture.image = HioImage::OpenForReading(textureFileName.GetAssetPath(), 0, 0);
+
+    if (env_texture.glTexture) {
+        glDeleteTextures(1, &env_texture.glTexture);
+        env_texture.glTexture = 0;
+    }
 
     auto diffuse = sceneDelegate->GetLightParamValue(id, HdLightTokens->diffuse).Get<float>();
     radiance = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
@@ -284,6 +299,11 @@ void Hd_USTC_CG_Dome_Light::Sync(
 
 void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)
 {
+    if (env_texture.glTexture) {
+        glDeleteTextures(1, &env_texture.glTexture);
+        env_texture.glTexture = 0;
+    }
+
     Hd_USTC_CG_Light::Finalize(renderParam);
 }
 
