@@ -15,9 +15,9 @@ const float PI = 3.14159265359;
 const float TWO_PI = 6.2831853071;
 
 // Calculate cylindrical texture coordinates
-vec2 cylindricalUV(vec3 position) {
-	float theta = atan(position.y, position.x); // Angle around the cylinder
-	float phi = 0.5 * (-position.z) + 0.5; // Height of the cylinder
+vec2 cylindricalUV(vec3 dir) {
+	float theta = atan(dir.y, dir.x); // Angle around the cylinder
+	float phi = 0.5 * (-dir.z) + 0.5; // Height of the cylinder
 	return vec2((PI + theta) / TWO_PI, phi);
 }
 
