@@ -55,6 +55,8 @@ endif()
 
 add_subdirectory(external)
 
+add_compile_definitions(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/GCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/SCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/RCore)
