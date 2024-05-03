@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-inline void run_usdvieww(int argc, char** argv)
+inline void run_usdview(int argc, char** argv)
 {
     Py_SetProgramName(L"usdview");
     // Initialize the Python interpreter

@@ -2,6 +2,6 @@
 
 int main(int argc, char* argv[])
 {
-    run_usdvieww(argc, argv);
+    run_usdview(argc, argv);
     return 0;
 }
