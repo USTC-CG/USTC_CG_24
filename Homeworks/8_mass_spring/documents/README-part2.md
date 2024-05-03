@@ -1,4 +1,4 @@
-# 弹簧质点系统仿真简明教程 Part 2 之加速方法
+ # 弹簧质点系统仿真简明教程 Part 2 之加速方法
 
 如果你已经完成了Part 1，那么欢迎你来到弹簧质点系统仿真的进阶教程。我们将介绍刘天添老师在论文[Fast Simulation of Mass-Spring Systems](https://tiantianliu.cn/papers/liu13fast/liu13fast.pdf)中提出的加速方法，并解释论文中公式的含义。
 
@@ -6,7 +6,7 @@
 
 ## 1. 弹性能量的新视角
 
-在Part 1中我们说过，弹簧质点系统中每一根弹簧的能量可以定义为（Liu的论文中使用$\mathbf{p}$表示顶点位置）:
+在Part 1中我们说过，弹簧质点系统中每一根弹簧的能量可以定义为（Liu的论文中使用 $\mathbf{p}$ 表示顶点位置）:
 
 $$
 E_i = \frac{1}{2} k (\|\mathbf{x}_{i}\| -L)^2  \tag{1}
@@ -16,7 +16,7 @@ $$
 
 对于(1)式中的能量，我们之前看待的角度为：给定原长为 $L_i$ 的弹簧，让 $\mathbf{x}_i$ 变化，不同的 $\mathbf{x}_i$ 带来了不同的能量。 $\mathbf{x}_i$ 具有旋转的自由度，只要其范数 $= L_i$ 即可最小化能量。
 
-但是Liu等人提出，我们可以从另一个角度看待这个能量：如果固定 $\mathbf{x}_ i$ ，让弹簧原始的长度与方向变化，也就是把弹簧表示为一个向量 $\mathbf{d}$ ，那么 $(\|\mathbf{x} _ {i}\| - L)^2$ 可以被看作是一个优化问题的解： $\min_{\| \mathbf{d}\| =r}\| \mathbf{x}_{i} - \mathbf{d}  \|^2$ 。 通过“三角形两边之差一定小于第三边”的原理我们可以容易地证明这一点，如下图所示。
+但是Liu等人提出，我们可以从另一个角度看待这个能量：如果固定 $\mathbf{x}_ i$ ，让弹簧原始的长度与方向变化，也就是把弹簧表示为一个向量 $\mathbf{d}$ ，那么 $(\|\mathbf{x} _ {i}\| - L)^2$ 可以被看作是一个优化问题的解： $\min_{\| \mathbf{d}\| =L} \| \mathbf{x}_{i} - \mathbf{d}  \|^2$ 。 通过“三角形两边之差一定小于第三边”的原理我们可以容易地证明这一点，如下图所示。
 
 <div  align="center">    
  <img src="../images/liu13-1.png" style="zoom:40%" />
@@ -104,7 +104,9 @@ $$
 
 并且本质上， $\mathbf{A} = \mathbf{M} + h^2 \mathbf{L}$ 是对系统能量的 Hessian矩阵的一种近似，其中 $\mathbf{L}$ 是系统的拉普拉斯（Laplacian）矩阵。
 
-整个方法的流程示意图如下：
+需要注意的是：求解的时候因为 $\mathbf{y}$ 的定义为  $\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$，而每次迭代求解的 $\mathbf{x}$ 为 $\mathbf{x}^{n+1}$，所以 $\mathbf{y}$ 不需要更新，仍然用上一步的 $\mathbf{x}^n$ 和 $\mathbf{v}^n$。
+
+整个方法的流程示意图如下，鼓励大家在通过本文档了解基本思想后，自己阅读原论文获得更全面的理解。
 
 <div  align="center">    
  <img src="../images/liu13-pipeline.png" style="zoom:100%" />
@@ -146,7 +148,7 @@ void FastMassSpring::step()
  <img src="../images/fast_mass_spring.gif" style="zoom:100%" />
 </div>
 
-此次作业所需要连接的节点图与Part 1一样，只需要通过打开开关`enable Liu13`来切换到该加速方法。
+此次作业所需要连接的节点图与Part 1一样，只需要通过打开开关`enable Liu13`来切换到该加速方法。建议使用`Release`模式编译来减少节点图其他部分的时间代价。如果想凸显加速方法相比于Part 1部分方法的优势，可以增加mesh分辨率，如使用`grid40x40.usda`.
 
 
 值得一提的是，Liu指出，这一加速方法在迭代次数增加时的结果会逐渐接近Newton法求解的结果，如下图所示。**鼓励大家在报告中包含不同迭代次数的仿真结果的比较**。

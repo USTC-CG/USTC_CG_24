@@ -1,8 +1,9 @@
 #pragma once 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <unordered_set>
+#include <set>
 #include "utils.h"
+#include <chrono>
 
 #define TIC(name) auto start_##name = std::chrono::high_resolution_clock::now(); 
 #define TOC(name) \
@@ -12,16 +13,9 @@
 
 namespace USTC_CG::node_mass_spring {
 
-using Edge = std::pair<int, int>;
-struct hashEdge {
-    size_t operator()(const Edge &x) const
-    {
-        return x.first ^ x.second;
-    }
-};
-
 using namespace Eigen;
-using EdgeSet = std::unordered_set<Edge, hashEdge>;
+using Edge = std::pair<int, int>;
+using EdgeSet = std::set<Edge>;
 using MatrixXd = Eigen::MatrixXd;
 using SparseMatrix_d = Eigen::SparseMatrix<double>;
 using Trip_d = Eigen::Triplet<double>;

@@ -37,13 +37,13 @@ $$
 \mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n+1} \tag{1}
 $$
 
-那么速度 $\mathbf{v}^{n+1} \in \mathbf{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
+那么速度 $\mathbf{v}^{n+1} \in \mathbb{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
 
 $$
 \mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^n) + \mathbf{f} _ {\text{ext}} )  \tag{2}
 $$
 
-其中的 $\mathbf{M} \in \mathbf{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵。
+其中的 $\mathbf{M} \in \mathbb{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵（每个顶点对应的 $\mathbb{R}^{3\times 3}$ = `mass_per_vertex`乘3x3单位矩阵  ）。
 
 > 扩展知识：质量矩阵 $\mathbf{M}$ 实际上描述了一个有限单元的质量与其顶点质量的关系，有两种类别：1. Lump Mass Matrix. 质量全部加到对角项上，也是我们本次作业选择的版本）2. Consistant Mass Matrix. 包含非对角项，是通过型函数(Shape Function)推导出来的。具体可以阅读[Consistent vs Lumped Mass](https://www.strand7.com/strand7r3help/Content/Topics/Elements/ElementsMassMatrix.htm). 
 
@@ -63,7 +63,7 @@ $$
 E_i = \frac{k}{2} (\|\mathbf{x} _ {i1} - \mathbf{x}_{i2}\| - L)^2 
 $$
 
-我们记录 $\mathbf{x}_{i} := \mathbf{x} _ {i1} - \mathbf{x} _ {i2}$
+我们记 $\mathbf{x}_{i} := \mathbf{x} _ {i1} - \mathbf{x} _ {i2}$
 那么总体的能量为：
 
 $$
@@ -121,7 +121,7 @@ dirichlet_bc_mask[n_fix - 1] = true;
 ```
 然后，直接将这些固定点的外力和速度设置为0就可以。
 
-如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, 如尝试`stiffness` = 10, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
+如果正确实现了上面的步骤，并且将1. 劲度系数`stiffness`、2.时间步长`h`、3. 阻尼系数`damping`设置为一个合理的值后（需要手动调观察效果, `stiffness`越大则时间步长`h`就需要越小，如尝试`stiffness` = 10, `h` = 0.001, `damping`=0.995），在`grid20x20`的mesh上可以得到类似下图的结果：
 
 <div  align="center">    
  <img src="../images/semi-implicit.gif" style="zoom:100%" />
@@ -131,7 +131,9 @@ dirichlet_bc_mask[n_fix - 1] = true;
 
 你也可以尝试固定不同的点，并比较不同的劲度系数、时间步长、damping对结果的影响，不同规模的mesh也需要设置不同的仿真参数，**鼓励在报告中包含不同仿真参数的结果比较相关内容**。
 
-所需要连接的节点图如下（建议在检查完`read usd`节点正确读取mesh后，再连接到MassSpring节点，否则会报错），需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算。如果需要reset，将时间拖动为0即可。按空格可以自动播放。
+并且**鼓励大家在提交的作业文件里面包含仿真结果的视频或gif**。
+
+所需要连接的节点图如下（建议在检查完`read usd`节点正确读取mesh后，再连接到MassSpring节点，否则会报错），需要把`time integrator type`设为1 ，本次节点系统提供了时间轴功能，可以拖动。之前已经计算的部分会被缓存下来，回看的时候不会重新计算（因此回看的时候会播放速度很快）。如果需要reset，将时间拖动为0即可。**点击渲染窗口，按空格可以切换播放/暂停，如果当前帧之前没有计算缓存过，就会自动执行计算**。
 
 <div  align="center">    
  <img src="../images/nodes0.png" style="zoom:80%"/>
@@ -202,7 +204,7 @@ $$
 
 这回到了大家（可能）学过的最优化领域。
 
-> 在图形学中, $g$ 的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$ 被称为惯性项(inertia term)，$E(\mathbf{x})$ 被称为弹性项(Elasticity). 
+> 在图形学中, $g$ 的一个名字是increment potential. $\frac{1}{h^2} \mathbf{M}(\mathbf{x} - \mathbf{y}) + \nabla E(\mathbf{x})$ 被称为惯性项(inertia term)， $E(\mathbf{x})$ 被称为弹性项(Elasticity). 
 
 能量 $g$ 的导数为：
 
@@ -214,21 +216,21 @@ $$
 为了求解优化问题，我们可以使用梯度下降，但是其收敛速度比较慢（线性收敛速度）。在图形学中，更加常用的做法是使用牛顿法：
 
 $$
- \mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla \mathbf{g} 
+ \mathbf{x}^{n+1} = \mathbf{x}^n - (\nabla^2 g)^{-1} \nabla \mathbf{g} 
 $$
 
-那么需要求能量 $g$ 的Hessian矩阵 $\mathbf{H} = \nabla^2 g$。
+那么需要求能量 $g$ 的Hessian矩阵 $\nabla^2 g$ 。
 
 首先我们来看一根弹簧能量的Hessian：
 
 $$
-\begin{align}
-\mathbf{H}_i &= \nabla^2 E_i  \\
-&=k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}+k\left(1-\frac{L}{\|\mathbf{x}_i\|}\right)\left(\mathbf{I}-\frac{\mathbf{x}_i \mathbf{x}_i^{\mathrm{T}}}{\|\mathbf{x}_i\|^2}\right) \\
-\end{align}
+% \begin{align}
+\mathbf{H}_i = \nabla^2 E_i  
+=k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}+k\left(1-\frac{L}{\|\mathbf{x}_i\|}\right)\left(\mathbf{I}-\frac{\mathbf{x}_i \mathbf{x}_i^{\mathrm{T}}}{\|\mathbf{x}_i\|^2}\right)  \tag{6}
+% \end{align}
 $$
 
-那么总体的Hessian $\mathbf{H} \in \mathbf{R}^{3n\times 3n}$ 为单根弹簧Hessian $\mathbf{H} \in \mathbf{R}^{3 \times 3}$ 按照顶点索引组装起来：
+那么总体的Hessian $\mathbf{H} \in \mathbf{R}^{3n\times 3n}$ 为单根弹簧Hessian $\mathbf{H} \in \mathbf{R}^{3 \times 3}$ 按照顶点索引组装起来（比如第i个顶点通过弹簧和第j、k个顶点相连，那么3nx3n的Hessian中第3i行3i列、第3i行3j列，第3j行3i列，第3j行3j列对应的3x3 block会有值，同理第3i行3i列、第3i行3k列，第3k行3i列，第3k行3k列对应的3x3 block也会有值，那么第3i行3i列的3x3 Hessian block就有多个弹簧的贡献加在一起）：
 
 <div  align="center">    
  <img src="../images/hessian_assemble.png" style="zoom:40%"/>
@@ -244,13 +246,22 @@ $$
 那么现在我们就可以使用牛顿法优化：
 
 $$
-\mathbf{x}^{n+1} = \mathbf{x}^n - \mathbf{H}^{-1} \nabla g (\mathbf{x}^n)
+\mathbf{x}^{n+1} = \mathbf{x}^n - (\nabla^2 g)^{-1} \nabla g (\mathbf{x}^n)  \\
+ = \mathbf{x}^n + \Delta \mathbf{x}
 $$
 
-> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = \mathbf{H}^{-1}\mathbf{\nabla g}$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
+那么这里需要求解的方程组为: 
+
+$$ 
+\nabla^2 g \Delta \mathbf{x} = -\nabla g \tag{7}
+$$ 
+
+在最优化中，求解一个优化问题可能需要迭代多次，直到收敛（ $\|\nabla g\|$ 小于阈值 ），我们这里出于效率考虑，在一个时间步内只进行一次牛顿法的迭代，你也可以尝试在一个时间步内让牛顿法迭代多次直到收敛，并比较两种做法的仿真结果。
+
+> 这里其实还涉及到一个Line Search的部分，一般基于线搜索方法优化问题的流程：1. 先确定搜索方向 $\mathbf{p}$（我们这里 $\mathbf{p} = (\nabla^2 g)^{-1}\mathbf{\nabla}g$ ），2. 然后确定要前进的步长 $\alpha$（该步骤称为Line Search），3. 最后更新 $\mathbf{x}^{n+1} = \mathbf{x}^n - \alpha \mathbf{p}$  。
 >由于牛顿法的推荐步长是1，这里我们就不额外进行Line Search
 
-$\mathbf{H}$ 是一个稀疏矩阵（只有相邻的顶点才会在矩阵中有对应的非零元素），我们使用`Eigen::SparseMatrix`来存储。
+弹簧能量的Hessian $\mathbf{H}$ 是一个稀疏矩阵（只有相邻的顶点才会在矩阵中有对应的非零元素），我们使用`Eigen::SparseMatrix`来存储。
 
 那么需要在本次作业中实现以下`MassSpring.cpp`部分的代码:
 
@@ -275,7 +286,7 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     return H;
 }
 ```
-然后实现`step`函数中隐式时间积分部分的代码，并且，我们提供了`flatten`与`unflatten`函数将 $\mathbf{R}^{n \times 3}$ 与 $\mathbf{R}^{3n}$ 的向量进行互相转换: 
+然后实现`step`函数中隐式时间积分部分的代码，你需要构建出方程组(7)然后求解 $\Delta \mathbf{x}$ , 然后更新 $\mathbf{x}$ 。在求解方程组时，我们提供了`flatten`与`unflatten`函数将 $\mathbf{R}^{n \times 3}$ 与 $\mathbf{R}^{3n}$ 的向量进行互相转换: 
 
 ```C++
     if(time_integrator == IMPLICIT_EULER)
@@ -298,12 +309,12 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     }
 ```
 
-> Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足 $(\mathbf{H}^{-1}\nabla g)^{\top} \nabla g > 0$ . 只有Hessian正定的时候才能保证收敛。
+> 能量 $g$ 的Hessian的正定性问题：牛顿法并不是无条件收敛，也就是牛顿法给出的下降方向不一定能够使得能量真的下降！即不满足 $((\nabla^2 g)^{-1}\nabla g)^{\top} \nabla g > 0$ . 只有 $\nabla^2 g$ 正定的时候才能保证收敛。
 > 
-> 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让Hessian正定，你可以尝试：
-> 1. **在 $L_i > \|\mathbf{x}_i \|$ 时**，令第$i$根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
-> 2. 为Hessian对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
-> 3. 对Hessian做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
+> 你可以首先不管这个问题，看看仿真结果如何。如果出现问题，为了让 $\nabla^2 g$ 正定，你可以尝试（三选1，推荐1）：
+> 1. 在计算弹簧能量的Hessian时，**当 $L_i > \|\mathbf{x}_i \|$ 时**，令第 $i$ 根弹簧 $\mathbf{H}_i$ 近似为 $\mathbf{H}_i \approx k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}$ . 
+> 2. 为 $\nabla^2 g$ 对角线加上 $\epsilon \mathbf{I}$， $\epsilon$ 为可调参数，来让Hessian最小的特征值大于0. 
+> 3. 对 $\nabla^2 g$ 做SVD分解，然后精确地获取其最小特征值，令其大于0，再重新用SVD得到新的Hessian（速度预期会很慢）
 > 
 
 慢着，如果要在这个求解过程中固定点，怎么办？如果仍然是解完之后将固定点的位置简单地设置回去，就会出现下面边界区域被过度拉长的情况：
@@ -316,18 +327,24 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
 问题根源还是要在求解的时候考虑硬约束。
 
 $$
-\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \\
-s.t. \quad c(\mathbf{x}) = \mathbf{S}\mathbf{x} = \mathbf{0}
+\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \quad s.t. \quad c(\mathbf{x}) = \mathbf{S}\mathbf{x} = \mathbf{0}
 $$
 
 广义来说其实是一个带约束优化问题。那么我们需要使用引入拉格朗日乘子法来求解吗？
 
-其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程的时候修改Hessian矩阵，让固定点对应的系数为1就行。或者 $\mathbf{H}^{\text{new}} = S^T\mathbf{H}S$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
+其实不用。可以通过作业3泊松融合里面对边界条件一样的处理：在求解方程(7)的时候修改 $\nabla^2 g$ 矩阵，让固定点对应的系数为1同时修改方程右端项的对应值为0（和hw3一样的边界处理技巧，都是线性方程组考虑边界条件的通用方法）。或者 $(\nabla^2 g)^{\text{new}} = S^T\nabla^2 gS$ 来获得一个更小的矩阵，其中 $S$ 为选择矩阵。
 
-如果实现正确，将1. 劲度系数`stiffness`和2.时间步长`h`设置为合理的值（隐式时间积分不需要调阻尼系数），并考虑了Hessian的正定性：就可以看到下面的仿真结果（gif经过加速），可以实现比半隐式时间积分大20倍甚至更多的时间步长（但由于需要组装Hessian并求解线性方程组，隐式时间积分每一步的时间会比半隐式时间积分长）：
+解出 $\mathbf{X}^{\text{new}}$ 后，新的速度可以直接计算为： 
+
+$$ 
+\mathbf{V} = (\mathbf{X}^{\text{new}} - \mathbf{X}^{\text{old}}) / h  
+$$  
+
+
+如果实现正确，将1. 劲度系数`stiffness`(如100-1000)和2.时间步长`h`（如0.01）设置为合理的值（隐式时间积分不需要调阻尼系数），并考虑了Hessian的正定性：就可以看到下面的仿真结果（gif经过加速），可以实现比半隐式时间积分大20倍甚至更多的时间步长（但由于需要组装Hessian并求解线性方程组，隐式时间积分每一步的时间会比半隐式时间积分长）：
 
 <div  align="center">    
- <img src="../images/implicit-euler.gif" style="zoom:80%" alt="genshin cloth sim" />
+ <img src="../images/implicit-euler.gif" style="zoom:80%" />
 </div>
 
 如果你需要测量性能，我们在程序中提供了`TIC`和`TOC`宏来打印程序运行时间，使用方式如下（在`enable_time_profiling = true`的时候会print出结果）
@@ -398,16 +415,16 @@ Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, doub
 
 
 <div  align="center">    
- <img src="../images/implicit-with-collision.gif" style="zoom:80%" alt="genshin cloth sim" />
+ <img src="../images/implicit-with-collision.gif" style="zoom:80%" />
 </div>
 
 
 至此，你已经实现了一个基础的带与球碰撞的弹簧指导仿真系统。但是基于惩罚力的方式无法保证不穿透，需要手动调惩罚力的因子。
 
-所需要连接的节点图：
+所需要连接的节点图（注意球和布料的`Write USD`节点的`Prim Path`需要不一样，否则显示会出问题）：
 
 <div  align="center">    
- <img src="../images/nodes-collision.png" style="zoom:100%" alt="genshin cloth sim" />
+ <img src="../images/nodes-collision.png" style="zoom:100%" />
 </div>
 
 
@@ -420,7 +437,7 @@ Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, doub
 
 在实践中，我们发现牛顿法求解弹簧质点仿真还是有点慢。（我们提供了`TIC`和`TOC`宏来打印程序运行时间）
 
-如何加速？我们将在Part2进行介绍，这也是本次作业的选做内容。
+如何加速？我们将在[Part2](./README-part2.md)进行介绍，这也是本次作业的选做内容。
 
 ## 参考资料
 1. GAMES 103 Lecture 2 & 5 

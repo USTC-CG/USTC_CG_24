@@ -13,8 +13,8 @@
 
 ## 作业递交
 
-- 递交内容：程序代码、实验报告及 `Blueprints.json` 文件，见[提交文件格式](#提交文件格式)
-- 递交时间：北京时间2024年4月29日（周一）中午12点
+- 递交内容：程序代码、实验报告及节点描述文件，见[提交文件格式](#提交文件格式)
+- 递交时间：北京时间2024年4月30日（周二）中午12点
 
 ## 要求
 
@@ -43,8 +43,20 @@
 
 ### 提交文件格式
 
-文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：
-
+文件命名为 `ID_姓名_Homework*.rar/zip`，其中包含：`Framework3D/source/nodes/nodes/geometry/mass_spring/`文件夹下的所有文件、`Framework3D/source/nodes/nodes/geometry/node_mass_spring.cpp`, 以及其他可能的自行添加or修改的其他代码文件：
+```
+ID_姓名_Homework*/
+├── mass_spring/                   
+│   ├── xxx.h
+│   ├── xxx.cpp
+|   └── ...
+├── node_mass_spring.cpp
+├── report.pdf                    // 实验报告
+├── CompositionGraph.json               // 节点连接信息
+├── GeoNodeSystem.json
+├── RenderGraph.json
+└── ...                           // 其他补充文件
+```
 
 ### 注意事项
 
