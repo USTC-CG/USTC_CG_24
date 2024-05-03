@@ -137,7 +137,7 @@ for (auto& p : ps_.particles()) {
     for (auto& q : p->neighbors()) {
         auto v_j = q->vel(); 
         double w_ij = W(p->x() - q->x(), ps_.h());
-        Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
+        Vector3d grad_W_ij = grad_W(p->x() - q->x(), ps_.h());
         // ... other code 
     }
 }
