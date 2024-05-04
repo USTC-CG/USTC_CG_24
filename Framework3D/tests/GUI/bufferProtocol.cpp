@@ -1,14 +1,15 @@
 #include <pxr/base/vt/array.h>
+#include <pxr/base/vt/arrayPyBuffer.h>
 
+#include <boost/optional/optional_io.hpp>
 #include <boost/python.hpp>
+#include <iostream>
 #include <vector>
-
-using namespace pxr;
 
 namespace bp = boost::python;
 
 // Function to call the Python script and pass the VtArray<float> to it
-void call_python_script(const VtArray<float>& arr)
+void call_python_script(const pxr::VtArray<float>& arr)
 {
     Py_Initialize();
 
@@ -17,10 +18,11 @@ void call_python_script(const VtArray<float>& arr)
 
     // Call the 'process_array' function from the module
     bp::object result = (module.attr("process_array")(arr));
+    std::string err;
+    boost::optional<pxr::VtArray<float>> vt_arr =
+        pxr::VtArrayFromPyBuffer<float>(pxr::TfPyObjWrapper(result));
 
-    module.attr("a") = 0.1;
-
-    module.attr("print_a")();
+    std::cout << "C++ side:" << vt_arr << std::endl;
 
     // Do something with the result vector...
 }
@@ -28,7 +30,7 @@ void call_python_script(const VtArray<float>& arr)
 int main()
 {
     // Assuming 'arr' is your VtArray<float>
-    VtArray<float> arr = { 1.1, 2.2, 3.3, 4.4, 5.5 };
+    pxr::VtArray<float> arr = { 1.1, 2.2, 3.3, 4.4, 5.5 };
 
     // Call the Python script with the VtArray<float>
     call_python_script(arr);
