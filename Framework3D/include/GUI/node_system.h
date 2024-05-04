@@ -14,7 +14,7 @@ enum class NodeSystemType { Geometry, Render, Composition };
 struct NodeSystemImpl;
 class NodeTree;
 
-class USTC_CG_API NodeSystem {
+class NodeSystem {
    public:
     explicit NodeSystem(
         NodeSystemType type,
