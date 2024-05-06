@@ -48,6 +48,8 @@ set_target_properties(Python3::Python PROPERTIES MAP_IMPORTED_CONFIG_DEBUG ";REL
 find_package(pxr REQUIRED)
 find_package(TBB REQUIRED)
 find_package(EMBREE REQUIRED)
+find_package(boost REQUIRED COMPONENTS numpy)
+
 set(TBB_tbb_LIBRARY TBB::tbb TBB::tbbmalloc TBB::tbbmalloc_proxy)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	set_target_properties(TBB::tbb PROPERTIES INTERFACE_COMPILE_DEFINITIONS "TBB_USE_DEBUG=1")
@@ -64,6 +66,8 @@ target_link_libraries(SCore PUBLIC GCore)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/GUI)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/nodes)
+
+target_link_libraries(GCore PUBLIC Boost::numpy)
 
 # For testing
 enable_testing()
