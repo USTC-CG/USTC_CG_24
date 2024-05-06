@@ -352,7 +352,7 @@ void SPHBase::advect()
 
 ## 6. (Optional) 表面重建与渲染
 
-我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染。(目前框架中透明物体的渲染正在施工中，会晚几天发布)
+我们提供了`Points to Mesh`节点来从粒子重建mesh，以用于后续的渲染。
 
 <div  align="center">    
  <img src="../images/wcsph-reconstruct-demo.gif" style="zoom:100%" />
@@ -362,6 +362,12 @@ void SPHBase::advect()
 
 <div  align="center">    
  <img src="../images/node2.png" style="zoom:100%" />
+</div>
+
+渲染节点及渲染效果如下所示。我们在[`./data/`](./data/)文件夹下提供了相应的`RenderGraph.json`与`CompositionGraph.json`以及环境贴图`garden.exr`:
+
+<div  align="center">    
+ <img src="../images/render.png" style="zoom:100%" />
 </div>
 
 
