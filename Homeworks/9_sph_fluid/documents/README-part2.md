@@ -26,14 +26,13 @@ $$
 
 这个时候流体是很可能不满足不可压缩性的。此时流体的密度误差为 $\rho_0 - \rho^*$ ，
 
-由于从优化的角度上，压力其实可以看做对流体违反不可压缩性约束而带来的惩罚力：
+由于从优化的角度上，压力其实可以看做对流体违反不可压缩性约束而带来的惩罚力:
 
-我们希望施加压力后，带来的流体粒子的速度改变量为：（注意这个时候分母用的还是 $\rho(t)$ ,而不是 $\rho^*$ ）
+我们希望施加压力后，带来的流体粒子的速度改变量正好可以抵消流体的密度误差。已知压力带来的流体粒子的速度改变量为：（注意这个时候分母用的还是 $\rho(t)$ ,而不是 $\rho^*$ ）
 
 $$ 
 \Delta  \mathbf{v} = -\Delta t \frac{1}{\rho(t)} \nabla p \tag{1}
 $$ 
-
 
 由于 $\frac{D \rho}{D t} = -\rho(t) \nabla \cdot \mathbf{v}$ ,
 
@@ -149,8 +148,11 @@ $$
 其中，
 
 $$
-\mathbf{d}_ {i i} = \sum _ j \frac{m_ j}{\rho_i^2} \nabla W_{i j} \\
-\mathbf{d}_ {ji} = \frac{m_i}{\rho_i^2} \nabla W_{ji} \\
+\mathbf{d}_ {ii} := \sum _ j \frac{m_j}{\rho_i^2} \nabla W_{ij} \\
+$$
+
+$$
+\mathbf{d}_ {ji} := \frac{m_i}{\rho_i^2} \nabla W_{ji} \\
 $$
 
 > 我们这里的 $a_{ii}, \mathbf{d}_ {ii}, \mathbf{d}_ {ji}$ 和原论文中的定义相差 $(\Delta t)^2$， 注意甄别。
