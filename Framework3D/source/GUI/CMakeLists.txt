@@ -10,6 +10,7 @@ target_link_libraries(GUI PUBLIC
 	RCore
 	usdImaging
 	usdImagingGL
+	Python3::Python
 )
 target_compile_options(GUI PRIVATE -DUSTC_CG_BUILD_MODULE=0  -DNOMINMAX)
 

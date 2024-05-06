@@ -1,4 +1,5 @@
 #pragma once
+#include "NODES_FILES_DIR.h"
 #include "Nodes/socket_types/geo_socket_types.hpp"
 #include "Nodes/socket_types/buffer_socket_types.hpp"
 

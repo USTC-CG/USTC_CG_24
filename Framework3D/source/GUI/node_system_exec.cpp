@@ -271,6 +271,7 @@ Node* GeoNodeSystemExecution::create_node_menu()
 
 RenderNodeSystemExecution::RenderNodeSystemExecution()
 {
+    NodeSystemExecution();
     executor = CreateEagerNodeTreeExecutorRender();
 }
 

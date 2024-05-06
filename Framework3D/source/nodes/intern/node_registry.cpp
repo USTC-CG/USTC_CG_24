@@ -4,10 +4,12 @@
 #include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
+#include "boost/python/numpy.hpp"
 #include "rich_type_buffer.hpp"
+#include "../nodes/functions/NODES_FILES_DIR.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
-    class MassSpring;
+class MassSpring;
 }
 
 static void reset_declaration(NodeDeclaration& declaration)
@@ -268,6 +270,10 @@ void register_sockets()
 
 void register_all()
 {
+    SetEnvironmentVariable("PYTHONPATH", FUNC_NODES_FILES_DIR "/scripts");
+
+    Py_Initialize();
+    boost::python::numpy::initialize();
     register_cpp_types();
     register_nodes();
     register_sockets();
