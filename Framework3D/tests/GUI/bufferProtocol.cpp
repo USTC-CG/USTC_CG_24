@@ -30,7 +30,11 @@ void call_python_script(const pxr::VtArray<float>& arr)
 
     std::cout << "C++ numpy side: ";
     for (int i = 0; i < 5; ++i) {
-        std::cout << (float*)(np_arr.get_data())[i] << ' ';
+        auto val = ((float*)(np_arr.get_data()))[i];
+        bp::list l;
+        
+
+        std::cout << val << ' ';
     }
     std::cout << std::endl;
 

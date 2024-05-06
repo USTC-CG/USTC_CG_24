@@ -67,7 +67,7 @@ target_link_libraries(SCore PUBLIC GCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/GUI)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/nodes)
 
-target_link_libraries(GCore PUBLIC Boost::numpy)
+target_link_directories(GCore PUBLIC SDK/${SDK_FOLDER}/boost/lib64-msvc-14.3)
 
 # For testing
 enable_testing()
