@@ -95,9 +95,17 @@ class ParticleSystem {
     {
         return cells_;
     }
+    unsigned num_fluid_particles() const 
+    {
+        return num_fluid_particles_;
+    }
+    unsigned num_boundary_particles() const 
+    {
+        return num_boundary_particles_;
+    }
 
     void searchNeighbors();
-    void add_particle();
+
     static MatrixXd sample_particle_pos_in_a_box(
         const Vector3d min,
         const Vector3d max,
@@ -105,6 +113,11 @@ class ParticleSystem {
     unsigned pos_to_cell_index(const Vector3d& x) const;
     unsigned cell_xyz_to_cell_index(const unsigned x, const unsigned y, const unsigned z) const;
     Vector3i pos_to_cell_xyz(const Vector3d& x) const;
+
+    void add_boundary_particles_around_box(
+        const Vector3d box_min, 
+        const Vector3d box_max,
+        const Vector3i n_particle_per_axis);
 
     void assign_particles_to_cells();
     std::vector<unsigned> get_neighbor_cell_indices(const Vector3d& x) const;
@@ -114,12 +127,13 @@ class ParticleSystem {
     double particle_radius_ = 0.025;
     double support_radius_;
 
-    double density0_ = 1000.0;
+    double density0_ = 1400.0;
     // volume and mass are shared by all particles
     double particle_volume_;
     double particle_mass_;
 
-    unsigned num_particles_;
+    unsigned num_fluid_particles_; 
+    unsigned num_boundary_particles_; 
 
     // ------------------- Particle properties --------------------------------------
     // If store as a big matrix, cache hit may be a problem.

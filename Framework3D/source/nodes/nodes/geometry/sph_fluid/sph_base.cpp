@@ -76,11 +76,11 @@ void SPHBase::compute_density()
     // Traverse all particles
     // This operation can be done parallelly using OpenMP
     for (auto& p : ps_.particles()) {
-        p->density() = ps_.mass() * W_zero(ps_.h());
         // check if p is a boundary particle
         if (p->is_boundary()) {
             continue;
         }
+        p->density() = ps_.mass() * W_zero(ps_.h());
         // Then traverse all neighbors of p
         for (auto& q : p->neighbors()) {
             // Then compute density based on SPH rules
@@ -193,10 +193,13 @@ void SPHBase::advect()
 
     // update X and vel for display
     for (auto& p : ps_.particles()) {
+		if (p->type() == Particle::BOUNDARY) {
+			continue; 
+		}
         X_.row(p->idx()) = p->x().transpose();
         vel_.row(p->idx()) = p->vel().transpose();
 
-        check_collision(p);
+        //check_collision(p);
     }
 }
 
@@ -240,4 +243,16 @@ MatrixXd SPHBase::get_vel_color_jet()
     }
     return vel_color;
 }
+
+MatrixXd SPHBase::get_boundary_X() const
+{
+    MatrixXd boundary_X(ps_.num_boundary_particles(), 3);
+    for (int i = 0; i < ps_.num_boundary_particles(); i++) {
+        auto p = ps_.particles()[i + ps_.num_fluid_particles()];
+		boundary_X.row(i) = p->x().transpose();
+	}
+	return boundary_X;
+}
+
+
 }  // namespace USTC_CG::node_sph_fluid

@@ -68,6 +68,8 @@ class SPHBase {
 		return gravity_;
 	}
 
+    Eigen::MatrixXd get_boundary_X() const; 
+
     Vector3d gravity_ = Vector3d(0, 0, -9.8);
 
     // useful switches

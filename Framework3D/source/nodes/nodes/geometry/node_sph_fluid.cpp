@@ -54,8 +54,8 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
 
     // --------- (HW Optional) if you implement IISPH, please uncomment the following lines ------------
 
-    //b.add_input<decl::Float>("omega").default_val(0.5).min(0.).max(1.);
-    //b.add_input<decl::Int>("max iter").default_val(20).min(0).max(1000);
+    b.add_input<decl::Float>("omega").default_val(0.4).min(0.).max(1.);
+    b.add_input<decl::Int>("max iter").default_val(20).min(0).max(1000);
 
     // -----------------------------------------------------------------------------------------------------------
 
@@ -72,6 +72,7 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
     // Output 
     b.add_output<decl::SPHFluidSocket>("SPH Class");
     b.add_output<decl::Geometry>("Points");
+    b.add_output<decl::Geometry>("Boundary Points");
     b.add_output<decl::Float3Buffer>("Point Colors");
 }
 
@@ -115,12 +116,13 @@ static void node_sph_fluid_exec(ExeParams params)
             Vector3d box_min{sim_box_min[0], sim_box_min[1], sim_box_min[2]};
             Vector3d box_max{sim_box_max[0], sim_box_max[1], sim_box_max[2]};
 
+            Vector3i n_particle_per_axis{static_cast<int>(num_particle_per_axis[0]), 
+            										   static_cast<int>(num_particle_per_axis[1]),
+            										   static_cast<int>(num_particle_per_axis[2])};
             MatrixXd particle_pos = ParticleSystem::sample_particle_pos_in_a_box(
                 { particle_box_min[0],  particle_box_min[1],  particle_box_min[2]},
                 { particle_box_max[0],  particle_box_max[1],  particle_box_max[2]},
-                { static_cast<int>(num_particle_per_axis[0]), 
-                  static_cast<int>(num_particle_per_axis[1]),
-                  static_cast<int>(num_particle_per_axis[2]) }); //TODO:fix this and use Int3  
+                  n_particle_per_axis);
 
 
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
@@ -128,7 +130,8 @@ static void node_sph_fluid_exec(ExeParams params)
             if (enable_IISPH) {
 		    	sph_base = std::make_shared<IISPH>(particle_pos, box_min, box_max);
                 // Perhaps add boundary sampling here? TODO
-                // sph_base->add_boundary_particles(box_min, box_max);
+                sph_base->ps().add_boundary_particles_around_box(
+                            box_min, box_max, n_particle_per_axis);
 			}
 			else {
 				sph_base = std::make_shared<WCSPH>(particle_pos, box_min, box_max);
@@ -145,8 +148,8 @@ static void node_sph_fluid_exec(ExeParams params)
             if (enable_IISPH) {
 			// --------- (HW Optional) if you implement IISPH please uncomment the following lines -----------		
             
-                //std::dynamic_pointer_cast<IISPH>(sph_base)-->max_iter() = params.get_input<int>("max iter");
-                //std::dynamic_pointer_cast<IISPH>(sph_base)->omega() = params.get_input<float>("omega");
+                std::dynamic_pointer_cast<IISPH>(sph_base)->max_iter() = params.get_input<int>("max iter");
+                std::dynamic_pointer_cast<IISPH>(sph_base)->omega() = params.get_input<float>("omega");
 
             // --------------------------------------------------------------------------------------------------------
             }
@@ -164,19 +167,31 @@ static void node_sph_fluid_exec(ExeParams params)
     // ------------------------- construct necessary output ---------------
     params.set_output("SPH Class", sph_base);
 
-    auto geometry = GOperandBase();
-    auto points_component = std::make_shared<PointsComponent>(&geometry);
-    geometry.attach_component(points_component);
 
-	auto vertices = sph_base->getX();
-    points_component->vertices = eigen_to_usd_vertices(vertices);
-    float point_width = 0.05; 
-    points_component->width = pxr::VtArray<float>(vertices.rows(), point_width);
+    //-------------------------
+    auto build_output_geo = [&](MatrixXd vertices) {
+        auto geometry = GOperandBase();
+        auto points_component = std::make_shared<PointsComponent>(&geometry);
+        geometry.attach_component(points_component);
+
+        points_component->vertices = eigen_to_usd_vertices(vertices);
+        float point_width = 0.05;
+        points_component->width = pxr::VtArray<float>(vertices.rows(), point_width);
+
+        return geometry;
+    };
+
+
+    
+    auto geometry = build_output_geo(sph_base->getX());
+    auto boundary_geo = build_output_geo(sph_base->get_boundary_X());
+    //-------------------------
 
     auto color = eigen_to_usd_vertices(sph_base->get_vel_color_jet());
 
 	params.set_output("Point Colors", std::move(color));
     params.set_output("Points", std::move(geometry));
+    params.set_output("Boundary Points", std::move(boundary_geo));
     // ----------------------------------------------------------------------------------------
 
 }

@@ -8,7 +8,6 @@ using namespace std;
 #define M_PI 3.14159265358979323846
 
 ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const Vector3d &box_max)
-    : num_particles_(X.rows())
 {
     support_radius_ = 4 * particle_radius_;
     cell_size_ = support_radius_;
@@ -28,6 +27,8 @@ ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const
         p->idx_ = i;
         particles_.push_back(p);
     }
+
+    num_fluid_particles_ = particles_.size();
 
     // Initialize the spatial grid
     // Compute the bounding box of the particles
@@ -55,7 +56,7 @@ void ParticleSystem::searchNeighbors()
     for (auto &p : particles_) {
         p->neighbors_.clear();
         if (p->type_ == Particle::BOUNDARY) {
-            // TODO: do we need to search neighbors for boundary particles?
+            // TODO: do we need to search neighbors for boundary particles? NO; 
             continue;
         }
 
@@ -146,6 +147,7 @@ void ParticleSystem::assign_particles_to_cells()
             std::cout << " particle pos= " << p->X_.transpose() << std::endl;
             std::cout << "n cells per axis = " << n_cell_per_axis_.transpose() << std::endl;
             std::cout << "cell size = " << cell_size_ << std::endl;
+            //throw std::runtime_error("cell_idx out of range");
             exit(1);
         }
     }
@@ -174,25 +176,68 @@ MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     return X;
 }
 
-/*
-// TODO: sample boundary particles 
- void ParticleSystem::sample_boundary_particles(
- 	 const Vector3d min,
-	 const Vector3d max,
-	 const Vector3i n_per_axis)
+// TODO: decouple and simplify this function
+void ParticleSystem::add_boundary_particles_around_box(
+	const Vector3d min,
+	const Vector3d max,
+	const Vector3i n_per_axis)
 {
 	 const Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
-	 const int n_particles = n_per_axis.prod();
-    )
+     const double s = 0.5; // scale factor 
+     auto scaled_min = min - s * (max - min); 
+     auto scaled_max = max + s * (max - min); 
 
-    // call sample particle_pos_in_a_box 
+     int count = 0; 
+     std::cout << "sampling boundary particles begin. " << std::endl;
+     // Optimize this part 
+     for (double x = scaled_min[0]; x <= scaled_max[0]; x += step[0])
+     {
+         for (double y = scaled_min[1]; y <= scaled_max[1]; y += step[1])
+         {
+            for (double z = scaled_min[2]; z <= scaled_max[2]; z += step[2])
+             {
+                if (x < min[0] || x > max[0] || y < min[1] || y > max[1] || z < min[2] ||
+                    z > max[2]) {
 
-    // Then set the type of particles
+                    // add boundary particles, they have the same mass and volume as fluid particles
+                    shared_ptr<Particle> p = make_shared<Particle>();
 
-    // Then need to push back these boundary particles into the vector of particles  
+                    p->X_ = Vector3d(x, y, z);
+                    p->vel_ = Vector3d::Zero();
+                    // We do not need to compute density and pressure for boundary particles for now 
+                    // In case you want to implement the "pressure boundary" TOG paper for IISPH 
+                    p->density_ = density0_; 
+                    p->pressure_ = 0.0; 
+                    p->type_ = Particle::BOUNDARY;
+                    p->idx_ = num_fluid_particles_ + count;  // This size will increase as we add boundary particles
+                    particles_.push_back(p);
 
-    // What is the mass of the boundary particle? We can directly use fluid particles 
+                    count++; 
+                }
+                else {
+                    // actually, we can add fluid particles here (potential optimization)
+                    continue;
+                }
+			}   
+        }
+
+     }
+
+     std::cout << "sampling boundary particles end. " << std::endl;
+    num_boundary_particles_ = count; 
+
+    box_max_ = scaled_max;
+    box_min_ = scaled_min;
+    n_cell_per_axis_ = ((box_max_ - box_min_) / cell_size_)
+                           .array()
+                           .ceil()
+                           .cast<int>();  // Extend one more for safety
+
+    cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
+
+    // re-assign particles to cells and update neighbors 
+    assign_particles_to_cells();
+    searchNeighbors();
 }
-*/
 
 }  // namespace USTC_CG::node_sph_fluid

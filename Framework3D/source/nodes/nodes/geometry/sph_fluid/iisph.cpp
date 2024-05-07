@@ -25,6 +25,9 @@ void IISPH::step()
 
     for(auto& p : ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+			continue;
+		}
         p->vel() += p->acceleration() * dt_;
         p->acceleration() = Vector3d::Zero();
          //p->pressure() = 0.0;  // clear pressure 
@@ -59,6 +62,9 @@ void IISPH::predict_advection()
     MatrixXd dii = MatrixXd::Zero(ps_.particles().size(), 3);
     for(auto& p : ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+            continue; 
+        }
         predict_density_[p->idx()] = p->density();
 
         for(auto& q : p->neighbors())
@@ -77,6 +83,9 @@ void IISPH::predict_advection()
     // ------------------- compute pressure acceleration -------------------
     for(auto &p: ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+            continue; 
+        }
         auto density2 = p->density() * p->density();
         auto tmp_p = ps_.mass() / density2;
         aii_[p->idx()] = 0.0;
@@ -102,6 +111,9 @@ double IISPH::pressure_solve_iteration()
     MatrixXd acc_pressure = MatrixXd::Zero(ps_.particles().size(), 3);
     for(auto &p: ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+            continue; 
+        }
         auto density2 = p->density() * p->density();
         auto tmp_p = p->pressure() / density2;
         for(auto& q : p->neighbors())
@@ -115,6 +127,9 @@ double IISPH::pressure_solve_iteration()
     // ---------------------------------------------------------------
     for(auto &p : ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+            continue; 
+        }
         double Api = 0.0;
         for(auto& q : p->neighbors())
         {
@@ -138,6 +153,9 @@ double IISPH::pressure_solve_iteration()
         for(int i = 0; i < ps_.particles().size(); i++)
         {
             auto p = ps_.particles()[i];
+			if (p->type() == Particle::BOUNDARY) {
+				continue; 
+			}
             if(p->density() > ps_.density0())
             {
                 std::cout << "[ " << i << " ]pressure: " << p->pressure() << " ";
@@ -152,7 +170,7 @@ double IISPH::pressure_solve_iteration()
             }
         }
         if(count == 0)
-            std::cout << "No particles with pressure > 1e-5" << std::endl;
+            std::cout << "No particles with density > density0" << std::endl;
     }
     // ------------------------------------------------------------------------
 
@@ -160,13 +178,16 @@ double IISPH::pressure_solve_iteration()
     double avg_density_err = 0.0;
     for(auto& p : ps_.particles())
     {
+        if (p->type() == Particle::BOUNDARY) {
+            continue; 
+        }
         if(p->pressure() > 0.0)
         {
             double final_density_p = predict_density_[p->idx()] + dt_ * dt_ * Api_[p->idx()];
             avg_density_err += fabs(final_density_p - ps_.density0()); 
         }
     }
-    avg_density_err /= ps_.particles().size(); 
+    avg_density_err /= ps_.num_fluid_particles(); 
     avg_density_err /= ps_.density0(); 
 
     return avg_density_err; 
