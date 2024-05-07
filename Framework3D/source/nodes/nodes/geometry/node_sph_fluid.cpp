@@ -122,10 +122,13 @@ static void node_sph_fluid_exec(ExeParams params)
                   static_cast<int>(num_particle_per_axis[1]),
                   static_cast<int>(num_particle_per_axis[2]) }); //TODO:fix this and use Int3  
 
+
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
             
             if (enable_IISPH) {
 		    	sph_base = std::make_shared<IISPH>(particle_pos, box_min, box_max);
+                // Perhaps add boundary sampling here? TODO
+                // sph_base->add_boundary_particles(box_min, box_max);
 			}
 			else {
 				sph_base = std::make_shared<WCSPH>(particle_pos, box_min, box_max);

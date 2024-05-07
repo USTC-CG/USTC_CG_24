@@ -173,4 +173,26 @@ MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     }
     return X;
 }
+
+/*
+// TODO: sample boundary particles 
+ void ParticleSystem::sample_boundary_particles(
+ 	 const Vector3d min,
+	 const Vector3d max,
+	 const Vector3i n_per_axis)
+{
+	 const Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
+	 const int n_particles = n_per_axis.prod();
+    )
+
+    // call sample particle_pos_in_a_box 
+
+    // Then set the type of particles
+
+    // Then need to push back these boundary particles into the vector of particles  
+
+    // What is the mass of the boundary particle? We can directly use fluid particles 
+}
+*/
+
 }  // namespace USTC_CG::node_sph_fluid
