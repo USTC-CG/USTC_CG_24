@@ -43,15 +43,20 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Float3>("particle box max");
     b.add_input<decl::Float3>("num particle per axis");
 
+    // general parameters
     b.add_input<decl::Float>("dt").default_val(0.01).min(0.0).max(0.5);
-    b.add_input<decl::Float>("stiffness").default_val(1000).min(100).max(10000);
+    b.add_input<decl::Float>("viscosity").default_val(0.03).min(0.0).max(0.5);
     b.add_input<decl::Float>("gravity").default_val(-9.8);
 
-    // --------- HW Optional: if you implement sphere collision, please uncomment the following lines ------------
-    //b.add_input<decl::Float>("collision penalty_k").default_val(10000).min(100).max(100000); 
-    //b.add_input<decl::Float>("collision scale factor").default_val(1.1).min(1.0).max(2.0); 
-    //b.add_input<decl::Float>("sphere radius").default_val(0.4).min(0.0).max(5.0);; 
-    //b.add_input<decl::Float3>("sphere center");
+    // WCSPH parameters 
+    b.add_input<decl::Float>("stiffness").default_val(500).min(100).max(10000);
+    b.add_input<decl::Float>("exponent").default_val(7).min(1).max(10);
+
+    // --------- (HW Optional) if you implement IISPH, please uncomment the following lines ------------
+
+    //b.add_input<decl::Float>("omega").default_val(0.5).min(0.).max(1.);
+    //b.add_input<decl::Int>("max iter").default_val(20).min(0).max(1000);
+
     // -----------------------------------------------------------------------------------------------------------
 
     // Useful switches (0 or 1). You can add more if you like.
@@ -126,20 +131,25 @@ static void node_sph_fluid_exec(ExeParams params)
 				sph_base = std::make_shared<WCSPH>(particle_pos, box_min, box_max);
             }
 
-            const float dt = params.get_input<float>("dt");
-            sph_base->dt() = dt; 
+            sph_base->dt() = params.get_input<float>("dt");
+            sph_base->viscosity() = params.get_input<float>("viscosity");
+            sph_base->gravity()  = { 0, 0, params.get_input<float>("gravity") };
 
+            // Useful switches
             sph_base->enable_time_profiling = params.get_input<int>("enable time profiling") == 1 ? true : false;
             sph_base->enable_debug_output = params.get_input<int>("enable debug output") == 1 ? true : false;
-            //sph_base->gravity()  = { 0, 0, params.get_input<float>("gravity") };
 
             if (enable_IISPH) {
-			// --------- HW Optional: if you implement sphere collision, please uncomment the following lines -----------		
+			// --------- (HW Optional) if you implement IISPH please uncomment the following lines -----------		
             
+                //std::dynamic_pointer_cast<IISPH>(sph_base)-->max_iter() = params.get_input<int>("max iter");
+                //std::dynamic_pointer_cast<IISPH>(sph_base)->omega() = params.get_input<float>("omega");
+
             // --------------------------------------------------------------------------------------------------------
             }
             else {
-                const float k = params.get_input<float>("stiffness");
+                std::dynamic_pointer_cast<WCSPH>(sph_base)->stiffness() = params.get_input<float>("stiffness");
+                std::dynamic_pointer_cast<WCSPH>(sph_base)->exponent() = params.get_input<float>("exponent");
             }
 
     }
@@ -148,7 +158,7 @@ static void node_sph_fluid_exec(ExeParams params)
        sph_base->step(); 
     }
 
-    // ------------------------- construct necessary output (No need to modify) ---------------
+    // ------------------------- construct necessary output ---------------
     params.set_output("SPH Class", sph_base);
 
     auto geometry = GOperandBase();
@@ -159,14 +169,12 @@ static void node_sph_fluid_exec(ExeParams params)
     points_component->vertices = eigen_to_usd_vertices(vertices);
     float point_width = 0.05; 
     points_component->width = pxr::VtArray<float>(vertices.rows(), point_width);
-    // ----------------------------------------------------------------------------------------
 
     auto color = eigen_to_usd_vertices(sph_base->get_vel_color_jet());
-    //auto color = pxr::VtArray<pxr::GfVec3f>(vertices.rows(), pxr::GfVec3f(1, 0., 0.));
 
 	params.set_output("Point Colors", std::move(color));
     params.set_output("Points", std::move(geometry));
-    // TODO: add an output of vertices color 
+    // ----------------------------------------------------------------------------------------
 
 }
 

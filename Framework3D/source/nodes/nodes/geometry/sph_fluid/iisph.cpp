@@ -8,10 +8,9 @@ using namespace Eigen;
 IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max)
     : SPHBase(X, box_min, box_max)
 {
+    // (HW TODO) Feel free to modify this part to remove or add necessary member variables
     predict_density_ = VectorXd::Zero(ps_.particles().size());
     aii_ = VectorXd::Zero(ps_.particles().size());
-
-    // for debugging 
     Api_ = VectorXd::Zero(ps_.particles().size());
     last_pressure_ = VectorXd::Zero(ps_.particles().size());
 }

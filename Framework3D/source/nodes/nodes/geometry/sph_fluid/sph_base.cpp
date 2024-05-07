@@ -19,12 +19,12 @@ SPHBase::SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector
 {
 }
 
+// ----------------- SPH kernal function and its spatial derivatives, no need to modify -----------------
 double SPHBase::W(const Eigen::Vector3d& r, double h)
 {
     double h3 = h * h * h;
     double m_k = 8.0 / (M_PI * h3);
-    double m_l = 48.0 / (M_PI * h3);  // TODO: can be moved to a class member variable
-
+    double m_l = 48.0 / (M_PI * h3); 
     const double q = r.norm() / h;
     double result = 0.;
 

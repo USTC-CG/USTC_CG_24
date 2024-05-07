@@ -33,18 +33,10 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    auto cameras = params.get_input<CameraArray>("Camera");
     auto meshes = params.get_input<MeshArray>("Meshes");
     MaterialMap materials = params.get_input<MaterialMap>("Materials");
 
-    Hd_USTC_CG_Camera* free_camera;
-
-    for (auto camera : cameras) {
-        if (camera->GetId() != SdfPath::EmptyPath()) {
-            free_camera = camera;
-            break;
-        }
-    }
+    Hd_USTC_CG_Camera* free_camera = get_free_camera(params);
 
     auto size = free_camera->_dataWindow.GetSize();
 

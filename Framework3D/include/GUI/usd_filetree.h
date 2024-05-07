@@ -8,7 +8,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class UsdFileViewerImpl;
 
-class USTC_CG_API UsdFileViewer {
+class UsdFileViewer {
    public:
     explicit UsdFileViewer();
 

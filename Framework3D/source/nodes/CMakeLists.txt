@@ -60,7 +60,7 @@ target_link_libraries(nodes hioOpenVDB)
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
 target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)
 
-target_compile_options(nodes PRIVATE -DUSTC_CG_BUILD_MODULE=1 -DNOMINMAX)
+target_compile_options(nodes PRIVATE -DUSTC_CG_BUILD_MODULE=0 -DNOMINMAX)
 
 get_filename_component(NODES_FILES_DIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
 set(NODES_FILES_DIR_MACRO "#define NODES_FILES_DIR \"${NODES_FILES_DIR}\"")

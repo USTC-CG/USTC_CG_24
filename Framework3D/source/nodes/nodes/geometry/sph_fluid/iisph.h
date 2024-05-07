@@ -33,10 +33,12 @@ class IISPH : public SPHBase {
 
    protected:
     int max_iter_ = 100;
+    double omega_ = 0.3;
+
+    // (HW TODO) Feel free to modify this part to remove or add necessary member variables
     VectorXd predict_density_;
     VectorXd aii_;
-    VectorXd Api_;  // for debug
-    double omega_ = 0.3;
+    VectorXd Api_;  
     VectorXd last_pressure_;
 };
 }  // namespace USTC_CG::node_sph_fluid
