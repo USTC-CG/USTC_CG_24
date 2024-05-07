@@ -22,7 +22,6 @@ void IISPH::step()
     ps_.searchNeighbors(); 
 
     compute_density();
-
     compute_non_pressure_acceleration();
 
     for(auto& p : ps_.particles())
@@ -30,7 +29,7 @@ void IISPH::step()
         p->vel() += p->acceleration() * dt_;
         p->acceleration() = Vector3d::Zero();
          //p->pressure() = 0.0;  // clear pressure 
-        //p->pressure() = 0.5 * last_pressure_[p->idx()]; // warm init
+        p->pressure() = 0.5 * last_pressure_[p->idx()]; // warm init
     }
 
     // compute predict_pressure and aii 
@@ -54,8 +53,6 @@ void IISPH::compute_pressure()
         if(avg_density_error < threshold)
             break;
     }
-    if (enable_debug_output)
-		std::cin.get();
 }
 
 void IISPH::predict_advection()
