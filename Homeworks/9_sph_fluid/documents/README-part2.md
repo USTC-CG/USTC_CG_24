@@ -198,6 +198,7 @@ $$
 
 建议大家在看完文档后有了基础认识后，进一步阅读原论文中提到的实现细节(提醒：本算法公式下标比较繁杂，需要小心谨慎), 然后所需要写的代码为[`IISPH.cpp`](../../../Framework3D/source/nodes/nodes/geometry/sph_fluid/iisph.cpp)的以下部分：
 
+**（注意：原论文将 $\mathbf{Ap}_i$ 拆分成了多项，但实际上不拆分也是可以的（如上面的介绍，直接计算整体的 $\mathbf{Ap}_i$ ） ）**
 
 ```C++
 void IISPH::step()
@@ -236,6 +237,8 @@ double IISPH::pressure_solve_iteration()
     return 1.0; 
 }
 ```
+
+由于我们作业中目前只提供了简单的边界处理方式，如果出现粒子压强过大导致爆炸的现象，一个比较简单但是有效的处理方式是直接clamp pressure到1e5，并且减小迭代次数，这样子可以取得不错的视觉效果，但是无法严格保证流体粒子密度= $\rho_0$ 。
 
 
 ## 4. 总结与展望

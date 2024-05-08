@@ -122,7 +122,7 @@ static double W_zero(double h);
 void step()
 {
     ps_.assign_particles_to_cells(); 
-    ps_.searchNeighbors(); 
+    ps_.search_neighbors(); 
     // ... other code 
 }
 ```
