@@ -25,6 +25,7 @@ ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const
         p->pressure_ = 0.0;
         p->type_ = Particle::FLUID;
         p->idx_ = i;
+        p->mass_ = particle_mass_;
         particles_.push_back(p);
     }
 
@@ -210,6 +211,7 @@ void ParticleSystem::add_boundary_particles_around_box(
                     p->pressure_ = 0.0; 
                     p->type_ = Particle::BOUNDARY;
                     p->idx_ = num_fluid_particles_ + count;  // This size will increase as we add boundary particles
+                    p->mass_ = particle_mass_;
                     particles_.push_back(p);
 
                     count++; 

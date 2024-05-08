@@ -40,6 +40,8 @@ class SPHBase {
 
     // SPH functions
     virtual void compute_density();
+    void init_boundary_particle_mass();  // TODO: should not be put here! 
+
     virtual Vector3d compute_viscosity_acceleration(
         const std::shared_ptr<Particle>& p,
         const std::shared_ptr<Particle>& q);
@@ -75,6 +77,7 @@ class SPHBase {
     // useful switches
     bool enable_debug_output = false;
     bool enable_time_profiling = false;
+    bool enable_step_pause = false; 
 
     // -------- for display ----------
     MatrixXd get_vel_color_jet();

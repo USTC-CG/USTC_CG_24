@@ -40,6 +40,12 @@ void IISPH::step()
     compute_pressure_gradient_acceleration();
 
     advect(); 
+
+    if (enable_step_pause)
+    {
+		std::cout << YellowHead() << "Press Enter to continue..." << ColorTail() << std::endl;
+		std::cin.get();
+	}
 }
 
 void IISPH::compute_pressure()
@@ -74,11 +80,12 @@ void IISPH::predict_advection()
             //          = density_i - dt * density_i \sum mass_j / density_j (v_j - v_i) \cdot grad W_ij
             //          \approx density + dt *  \sum mass_j (v_i - v_j) \cdot grad W_ij
             auto grad = grad_W(p->x() - q->x(), ps_.h());
-            predict_density_[p->idx()] += dt_ * ps_.mass() *(p->vel() - q->vel()).dot(grad);
+            predict_density_[p->idx()] += dt_ * q->mass() *(p->vel() - q->vel()).dot(grad);
 
-            dii.row(p->idx()) += ps_.mass() / p->density() / p->density() * grad; 
+            dii.row(p->idx()) += q->mass() / p->density() / p->density() * grad; 
         }
     }
+    dii_ = dii;
 
     // ------------------- compute pressure acceleration -------------------
     for(auto &p: ps_.particles())
@@ -87,15 +94,15 @@ void IISPH::predict_advection()
             continue; 
         }
         auto density2 = p->density() * p->density();
-        auto tmp_p = ps_.mass() / density2;
+        auto tmp_p = p->mass() / density2;
         aii_[p->idx()] = 0.0;
         for(auto& q : p->neighbors())
         {
             Vector3d grad_W_ji = grad_W(q->x() - p->x(), ps_.h()); // Note: W_{ji} instead of W_{ij}
             Vector3d grad_W_ij = - grad_W_ji;
-            Vector3d d_ji =  ps_.mass() / p->density() / p->density() * grad_W_ji;
+            Vector3d d_ji =  p->mass() / p->density() / p->density() * grad_W_ji;
             Vector3d d_ii_ = dii.row(p->idx()); 
-            aii_[p->idx()] += - ps_.mass() * (d_ii_ - d_ji).dot(grad_W_ij);
+            aii_[p->idx()] += - q->mass() * (d_ii_ - d_ji).dot(grad_W_ij);
         }
     }
 }
@@ -120,7 +127,7 @@ double IISPH::pressure_solve_iteration()
         {
             auto tmp_q = q->pressure() / (q->density() * q->density());
             Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
-            acc_pressure.row(p->idx()) += -ps_.mass() * (tmp_p + tmp_q) * grad;
+            acc_pressure.row(p->idx()) += - q->mass() * (tmp_p + tmp_q) * grad;
         }
     }
 
@@ -134,11 +141,11 @@ double IISPH::pressure_solve_iteration()
         for(auto& q : p->neighbors())
         {
             Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
-            Api += ps_.mass() * (acc_pressure.row(p->idx()) - acc_pressure.row(q->idx())).dot(grad);
+            Api += q->mass() * (acc_pressure.row(p->idx()) - acc_pressure.row(q->idx())).dot(grad);
         }
         Api_[p->idx()] = Api; // for debugging, in deploy no need to store  
 
-        double s = (ps_.density0() - predict_density_[p->idx()]) / dt_ / dt_;
+        double s = (ps_.density0() - predict_density_[p->idx()]) / dt_  / dt_ ;
         if(fabs(aii_[p->idx()]) > 1e-9)
             p->pressure() = std::max(0.0, p->pressure() + omega_ / aii_[p->idx()] * (s - Api)); 
         else 
@@ -161,6 +168,8 @@ double IISPH::pressure_solve_iteration()
                 std::cout << "[ " << i << " ]pressure: " << p->pressure() << " ";
                 std::cout << "aii: " << aii_[i] << " "; 
                 std::cout << "Api: " << Api_[i] << " "; 
+                std::cout << "dii: " << dii_.row(i) << " "; 
+                std::cout << "mass: " << p->mass() << " "; 
                 std::cout << "predict_density: " << predict_density_[i] << " "; 
                 std::cout << "final density: " << predict_density_[i] + dt_* dt_* Api_[i] << " "; 
                 std::cout << "density: " << p->density() << std::endl;
@@ -191,6 +200,36 @@ double IISPH::pressure_solve_iteration()
     avg_density_err /= ps_.density0(); 
 
     return avg_density_err; 
+}
+
+void IISPH::advect()
+{
+    // Traverse all particles
+    // This operation can be done parallelly using OpenMP
+    for (auto& p : ps_.particles())  // add custom iterator rules to ParticleSystem
+    {
+        // check if p is a boundary particle
+        if (p->is_boundary()) {
+            p->vel() = Vector3d::Zero(); 
+            continue;
+        }
+        // Then update the velocity and position of p
+        p->vel() += p->acceleration() * dt_;
+        p->acceleration() = Vector3d::Zero();
+        p->x() += p->vel() * dt_;
+    }
+
+    // no need to check collision here 
+
+    // update X and vel for display
+    for (auto& p : ps_.particles()) {
+		if (p->type() == Particle::BOUNDARY) {
+			continue; 
+		}
+        X_.row(p->idx()) = p->x().transpose();
+        vel_.row(p->idx()) = p->vel().transpose();
+
+    }
 }
 
 

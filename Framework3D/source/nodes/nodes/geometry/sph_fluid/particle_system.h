@@ -35,6 +35,10 @@ class Particle {
     {
         return pressure_;
     };
+    double& mass()
+    {
+        return mass_; 
+    }
 
     particleType type() const
     {
@@ -52,6 +56,7 @@ class Particle {
     };
 
     // protected:
+    double mass_; 
     double density_;
     double pressure_;
     particleType type_;
@@ -127,7 +132,7 @@ class ParticleSystem {
     double particle_radius_ = 0.025;
     double support_radius_;
 
-    double density0_ = 1400.0;
+    double density0_ = 1000.0;
     // volume and mass are shared by all particles
     double particle_volume_;
     double particle_mass_;

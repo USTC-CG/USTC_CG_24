@@ -62,6 +62,7 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
     // Useful switches (0 or 1). You can add more if you like.
     b.add_input<decl::Int>("enable time profiling").default_val(0).min(0).max(1);
     b.add_input<decl::Int>("enable debug output").default_val(0).min(0).max(1);
+    b.add_input<decl::Int>("enable step pause").default_val(0).min(0).max(1);
 
     // Optional switches
     b.add_input<decl::Int>("enable IISPH").default_val(0).min(0).max(1);
@@ -144,6 +145,7 @@ static void node_sph_fluid_exec(ExeParams params)
             // Useful switches
             sph_base->enable_time_profiling = params.get_input<int>("enable time profiling") == 1 ? true : false;
             sph_base->enable_debug_output = params.get_input<int>("enable debug output") == 1 ? true : false;
+            sph_base->enable_step_pause = params.get_input<int>("enable step pause") == 1 ? true : false;
 
             if (enable_IISPH) {
 			// --------- (HW Optional) if you implement IISPH please uncomment the following lines -----------		

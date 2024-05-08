@@ -20,6 +20,7 @@ class IISPH : public SPHBase {
     double pressure_solve_iteration();
     void predict_advection();
 
+    void advect() override; 
     void reset() override;
 
     inline int& max_iter()
@@ -39,6 +40,7 @@ class IISPH : public SPHBase {
     VectorXd predict_density_;
     VectorXd aii_;
     VectorXd Api_;  
+    MatrixXd dii_;  
     VectorXd last_pressure_;
 };
 }  // namespace USTC_CG::node_sph_fluid

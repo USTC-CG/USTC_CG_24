@@ -17,6 +17,7 @@ SPHBase::SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector
       box_min_(box_min),
       ps_(X, box_min, box_max)
 {
+    init_boundary_particle_mass(); 
 }
 
 // ----------------- SPH kernal function and its spatial derivatives, no need to modify -----------------
@@ -80,11 +81,11 @@ void SPHBase::compute_density()
         if (p->is_boundary()) {
             continue;
         }
-        p->density() = ps_.mass() * W_zero(ps_.h());
+        p->density() = p->mass() * W_zero(ps_.h());
         // Then traverse all neighbors of p
         for (auto& q : p->neighbors()) {
             // Then compute density based on SPH rules
-            p->density() += ps_.mass() * W(p->x() - q->x(), ps_.h());
+            p->density() += q->mass() * W(p->x() - q->x(), ps_.h());
         }
     }
 }
@@ -199,7 +200,7 @@ void SPHBase::advect()
         X_.row(p->idx()) = p->x().transpose();
         vel_.row(p->idx()) = p->vel().transpose();
 
-        //check_collision(p);
+        check_collision(p);
     }
 }
 
@@ -252,6 +253,23 @@ MatrixXd SPHBase::get_boundary_X() const
 		boundary_X.row(i) = p->x().transpose();
 	}
 	return boundary_X;
+}
+
+void SPHBase::init_boundary_particle_mass()
+{
+	// Traverse all particles
+	// This operation can be done parallelly using OpenMP
+    for (auto& p : ps_.particles()) {
+		// check if p is a boundary particle
+        if (p->is_boundary()) {
+		    double sum = W_zero(ps_.h());
+            for (auto& q : p->neighbors())
+            {
+                sum += W(p->x() - q->x(), ps_.h());
+            }
+            p->mass() = ps_.density0() / sum;
+		}
+	}
 }
 
 
