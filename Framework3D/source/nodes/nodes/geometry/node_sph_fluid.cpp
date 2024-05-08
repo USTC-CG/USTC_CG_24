@@ -122,6 +122,10 @@ static void node_sph_fluid_exec(ExeParams params)
 	Vector3i n_particle_per_axis{static_cast<int>(num_particle_per_axis[0]), 
 								   static_cast<int>(num_particle_per_axis[1]),
 								   static_cast<int>(num_particle_per_axis[2])};
+    if (enable_sim_2d)
+    {
+        n_particle_per_axis[0] = 1;
+    }
 
     //------------------------------------------------------------------------------------------------------------------
 
@@ -133,16 +137,16 @@ static void node_sph_fluid_exec(ExeParams params)
                 particle_box_min_, particle_box_max_, n_particle_per_axis, enable_sim_2d);
 
 			MatrixXd boundary_particle_pos = ParticleSystem::sample_particle_pos_around_a_box(
-				sim_box_min_, sim_box_max_, 2 * n_particle_per_axis, enable_sim_2d);
+				sim_box_min_, sim_box_max_, n_particle_per_axis, enable_sim_2d);
 
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
             
             if (enable_IISPH) {
 
-		    	sph_base = std::make_shared<IISPH>(fluid_particle_pos, boundary_particle_pos, sim_box_min_, sim_box_max_);
+		    	sph_base = std::make_shared<IISPH>(fluid_particle_pos, boundary_particle_pos, sim_box_min_, sim_box_max_, enable_sim_2d);
 			}
 			else {
-				sph_base = std::make_shared<WCSPH>(fluid_particle_pos, sim_box_min_, sim_box_max_);
+				sph_base = std::make_shared<WCSPH>(fluid_particle_pos,  boundary_particle_pos, sim_box_min_, sim_box_max_, enable_sim_2d);
             }
 
 

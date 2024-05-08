@@ -4,13 +4,14 @@ using namespace Eigen;
 
 namespace USTC_CG::node_sph_fluid {
 
-WCSPH::WCSPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max)
-    : SPHBase(X, box_min, box_max)
+WCSPH::WCSPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
+    : SPHBase(X, box_min, box_max, sim_2d)
 {
 }
 
-WCSPH::WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max)
-    : SPHBase(X, boundary_particle_X, box_min, box_max)
+WCSPH::WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, 
+    const bool sim_2d)
+    : SPHBase(X, boundary_particle_X, box_min, box_max, sim_2d)
 {
 }
 
@@ -20,22 +21,23 @@ void WCSPH::compute_density()
     // Traverse all particles
     // This operation can be done in parallel using OpenMP
     for (auto& p : ps_.particles()) {
-        p->density() = p->mass() * W_zero(ps_.h());
         if (p->is_boundary()) {
             continue;
         }
+        p->density() = p->mass() * W_zero(ps_.h());
         // Then traverse all neighbors of p
         for (auto& q : p->neighbors()) {
             p->density() += q->mass() * W(p->x() - q->x(), ps_.h());
         }
 
         if (enable_debug_output) {
-            //if (p->density() > ps_.density0()) {
+            if (p->density() > ps_.density0()) {
                 std::cout << "density: " << p->density() << std::endl;
-            //}
+            }
         }
         p->density() = std::max(p->density(),  ps_.density0());
         p->pressure() = std::max(0.0, stiffness_ * (std::pow(p->density() / ps_.density0(), exponent_) - 1));
+        std::cout << ""; 
     }
 }
 
@@ -68,5 +70,11 @@ void WCSPH::step()
     TOC(6)
 
     TOC(step)
+    if (enable_step_pause)
+    {
+		std::cout << YellowHead() << "Press Enter to continue..." << ColorTail() << std::endl;
+		std::cin.get();
+	}
+
 }
 }  // namespace USTC_CG::node_sph_fluid

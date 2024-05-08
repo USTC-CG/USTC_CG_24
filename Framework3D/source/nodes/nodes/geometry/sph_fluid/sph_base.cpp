@@ -9,26 +9,30 @@ namespace USTC_CG::node_sph_fluid {
 using namespace Eigen;
 using Real = double;
 
-SPHBase::SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max)
+SPHBase::SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
     : init_X_(X),
       X_(X),
       vel_(MatrixXd::Zero(X.rows(), X.cols())),
       box_max_(box_max),
       box_min_(box_min),
-      ps_(X, box_min, box_max)
+      ps_(X, box_min, box_max, sim_2d)
 {
+    enable_sim_2d = sim_2d; 
     std::cout << "sim 2d = " << enable_sim_2d << std::endl;
     std::cout << " num fluid particles =  " << ps_.num_fluid_particles() << std::endl;
 }
 
-SPHBase::SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Eigen::MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max)
+SPHBase::SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Eigen::MatrixXd& boundary_particle_X,
+    const Vector3d& box_min, const Vector3d& box_max, 
+    const bool sim_2d)
     : init_X_(fluid_particle_X),
       X_(fluid_particle_X),
       vel_(MatrixXd::Zero(fluid_particle_X.rows(), fluid_particle_X.cols())),
       box_max_(box_max),
       box_min_(box_min),
-      ps_(fluid_particle_X, boundary_particle_X, box_min, box_max)
+      ps_(fluid_particle_X, boundary_particle_X, box_min, box_max, sim_2d)
 {
+    enable_sim_2d = sim_2d; 
     std::cout << "sim 2d = " << enable_sim_2d << std::endl;
     std::cout << " num fluid particles =  " << ps_.num_fluid_particles() << std::endl;
     std::cout << " num boundary particles =  " << ps_.num_boundary_particles() << std::endl;
@@ -154,6 +158,10 @@ void SPHBase::compute_non_pressure_acceleration()
         Vector3d acc = Vector3d::Zero();
         // traverse all p neighbors
         for (auto& q : p->neighbors()) {
+            if (q->is_boundary())
+            {
+                continue;
+            }
             acc += compute_viscosity_acceleration(p, q);
         }
         acc += gravity_;
@@ -191,7 +199,11 @@ void SPHBase::compute_pressure_gradient_acceleration()
         for (auto& q : p->neighbors()) {
             auto grad = grad_W(p->x() - q->x(), ps_.h());
             auto tmp_q = q->pressure() / (q->density() * q->density());
-            acc += -ps_.mass() * (tmp_p + tmp_q) * grad;
+            acc += -q->mass() * (tmp_p + tmp_q) * grad;
+            //if (q->is_boundary())
+            //{
+            //   std::cout << "1"; 
+            //}
         }
         p->acceleration() += acc;
     }
@@ -199,19 +211,7 @@ void SPHBase::compute_pressure_gradient_acceleration()
 
 void SPHBase::step()
 {
-    ps_.assign_particles_to_cells();
-    ps_.searchNeighbors();
-    compute_density();
-
-    compute_non_pressure_acceleration();
-    for (auto& p : ps_.particles()) {
-        p->vel() += p->acceleration() * dt_;
-        p->acceleration() = Vector3d::Zero();
-    }
-    compute_pressure();
-    compute_pressure_gradient_acceleration();
-
-    advect();
+    // Not implemented 
 }
 
 void SPHBase::reset()
@@ -254,14 +254,14 @@ void SPHBase::advect()
         X_.row(p->idx()) = p->x().transpose();
         vel_.row(p->idx()) = p->vel().transpose();
 
-        check_collision(p);
+        //check_collision(p);
     }
 }
 
 // TODO: basic collision detection and process
 void SPHBase::check_collision(const std::shared_ptr<Particle>& p)
 {
-    double restitution = 0.2;
+    double restitution = 0.1;
 
     // add epsilon offset to avoid particles sticking to the boundary
     Vector3d eps_ = 0.0001 * (box_max_ - box_min_);
@@ -309,12 +309,11 @@ MatrixXd SPHBase::get_boundary_X() const
 	return boundary_X;
 }
 
+
+// [Akinci 12] 
 void SPHBase::init_boundary_particle_mass()
 {
-	// Traverse all particles
-	// This operation can be done parallelly using OpenMP
-    for (auto& p : ps_.particles()) {
-		// check if p is a boundary particle
+    for (auto& p : ps_.particles()) { // This loop can be optimized 
         if (p->is_boundary()) {
 		    double sum = W_zero(ps_.h());
             for (auto& q : p->neighbors())

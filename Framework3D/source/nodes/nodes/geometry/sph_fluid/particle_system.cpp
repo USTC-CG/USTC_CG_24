@@ -7,23 +7,28 @@ using namespace Eigen;
 using namespace std;
 #define M_PI 3.14159265358979323846
 
-ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const Vector3d &box_max)
+ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const Vector3d &box_max,
+    const bool sim_2d )
 {
-    // Initialize the particles
+    init_parameters(sim_2d);
+
     for (int i = 0; i < X.rows(); i++) {
         add_particle(X.row(i).transpose(), Particle::FLUID);
     }
 
     num_fluid_particles_ = particles_.size();
+    num_boundary_particles_ = 0;
 
     init_neighbor_search(box_min, box_max); 
 }
 
 ParticleSystem::ParticleSystem(const MatrixXd &fluid_particle_X, 
     const MatrixXd& boundary_particle_X, 
-    const Vector3d &box_min, const Vector3d &box_max)
+    const Vector3d &box_min, const Vector3d &box_max, 
+    const bool sim_2d)
 {
-    // Initialize the particles
+    init_parameters(sim_2d);
+
     for (int i = 0; i < fluid_particle_X.rows(); i++) {
         add_particle(fluid_particle_X.row(i).transpose(), Particle::FLUID);
     }
@@ -36,9 +41,23 @@ ParticleSystem::ParticleSystem(const MatrixXd &fluid_particle_X,
 
     Vector3d scaled_box_min = boundary_particle_X.colwise().minCoeff(); 
     Vector3d scaled_box_max = boundary_particle_X.colwise().maxCoeff(); 
-    init_neighbor_search(box_min, box_max); 
+    init_neighbor_search(scaled_box_min, scaled_box_max); 
 }
 
+void ParticleSystem::init_parameters(const bool sim_2d)
+{
+    double diam = 2 * particle_radius_; 
+    if (sim_2d)
+    {
+        diam = particle_radius_; 
+        particle_volume_ = 0.8 * pow(diam, 3);
+    }
+    else
+    {
+        particle_volume_ = pow(diam, 2);
+    }
+    particle_mass_ = particle_volume_ * density0_;
+}
 
 void ParticleSystem::searchNeighbors()
 {
@@ -77,14 +96,9 @@ ParticleSystem::cell_xyz_to_cell_index(const unsigned x, const unsigned y, const
 
 Vector3i ParticleSystem::pos_to_cell_xyz(const Vector3d &pos) const
 {
-    double eps = 1e-8;
+    double eps = 1e-8; // To avoid problems caused by `floor(2.99999) = 2` 
     int x = static_cast<int>(floor((pos[0] - box_min_[0]) / cell_size_ + eps));
     int y = static_cast<int>(floor((pos[1] - box_min_[1]) / cell_size_ + eps));
-
-    // double zz = (pos[2] - box_min_[2]);
-    // double tmp_zz = (pos[2] - box_min_[2]) / cell_size_;
-    // double floor_tmp_zz = floor(tmp_zz);
-
     int z = static_cast<int>(floor((pos[2] - box_min_[2]) / cell_size_ + eps));
 
     return Vector3i(x, y, z);
@@ -146,13 +160,12 @@ void ParticleSystem::assign_particles_to_cells()
 void ParticleSystem::init_neighbor_search(const Vector3d area_min, const Vector3d area_max)
 {
     // Compute the number of cells in each axis
-    box_max_ = area_min;
-    box_min_ = area_max;
+    box_min_ = area_min;
+    box_max_ = area_max;
     n_cell_per_axis_ = ((box_max_ - box_min_) / cell_size_)
                            .array()
                            .ceil()
-                           .cast<int>();  // Extend one more for safety
-    // TODO: need to check here box_max is bigger then box_min
+                           .cast<int>() + 1;  // Extend one more for safety
 
     cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
 
@@ -237,7 +250,7 @@ void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
 	shared_ptr<Particle> p = make_shared<Particle>();
     p->X_ = X; 
 	p->vel_ = Vector3d::Zero();
-	p->density_ = 0.0;
+	p->density_ = density0_;
 	p->pressure_ = 0.0;
     p->type_ = type; 
     p->idx_ = particles_.size(); 

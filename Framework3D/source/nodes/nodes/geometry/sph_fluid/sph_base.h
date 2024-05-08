@@ -18,8 +18,17 @@ namespace USTC_CG::node_sph_fluid {
 class SPHBase {
    public:
     SPHBase() = default;
-    SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Vector3d& box_min, const Vector3d& box_max);
-    SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Eigen::MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max);
+    SPHBase(const Eigen::MatrixXd& fluid_particle_X, 
+        const Vector3d& box_min, 
+        const Vector3d& box_max,
+        const bool sim_2d);
+
+    SPHBase(const Eigen::MatrixXd& fluid_particle_X, 
+        const Eigen::MatrixXd& boundary_particle_X, 
+        const Vector3d& box_min, 
+        const Vector3d& box_max,
+        const bool sim_2d);
+
     virtual ~SPHBase() = default;
 
     virtual void step();

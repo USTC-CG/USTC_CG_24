@@ -5,8 +5,8 @@ namespace USTC_CG::node_sph_fluid {
 
 using namespace Eigen;
 
-IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max)
-    : SPHBase(X, box_min, box_max)
+IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
+    : SPHBase(X, box_min, box_max, sim_2d)
 {
     // (HW TODO) Feel free to modify this part to remove or add necessary member variables
     predict_density_ = VectorXd::Zero(ps_.particles().size());
@@ -15,8 +15,8 @@ IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max
     last_pressure_ = VectorXd::Zero(ps_.particles().size());
 }
 
-IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max)
-    : SPHBase(X, boundary_particle_X, box_min, box_max)
+IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
+    : SPHBase(X, boundary_particle_X, box_min, box_max, sim_2d)
 {
     // (HW TODO) Feel free to modify this part to remove or add necessary member variables
     predict_density_ = VectorXd::Zero(ps_.particles().size());
