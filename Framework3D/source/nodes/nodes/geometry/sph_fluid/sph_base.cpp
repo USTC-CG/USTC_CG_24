@@ -166,6 +166,7 @@ void SPHBase::compute_non_pressure_acceleration()
         }
         acc += gravity_;
         p->acceleration() += acc;  // NOTE: remember to reset acc after updating velocity
+
     }
 }
 
@@ -194,18 +195,27 @@ void SPHBase::compute_pressure_gradient_acceleration()
         }
         Eigen::Vector3d acc = Eigen::Vector3d::Zero();
 
+
         auto tmp_p = p->pressure() / (p->density() * p->density());
 
         for (auto& q : p->neighbors()) {
             auto grad = grad_W(p->x() - q->x(), ps_.h());
             auto tmp_q = q->pressure() / (q->density() * q->density());
             acc += -q->mass() * (tmp_p + tmp_q) * grad;
-            //if (q->is_boundary())
-            //{
-            //   std::cout << "1"; 
-            //}
         }
         p->acceleration() += acc;
+
+        if (enable_debug_output)
+        {
+            if (p->density() > ps_.density0())
+            {
+                std::cout << "density = " << p->density(); 
+                std::cout << " pressure = " << p->pressure(); 
+                std::cout << " pressure acc = " << acc.transpose(); 
+                std::cout << " total acc = " << p->acceleration().transpose() << std::endl; 
+            }
+        }
+
     }
 }
 

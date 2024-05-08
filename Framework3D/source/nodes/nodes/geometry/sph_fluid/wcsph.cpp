@@ -29,15 +29,9 @@ void WCSPH::compute_density()
         for (auto& q : p->neighbors()) {
             p->density() += q->mass() * W(p->x() - q->x(), ps_.h());
         }
-
-        if (enable_debug_output) {
-            if (p->density() > ps_.density0()) {
-                std::cout << "density: " << p->density() << std::endl;
-            }
-        }
+       
         p->density() = std::max(p->density(),  ps_.density0());
         p->pressure() = std::max(0.0, stiffness_ * (std::pow(p->density() / ps_.density0(), exponent_) - 1));
-        std::cout << ""; 
     }
 }
 
