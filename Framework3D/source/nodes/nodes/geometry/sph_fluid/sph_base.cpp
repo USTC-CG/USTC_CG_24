@@ -238,6 +238,10 @@ void SPHBase::advect()
         }
         // Then update the velocity and position of p
         p->vel() += p->acceleration() * dt_;
+
+        if (enable_sim_2d)
+            p->vel()[0] = 0.0; 
+
         p->acceleration() = Vector3d::Zero();
         p->x() += p->vel() * dt_;
     }

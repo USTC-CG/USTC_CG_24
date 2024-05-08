@@ -9,18 +9,24 @@ WCSPH::WCSPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max
 {
 }
 
+WCSPH::WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max)
+    : SPHBase(X, boundary_particle_X, box_min, box_max)
+{
+}
+
+
 void WCSPH::compute_density()
 {
     // Traverse all particles
     // This operation can be done in parallel using OpenMP
     for (auto& p : ps_.particles()) {
-        p->density() = ps_.mass() * W_zero(ps_.h());
+        p->density() = p->mass() * W_zero(ps_.h());
         if (p->is_boundary()) {
             continue;
         }
         // Then traverse all neighbors of p
         for (auto& q : p->neighbors()) {
-            p->density() += ps_.mass() * W(p->x() - q->x(), ps_.h());
+            p->density() += q->mass() * W(p->x() - q->x(), ps_.h());
         }
 
         if (enable_debug_output) {

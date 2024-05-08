@@ -13,6 +13,7 @@ class WCSPH : public SPHBase {
    public:
     WCSPH() = default;
     WCSPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max);
+    WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max);
     ~WCSPH() = default;
 
     void step() override;

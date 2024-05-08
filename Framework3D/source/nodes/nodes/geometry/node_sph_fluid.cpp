@@ -132,11 +132,12 @@ static void node_sph_fluid_exec(ExeParams params)
             MatrixXd fluid_particle_pos = ParticleSystem::sample_particle_pos_in_a_box(
                 particle_box_min_, particle_box_max_, n_particle_per_axis, enable_sim_2d);
 
+			MatrixXd boundary_particle_pos = ParticleSystem::sample_particle_pos_around_a_box(
+				sim_box_min_, sim_box_max_, 2 * n_particle_per_axis, enable_sim_2d);
+
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
             
             if (enable_IISPH) {
-                MatrixXd boundary_particle_pos = ParticleSystem::sample_particle_pos_around_a_box(
-                    sim_box_min_, sim_box_max_, n_particle_per_axis, enable_sim_2d);
 
 		    	sph_base = std::make_shared<IISPH>(fluid_particle_pos, boundary_particle_pos, sim_box_min_, sim_box_max_);
 			}
