@@ -73,7 +73,9 @@ class Particle {
 // This class is for particle neighbor search
 class ParticleSystem {
    public:
-    ParticleSystem(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max);
+    ParticleSystem(const MatrixXd& fluid_particle_X, const Vector3d& box_min, const Vector3d& box_max);
+    ParticleSystem(const MatrixXd& fluid_particle_X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max);
+	~ParticleSystem() = default;
 
     const std::vector<std::shared_ptr<Particle>>& particles() const
     {
@@ -114,15 +116,21 @@ class ParticleSystem {
     static MatrixXd sample_particle_pos_in_a_box(
         const Vector3d min,
         const Vector3d max,
-        const Vector3i n_particle_per_axis);
+        const Vector3i n_particle_per_axis,
+        const bool sample_2d = false);
     unsigned pos_to_cell_index(const Vector3d& x) const;
     unsigned cell_xyz_to_cell_index(const unsigned x, const unsigned y, const unsigned z) const;
     Vector3i pos_to_cell_xyz(const Vector3d& x) const;
 
-    void add_boundary_particles_around_box(
-        const Vector3d box_min, 
-        const Vector3d box_max,
-        const Vector3i n_particle_per_axis);
+    void init_neighbor_search(const Vector3d area_min, const Vector3d area_max);
+
+    static MatrixXd sample_particle_pos_around_a_box(const Vector3d box_min,
+                                                     const Vector3d box_max,
+                                                     const Vector3i n_particle_per_axis,
+                                                     const bool sample_2d = false);
+
+    void add_particle(const Vector3d X, Particle::particleType type = Particle::FLUID); 
+    
 
     void assign_particles_to_cells();
     std::vector<unsigned> get_neighbor_cell_indices(const Vector3d& x) const;
@@ -130,12 +138,12 @@ class ParticleSystem {
    protected:
     std::vector<std::shared_ptr<Particle>> particles_;
     double particle_radius_ = 0.025;
-    double support_radius_;
+    double support_radius_ = 4 * particle_radius_;
 
     double density0_ = 1000.0;
     // volume and mass are shared by all particles
-    double particle_volume_;
-    double particle_mass_;
+    double particle_volume_ = 0.8 * pow(2 * particle_radius_, 3);
+    double particle_mass_ = particle_volume_ * density0_;
 
     unsigned num_fluid_particles_; 
     unsigned num_boundary_particles_; 

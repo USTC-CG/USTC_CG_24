@@ -9,47 +9,36 @@ using namespace std;
 
 ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const Vector3d &box_max)
 {
-    support_radius_ = 4 * particle_radius_;
-    cell_size_ = support_radius_;
-
-    const double diam = 2 * particle_radius_;
-    particle_volume_ = 0.8 * pow(diam, 3);
-    particle_mass_ = particle_volume_ * density0_;
-
     // Initialize the particles
     for (int i = 0; i < X.rows(); i++) {
-        shared_ptr<Particle> p = make_shared<Particle>();
-        p->X_ = X.row(i).transpose();
-        p->vel_ = Vector3d::Zero();
-        p->density_ = 0.0;
-        p->pressure_ = 0.0;
-        p->type_ = Particle::FLUID;
-        p->idx_ = i;
-        p->mass_ = particle_mass_;
-        particles_.push_back(p);
+        add_particle(X.row(i).transpose(), Particle::FLUID);
     }
 
     num_fluid_particles_ = particles_.size();
 
-    // Initialize the spatial grid
-    // Compute the bounding box of the particles
-    // Vector3d min = X.colwise().minCoeff();
-    // Vector3d max = X.colwise().maxCoeff();
-
-    // Compute the number of cells in each axis
-    box_max_ = box_max;
-    box_min_ = box_min;
-    n_cell_per_axis_ = ((box_max - box_min) / cell_size_)
-                           .array()
-                           .ceil()
-                           .cast<int>();  // Extend one more for safety
-    // TODO: need to check here box_max is bigger then box_min
-
-    cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
-
-    assign_particles_to_cells();
-    searchNeighbors();
+    init_neighbor_search(box_min, box_max); 
 }
+
+ParticleSystem::ParticleSystem(const MatrixXd &fluid_particle_X, 
+    const MatrixXd& boundary_particle_X, 
+    const Vector3d &box_min, const Vector3d &box_max)
+{
+    // Initialize the particles
+    for (int i = 0; i < fluid_particle_X.rows(); i++) {
+        add_particle(fluid_particle_X.row(i).transpose(), Particle::FLUID);
+    }
+    for (int i = 0; i < boundary_particle_X.rows(); i++) {
+        add_particle(boundary_particle_X.row(i).transpose(), Particle::BOUNDARY);
+    }
+
+    num_fluid_particles_ = fluid_particle_X.rows();
+    num_boundary_particles_ = boundary_particle_X.rows();
+
+    Vector3d scaled_box_min = boundary_particle_X.colwise().minCoeff(); 
+    Vector3d scaled_box_max = boundary_particle_X.colwise().maxCoeff(); 
+    init_neighbor_search(box_min, box_max); 
+}
+
 
 void ParticleSystem::searchNeighbors()
 {
@@ -154,11 +143,31 @@ void ParticleSystem::assign_particles_to_cells()
     }
 }
 
+void ParticleSystem::init_neighbor_search(const Vector3d area_min, const Vector3d area_max)
+{
+    // Compute the number of cells in each axis
+    box_max_ = area_min;
+    box_min_ = area_max;
+    n_cell_per_axis_ = ((box_max_ - box_min_) / cell_size_)
+                           .array()
+                           .ceil()
+                           .cast<int>();  // Extend one more for safety
+    // TODO: need to check here box_max is bigger then box_min
+
+    cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
+
+    assign_particles_to_cells();
+    searchNeighbors();
+
+}
+
 // First, add a particle sample function from a box area, which is needed in node system
 MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     const Vector3d min,
     const Vector3d max,
-    const Vector3i n_per_axis)
+    const Vector3i n_per_axis,
+    const bool sample_2d
+)
 {
     const Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
     const int n_particles = n_per_axis.prod();
@@ -168,8 +177,14 @@ MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     for (int i = 0; i < n_per_axis[0]; i++) {
         for (int j = 0; j < n_per_axis[1]; j++) {
             for (int k = 0; k < n_per_axis[2]; k++) {
+
+                double x_coord = min[0] + i * step[0]; 
+                
+                if (sample_2d) // sim 2d 
+                    x_coord = 0.0;
+
                 X.row(i * n_per_axis[1] * n_per_axis[2] + j * n_per_axis[2] + k)
-                    << min[0] + i * step[0],
+                    << x_coord,
                     min[1] + j * step[1], min[2] + k * step[2];
             }
         }
@@ -177,69 +192,57 @@ MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     return X;
 }
 
-// TODO: decouple and simplify this function
-void ParticleSystem::add_boundary_particles_around_box(
-	const Vector3d min,
-	const Vector3d max,
-	const Vector3i n_per_axis)
+MatrixXd ParticleSystem::sample_particle_pos_around_a_box(
+    const Vector3d min,
+    const Vector3d max,
+    const Vector3i n_per_axis,
+    const bool sample_2d
+)
 {
-	 const Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
-     const double s = 0.5; // scale factor 
-     auto scaled_min = min - s * (max - min); 
-     auto scaled_max = max + s * (max - min); 
+	 Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
+	 const double s = 0.2; // scale factor 
+	 Vector3d scaled_min = min - s * (max - min); 
+	 Vector3d scaled_max = max + s * (max - min); 
 
-     int count = 0; 
-     std::cout << "sampling boundary particles begin. " << std::endl;
-     // Optimize this part 
-     for (double x = scaled_min[0]; x <= scaled_max[0]; x += step[0])
-     {
-         for (double y = scaled_min[1]; y <= scaled_max[1]; y += step[1])
-         {
-            for (double z = scaled_min[2]; z <= scaled_max[2]; z += step[2])
-             {
+    vector<Vector3d> pos;
+
+    if (sample_2d) 
+    {
+        scaled_min[0] = 0.0;
+        scaled_max[0] = 1.0; 
+        step[0] = scaled_max[0] - scaled_min[0] + 1.0; // make sure loop runs only once
+    }
+
+	 for (double x = scaled_min[0]; x <= scaled_max[0]; x += step[0]) {
+        for (double y = scaled_min[1]; y <= scaled_max[1]; y += step[1]) {
+            for (double z = scaled_min[2]; z <= scaled_max[2]; z += step[2]) {
                 if (x < min[0] || x > max[0] || y < min[1] || y > max[1] || z < min[2] ||
                     z > max[2]) {
-
-                    // add boundary particles, they have the same mass and volume as fluid particles
-                    shared_ptr<Particle> p = make_shared<Particle>();
-
-                    p->X_ = Vector3d(x, y, z);
-                    p->vel_ = Vector3d::Zero();
-                    // We do not need to compute density and pressure for boundary particles for now 
-                    // In case you want to implement the "pressure boundary" TOG paper for IISPH 
-                    p->density_ = density0_; 
-                    p->pressure_ = 0.0; 
-                    p->type_ = Particle::BOUNDARY;
-                    p->idx_ = num_fluid_particles_ + count;  // This size will increase as we add boundary particles
-                    p->mass_ = particle_mass_;
-                    particles_.push_back(p);
-
-                    count++; 
+                    pos.push_back(Vector3d{ x, y, z });
                 }
-                else {
-                    // actually, we can add fluid particles here (potential optimization)
-                    continue;
-                }
-			}   
+            }
         }
+    }
 
-     }
+     MatrixXd X = MatrixXd::Zero(pos.size(), 3);
+     for (auto& p : pos) {
+		X.row(&p - &pos[0]) = p.transpose();
+	}   
 
-     std::cout << "sampling boundary particles end. " << std::endl;
-    num_boundary_particles_ = count; 
+     return X; 
+}
 
-    box_max_ = scaled_max;
-    box_min_ = scaled_min;
-    n_cell_per_axis_ = ((box_max_ - box_min_) / cell_size_)
-                           .array()
-                           .ceil()
-                           .cast<int>();  // Extend one more for safety
-
-    cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
-
-    // re-assign particles to cells and update neighbors 
-    assign_particles_to_cells();
-    searchNeighbors();
+void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
+{
+	shared_ptr<Particle> p = make_shared<Particle>();
+    p->X_ = X; 
+	p->vel_ = Vector3d::Zero();
+	p->density_ = 0.0;
+	p->pressure_ = 0.0;
+    p->type_ = type; 
+    p->idx_ = particles_.size(); 
+	p->mass_ = particle_mass_;
+	particles_.push_back(p);
 }
 
 }  // namespace USTC_CG::node_sph_fluid

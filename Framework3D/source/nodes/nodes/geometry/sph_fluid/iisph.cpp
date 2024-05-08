@@ -15,6 +15,17 @@ IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max
     last_pressure_ = VectorXd::Zero(ps_.particles().size());
 }
 
+IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max)
+    : SPHBase(X, boundary_particle_X, box_min, box_max)
+{
+    // (HW TODO) Feel free to modify this part to remove or add necessary member variables
+    predict_density_ = VectorXd::Zero(ps_.particles().size());
+    aii_ = VectorXd::Zero(ps_.particles().size());
+    Api_ = VectorXd::Zero(ps_.particles().size());
+    last_pressure_ = VectorXd::Zero(ps_.particles().size());
+}
+
+
 void IISPH::step()
 {
     ps_.assign_particles_to_cells(); 
@@ -215,6 +226,10 @@ void IISPH::advect()
         }
         // Then update the velocity and position of p
         p->vel() += p->acceleration() * dt_;
+
+        if (enable_sim_2d)
+            p->vel()[0] = 0.0;  
+
         p->acceleration() = Vector3d::Zero();
         p->x() += p->vel() * dt_;
     }

@@ -12,6 +12,7 @@ class IISPH : public SPHBase {
    public:
     IISPH() = default;
     IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max);
+    IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max);
     ~IISPH() = default;
 
     void step() override;

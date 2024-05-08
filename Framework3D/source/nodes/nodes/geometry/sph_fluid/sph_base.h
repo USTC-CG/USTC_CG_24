@@ -18,7 +18,8 @@ namespace USTC_CG::node_sph_fluid {
 class SPHBase {
    public:
     SPHBase() = default;
-    SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max);
+    SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Vector3d& box_min, const Vector3d& box_max);
+    SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Eigen::MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max);
     virtual ~SPHBase() = default;
 
     virtual void step();
@@ -34,9 +35,9 @@ class SPHBase {
     };
 
     // SPH kernel function: h is the support radius
-    static double W(const Eigen::Vector3d& r, double h);
-    static Eigen::Vector3d grad_W(const Eigen::Vector3d& r, double h);
-    static double W_zero(double h);
+    double W(const Eigen::Vector3d& r, double h);
+    Eigen::Vector3d grad_W(const Eigen::Vector3d& r, double h);
+    double W_zero(double h);
 
     // SPH functions
     virtual void compute_density();
@@ -78,9 +79,11 @@ class SPHBase {
     bool enable_debug_output = false;
     bool enable_time_profiling = false;
     bool enable_step_pause = false; 
+    bool enable_sim_2d = false; 
 
     // -------- for display ----------
     MatrixXd get_vel_color_jet();
+
 
    protected:
     ParticleSystem ps_;
@@ -92,5 +95,6 @@ class SPHBase {
     Eigen::MatrixXd init_X_;
     Eigen::MatrixXd X_;
     Eigen::MatrixXd vel_;
+
 };
 }  // namespace USTC_CG::node_sph_fluid

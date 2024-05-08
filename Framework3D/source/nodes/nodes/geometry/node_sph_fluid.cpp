@@ -67,6 +67,8 @@ static void node_sph_fluid_declare(NodeDeclarationBuilder& b)
     // Optional switches
     b.add_input<decl::Int>("enable IISPH").default_val(0).min(0).max(1);
 
+    b.add_input<decl::Int>("enable sim 2D").default_val(0).min(0).max(1);
+
     // Current time in node system 
     b.add_input<decl::Float>("time_code");
 
@@ -83,6 +85,8 @@ static void node_sph_fluid_exec(ExeParams params)
 
 
     auto sph_base = params.get_input<std::shared_ptr<SPHBase>>("SPH Class");
+    bool enable_sim_2d = params.get_input<int>("enable sim 2D") == 1 ? true : false;
+
 
     // ----------------------------- Load and check simulation box area ------------------------------------------------
     auto sim_box_min = params.get_input<pxr::GfVec3f>("sim box min"); 
@@ -107,40 +111,45 @@ static void node_sph_fluid_exec(ExeParams params)
         num_particle_per_axis[2] <= 0) {
                 throw std::runtime_error("Invalid number of particles per axis.");
     }
+
+	Vector3d sim_box_min_{sim_box_min[0], sim_box_min[1], sim_box_min[2]};
+	Vector3d sim_box_max_{sim_box_max[0], sim_box_max[1], sim_box_max[2]};
+
+	Vector3d particle_box_min_{particle_box_min[0], particle_box_min[1], particle_box_min[2]};
+	Vector3d particle_box_max_{particle_box_max[0], particle_box_max[1], particle_box_max[2]};
+
+
+	Vector3i n_particle_per_axis{static_cast<int>(num_particle_per_axis[0]), 
+								   static_cast<int>(num_particle_per_axis[1]),
+								   static_cast<int>(num_particle_per_axis[2])};
+
     //------------------------------------------------------------------------------------------------------------------
 
     if (time_code == 0) {  // If time = 0, reset and initialize the sph base class
             if (sph_base != nullptr)
 				sph_base.reset();
 
-            // First, sample particles in a box area 
-            Vector3d box_min{sim_box_min[0], sim_box_min[1], sim_box_min[2]};
-            Vector3d box_max{sim_box_max[0], sim_box_max[1], sim_box_max[2]};
-
-            Vector3i n_particle_per_axis{static_cast<int>(num_particle_per_axis[0]), 
-            										   static_cast<int>(num_particle_per_axis[1]),
-            										   static_cast<int>(num_particle_per_axis[2])};
-            MatrixXd particle_pos = ParticleSystem::sample_particle_pos_in_a_box(
-                { particle_box_min[0],  particle_box_min[1],  particle_box_min[2]},
-                { particle_box_max[0],  particle_box_max[1],  particle_box_max[2]},
-                  n_particle_per_axis);
-
+            MatrixXd fluid_particle_pos = ParticleSystem::sample_particle_pos_in_a_box(
+                particle_box_min_, particle_box_max_, n_particle_per_axis, enable_sim_2d);
 
             bool enable_IISPH =  params.get_input<int>("enable IISPH") == 1 ? true : false;
             
             if (enable_IISPH) {
-		    	sph_base = std::make_shared<IISPH>(particle_pos, box_min, box_max);
-                // Perhaps add boundary sampling here? TODO
-                sph_base->ps().add_boundary_particles_around_box(
-                            box_min, box_max, n_particle_per_axis);
+                MatrixXd boundary_particle_pos = ParticleSystem::sample_particle_pos_around_a_box(
+                    sim_box_min_, sim_box_max_, n_particle_per_axis, enable_sim_2d);
+
+		    	sph_base = std::make_shared<IISPH>(fluid_particle_pos, boundary_particle_pos, sim_box_min_, sim_box_max_);
 			}
 			else {
-				sph_base = std::make_shared<WCSPH>(particle_pos, box_min, box_max);
+				sph_base = std::make_shared<WCSPH>(fluid_particle_pos, sim_box_min_, sim_box_max_);
             }
+
+
 
             sph_base->dt() = params.get_input<float>("dt");
             sph_base->viscosity() = params.get_input<float>("viscosity");
             sph_base->gravity()  = { 0, 0, params.get_input<float>("gravity") };
+            sph_base->enable_sim_2d = enable_sim_2d; 
 
             // Useful switches
             sph_base->enable_time_profiling = params.get_input<int>("enable time profiling") == 1 ? true : false;
