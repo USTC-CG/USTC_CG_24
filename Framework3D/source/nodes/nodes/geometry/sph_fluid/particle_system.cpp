@@ -63,7 +63,8 @@ void ParticleSystem::searchNeighbors()
         auto neighbor_cell_indices = get_neighbor_cell_indices(p->X_);
         for (auto &cell_idx : neighbor_cell_indices) {
             for (auto &q : cells_[cell_idx]) {
-                if ((p->X_ - q->X_).norm() < 1.001 * support_radius_) {
+                if ((p->X_ - q->X_).norm() < 1.001 * support_radius_
+                    && p->idx() != q->idx()) {
                     p->neighbors_.push_back(q);
                 }
             }
