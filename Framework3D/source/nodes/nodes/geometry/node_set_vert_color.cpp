@@ -1,4 +1,5 @@
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/PointsComponent.h"
 #include "GCore/GOP.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
@@ -22,13 +23,21 @@ static void node_exec(ExeParams params)
     auto geometry = params.get_input<GOperandBase>("Geometry");
 
     auto mesh = geometry.get_component<MeshComponent>();
-    if (!mesh) {
-        throw std::runtime_error("The input is not a mesh");
+    auto points = geometry.get_component<PointsComponent>();
+    if (mesh) {
+
+		mesh->displayColor = color;
     }
+    else if (points)
+    {
+		points->displayColor = color;
+    }
+    else
+    {
+		throw std::runtime_error("The input is not a mesh or points");
+	}
 
-    mesh->displayColor = color;
-
-    params.set_output("Geometry", std::move(geometry));
+	params.set_output("Geometry", std::move(geometry));
 }
 
 static void node_register()

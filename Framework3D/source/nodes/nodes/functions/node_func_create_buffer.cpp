@@ -36,6 +36,13 @@ static void node_declare_create_float3f(NodeDeclarationBuilder& b)
     }
     b.add_output<decl::Float3>("Buffer");
 };
+static void node_declare_create_int3(NodeDeclarationBuilder& b)
+{
+    for (int i = 0; i < 3; ++i) {
+        b.add_input<decl::Int>(socket_name(i).c_str()).min(-10).max(10).default_val(0);
+    }
+    b.add_output<decl::Int3>("Buffer");
+};
 
 NodeDeclare(Int, i, 1);
 NodeDeclare(Int, i, 2);
@@ -73,6 +80,18 @@ static void node_exec_create_float3f(ExeParams params)
     memcpy(&data, val, sizeof(pxr::GfVec3f));
     params.set_output("Buffer", data);
 };
+static void node_exec_create_int3(ExeParams params)
+{
+    float val[3];
+    for (int i = 0; i < 3; ++i) {
+        val[i] = params.get_input<int>(socket_name(i).c_str());
+    }
+    pxr::GfVec3i data;
+    memcpy(&data, val, sizeof(pxr::GfVec3i));
+    params.set_output("Buffer", data);
+};
+
+
 
 NodeExec(int, int, i, 1);
 NodeExec(pxr::GfVec2i, int, i, 2);
@@ -97,6 +116,7 @@ static void node_register()
     NodeRegister(3, f);
     NodeRegister(4, f);
 
+    //------------------------------------------------------
     static NodeTypeInfo ntype_float3f;
     strcpy(
         ntype_float3f.ui_name,
@@ -113,6 +133,24 @@ static void node_register()
     ntype_float3f.declare = node_declare_create_float3f;
     nodeRegisterType(&ntype_float3f);
     ;
+    //------------------------------------------------------
+    static NodeTypeInfo ntype_int3;
+    strcpy(
+        ntype_int3.ui_name,
+        "Create int"
+        "3"
+        "");
+    strcpy_s(
+        ntype_int3.id_name,
+        "func_create_int"
+        "3"
+        "");
+    func_node_type_base(&ntype_int3);
+    ntype_int3.node_execute = node_exec_create_int3;
+    ntype_int3.declare = node_declare_create_int3;
+    nodeRegisterType(&ntype_int3);
+    ;
+    //------------------------------------------------------
 
 
     NodeRegister(1, i);
