@@ -96,7 +96,7 @@ class ParticleSystem {
         return cells_;
     }
 
-    void searchNeighbors();
+    void search_neighbors();
     void add_particle();
     static MatrixXd sample_particle_pos_in_a_box(
         const Vector3d min,

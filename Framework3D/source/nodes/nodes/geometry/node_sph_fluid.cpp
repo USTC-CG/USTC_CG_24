@@ -142,7 +142,7 @@ static void node_sph_fluid_exec(ExeParams params)
             if (enable_IISPH) {
 			// --------- (HW Optional) if you implement IISPH please uncomment the following lines -----------		
             
-                //std::dynamic_pointer_cast<IISPH>(sph_base)-->max_iter() = params.get_input<int>("max iter");
+                //std::dynamic_pointer_cast<IISPH>(sph_base)->max_iter() = params.get_input<int>("max iter");
                 //std::dynamic_pointer_cast<IISPH>(sph_base)->omega() = params.get_input<float>("omega");
 
             // --------------------------------------------------------------------------------------------------------
