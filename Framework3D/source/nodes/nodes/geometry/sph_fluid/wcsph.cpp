@@ -4,14 +4,12 @@ using namespace Eigen;
 
 namespace USTC_CG::node_sph_fluid {
 
-WCSPH::WCSPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
-    : SPHBase(X, box_min, box_max, sim_2d)
-{
-}
 
-WCSPH::WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, 
+WCSPH::WCSPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, 
+    const Vector3d& sim_area_min,
+    const Vector3d& sim_area_max,
     const bool sim_2d)
-    : SPHBase(X, boundary_particle_X, box_min, box_max, sim_2d)
+    : SPHBase(X, boundary_particle_X, sim_area_min, sim_area_max, sim_2d)
 {
 }
 
@@ -20,7 +18,10 @@ void WCSPH::compute_density()
 {
     // Traverse all particles
     // This operation can be done in parallel using OpenMP
-    for (auto& p : ps_.particles()) {
+    #pragma omp parallel for 
+    //for (auto& p : ps_.particles()) {
+    for (int i = 0; i < ps_.particles().size(); i++) {
+        auto p = ps_.particles()[i];
         if (p->is_boundary()) {
             continue;
         }
@@ -44,7 +45,7 @@ void WCSPH::step()
     TOC(1_assign_to_cell)
 
     TIC(2_search_neighbor)
-    ps_.searchNeighbors();
+    ps_.search_neighbors();
     TOC(2_search_neighbor)
 
     TIC(3_compute_density)
@@ -62,6 +63,10 @@ void WCSPH::step()
     TIC(6)
     advect();
     TOC(6)
+
+    //for (auto& p : ps_.particles()) {
+    //    check_collision(p);
+    //}
 
     TOC(step)
     if (enable_step_pause)

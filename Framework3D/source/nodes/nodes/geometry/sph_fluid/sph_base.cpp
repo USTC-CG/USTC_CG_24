@@ -9,28 +9,16 @@ namespace USTC_CG::node_sph_fluid {
 using namespace Eigen;
 using Real = double;
 
-SPHBase::SPHBase(const Eigen::MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
-    : init_X_(X),
-      X_(X),
-      vel_(MatrixXd::Zero(X.rows(), X.cols())),
-      box_max_(box_max),
-      box_min_(box_min),
-      ps_(X, box_min, box_max, sim_2d)
-{
-    enable_sim_2d = sim_2d; 
-    std::cout << "sim 2d = " << enable_sim_2d << std::endl;
-    std::cout << " num fluid particles =  " << ps_.num_fluid_particles() << std::endl;
-}
-
 SPHBase::SPHBase(const Eigen::MatrixXd& fluid_particle_X, const Eigen::MatrixXd& boundary_particle_X,
-    const Vector3d& box_min, const Vector3d& box_max, 
+    const Vector3d& sim_area_min,
+    const Vector3d& sim_area_max,
     const bool sim_2d)
-    : init_X_(fluid_particle_X),
-      X_(fluid_particle_X),
-      vel_(MatrixXd::Zero(fluid_particle_X.rows(), fluid_particle_X.cols())),
-      box_max_(box_max),
-      box_min_(box_min),
-      ps_(fluid_particle_X, boundary_particle_X, box_min, box_max, sim_2d)
+    : init_fluid_particle_X_(fluid_particle_X),
+      fluid_particle_X_(fluid_particle_X),
+      fluid_particle_vel_(MatrixXd::Zero(fluid_particle_X.rows(), fluid_particle_X.cols())),
+      sim_area_min_(sim_area_min),
+      sim_area_max_(sim_area_max),
+      ps_(fluid_particle_X, boundary_particle_X, sim_2d)
 {
     enable_sim_2d = sim_2d; 
     std::cout << "sim 2d = " << enable_sim_2d << std::endl;
@@ -151,7 +139,9 @@ void SPHBase::compute_pressure()
 
 void SPHBase::compute_non_pressure_acceleration()
 {
-    for (auto& p : ps_.particles()) {
+    #pragma omp parallel for 
+    for (int i = 0; i < ps_.particles().size(); i++) {
+        auto p = ps_.particles()[i];
         if (p->is_boundary()) {
             continue;
         }
@@ -189,7 +179,9 @@ Vector3d SPHBase::compute_viscosity_acceleration(
 // Traverse all particles and compute pressure gradient acceleration
 void SPHBase::compute_pressure_gradient_acceleration()
 {
-    for (auto& p : ps_.particles()) {
+    #pragma omp parallel for 
+	for (int i = 0; i < ps_.particles().size(); i++) {
+        auto p = ps_.particles()[i];
         if (p->is_boundary()) {
             continue;
         }
@@ -232,12 +224,12 @@ void SPHBase::step()
 void SPHBase::reset()
 {
     // For display (node system may not need this)
-    X_ = init_X_;
-    vel_ = MatrixXd::Zero(X_.rows(), X_.cols());
+    fluid_particle_X_ = init_fluid_particle_X_;
+    fluid_particle_vel_ = MatrixXd::Zero(fluid_particle_X_.rows(), fluid_particle_X_.cols());
 
     for (auto& p : ps_.particles()) {
         p->vel() = Vector3d::Zero();
-        p->x() = X_.row(p->idx()).transpose();
+        p->x() = fluid_particle_X_.row(p->idx()).transpose();
     }
 }
 
@@ -245,8 +237,9 @@ void SPHBase::advect()
 {
     // Traverse all particles
     // This operation can be done parallelly using OpenMP
-    for (auto& p : ps_.particles())  // add custom iterator rules to ParticleSystem
-    {
+#pragma omp parallel for
+    for (int i = 0; i < ps_.particles().size(); i++) {
+        auto p = ps_.particles()[i];
         // check if p is a boundary particle
         if (p->is_boundary()) {
             continue;
@@ -266,10 +259,8 @@ void SPHBase::advect()
 		if (p->type() == Particle::BOUNDARY) {
 			continue; 
 		}
-        X_.row(p->idx()) = p->x().transpose();
-        vel_.row(p->idx()) = p->vel().transpose();
-
-        //check_collision(p);
+        fluid_particle_X_.row(p->idx()) = p->x().transpose();
+        fluid_particle_vel_.row(p->idx()) = p->vel().transpose();
     }
 }
 
@@ -279,15 +270,15 @@ void SPHBase::check_collision(const std::shared_ptr<Particle>& p)
     double restitution = 0.1;
 
     // add epsilon offset to avoid particles sticking to the boundary
-    Vector3d eps_ = 0.0001 * (box_max_ - box_min_);
+    Vector3d eps_ = 0.0001 * (sim_area_max_ - sim_area_min_);
 
     for (int i = 0; i < 3; i++) {
-        if (p->x()[i] < box_min_[i]) {
-            p->x()[i] = box_min_[i] + eps_[i];
+        if (p->x()[i] < sim_area_min_[i]) {
+            p->x()[i] = sim_area_min_[i] + eps_[i];
             p->vel()[i] = -restitution * p->vel()[i];
         }
-        if (p->x()[i] > box_max_[i]) {
-            p->x()[i] = box_max_[i] - eps_[i];
+        if (p->x()[i] > sim_area_max_[i]) {
+            p->x()[i] = sim_area_max_[i] - eps_[i];
             p->vel()[i] = -restitution * p->vel()[i];
         }
     }
@@ -296,14 +287,14 @@ void SPHBase::check_collision(const std::shared_ptr<Particle>& p)
 // For display
 MatrixXd SPHBase::get_vel_color_jet()
 {
-    MatrixXd vel_color = MatrixXd::Zero(vel_.rows(), 3);
-    double max_vel_norm = vel_.rowwise().norm().maxCoeff();
-    double min_vel_norm = vel_.rowwise().norm().minCoeff();
+    MatrixXd vel_color = MatrixXd::Zero(fluid_particle_vel_.rows(), 3);
+    double max_vel_norm = fluid_particle_vel_.rowwise().norm().maxCoeff();
+    double min_vel_norm = fluid_particle_vel_.rowwise().norm().minCoeff();
 
     auto c = colormap_jet;
 
-    for (int i = 0; i < vel_.rows(); i++) {
-        double vel_norm = vel_.row(i).norm();
+    for (int i = 0; i < fluid_particle_vel_.rows(); i++) {
+        double vel_norm = fluid_particle_vel_.row(i).norm();
         int idx = 0;
         if (fabs(max_vel_norm - min_vel_norm) > 1e-6) {
             idx = static_cast<int>(

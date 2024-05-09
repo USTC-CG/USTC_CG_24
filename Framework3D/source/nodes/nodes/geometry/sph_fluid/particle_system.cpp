@@ -7,24 +7,8 @@ using namespace Eigen;
 using namespace std;
 #define M_PI 3.14159265358979323846
 
-ParticleSystem::ParticleSystem(const MatrixXd &X, const Vector3d &box_min, const Vector3d &box_max,
-    const bool sim_2d )
-{
-    init_parameters(sim_2d);
-
-    for (int i = 0; i < X.rows(); i++) {
-        add_particle(X.row(i).transpose(), Particle::FLUID);
-    }
-
-    num_fluid_particles_ = particles_.size();
-    num_boundary_particles_ = 0;
-
-    init_neighbor_search(box_min, box_max); 
-}
-
 ParticleSystem::ParticleSystem(const MatrixXd &fluid_particle_X, 
     const MatrixXd& boundary_particle_X, 
-    const Vector3d &box_min, const Vector3d &box_max, 
     const bool sim_2d)
 {
     init_parameters(sim_2d);
@@ -41,6 +25,7 @@ ParticleSystem::ParticleSystem(const MatrixXd &fluid_particle_X,
 
     Vector3d scaled_box_min = boundary_particle_X.colwise().minCoeff(); 
     Vector3d scaled_box_max = boundary_particle_X.colwise().maxCoeff(); 
+    
     init_neighbor_search(scaled_box_min, scaled_box_max); 
 }
 
@@ -59,13 +44,28 @@ void ParticleSystem::init_parameters(const bool sim_2d)
     particle_mass_ = particle_volume_ * density0_;
 }
 
-void ParticleSystem::searchNeighbors()
+void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
+{
+	shared_ptr<Particle> p = make_shared<Particle>();
+    p->X_ = X; 
+	p->vel_ = Vector3d::Zero();
+	p->density_ = density0_;
+	p->pressure_ = 0.0;
+    p->type_ = type; 
+    p->idx_ = particles_.size(); 
+	p->mass_ = particle_mass_;
+	particles_.push_back(p);
+}
+
+
+// --------------------------------------- functions for search for neighbors ----------------------------------
+
+void ParticleSystem::search_neighbors(Particle::particleType type)
 {
     // update the neighbors for each particle
     for (auto &p : particles_) {
         p->neighbors_.clear();
-        if (p->type_ == Particle::BOUNDARY) {
-            // TODO: do we need to search neighbors for boundary particles? NO; 
+        if (p->type_ != type){
             continue;
         }
 
@@ -158,11 +158,11 @@ void ParticleSystem::assign_particles_to_cells()
     }
 }
 
-void ParticleSystem::init_neighbor_search(const Vector3d area_min, const Vector3d area_max)
+void ParticleSystem::init_neighbor_search(const Vector3d box_min, const Vector3d box_max)
 {
     // Compute the number of cells in each axis
-    box_min_ = area_min;
-    box_max_ = area_max;
+    box_min_ = box_min;
+    box_max_ = box_max;
     n_cell_per_axis_ = ((box_max_ - box_min_) / cell_size_)
                            .array()
                            .ceil()
@@ -171,11 +171,13 @@ void ParticleSystem::init_neighbor_search(const Vector3d area_min, const Vector3
     cells_.resize(n_cell_per_axis_[0] * n_cell_per_axis_[1] * n_cell_per_axis_[2]);
 
     assign_particles_to_cells();
-    searchNeighbors();
 
+    search_neighbors(Particle::BOUNDARY);
+    search_neighbors(Particle::FLUID);
 }
 
-// First, add a particle sample function from a box area, which is needed in node system
+
+// -------------------------------------------- helper functions -------------------------------------------------------
 MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     const Vector3d min,
     const Vector3d max,
@@ -191,14 +193,8 @@ MatrixXd ParticleSystem::sample_particle_pos_in_a_box(
     for (int i = 0; i < n_per_axis[0]; i++) {
         for (int j = 0; j < n_per_axis[1]; j++) {
             for (int k = 0; k < n_per_axis[2]; k++) {
-
-                double x_coord = min[0] + i * step[0]; 
-                
-                if (sample_2d) // sim 2d 
-                    x_coord = 0.0;
-
                 X.row(i * n_per_axis[1] * n_per_axis[2] + j * n_per_axis[2] + k)
-                    << x_coord,
+                    <<  min[0] + i * step[0],
                     min[1] + j * step[1], min[2] + k * step[2];
             }
         }
@@ -210,26 +206,26 @@ MatrixXd ParticleSystem::sample_particle_pos_around_a_box(
     const Vector3d min,
     const Vector3d max,
     const Vector3i n_per_axis,
-    const bool sample_2d
+    const bool sample_2d,
+    const double scale_factor
 )
 {
-	 Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
-	 const double s = 0.2; // scale factor 
-	 Vector3d scaled_min = min - s * (max - min); 
-	 Vector3d scaled_max = max + s * (max - min); 
+	Vector3d scaled_min = min - scale_factor * (max - min); 
+	Vector3d scaled_max = max + scale_factor * (max - min); 
+
+    const Vector3d step = (max - min).array() / n_per_axis.array().cast<double>();
+    double s = 1 + 2 * scale_factor;
 
     vector<Vector3d> pos;
 
-    if (sample_2d) 
-    {
-        scaled_min[0] = 0.0;
-        scaled_max[0] = 1.0; 
-        step[0] = scaled_max[0] - scaled_min[0] + 1.0; // make sure loop runs only once
-    }
+   for (int i = 0; i <= n_per_axis[0] * s; i++) {
+        for (int j = 0; j <= n_per_axis[1] * s; j++) {
+            for (int k = 0; k <= n_per_axis[2] * s; k++) {
 
-	 for (double x = scaled_min[0]; x <= scaled_max[0]; x += step[0]) {
-        for (double y = scaled_min[1]; y <= scaled_max[1]; y += step[1]) {
-            for (double z = scaled_min[2]; z <= scaled_max[2]; z += step[2]) {
+                double x = scaled_min[0] + i * step[0];
+                double y = scaled_min[1] + j * step[1];
+                double z = scaled_min[2] + k * step[2];
+
                 if (x < min[0] || x > max[0] || y < min[1] || y > max[1] || z < min[2] ||
                     z > max[2]) {
                     pos.push_back(Vector3d{ x, y, z });
@@ -245,18 +241,7 @@ MatrixXd ParticleSystem::sample_particle_pos_around_a_box(
 
      return X; 
 }
+// --------------------------------------------------------------------------------------------------------
 
-void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
-{
-	shared_ptr<Particle> p = make_shared<Particle>();
-    p->X_ = X; 
-	p->vel_ = Vector3d::Zero();
-	p->density_ = density0_;
-	p->pressure_ = 0.0;
-    p->type_ = type; 
-    p->idx_ = particles_.size(); 
-	p->mass_ = particle_mass_;
-	particles_.push_back(p);
-}
 
 }  // namespace USTC_CG::node_sph_fluid

@@ -11,8 +11,9 @@ using namespace Eigen;
 class IISPH : public SPHBase {
    public:
     IISPH() = default;
-    IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d);
-    IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d);
+    IISPH(const MatrixXd& fluid_particles_X, const MatrixXd& boundary_particle_X,
+            const Vector3d& sim_area_min, const Vector3d& sim_area_max,
+        const bool sim_2d);
     ~IISPH() = default;
 
     void step() override;

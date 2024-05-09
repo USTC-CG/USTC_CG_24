@@ -18,15 +18,11 @@ namespace USTC_CG::node_sph_fluid {
 class SPHBase {
    public:
     SPHBase() = default;
-    SPHBase(const Eigen::MatrixXd& fluid_particle_X, 
-        const Vector3d& box_min, 
-        const Vector3d& box_max,
-        const bool sim_2d);
 
     SPHBase(const Eigen::MatrixXd& fluid_particle_X, 
         const Eigen::MatrixXd& boundary_particle_X, 
-        const Vector3d& box_min, 
-        const Vector3d& box_max,
+        const Vector3d& sim_area_min,
+        const Vector3d& sim_area_max,
         const bool sim_2d);
 
     virtual ~SPHBase() = default;
@@ -34,13 +30,13 @@ class SPHBase {
     virtual void step();
     virtual void reset();
 
-    inline Eigen::MatrixXd getX() const
+    inline Eigen::MatrixXd get_fluid_particle_X() const
     {
-        return X_;
+        return fluid_particle_X_;
     };
     inline Eigen::MatrixXd getVel() const
     {
-        return vel_;
+        return fluid_particle_vel_;
     };
 
     // SPH kernel function: h is the support radius
@@ -99,11 +95,11 @@ class SPHBase {
     double dt_ = 0.005;  // TODO: make this a parameter
     double viscosity_ = 0.03;
 
-    Vector3d box_min_, box_max_;
+    Vector3d sim_area_min_, sim_area_max_;
 
-    Eigen::MatrixXd init_X_;
-    Eigen::MatrixXd X_;
-    Eigen::MatrixXd vel_;
+    Eigen::MatrixXd init_fluid_particle_X_;
+    Eigen::MatrixXd fluid_particle_X_;
+    Eigen::MatrixXd fluid_particle_vel_;
 
 };
 }  // namespace USTC_CG::node_sph_fluid

@@ -5,18 +5,11 @@ namespace USTC_CG::node_sph_fluid {
 
 using namespace Eigen;
 
-IISPH::IISPH(const MatrixXd& X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
-    : SPHBase(X, box_min, box_max, sim_2d)
-{
-    // (HW TODO) Feel free to modify this part to remove or add necessary member variables
-    predict_density_ = VectorXd::Zero(ps_.particles().size());
-    aii_ = VectorXd::Zero(ps_.particles().size());
-    Api_ = VectorXd::Zero(ps_.particles().size());
-    last_pressure_ = VectorXd::Zero(ps_.particles().size());
-}
-
-IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, const bool sim_2d)
-    : SPHBase(X, boundary_particle_X, box_min, box_max, sim_2d)
+IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, 
+    const Vector3d& sim_area_min,
+    const Vector3d& sim_area_max,
+    const bool sim_2d)
+    :SPHBase(X, boundary_particle_X, sim_area_min, sim_area_max, sim_2d)
 {
     // (HW TODO) Feel free to modify this part to remove or add necessary member variables
     predict_density_ = VectorXd::Zero(ps_.particles().size());
@@ -29,7 +22,7 @@ IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X, const Vecto
 void IISPH::step()
 {
     ps_.assign_particles_to_cells(); 
-    ps_.searchNeighbors(); 
+    ps_.search_neighbors(); 
 
     compute_density();
     compute_non_pressure_acceleration();
@@ -241,8 +234,8 @@ void IISPH::advect()
 		if (p->type() == Particle::BOUNDARY) {
 			continue; 
 		}
-        X_.row(p->idx()) = p->x().transpose();
-        vel_.row(p->idx()) = p->vel().transpose();
+        fluid_particle_X_.row(p->idx()) = p->x().transpose();
+        fluid_particle_vel_.row(p->idx()) = p->vel().transpose();
 
     }
 }

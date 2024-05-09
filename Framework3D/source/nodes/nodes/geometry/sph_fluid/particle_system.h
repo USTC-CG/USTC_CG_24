@@ -55,7 +55,9 @@ class Particle {
         return neighbors_;
     };
 
-    // protected:
+    friend class ParticleSystem;
+
+   protected:
     double mass_; 
     double density_;
     double pressure_;
@@ -72,10 +74,7 @@ class Particle {
 // This class is for particle neighbor search
 class ParticleSystem {
    public:
-    ParticleSystem(const MatrixXd& fluid_particle_X, const Vector3d& box_min, const Vector3d& box_max,
-        const bool sim_2d = false);
-    ParticleSystem(const MatrixXd& fluid_particle_X, const MatrixXd& boundary_particle_X, const Vector3d& box_min, const Vector3d& box_max, 
-        const bool sim_2d = false);
+    ParticleSystem(const MatrixXd& fluid_particle_X, const MatrixXd& boundary_particle_X, const bool sim_2d = false);
 	~ParticleSystem() = default;
 
     void init_parameters(const bool sim_2d); 
@@ -113,8 +112,16 @@ class ParticleSystem {
     {
         return num_boundary_particles_;
     }
+    Vector3d get_box_min() const
+    {
+        return box_min_;
+    }
+    Vector3d get_box_max() const
+    {
+        return box_max_;
+    }
 
-    void searchNeighbors();
+    void search_neighbors(Particle::particleType type = Particle::FLUID);
 
     static MatrixXd sample_particle_pos_in_a_box(
         const Vector3d min,
@@ -125,7 +132,9 @@ class ParticleSystem {
     static MatrixXd sample_particle_pos_around_a_box(const Vector3d box_min,
                                                      const Vector3d box_max,
                                                      const Vector3i n_particle_per_axis,
-                                                     const bool sample_2d = false);
+                                                     const bool sample_2d = false,
+                                                     const double scale_factor = 0.2
+    );
 
     unsigned pos_to_cell_index(const Vector3d& x) const;
     unsigned cell_xyz_to_cell_index(const unsigned x, const unsigned y, const unsigned z) const;
