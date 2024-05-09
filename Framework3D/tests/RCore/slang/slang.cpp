@@ -39,7 +39,7 @@ TEST(SLANG, createSession)
     globalSession->createSession(sessionDesc, session.writeRef());
     ASSERT_NE(session.get(), nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "tests/tests/slang/shader.slang";
+    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd\HD_USTC_CG_HWRT\resources\shadersshader.slang";
 
     Slang::ComPtr<slang::IBlob> outDiagnostic;
     Slang::ComPtr<slang::IModule> module_;
@@ -71,7 +71,7 @@ TEST(SLANG, compileFromGlobal)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "tests/tests/slang/shader.slang";
+    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
     const SlangResult compileRes = spCompile(slangRequest);
@@ -102,7 +102,7 @@ TEST(SLANG, codeGen)
     spTranslationUnit_addPreprocessorDefine(
         slangRequest, translationUnitIndex, "SLANG_CUDA_ENABLE_OPTIX", "1");
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "tests/tests/slang/shader.slang";
+    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
 
@@ -132,7 +132,7 @@ TEST(SLANG, genPTX)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "tests/tests/slang/shader.slang";
+    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
 
     SlangShaderCompiler::addOptiXSupport(slangRequest);
 
@@ -176,7 +176,7 @@ TEST(SLANG, reflection)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "tests/tests/slang/shader.slang";
+    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
     const SlangResult compileRes = spCompile(slangRequest);

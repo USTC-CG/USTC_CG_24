@@ -36,7 +36,7 @@ SlangResult SlangShaderCompiler::addCUDAPrelude(slang::IGlobalSession* session)
 
     auto root = find_root(includePath);
 
-    auto prelude_name = "slang/prelude/slang-cuda-prelude.h";
+    auto prelude_name = "/slang/prelude/slang-cuda-prelude.h";
     std::ostringstream prelude;
     prelude << "#include \"" << root.generic_string() + prelude_name << "\"\n\n";
 
@@ -47,7 +47,7 @@ SlangResult SlangShaderCompiler::addCUDAPrelude(slang::IGlobalSession* session)
 
 SlangResult SlangShaderCompiler::addOptiXHeaderInclude(SlangCompileRequest* slangRequest)
 {
-    auto optix_path = find_root(".") / "ext/optix/";
+    auto optix_path = find_root(".") / "usd/HD_USTC_CG_HWRT/resources/optix/";
 
     auto optix_path_name = "-I" + optix_path.generic_string();
 

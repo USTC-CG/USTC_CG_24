@@ -128,6 +128,7 @@ function(_copy_resource_files NAME pluginInstallPrefix pluginToLibraryPath)
         # indicate that it should be installed to a different location in
         # the resources area. Check if this is the case.
         string(REPLACE ":" ";" resourceFile "${resourceFile}")
+        message("Copying resource file ${resourceFile}")
         list(LENGTH resourceFile n)
         if (n EQUAL 1)
            set(resourceDestFile ${resourceFile})
@@ -165,13 +166,21 @@ function(_copy_resource_files NAME pluginInstallPrefix pluginToLibraryPath)
                 _plugInfo_subst(${NAME} "${pluginInstallPrefix}" "${pluginToLibraryPath}" ${resourceFile})
             endif()
             set(resourceFile "${CMAKE_CURRENT_BINARY_DIR}/${resourceFile}")
+        else()
+            configure_file(
+                ${resourceFile}
+                ${OUT_BINARY_DIR}/${pluginInstallPrefix}/${NAME}/resources/${resourceFile}
+                    COPYONLY
+            )
         endif()
+
 
         install(
             FILES ${resourceFile}
             DESTINATION ${resourcesPath}/${dirPath}
             RENAME ${destFileName}
         )
+        message("Installing ${resourceFile} to ${resourcesPath}/${dirPath}, rename to ${destFileName}")
     endforeach()
 endfunction() # _copy_resource_files
 
