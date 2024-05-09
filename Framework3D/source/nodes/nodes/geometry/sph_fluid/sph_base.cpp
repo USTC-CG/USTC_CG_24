@@ -199,6 +199,11 @@ void SPHBase::compute_pressure_gradient_acceleration()
         auto tmp_p = p->pressure() / (p->density() * p->density());
 
         for (auto& q : p->neighbors()) {
+            if (q->is_boundary())
+            {
+                q->pressure() = p->pressure(); 
+                q->density() = ps_.density0(); 
+            }
             auto grad = grad_W(p->x() - q->x(), ps_.h());
             auto tmp_q = q->pressure() / (q->density() * q->density());
             acc += -q->mass() * (tmp_p + tmp_q) * grad;
