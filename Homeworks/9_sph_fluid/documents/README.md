@@ -390,6 +390,8 @@ for (auto& p : ps_.particles()) {
 
 关于OpenMP的更加详细的介绍可以阅读： [openmp tutorials and articles](https://www.openmp.org/resources/tutorials-articles/)
 
+注意：omp不支持 `for (auto & : )` 这种循环语法，需要修改成 `for (int i = 0; i < ... ; i ++)`。
+
 
 ## 未完待续：Part2. 不可压缩性更好的SPH压力求解器
 为了进一步提升仿真的效果和运行效率，我们将在[Part2](./README-part2.md)介绍一种更加稳定的SPH压力计算方法，这也是本次作业的选做内容。
