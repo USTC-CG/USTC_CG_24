@@ -118,7 +118,10 @@ void SPHBase::compute_density()
 {
     // Traverse all particles
     // This operation can be done parallelly using OpenMP
-    for (auto& p : ps_.particles()) {
+
+    #pragma omp parallel for 
+    for (int i = 0; i < ps_.particles().size(); i++) {
+        auto p = ps_.particles()[i];
         // check if p is a boundary particle
         if (p->is_boundary()) {
             continue;
@@ -193,7 +196,8 @@ void SPHBase::compute_pressure_gradient_acceleration()
         for (auto& q : p->neighbors()) {
             if (q->is_boundary())
             {
-                q->pressure() = p->pressure(); 
+                //q->pressure() = p->pressure(); 
+                q->pressure() = 0; 
                 q->density() = ps_.density0(); 
             }
             auto grad = grad_W(p->x() - q->x(), ps_.h());
@@ -202,16 +206,16 @@ void SPHBase::compute_pressure_gradient_acceleration()
         }
         p->acceleration() += acc;
 
-        if (enable_debug_output)
-        {
-            if (p->density() > ps_.density0())
-            {
-                std::cout << "density = " << p->density(); 
-                std::cout << " pressure = " << p->pressure(); 
-                std::cout << " pressure acc = " << acc.transpose(); 
-                std::cout << " total acc = " << p->acceleration().transpose() << std::endl; 
-            }
-        }
+        //if (enable_debug_output)
+        //{
+        //    if (p->density() > ps_.density0())
+        //    {
+        //        std::cout << "density = " << p->density(); 
+        //        std::cout << " pressure = " << p->pressure(); 
+        //        std::cout << " pressure acc = " << acc.transpose(); 
+        //        std::cout << " total acc = " << p->acceleration().transpose() << std::endl; 
+        //    }
+        //}
 
     }
 }
@@ -324,9 +328,11 @@ void SPHBase::init_boundary_particle_mass()
 		    double sum = W_zero(ps_.h());
             for (auto& q : p->neighbors())
             {
-                sum += W(p->x() - q->x(), ps_.h());
+                if (q->is_boundary())
+					sum += W(p->x() - q->x(), ps_.h());
             }
             p->mass() = ps_.density0() / sum;
+            //p->mass() = ps_.mass(); 
 		}
 	}
 }

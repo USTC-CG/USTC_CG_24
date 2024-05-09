@@ -1,4 +1,5 @@
 #include "particle_system.h"
+#include "utils.h"
 #include <iostream>
 
 namespace USTC_CG::node_sph_fluid {
@@ -34,14 +35,14 @@ void ParticleSystem::init_parameters(const bool sim_2d)
     double diam = 2 * particle_radius_; 
     if (sim_2d)
     {
-        diam = particle_radius_; 
-        particle_volume_ = 0.8 * pow(diam, 3);
+        particle_volume_ = pow(diam, 2);
     }
     else
     {
-        particle_volume_ = pow(diam, 2);
+        particle_volume_ = 0.8 * pow(diam, 3);
     }
     particle_mass_ = particle_volume_ * density0_;
+    std::cout << "particle_mass_ = " << particle_mass_ << std::endl;
 }
 
 void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
@@ -148,12 +149,14 @@ void ParticleSystem::assign_particles_to_cells()
         if (cell_idx >= 0 && cell_idx < cells_.size())
             cells_[cell_idx].push_back(p);
         else {
+            std::cout << RedHead() << "Error: "; 
             std::cout << "[assign_particles_to_cells] cell_idx out of range: cell= " << cell_idx;
             std::cout << " particle pos= " << p->X_.transpose() << std::endl;
             std::cout << "n cells per axis = " << n_cell_per_axis_.transpose() << std::endl;
             std::cout << "cell size = " << cell_size_ << std::endl;
+            std::cout << ColorTail() << std::endl;
             //throw std::runtime_error("cell_idx out of range");
-            exit(1);
+            //exit(1);
         }
     }
 }

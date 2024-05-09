@@ -16,16 +16,29 @@ IISPH::IISPH(const MatrixXd& X, const MatrixXd& boundary_particle_X,
     aii_ = VectorXd::Zero(ps_.particles().size());
     Api_ = VectorXd::Zero(ps_.particles().size());
     last_pressure_ = VectorXd::Zero(ps_.particles().size());
+
+  //  for (auto& p : ps_.particles())
+  //  {
+  //      if (p->type() == Particle::FLUID)
+  //      {
+  //      std::cout << " [ " << p->idx() << " ]: mass =" << p->mass() << std::endl;
+		//}
+  //  }
 }
 
 
 void IISPH::step()
 {
+    std::cout << CyanHead() << "0" << ColorTail() << std::endl;
     ps_.assign_particles_to_cells(); 
+    std::cout << CyanHead() << "1" << ColorTail() << std::endl;
     ps_.search_neighbors(); 
+    std::cout << CyanHead() << "2" << ColorTail() << std::endl;
 
     compute_density();
     compute_non_pressure_acceleration();
+
+    std::cout << CyanHead() << "3" << ColorTail() << std::endl;
 
     for(auto& p : ps_.particles())
     {
@@ -44,6 +57,7 @@ void IISPH::step()
     compute_pressure_gradient_acceleration();
 
     advect(); 
+    std::cout << CyanHead() << "4" << ColorTail() << std::endl;
 
     if (enable_step_pause)
     {
@@ -129,6 +143,10 @@ double IISPH::pressure_solve_iteration()
         auto tmp_p = p->pressure() / density2;
         for(auto& q : p->neighbors())
         {
+            if (q->type() == Particle::BOUNDARY) {
+                q->pressure() = p->pressure();
+                q->density() = ps_.density0();
+			}
             auto tmp_q = q->pressure() / (q->density() * q->density());
             Vector3d grad = grad_W(p->x() - q->x(), ps_.h());
             acc_pressure.row(p->idx()) += - q->mass() * (tmp_p + tmp_q) * grad;
@@ -177,6 +195,7 @@ double IISPH::pressure_solve_iteration()
                 std::cout << "predict_density: " << predict_density_[i] << " "; 
                 std::cout << "final density: " << predict_density_[i] + dt_* dt_* Api_[i] << " "; 
                 std::cout << "density: " << p->density() << std::endl;
+                std::cout << "num of neighbors: " << p->neighbors().size() << std::endl;
                 count ++; 
                 if(count > 2)
                     break;
