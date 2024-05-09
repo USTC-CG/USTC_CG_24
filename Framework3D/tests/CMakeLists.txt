@@ -15,6 +15,7 @@ function(UCG_ADD_TEST)
     target_link_libraries(${test_name}_test PUBLIC GTest::gtest GTest::gtest_main)
     target_link_libraries(${test_name}_test PUBLIC ${UCG_TEST_LIBS})
     target_include_directories(${test_name}_test PUBLIC ${PROJECT_SOURCE_DIR}/source)
+    target_include_directories(${test_name}_test PRIVATE ${CMAKE_BINARY_DIR}/include)
     target_compile_definitions(${test_name}_test PUBLIC NOMINMAX=1)
 
     add_test(

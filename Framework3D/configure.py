@@ -23,16 +23,23 @@ def copytree_to_binaries(folder, dst=None, target="Debug"):
     return
 
 
-def copytree_common_to_binaries(folder, target="Debug"):
+def copytree_common_to_binaries(folder, target="Debug", dst=None):
     root_dir = os.getcwd()
     print(
         "Copying {0} to the binary directory for target {1}...".format(folder, target)
     )
-    shutil.copytree(
-        root_dir + "/SDK/" + "common" + "/" + folder,
-        root_dir + "/Binaries/" + target + "/",
-        dirs_exist_ok=True,
-    )
+    if dst is None:
+        shutil.copytree(
+            root_dir + "/SDK/" + "common" + "/" + folder,
+            root_dir + "/Binaries/" + target + "/",
+            dirs_exist_ok=True,
+        )
+    else:
+        shutil.copytree(
+            root_dir + "/SDK/" + "common" + "/" + folder,
+            root_dir + "/Binaries/" + target + "/" + dst,
+            dirs_exist_ok=True,
+        )
     return
 
 
@@ -144,6 +151,8 @@ def process_SDK(target):
     copytree_to_binaries("OpenUSD/plugin/usd", "usd", target=target)
 
     copytree_common_to_binaries("embree/bin", target=target)
+    copytree_common_to_binaries("slang/prelude", dst="slang/prelude", target=target)
+
     if os.name == "nt":
         copytree_common_to_binaries("slang/bin/windows-x64/release", target=target)
     else:

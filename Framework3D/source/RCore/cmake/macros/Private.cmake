@@ -233,6 +233,7 @@ function(_pxr_library NAME)
         FILES
             ${args_PUBLIC_HEADERS}
             ${args_PRIVATE_HEADERS}
+            api.h
         PREFIX
             ${PXR_PREFIX}
     )
