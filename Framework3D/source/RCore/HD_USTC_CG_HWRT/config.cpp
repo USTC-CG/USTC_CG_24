@@ -32,70 +32,70 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 // Instantiate the config singleton.
-TF_INSTANTIATE_SINGLETON(Hd_USTC_CG_Config);
+TF_INSTANTIATE_SINGLETON(Hd_USTC_CG_HWRT_Config);
 
 // Each configuration variable has an associated environment variable.
 // The environment variable macro takes the variable name, a default value,
 // and a description...
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_SAMPLES_TO_CONVERGENCE,
+    HDHWRT_SAMPLES_TO_CONVERGENCE,
     100,
     "Samples per pixel before we stop rendering (must be >= 1)");
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_TILE_SIZE,
+    HDHWRT_TILE_SIZE,
     8,
     "Size (per axis) of threading work units (must be >= 1)");
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_AMBIENT_OCCLUSION_SAMPLES,
+    HDHWRT_AMBIENT_OCCLUSION_SAMPLES,
     16,
     "Ambient occlusion samples per camera ray (must be >= 0; a value of 0 disables ambient occlusion)")
 ;
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_JITTER_CAMERA,
+    HDHWRT_JITTER_CAMERA,
     1,
-    "Should Hd_USTC_CG_ jitter camera rays while rendering? (values >0 are true)");
+    "Should Hd_USTC_CG_HWRT_ jitter camera rays while rendering? (values >0 are true)");
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_USE_FACE_COLORS,
+    HDHWRT_USE_FACE_COLORS,
     1,
-    "Should Hd_USTC_CG_ use face colors while rendering? (values > 0 are true)");
+    "Should Hd_USTC_CG_HWRT_ use face colors while rendering? (values > 0 are true)");
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_CAMERA_LIGHT_INTENSITY,
+    HDHWRT_CAMERA_LIGHT_INTENSITY,
     300,
     "Intensity of the camera light, specified as a percentage of <1,1,1>.");
 
 TF_DEFINE_ENV_SETTING(
-    HDEMBREE_PRINT_CONFIGURATION,
+    HDHWRT_PRINT_CONFIGURATION,
     0,
-    "Should Hd_USTC_CG_ print configuration on startup? (values > 0 are true)");
+    "Should Hd_USTC_CG_HWRT_ print configuration on startup? (values > 0 are true)");
 
-Hd_USTC_CG_Config::Hd_USTC_CG_Config()
+Hd_USTC_CG_HWRT_Config::Hd_USTC_CG_HWRT_Config()
 {
     // Read in values from the environment, clamping them to valid ranges.
     samplesToConvergence = std::max(
         1,
-        TfGetEnvSetting(HDEMBREE_SAMPLES_TO_CONVERGENCE));
+        TfGetEnvSetting(HDHWRT_SAMPLES_TO_CONVERGENCE));
     tileSize = std::max(
         1,
-        TfGetEnvSetting(HDEMBREE_TILE_SIZE));
+        TfGetEnvSetting(HDHWRT_TILE_SIZE));
     ambientOcclusionSamples = std::max(
         0,
-        TfGetEnvSetting(HDEMBREE_AMBIENT_OCCLUSION_SAMPLES));
-    jitterCamera = (TfGetEnvSetting(HDEMBREE_JITTER_CAMERA) > 0);
-    useFaceColors = (TfGetEnvSetting(HDEMBREE_USE_FACE_COLORS) > 0);
+        TfGetEnvSetting(HDHWRT_AMBIENT_OCCLUSION_SAMPLES));
+    jitterCamera = (TfGetEnvSetting(HDHWRT_JITTER_CAMERA) > 0);
+    useFaceColors = (TfGetEnvSetting(HDHWRT_USE_FACE_COLORS) > 0);
     cameraLightIntensity = (std::max(
                                 100,
                                 TfGetEnvSetting(
-                                    HDEMBREE_CAMERA_LIGHT_INTENSITY)) / 100.0f);
+                                    HDHWRT_CAMERA_LIGHT_INTENSITY)) / 100.0f);
 
-    if (TfGetEnvSetting(HDEMBREE_PRINT_CONFIGURATION) > 0)
+    if (TfGetEnvSetting(HDHWRT_PRINT_CONFIGURATION) > 0)
     {
         std::cout
-            << "Hd_USTC_CG_ Configuration: \n"
+            << "Hd_USTC_CG_HWRT_ Configuration: \n"
             << "  samplesToConvergence       = "
             << samplesToConvergence << "\n"
             << "  tileSize                   = "
@@ -112,10 +112,10 @@ Hd_USTC_CG_Config::Hd_USTC_CG_Config()
 }
 
 /*static*/
-const Hd_USTC_CG_Config&
-Hd_USTC_CG_Config::GetInstance()
+const Hd_USTC_CG_HWRT_Config&
+Hd_USTC_CG_HWRT_Config::GetInstance()
 {
-    return TfSingleton<Hd_USTC_CG_Config>::GetInstance();
+    return TfSingleton<Hd_USTC_CG_HWRT_Config>::GetInstance();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

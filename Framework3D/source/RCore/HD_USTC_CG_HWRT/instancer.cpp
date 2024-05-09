@@ -36,14 +36,14 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-Hd_USTC_CG_Instancer::Hd_USTC_CG_Instancer(
+Hd_USTC_CG_HWRT_Instancer::Hd_USTC_CG_HWRT_Instancer(
     HdSceneDelegate* delegate,
     const SdfPath& id)
     : HdInstancer(delegate, id)
 {
 }
 
-Hd_USTC_CG_Instancer::~Hd_USTC_CG_Instancer()
+Hd_USTC_CG_HWRT_Instancer::~Hd_USTC_CG_HWRT_Instancer()
 {
     TF_FOR_ALL(it, _primvarMap)
     {
@@ -53,7 +53,7 @@ Hd_USTC_CG_Instancer::~Hd_USTC_CG_Instancer()
 }
 
 void
-Hd_USTC_CG_Instancer::Sync(
+Hd_USTC_CG_HWRT_Instancer::Sync(
     HdSceneDelegate* delegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -67,7 +67,7 @@ Hd_USTC_CG_Instancer::Sync(
 }
 
 void
-Hd_USTC_CG_Instancer::_SyncPrimvars(
+Hd_USTC_CG_HWRT_Instancer::_SyncPrimvars(
     HdSceneDelegate* delegate,
     HdDirtyBits dirtyBits)
 {
@@ -98,7 +98,7 @@ Hd_USTC_CG_Instancer::_SyncPrimvars(
 }
 
 VtMatrix4dArray
-Hd_USTC_CG_Instancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
+Hd_USTC_CG_HWRT_Instancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
 {
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
@@ -124,90 +124,6 @@ Hd_USTC_CG_Instancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
         transforms[i] = instancerTransform;
     }
 
-    // XXX: Remove the variables in 24.05
-    TfToken instanceTranslationsToken = HdInstancerTokens->instanceTranslations;
-    TfToken instanceRotationsToken = HdInstancerTokens->instanceRotations;
-    TfToken instanceScalesToken = HdInstancerTokens->instanceScales;
-    TfToken instanceTransformsToken = HdInstancerTokens->instanceTransforms;
-
-    if (TfGetEnvSetting(HD_USE_DEPRECATED_INSTANCER_PRIMVAR_NAMES))
-    {
-        instanceTranslationsToken = HdInstancerTokens->translate;
-        instanceRotationsToken = HdInstancerTokens->rotate;
-        instanceScalesToken = HdInstancerTokens->scale;
-        instanceTransformsToken = HdInstancerTokens->instanceTransform;
-    }
-
-    // "hydra:instanceTranslations" holds a translation vector for each index.
-    if (_primvarMap.count(instanceTranslationsToken) > 0)
-    {
-        Hd_USTC_CG_BufferSampler
-            sampler(*_primvarMap[instanceTranslationsToken]);
-        for (size_t i = 0; i < instanceIndices.size(); ++i)
-        {
-            GfVec3f translate;
-            if (sampler.Sample(instanceIndices[i], &translate))
-            {
-                GfMatrix4d translateMat(1);
-                translateMat.SetTranslate(GfVec3d(translate));
-                transforms[i] = translateMat * transforms[i];
-            }
-        }
-    }
-
-    // "hydra:instanceRotations" holds a quaternion in <real, i, j, k>
-    // format for each index.
-    if (_primvarMap.count(instanceRotationsToken) > 0)
-    {
-        Hd_USTC_CG_BufferSampler sampler(*_primvarMap[instanceRotationsToken]);
-        for (size_t i = 0; i < instanceIndices.size(); ++i)
-        {
-            GfVec4f quat;
-            if (sampler.Sample(instanceIndices[i], &quat))
-            {
-                GfMatrix4d rotateMat(1);
-                rotateMat.SetRotate(
-                    GfQuatd(
-                        quat[0],
-                        quat[1],
-                        quat[2],
-                        quat[3]));
-                transforms[i] = rotateMat * transforms[i];
-            }
-        }
-    }
-
-    // "hydra:instanceScales" holds an axis-aligned scale vector for each index.
-    if (_primvarMap.count(instanceScalesToken) > 0)
-    {
-        Hd_USTC_CG_BufferSampler sampler(*_primvarMap[instanceScalesToken]);
-        for (size_t i = 0; i < instanceIndices.size(); ++i)
-        {
-            GfVec3f scale;
-            if (sampler.Sample(instanceIndices[i], &scale))
-            {
-                GfMatrix4d scaleMat(1);
-                scaleMat.SetScale(GfVec3d(scale));
-                transforms[i] = scaleMat * transforms[i];
-            }
-        }
-    }
-
-    // "hydra:instanceTransforms" holds a 4x4 transform matrix for each index.
-    if (_primvarMap.count(instanceTransformsToken) > 0)
-    {
-        Hd_USTC_CG_BufferSampler
-            sampler(*_primvarMap[instanceTransformsToken]);
-        for (size_t i = 0; i < instanceIndices.size(); ++i)
-        {
-            GfMatrix4d instanceTransform;
-            if (sampler.Sample(instanceIndices[i], &instanceTransform))
-            {
-                transforms[i] = instanceTransform * transforms[i];
-            }
-        }
-    }
-
     if (GetParentId().IsEmpty())
     {
         return transforms;
@@ -226,7 +142,7 @@ Hd_USTC_CG_Instancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
     //     parentXf * xf
     // }
     VtMatrix4dArray parentTransforms =
-        static_cast<Hd_USTC_CG_Instancer*>(parentInstancer)->
+        static_cast<Hd_USTC_CG_HWRT_Instancer*>(parentInstancer)->
         ComputeInstanceTransforms(GetId());
 
     VtMatrix4dArray final(parentTransforms.size() * transforms.size());

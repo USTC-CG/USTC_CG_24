@@ -16,7 +16,7 @@ class Shader;
 using namespace pxr;
 
 class Hio_StbImage;
-class Hd_USTC_CG_Material : public HdMaterial {
+class Hd_USTC_CG_HWRT_Material : public HdMaterial {
    public:
     struct InputDescriptor {
         std::unique_ptr<Texture2D> image = nullptr;
@@ -31,7 +31,7 @@ class Hd_USTC_CG_Material : public HdMaterial {
         TfToken input_name;
     };
 
-    explicit Hd_USTC_CG_Material(SdfPath const& id);
+    explicit Hd_USTC_CG_HWRT_Material(SdfPath const& id);
 
     void Sync(HdSceneDelegate* sceneDelegate, HdRenderParam* renderParam, HdDirtyBits* dirtyBits)
         override;

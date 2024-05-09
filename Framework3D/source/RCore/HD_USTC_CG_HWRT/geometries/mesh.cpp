@@ -38,7 +38,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
+Hd_USTC_CG_HWRT_Mesh::Hd_USTC_CG_HWRT_Mesh(const SdfPath& id)
     : HdMesh(id),
       _rtcMeshScene(nullptr),
       _cullStyle(HdCullStyleDontCare),
@@ -51,11 +51,11 @@ Hd_USTC_CG_Mesh::Hd_USTC_CG_Mesh(const SdfPath& id)
 {
 }
 
-Hd_USTC_CG_Mesh::~Hd_USTC_CG_Mesh()
+Hd_USTC_CG_HWRT_Mesh::~Hd_USTC_CG_HWRT_Mesh()
 {
 }
 
-HdDirtyBits Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
+HdDirtyBits Hd_USTC_CG_HWRT_Mesh::GetInitialDirtyBitsMask() const
 {
     // The initial dirty bits control what data is available on the first
     // run through _PopulateRtMesh(), so it should list every data item
@@ -71,14 +71,14 @@ HdDirtyBits Hd_USTC_CG_Mesh::GetInitialDirtyBitsMask() const
     return (HdDirtyBits)mask;
 }
 
-void Hd_USTC_CG_Mesh::_CreatePrimvarSampler(
+void Hd_USTC_CG_HWRT_Mesh::_CreatePrimvarSampler(
     const TfToken& name,
     const VtValue& data,
     HdInterpolation interpolation,
     bool refined)
 {
     // Delete the old sampler, if it exists.
-    Hd_USTC_CG_PrototypeContext* ctx = _GetPrototypeContext();
+    Hd_USTC_CG_HWRT_PrototypeContext* ctx = _GetPrototypeContext();
     if (ctx->primvarMap.count(name) > 0) {
         delete ctx->primvarMap[name];
     }
@@ -86,24 +86,24 @@ void Hd_USTC_CG_Mesh::_CreatePrimvarSampler(
 
     // Construct the correct type of sampler from the interpolation mode and
     // geometry mode.
-    Hd_USTC_CG_PrimvarSampler* sampler = nullptr;
+    Hd_USTC_CG_HWRT_PrimvarSampler* sampler = nullptr;
     switch (interpolation) {
-        case HdInterpolationConstant: sampler = new Hd_USTC_CG_ConstantSampler(name, data); break;
+        case HdInterpolationConstant: sampler = new Hd_USTC_CG_HWRT_ConstantSampler(name, data); break;
         case HdInterpolationUniform:
             if (refined) {
-                sampler = new Hd_USTC_CG_UniformSampler(name, data);
+                sampler = new Hd_USTC_CG_HWRT_UniformSampler(name, data);
             }
             else {
-                sampler = new Hd_USTC_CG_UniformSampler(name, data, _trianglePrimitiveParams);
+                sampler = new Hd_USTC_CG_HWRT_UniformSampler(name, data, _trianglePrimitiveParams);
             }
             break;
         case HdInterpolationVertex:
             if (refined) {
-                sampler = new Hd_USTC_CG_SubdivVertexSampler(
+                sampler = new Hd_USTC_CG_HWRT_SubdivVertexSampler(
                     name, data, _rtcMeshScene, _rtcMeshId, &_embreeBufferAllocator);
             }
             else {
-                sampler = new Hd_USTC_CG_TriangleVertexSampler(name, data, _triangulatedIndices);
+                sampler = new Hd_USTC_CG_HWRT_TriangleVertexSampler(name, data, _triangulatedIndices);
             }
             break;
         case HdInterpolationVarying:
@@ -111,24 +111,24 @@ void Hd_USTC_CG_Mesh::_CreatePrimvarSampler(
                 // XXX: Fixme! This isn't strictly correct, as "varying" in
                 // the context of subdiv meshes means bilinear interpolation,
                 // not reconstruction from the subdivision basis.
-                sampler = new Hd_USTC_CG_SubdivVertexSampler(
+                sampler = new Hd_USTC_CG_HWRT_SubdivVertexSampler(
                     name, data, _rtcMeshScene, _rtcMeshId, &_embreeBufferAllocator);
             }
             else {
-                sampler = new Hd_USTC_CG_TriangleVertexSampler(name, data, _triangulatedIndices);
+                sampler = new Hd_USTC_CG_HWRT_TriangleVertexSampler(name, data, _triangulatedIndices);
             }
             break;
         case HdInterpolationFaceVarying:
             if (refined) {
-                // XXX: Fixme! Hd_USTC_CG_ doesn't currently support face-varying
+                // XXX: Fixme! Hd_USTC_CG_HWRT_ doesn't currently support face-varying
                 // primvars on subdivision meshes.
                 TF_WARN(
-                    "Hd_USTC_CG_Mesh doesn't support face-varying primvars"
+                    "Hd_USTC_CG_HWRT_Mesh doesn't support face-varying primvars"
                     " on refined meshes.");
             }
             else {
                 HdMeshUtil meshUtil(&_topology, GetId());
-                sampler = new Hd_USTC_CG_TriangleFaceVaryingSampler(name, data, meshUtil);
+                sampler = new Hd_USTC_CG_HWRT_TriangleFaceVaryingSampler(name, data, meshUtil);
             }
             break;
         default: TF_CODING_ERROR("Unrecognized interpolation mode"); break;
@@ -140,12 +140,12 @@ void Hd_USTC_CG_Mesh::_CreatePrimvarSampler(
     }
 }
 
-HdDirtyBits Hd_USTC_CG_Mesh::_PropagateDirtyBits(HdDirtyBits bits) const
+HdDirtyBits Hd_USTC_CG_HWRT_Mesh::_PropagateDirtyBits(HdDirtyBits bits) const
 {
     return bits;
 }
 
-TfTokenVector Hd_USTC_CG_Mesh::_UpdateComputedPrimvarSources(
+TfTokenVector Hd_USTC_CG_HWRT_Mesh::_UpdateComputedPrimvarSources(
     HdSceneDelegate* sceneDelegate,
     HdDirtyBits dirtyBits)
 {
@@ -195,7 +195,7 @@ TfTokenVector Hd_USTC_CG_Mesh::_UpdateComputedPrimvarSources(
     return compPrimvarNames;
 }
 
-void Hd_USTC_CG_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDirtyBits dirtyBits)
+void Hd_USTC_CG_HWRT_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDirtyBits dirtyBits)
 {
     HD_TRACE_FUNCTION();
     const SdfPath& id = GetId();
@@ -223,7 +223,7 @@ void Hd_USTC_CG_Mesh::_UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDi
     }
 }
 
-RTCGeometry Hd_USTC_CG_Mesh::_CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice device)
+RTCGeometry Hd_USTC_CG_HWRT_Mesh::_CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice device)
 {
     const PxOsdSubdivTags& subdivTags = _topology.GetSubdivTags();
 
@@ -386,7 +386,7 @@ RTCGeometry Hd_USTC_CG_Mesh::_CreateEmbreeSubdivMesh(RTCScene scene, RTCDevice d
     return geom;
 }
 
-RTCGeometry Hd_USTC_CG_Mesh::_CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device)
+RTCGeometry Hd_USTC_CG_HWRT_Mesh::_CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device)
 {
     // Triangulate the input faces.
     HdMeshUtil meshUtil(&_topology, GetId());
@@ -421,7 +421,7 @@ RTCGeometry Hd_USTC_CG_Mesh::_CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice
     return geom;
 }
 
-void Hd_USTC_CG_Mesh::_PopulateRtMesh(
+void Hd_USTC_CG_HWRT_Mesh::_PopulateRtMesh(
     HdSceneDelegate* sceneDelegate,
     RTCScene scene,
     RTCDevice device,
@@ -576,7 +576,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
 
         // Prototype geometry gets tagged with a prototype context, that the
         // ray-hit algorithm can use to look up data.
-        rtcSetGeometryUserData(_geometry, new Hd_USTC_CG_PrototypeContext);
+        rtcSetGeometryUserData(_geometry, new Hd_USTC_CG_HWRT_PrototypeContext);
         _GetPrototypeContext()->rprim = this;
         _GetPrototypeContext()->primitiveParams =
             (_refined ? _trianglePrimitiveParams : VtIntArray());
@@ -659,7 +659,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
     // sure there's no "normals" sampler so the renderpass can use its
     // fallback behavior.
     if (!_smoothNormals && !authoredNormals) {
-        Hd_USTC_CG_PrototypeContext* ctx = _GetPrototypeContext();
+        Hd_USTC_CG_HWRT_PrototypeContext* ctx = _GetPrototypeContext();
         if (ctx->primvarMap.count(HdTokens->normals) > 0) {
             delete ctx->primvarMap[HdTokens->normals];
         }
@@ -721,7 +721,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
             HdRenderIndex& renderIndex = sceneDelegate->GetRenderIndex();
             HdInstancer* instancer = renderIndex.GetInstancer(GetInstancerId());
             transforms =
-                static_cast<Hd_USTC_CG_Instancer*>(instancer)->ComputeInstanceTransforms(GetId());
+                static_cast<Hd_USTC_CG_HWRT_Instancer*>(instancer)->ComputeInstanceTransforms(GetId());
         }
         else {
             // If there's no instancer, add a single instance with transform
@@ -752,7 +752,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
             _rtcInstanceIds[i] = rtcAttachGeometry(scene, geom);
 
             // Create the instance context.
-            auto ctx = new Hd_USTC_CG_InstanceContext;
+            auto ctx = new Hd_USTC_CG_HWRT_InstanceContext;
             ctx->rootScene = _rtcMeshScene;
             ctx->instanceId = i;
             rtcSetGeometryUserData(geom, ctx);
@@ -778,7 +778,7 @@ void Hd_USTC_CG_Mesh::_PopulateRtMesh(
 }
 
 /* static */
-void Hd_USTC_CG_Mesh::_EmbreeCullFaces(const RTCFilterFunctionNArguments* args)
+void Hd_USTC_CG_HWRT_Mesh::_EmbreeCullFaces(const RTCFilterFunctionNArguments* args)
 {
     if (!args) {
         // This breaks the Embree API spec so we shouldn't get here.
@@ -786,12 +786,12 @@ void Hd_USTC_CG_Mesh::_EmbreeCullFaces(const RTCFilterFunctionNArguments* args)
         return;
     }
 
-    auto ctx = static_cast<Hd_USTC_CG_PrototypeContext*>(args->geometryUserPtr);
+    auto ctx = static_cast<Hd_USTC_CG_HWRT_PrototypeContext*>(args->geometryUserPtr);
     if (!ctx || !ctx->rprim) {
         TF_CODING_ERROR("_EmbreeCullFaces got NULL prototype context");
         return;
     }
-    auto mesh = static_cast<Hd_USTC_CG_Mesh*>(ctx->rprim);
+    auto mesh = static_cast<Hd_USTC_CG_HWRT_Mesh*>(ctx->rprim);
     for (unsigned int i = 0; i < args->N; ++i) {
         if (args->valid[i] != -1) {
             continue;
@@ -826,22 +826,22 @@ void Hd_USTC_CG_Mesh::_EmbreeCullFaces(const RTCFilterFunctionNArguments* args)
     }
 }
 
-Hd_USTC_CG_PrototypeContext* Hd_USTC_CG_Mesh::_GetPrototypeContext()
+Hd_USTC_CG_HWRT_PrototypeContext* Hd_USTC_CG_HWRT_Mesh::_GetPrototypeContext()
 {
-    return static_cast<Hd_USTC_CG_PrototypeContext*>(rtcGetGeometryUserData(_geometry));
+    return static_cast<Hd_USTC_CG_HWRT_PrototypeContext*>(rtcGetGeometryUserData(_geometry));
 }
 
-Hd_USTC_CG_InstanceContext* Hd_USTC_CG_Mesh::_GetInstanceContext(RTCScene scene, size_t i)
+Hd_USTC_CG_HWRT_InstanceContext* Hd_USTC_CG_HWRT_Mesh::_GetInstanceContext(RTCScene scene, size_t i)
 {
-    return static_cast<Hd_USTC_CG_InstanceContext*>(
+    return static_cast<Hd_USTC_CG_HWRT_InstanceContext*>(
         rtcGetGeometryUserData(_rtcInstanceGeometries[i]));
 }
 
-void Hd_USTC_CG_Mesh::_InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits)
+void Hd_USTC_CG_HWRT_Mesh::_InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits)
 {
 }
 
-void Hd_USTC_CG_Mesh::_SetMaterialId(HdSceneDelegate* delegate, Hd_USTC_CG_Mesh* rprim)
+void Hd_USTC_CG_HWRT_Mesh::_SetMaterialId(HdSceneDelegate* delegate, Hd_USTC_CG_HWRT_Mesh* rprim)
 {
     SdfPath const& newMaterialId = delegate->GetMaterialId(rprim->GetId());
     if (rprim->GetMaterialId() != newMaterialId) {
@@ -849,7 +849,7 @@ void Hd_USTC_CG_Mesh::_SetMaterialId(HdSceneDelegate* delegate, Hd_USTC_CG_Mesh*
     }
 }
 
-void Hd_USTC_CG_Mesh::Sync(
+void Hd_USTC_CG_HWRT_Mesh::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits,
@@ -866,12 +866,12 @@ void Hd_USTC_CG_Mesh::Sync(
     // faces and back faces.
     // With raytracing, this concept makes less sense, but
     // combining semantics of two HdMeshReprDesc is tricky in the general case.
-    // For now, Hd_USTC_CG_Mesh only respects the first desc; this should be fixed.
+    // For now, Hd_USTC_CG_HWRT_Mesh only respects the first desc; this should be fixed.
     _MeshReprConfig::DescArray descs = _GetReprDesc(reprToken);
     const HdMeshReprDesc& desc = descs[0];
 
     // Pull top-level embree state out of the render param.
-    auto embreeRenderParam = static_cast<Hd_USTC_CG_RenderParam*>(renderParam);
+    auto embreeRenderParam = static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam);
     RTCScene scene = embreeRenderParam->AcquireSceneForEdit();
     RTCDevice device = embreeRenderParam->GetEmbreeDevice();
 
@@ -879,9 +879,9 @@ void Hd_USTC_CG_Mesh::Sync(
     _PopulateRtMesh(sceneDelegate, scene, device, dirtyBits, desc);
 }
 
-void Hd_USTC_CG_Mesh::Finalize(HdRenderParam* renderParam)
+void Hd_USTC_CG_HWRT_Mesh::Finalize(HdRenderParam* renderParam)
 {
-    RTCScene scene = static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+    RTCScene scene = static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam)->AcquireSceneForEdit();
     // Delete any instances of this mesh in the top-level embree scene.
     for (size_t i = 0; i < _rtcInstanceIds.size(); ++i) {
         // Delete the instance context first...

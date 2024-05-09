@@ -12,7 +12,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
-Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
+Hd_USTC_CG_HWRT_Renderer::Hd_USTC_CG_HWRT_Renderer(Hd_USTC_CG_HWRT_RenderParam* render_param)
     : render_param(render_param)
 {
     _rtcDevice = rtcNewDevice(nullptr);
@@ -27,7 +27,7 @@ Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
     render_param->_device = _rtcDevice;
 }
 
-void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
+void Hd_USTC_CG_HWRT_Renderer::Render(HdRenderThread* renderThread)
 {
     _completedSamples.store(0);
 
@@ -38,7 +38,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         // We aren't going to render anything. Just mark all AOVs as converged
         // so that we will stop rendering.
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
-            auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+            auto rb = static_cast<Hd_USTC_CG_HWRT_RenderBuffer*>(_aovBindings[i].renderBuffer);
             rb->SetConverged(true);
         }
         // XXX:validation
@@ -47,7 +47,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     auto integrator = std::make_shared<DirectLightIntegrator>(
-        camera_, static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
+        camera_, static_cast<Hd_USTC_CG_HWRT_RenderBuffer*>(_aovBindings[0].renderBuffer), renderThread);
 
     integrator->rtc_scene = _rtcScene;
     integrator->render_param = render_param;
@@ -55,7 +55,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     integrator->Render();
 }
 
-void Hd_USTC_CG_Renderer::Clear()
+void Hd_USTC_CG_HWRT_Renderer::Clear()
 {
     if (!_ValidateAovBindings()) {
         return;
@@ -66,7 +66,7 @@ void Hd_USTC_CG_Renderer::Clear()
             continue;
         }
 
-        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_HWRT_RenderBuffer*>(_aovBindings[i].renderBuffer);
 
         rb->Map();
         if (_aovNames[i].name == HdAovTokens->color) {
@@ -91,13 +91,13 @@ void Hd_USTC_CG_Renderer::Clear()
     }
 }
 
-void Hd_USTC_CG_Renderer::SetScene(RTCScene scene)
+void Hd_USTC_CG_HWRT_Renderer::SetScene(RTCScene scene)
 {
     _rtcScene = scene;
 }
 
 /* static */
-GfVec4f Hd_USTC_CG_Renderer::_GetClearColor(const VtValue& clearValue)
+GfVec4f Hd_USTC_CG_HWRT_Renderer::_GetClearColor(const VtValue& clearValue)
 {
     HdTupleType type = HdGetValueTupleType(clearValue);
     if (type.count != 1) {
@@ -125,7 +125,7 @@ GfVec4f Hd_USTC_CG_Renderer::_GetClearColor(const VtValue& clearValue)
     }
 }
 
-void Hd_USTC_CG_Renderer::HandleRtcError(void* userPtr, RTCError code, const char* msg)
+void Hd_USTC_CG_HWRT_Renderer::HandleRtcError(void* userPtr, RTCError code, const char* msg)
 {
     // Forward RTC error messages through to hydra logging.
     switch (code) {
@@ -141,7 +141,7 @@ void Hd_USTC_CG_Renderer::HandleRtcError(void* userPtr, RTCError code, const cha
     }
 }
 
-void Hd_USTC_CG_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aovBindings)
+void Hd_USTC_CG_HWRT_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aovBindings)
 {
     _aovBindings = aovBindings;
     _aovNames.resize(_aovBindings.size());
@@ -153,21 +153,21 @@ void Hd_USTC_CG_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aov
     _aovBindingsNeedValidation = true;
 }
 
-void Hd_USTC_CG_Renderer::MarkAovBuffersUnconverged()
+void Hd_USTC_CG_HWRT_Renderer::MarkAovBuffersUnconverged()
 {
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBuffer*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_HWRT_RenderBuffer*>(_aovBindings[i].renderBuffer);
         rb->SetConverged(false);
     }
 }
 
-void Hd_USTC_CG_Renderer::renderTimeUpdateCamera(const HdRenderPassStateSharedPtr& renderPassState)
+void Hd_USTC_CG_HWRT_Renderer::renderTimeUpdateCamera(const HdRenderPassStateSharedPtr& renderPassState)
 {
-    camera_ = static_cast<const Hd_USTC_CG_Camera*>(renderPassState->GetCamera());
+    camera_ = static_cast<const Hd_USTC_CG_HWRT_Camera*>(renderPassState->GetCamera());
     camera_->update(renderPassState);
 }
 
-bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
+bool Hd_USTC_CG_HWRT_Renderer::_ValidateAovBindings()
 {
     if (!_aovBindingsNeedValidation) {
         return _aovBindingsValid;

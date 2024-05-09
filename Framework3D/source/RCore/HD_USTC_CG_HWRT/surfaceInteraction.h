@@ -28,7 +28,7 @@ class SurfaceInteraction {
     GfVec3f WorldToTangent(const GfVec3f& v_world_space) const;
     void flipNormal();
 
-    Hd_USTC_CG_Material* material;
+    Hd_USTC_CG_HWRT_Material* material;
 
    protected:
     GfMatrix3f tangentToWorld;

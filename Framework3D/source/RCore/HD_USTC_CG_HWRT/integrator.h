@@ -11,14 +11,14 @@
 #include "renderBuffer.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_RenderParam;
+class Hd_USTC_CG_HWRT_RenderParam;
 class SurfaceInteraction;
 using namespace pxr;
 class Integrator {
    public:
     Integrator(
-        const Hd_USTC_CG_Camera* camera,
-        Hd_USTC_CG_RenderBuffer* render_buffer,
+        const Hd_USTC_CG_HWRT_Camera* camera,
+        Hd_USTC_CG_HWRT_RenderBuffer* render_buffer,
         HdRenderThread* render_thread)
         : camera_(camera),
           render_thread_(render_thread)
@@ -30,7 +30,7 @@ class Integrator {
     virtual void Render() = 0;
 
     RTCScene rtc_scene;
-    Hd_USTC_CG_RenderParam* render_param;
+    Hd_USTC_CG_HWRT_RenderParam* render_param;
 
    protected:
     // All the following utility functions, it is not best practice for all of them to be here.
@@ -65,15 +65,15 @@ class Integrator {
 
     Color EstimateDirectLight(SurfaceInteraction& si, const std::function<float()>& uniform_float);
 
-    const Hd_USTC_CG_Camera* camera_;
+    const Hd_USTC_CG_HWRT_Camera* camera_;
     HdRenderThread* render_thread_;
 };
 
 class SamplingIntegrator : public Integrator {
    public:
     SamplingIntegrator(
-        const Hd_USTC_CG_Camera* camera,
-        Hd_USTC_CG_RenderBuffer* render_buffer,
+        const Hd_USTC_CG_HWRT_Camera* camera,
+        Hd_USTC_CG_HWRT_RenderBuffer* render_buffer,
         HdRenderThread* render_thread)
         : Integrator(camera, render_buffer, render_thread)
     {

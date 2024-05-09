@@ -139,10 +139,10 @@ bool Integrator::Intersect(const GfRay& ray, SurfaceInteraction& si)
         return false;
     }
 
-    const Hd_USTC_CG_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_InstanceContext*>(
+    const Hd_USTC_CG_HWRT_InstanceContext* instanceContext = static_cast<Hd_USTC_CG_HWRT_InstanceContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(rtc_scene, rayHit.hit.instID[0])));
 
-    const Hd_USTC_CG_PrototypeContext* prototypeContext = static_cast<Hd_USTC_CG_PrototypeContext*>(
+    const Hd_USTC_CG_HWRT_PrototypeContext* prototypeContext = static_cast<Hd_USTC_CG_HWRT_PrototypeContext*>(
         rtcGetGeometryUserData(rtcGetGeometry(instanceContext->rootScene, rayHit.hit.geomID)));
 
     auto hitPos = GfVec3f(
@@ -310,7 +310,7 @@ void SamplingIntegrator::_RenderTiles(
     minY = height - minY;
     maxY = height - maxY;
 
-    const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
+    const unsigned int tileSize = Hd_USTC_CG_HWRT_Config::GetInstance().tileSize;
     const unsigned int numTilesX = (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
 
     // Initialize the RNG for this tile (each tile creates one as
@@ -364,7 +364,7 @@ void SamplingIntegrator::_RenderTiles(
 void SamplingIntegrator::Render()
 {
     camera_->film->Map();
-    const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
+    const unsigned int tileSize = Hd_USTC_CG_HWRT_Config::GetInstance().tileSize;
 
     const unsigned int numTilesX = (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
     const unsigned int numTilesY = (camera_->_dataWindow.GetHeight() + tileSize - 1) / tileSize;

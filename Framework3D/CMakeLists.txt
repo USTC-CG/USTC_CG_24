@@ -10,6 +10,11 @@ project(
   LANGUAGES C CXX
 )
 
+option(USTC_CG_WITH_CUDA OFF)
+if(USTC_CG_WITH_CUDA)
+enable_language(CUDA)
+endif()
+
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 set(BUILD_SHARED_LIBS ON)
 # On mac, the cpp standard should >= 20

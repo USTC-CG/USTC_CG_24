@@ -8,8 +8,8 @@ using namespace pxr;
 class DirectLightIntegrator : public SamplingIntegrator {
    public:
     DirectLightIntegrator(
-        const Hd_USTC_CG_Camera* camera,
-        Hd_USTC_CG_RenderBuffer* render_buffer,
+        const Hd_USTC_CG_HWRT_Camera* camera,
+        Hd_USTC_CG_HWRT_RenderBuffer* render_buffer,
         HdRenderThread* render_thread)
         : SamplingIntegrator(camera, render_buffer, render_thread)
     {

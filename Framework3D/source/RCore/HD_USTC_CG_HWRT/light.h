@@ -11,9 +11,9 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-class Hd_USTC_CG_Light : public HdLight {
+class Hd_USTC_CG_HWRT_Light : public HdLight {
    public:
-    explicit Hd_USTC_CG_Light(const SdfPath& id, const TfToken& lightType)
+    explicit Hd_USTC_CG_HWRT_Light(const SdfPath& id, const TfToken& lightType)
         : HdLight(id),
           _lightType(lightType)
     {
@@ -43,10 +43,10 @@ protected:
     TfHashMap<TfToken, VtValue, TfToken::HashFunctor> _params;
 };
 
-class Hd_USTC_CG_Sphere_Light : public Hd_USTC_CG_Light {
+class Hd_USTC_CG_HWRT_Sphere_Light : public Hd_USTC_CG_HWRT_Light {
    public:
-    Hd_USTC_CG_Sphere_Light(const SdfPath& id, const TfToken& lightType)
-        : Hd_USTC_CG_Light(id, lightType)
+    Hd_USTC_CG_HWRT_Sphere_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_HWRT_Light(id, lightType)
     {
     }
 
@@ -66,10 +66,10 @@ class Hd_USTC_CG_Sphere_Light : public Hd_USTC_CG_Light {
     GfVec3f irradiance;
 };
 
-class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
+class Hd_USTC_CG_HWRT_Dome_Light : public Hd_USTC_CG_HWRT_Light {
    public:
-    Hd_USTC_CG_Dome_Light(const SdfPath& id, const TfToken& lightType)
-        : Hd_USTC_CG_Light(id, lightType)
+    Hd_USTC_CG_HWRT_Dome_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_HWRT_Light(id, lightType)
     {
     }
 
@@ -93,10 +93,10 @@ class Hd_USTC_CG_Dome_Light : public Hd_USTC_CG_Light {
     std::unique_ptr<Texture2D> texture = nullptr;
 };
 
-class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
+class Hd_USTC_CG_HWRT_Distant_Light : public Hd_USTC_CG_HWRT_Light {
    public:
-    Hd_USTC_CG_Distant_Light(const SdfPath& id, const TfToken& lightType)
-        : Hd_USTC_CG_Light(id, lightType)
+    Hd_USTC_CG_HWRT_Distant_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_HWRT_Light(id, lightType)
     {
     }
 
@@ -116,10 +116,10 @@ class Hd_USTC_CG_Distant_Light : public Hd_USTC_CG_Light {
     GfVec3f radiance;
 };
 
-class Hd_USTC_CG_Rect_Light : public Hd_USTC_CG_Light {
+class Hd_USTC_CG_HWRT_Rect_Light : public Hd_USTC_CG_HWRT_Light {
    public:
-    Hd_USTC_CG_Rect_Light(const SdfPath& id, const TfToken& lightType)
-        : Hd_USTC_CG_Light(id, lightType)
+    Hd_USTC_CG_HWRT_Rect_Light(const SdfPath& id, const TfToken& lightType)
+        : Hd_USTC_CG_HWRT_Light(id, lightType)
     {
     }
 

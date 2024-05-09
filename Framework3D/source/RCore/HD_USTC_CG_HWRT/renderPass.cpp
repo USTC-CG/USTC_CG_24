@@ -33,11 +33,11 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-Hd_USTC_CG_RenderPass::Hd_USTC_CG_RenderPass(
+Hd_USTC_CG_HWRT_RenderPass::Hd_USTC_CG_HWRT_RenderPass(
     HdRenderIndex* index,
     const HdRprimCollection& collection,
     HdRenderThread* renderThread,
-    Hd_USTC_CG_Renderer* renderer,
+    Hd_USTC_CG_HWRT_Renderer* renderer,
     std::atomic<int>* sceneVersion)
     : HdRenderPass(index, collection),
       _renderThread(renderThread),
@@ -48,7 +48,7 @@ Hd_USTC_CG_RenderPass::Hd_USTC_CG_RenderPass(
 {
 }
 
-Hd_USTC_CG_RenderPass::~Hd_USTC_CG_RenderPass()
+Hd_USTC_CG_HWRT_RenderPass::~Hd_USTC_CG_HWRT_RenderPass()
 {
     std::cout << "Destroying renderPass" << std::endl;
 }
@@ -71,7 +71,7 @@ static GfRect2i _GetDataWindow(
 
 
 void
-Hd_USTC_CG_RenderPass::_Execute(
+Hd_USTC_CG_HWRT_RenderPass::_Execute(
     const HdRenderPassStateSharedPtr& renderPassState,
     const TfTokenVector& renderTags)
 {
@@ -141,7 +141,7 @@ Hd_USTC_CG_RenderPass::_Execute(
     }
 }
 
-bool Hd_USTC_CG_RenderPass::IsConverged() const
+bool Hd_USTC_CG_HWRT_RenderPass::IsConverged() const
 {
     // Otherwise, check the convergence of all attachments.
     for (size_t i = 0; i < _aovBindings.size(); ++i)

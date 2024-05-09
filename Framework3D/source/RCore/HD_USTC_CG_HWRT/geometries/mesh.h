@@ -34,7 +34,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-/// \class Hd_USTC_CG_Mesh
+/// \class Hd_USTC_CG_HWRT_Mesh
 ///
 /// This class is an example of a Hydra Rprim, or renderable object, and it
 /// gets created on a call to HdRenderIndex::InsertRprim() with a type of
@@ -53,16 +53,16 @@ using namespace pxr;
 /// can do the heavy work of releasing state (such as handles into the top-level
 /// scene), so that object population and existence aren't tied to each other.
 ///
-class Hd_USTC_CG_Mesh final : public HdMesh {
+class Hd_USTC_CG_HWRT_Mesh final : public HdMesh {
    public:
-    HF_MALLOC_TAG_NEW("new Hd_USTC_CG_Mesh");
+    HF_MALLOC_TAG_NEW("new Hd_USTC_CG_HWRT_Mesh");
 
-    /// Hd_USTC_CG_Mesh constructor.
+    /// Hd_USTC_CG_HWRT_Mesh constructor.
     ///   \param id The scene-graph path to this mesh.
-    Hd_USTC_CG_Mesh(const SdfPath& id);
+    Hd_USTC_CG_HWRT_Mesh(const SdfPath& id);
 
-    /// Hd_USTC_CG_Mesh destructor.
-    ~Hd_USTC_CG_Mesh() override;
+    /// Hd_USTC_CG_HWRT_Mesh destructor.
+    ~Hd_USTC_CG_HWRT_Mesh() override;
 
     /// Inform the scene graph which state needs to be downloaded in the
     /// first Sync() call: in this case, topology and points data to build
@@ -98,7 +98,7 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     // See HdRprim::InitRepr()
     void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
 
-    void _SetMaterialId(HdSceneDelegate* scene_delegate, Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
+    void _SetMaterialId(HdSceneDelegate* scene_delegate, Hd_USTC_CG_HWRT_Mesh* hd_ustc_cg_mesh);
 
     // This callback from Rprim gives the prim an opportunity to set
     // additional dirty bits based on those already set.  This is done
@@ -119,8 +119,8 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     RTCGeometry _CreateEmbreeTriangleMesh(RTCScene scene, RTCDevice device);
 
     // This class does not support copying.
-    Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;
-    Hd_USTC_CG_Mesh& operator=(const Hd_USTC_CG_Mesh&) = delete;
+    Hd_USTC_CG_HWRT_Mesh(const Hd_USTC_CG_HWRT_Mesh&) = delete;
+    Hd_USTC_CG_HWRT_Mesh& operator=(const Hd_USTC_CG_HWRT_Mesh&) = delete;
 
    private:
     void _PopulateRtMesh(
@@ -129,8 +129,8 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
         RTCDevice device,
         HdDirtyBits* dirtyBits,
         const HdMeshReprDesc& desc);
-    Hd_USTC_CG_PrototypeContext* _GetPrototypeContext();
-    Hd_USTC_CG_InstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
+    Hd_USTC_CG_HWRT_PrototypeContext* _GetPrototypeContext();
+    Hd_USTC_CG_HWRT_InstanceContext* _GetInstanceContext(RTCScene scene, size_t i);
 
     // Cached scene data. VtArrays are reference counted, so as long as we
     // only call const accessors keeping them around doesn't incur a buffer
@@ -182,7 +182,7 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
     // An embree intersection filter callback, for doing backface culling.
     static void _EmbreeCullFaces(const RTCFilterFunctionNArguments* args);
 
-    Hd_USTC_CG_RTCBufferAllocator _embreeBufferAllocator;
+    Hd_USTC_CG_HWRT_RTCBufferAllocator _embreeBufferAllocator;
 
     // A local cache of primvar scene data. "data" is a copy-on-write handle to
     // the actual primvar buffer, and "interpolation" is the interpolation mode

@@ -31,20 +31,20 @@
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_Light;
-class Hd_USTC_CG_Material;
+class Hd_USTC_CG_HWRT_Light;
+class Hd_USTC_CG_HWRT_Material;
 using namespace pxr;
 
 ///
-/// \class Hd_USTC_CG_RenderParam
+/// \class Hd_USTC_CG_HWRT_RenderParam
 ///
 /// The render delegate can create an object of type HdRenderParam, to pass
-/// to each prim during Sync(). Hd_USTC_CG_ uses this class to pass top-level
+/// to each prim during Sync(). Hd_USTC_CG_HWRT_ uses this class to pass top-level
 /// embree state around.
 ///
-class Hd_USTC_CG_RenderParam final : public HdRenderParam {
+class Hd_USTC_CG_HWRT_RenderParam final : public HdRenderParam {
    public:
-    Hd_USTC_CG_RenderParam(HdRenderThread *renderThread, std::atomic<int> *sceneVersion)
+    Hd_USTC_CG_HWRT_RenderParam(HdRenderThread *renderThread, std::atomic<int> *sceneVersion)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion)
     {
@@ -63,9 +63,9 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
         return _device;
     }
 
-    friend class Hd_USTC_CG_Renderer;
-    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
-    pxr::VtArray<Hd_USTC_CG_Light *> *lights = nullptr;
+    friend class Hd_USTC_CG_HWRT_Renderer;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_HWRT_Material *, TfHash> *materials = nullptr;
+    pxr::VtArray<Hd_USTC_CG_HWRT_Light *> *lights = nullptr;
 
    private:
     /// A handle to the top-level embree scene.

@@ -2,7 +2,6 @@ set(PXR_PREFIX pxr/imaging)
 set(PXR_PACKAGE HD_USTC_CG_HWRT)
 
 message("hd_USTC_CG at ${CMAKE_CURRENT_LIST_DIR}")
-
 pxr_plugin(${PXR_PACKAGE}
    LIBRARIES
         plug

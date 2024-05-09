@@ -32,10 +32,10 @@
 PXR_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 
-void HD_USTC_CG_API foo();
+void HD_USTC_CG_HWRT_API foo();
 
 ///
-/// \class Hd_USTC_CG_RendererPlugin
+/// \class Hd_USTC_CG_HWRT_RendererPlugin
 ///
 /// A registered child of HdRendererPlugin, this is the class that gets
 /// loaded when a Hydra application asks to draw with a certain renderer.
@@ -45,16 +45,16 @@ void HD_USTC_CG_API foo();
 /// prims (which translate scene data into drawable representations) and Hydra
 /// renderpasses (which draw the scene to the framebuffer).
 ///
-class HD_USTC_CG_API Hd_USTC_CG_RendererPlugin final : public HdRendererPlugin
+class HD_USTC_CG_HWRT_API Hd_USTC_CG_HWRT_RendererPlugin final : public HdRendererPlugin
 {
 public:
-    Hd_USTC_CG_RendererPlugin() = default;
-    virtual ~Hd_USTC_CG_RendererPlugin() = default;
+    Hd_USTC_CG_HWRT_RendererPlugin() = default;
+    virtual ~Hd_USTC_CG_HWRT_RendererPlugin() = default;
 
-    /// Construct a new render delegate of type Hd_USTC_CG_RenderDelegate.
+    /// Construct a new render delegate of type Hd_USTC_CG_HWRT_RenderDelegate.
     virtual HdRenderDelegate *CreateRenderDelegate() override;
 
-    /// Construct a new render delegate of type Hd_USTC_CG_RenderDelegate.
+    /// Construct a new render delegate of type Hd_USTC_CG_HWRT_RenderDelegate.
     virtual HdRenderDelegate *CreateRenderDelegate(
         HdRenderSettingsMap const& settingsMap) override;
 
@@ -68,8 +68,8 @@ public:
 
 private:
     // This class does not support copying.
-    Hd_USTC_CG_RendererPlugin(const Hd_USTC_CG_RendererPlugin&) = delete;
-    Hd_USTC_CG_RendererPlugin &operator =(const Hd_USTC_CG_RendererPlugin&) = delete;
+    Hd_USTC_CG_HWRT_RendererPlugin(const Hd_USTC_CG_HWRT_RendererPlugin&) = delete;
+    Hd_USTC_CG_HWRT_RendererPlugin &operator =(const Hd_USTC_CG_HWRT_RendererPlugin&) = delete;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

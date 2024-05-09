@@ -32,13 +32,13 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-/// \class Hd_USTC_CG_RenderPass
+/// \class Hd_USTC_CG_HWRT_RenderPass
 ///
 /// HdRenderPass represents a single render iteration, rendering a view of the
 /// scene (the HdRprimCollection) for a specific viewer (the camera/viewport
 /// parameters in HdRenderPassState) to the current draw target.
 ///
-class Hd_USTC_CG_RenderPass final : public HdRenderPass
+class Hd_USTC_CG_HWRT_RenderPass final : public HdRenderPass
 {
 public:
     /// Renderpass constructor.
@@ -46,14 +46,14 @@ public:
     ///   \param collection The initial rprim collection for this renderpass.
     ///   \param renderThread A handle to the global render thread.
     ///   \param renderer A handle to the global renderer.
-    Hd_USTC_CG_RenderPass(
+    Hd_USTC_CG_HWRT_RenderPass(
         HdRenderIndex* index,
         const HdRprimCollection& collection,
         HdRenderThread* renderThread,
-        Hd_USTC_CG_Renderer* renderer,
+        Hd_USTC_CG_HWRT_Renderer* renderer,
         std::atomic<int>* sceneVersion);
     /// Renderpass destructor.
-    ~Hd_USTC_CG_RenderPass() override;
+    ~Hd_USTC_CG_HWRT_RenderPass() override;
 
 protected:
     /// Draw the scene with the bound renderpass state.
@@ -72,7 +72,7 @@ protected:
     HdRenderPassAovBindingVector _aovBindings;
     // A handle to the render thread.
     HdRenderThread* _renderThread;
-    Hd_USTC_CG_Renderer* _renderer;
+    Hd_USTC_CG_HWRT_Renderer* _renderer;
     std::atomic<int>* _sceneVersion;
     int _lastSceneVersion;
     int _lastSettingsVersion;

@@ -21,7 +21,7 @@ using namespace pxr;
 // Specifically, we support only UsdPreviewSurface, and each input can be either value, or a texture
 // connected to a primvar reader.
 
-HdMaterialNode2 Hd_USTC_CG_Material::get_input_connection(
+HdMaterialNode2 Hd_USTC_CG_HWRT_Material::get_input_connection(
     HdMaterialNetwork2 surfaceNetwork,
     std::map<TfToken, std::vector<HdMaterialConnection2>>::value_type& input_connection)
 {
@@ -31,7 +31,7 @@ HdMaterialNode2 Hd_USTC_CG_Material::get_input_connection(
     return upstream;
 }
 
-Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(GfVec2f texcoord)
+Hd_USTC_CG_HWRT_Material::MaterialRecord Hd_USTC_CG_HWRT_Material::SampleMaterialRecord(GfVec2f texcoord)
 {
     MaterialRecord ret;
     if (diffuseColor.image) {
@@ -69,7 +69,7 @@ Hd_USTC_CG_Material::MaterialRecord Hd_USTC_CG_Material::SampleMaterialRecord(Gf
     return ret;
 }
 
-void Hd_USTC_CG_Material::TryLoadTexture(
+void Hd_USTC_CG_HWRT_Material::TryLoadTexture(
     const char* name,
     InputDescriptor& descriptor,
     HdMaterialNode2& usd_preview_surface)
@@ -109,7 +109,7 @@ void Hd_USTC_CG_Material::TryLoadTexture(
     }
 }
 
-void Hd_USTC_CG_Material::TryLoadParameter(
+void Hd_USTC_CG_HWRT_Material::TryLoadParameter(
     const char* name,
     InputDescriptor& descriptor,
     HdMaterialNode2& usd_preview_surface)
@@ -132,7 +132,7 @@ void Hd_USTC_CG_Material::TryLoadParameter(
 
 #define NAME_IT(INPUT) INPUT.input_name = TfToken(#INPUT);
 
-Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
+Hd_USTC_CG_HWRT_Material::Hd_USTC_CG_HWRT_Material(const SdfPath& id) : HdMaterial(id)
 {
     logging("Creating material " + id.GetString());
     diffuseColor.value = VtValue(GfVec3f(0.8f));
@@ -145,12 +145,12 @@ Hd_USTC_CG_Material::Hd_USTC_CG_Material(const SdfPath& id) : HdMaterial(id)
     MACRO_MAP(NAME_IT, INPUT_LIST);
 }
 
-void Hd_USTC_CG_Material::Sync(
+void Hd_USTC_CG_HWRT_Material::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+    static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam)->AcquireSceneForEdit();
 
     VtValue vtMat = sceneDelegate->GetMaterialResource(GetId());
     if (vtMat.IsHolding<HdMaterialNetworkMap>()) {
@@ -177,7 +177,7 @@ void Hd_USTC_CG_Material::Sync(
     *dirtyBits = Clean;
 }
 
-HdDirtyBits Hd_USTC_CG_Material::GetInitialDirtyBitsMask() const
+HdDirtyBits Hd_USTC_CG_HWRT_Material::GetInitialDirtyBitsMask() const
 {
     return AllDirty;
 }
@@ -187,20 +187,20 @@ HdDirtyBits Hd_USTC_CG_Material::GetInitialDirtyBitsMask() const
         return INPUT.uv_primvar_name;       \
     }
 
-TfToken Hd_USTC_CG_Material::requireTexcoordName()
+TfToken Hd_USTC_CG_HWRT_Material::requireTexcoordName()
 {
     MACRO_MAP(requireTexCoord, INPUT_LIST)
     return {};
 }
 
-void Hd_USTC_CG_Material::Finalize(HdRenderParam* renderParam)
+void Hd_USTC_CG_HWRT_Material::Finalize(HdRenderParam* renderParam)
 {
-    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+    static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam)->AcquireSceneForEdit();
 
     HdMaterial::Finalize(renderParam);
 }
 
-Color Hd_USTC_CG_Material::Sample(
+Color Hd_USTC_CG_HWRT_Material::Sample(
     const GfVec3f& wo,
     GfVec3f& wi,
     float& pdf,
@@ -213,7 +213,7 @@ Color Hd_USTC_CG_Material::Sample(
     return Eval(wi, wo, texcoord);
 }
 
-Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
+Color Hd_USTC_CG_HWRT_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     auto record = SampleMaterialRecord(texcoord);
 
@@ -224,7 +224,7 @@ Color Hd_USTC_CG_Material::Eval(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
     return result;
 }
 
-float Hd_USTC_CG_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
+float Hd_USTC_CG_HWRT_Material::Pdf(GfVec3f wi, GfVec3f wo, GfVec2f texcoord)
 {
     return 0;
 }

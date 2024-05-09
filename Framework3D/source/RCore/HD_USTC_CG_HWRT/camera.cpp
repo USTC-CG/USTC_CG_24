@@ -3,7 +3,7 @@
 #include "config.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-void Hd_USTC_CG_Camera::Sync(
+void Hd_USTC_CG_HWRT_Camera::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -17,7 +17,7 @@ void Hd_USTC_CG_Camera::Sync(
     _viewMatrix = _inverseViewMatrix.GetInverse();
 }
 
-GfRay Hd_USTC_CG_Camera::generateRay(
+GfRay Hd_USTC_CG_HWRT_Camera::generateRay(
     GfVec2f pixel_center,
     const std::function<float()>& uniform_float) const
 {
@@ -29,7 +29,7 @@ GfRay Hd_USTC_CG_Camera::generateRay(
     float x = pixel_center[0];
     float y = pixel_center[1];
     GfVec2f jitter(0.0f, 0.0f);
-    if (Hd_USTC_CG_Config::GetInstance().jitterCamera) {
+    if (Hd_USTC_CG_HWRT_Config::GetInstance().jitterCamera) {
         jitter = GfVec2f(uniform_float() - 0.5, uniform_float() - 0.5);
     }
 
@@ -78,7 +78,7 @@ static GfRect2i _GetDataWindow(const HdRenderPassStateSharedPtr& renderPassState
     }
 }
 
-void Hd_USTC_CG_Camera::update(const HdRenderPassStateSharedPtr& renderPassState) const
+void Hd_USTC_CG_HWRT_Camera::update(const HdRenderPassStateSharedPtr& renderPassState) const
 {
     _projMatrix = renderPassState->GetProjectionMatrix();
     _inverseProjMatrix = _projMatrix.GetInverse();
@@ -87,7 +87,7 @@ void Hd_USTC_CG_Camera::update(const HdRenderPassStateSharedPtr& renderPassState
     _dataWindow = _GetDataWindow(renderPassState);
 }
 
-void Hd_USTC_CG_Camera::attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const
+void Hd_USTC_CG_HWRT_Camera::attachFilm(Hd_USTC_CG_HWRT_RenderBuffer* new_film) const
 {
     film = new_film;
 }

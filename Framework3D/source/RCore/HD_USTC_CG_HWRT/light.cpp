@@ -17,12 +17,12 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-void Hd_USTC_CG_Light::Sync(
+void Hd_USTC_CG_HWRT_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+    static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam)->AcquireSceneForEdit();
 
     TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
@@ -73,7 +73,7 @@ void Hd_USTC_CG_Light::Sync(
     *dirtyBits = Clean;
 }
 
-HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
+HdDirtyBits Hd_USTC_CG_HWRT_Light::GetInitialDirtyBitsMask() const
 {
     if (_lightType == HdPrimTypeTokens->simpleLight ||
         _lightType == HdPrimTypeTokens->distantLight) {
@@ -84,26 +84,26 @@ HdDirtyBits Hd_USTC_CG_Light::GetInitialDirtyBitsMask() const
     }
 }
 
-bool Hd_USTC_CG_Light::IsDomeLight()
+bool Hd_USTC_CG_HWRT_Light::IsDomeLight()
 {
     return _lightType == HdPrimTypeTokens->domeLight;
 }
 
-void Hd_USTC_CG_Light::Finalize(HdRenderParam* renderParam)
+void Hd_USTC_CG_HWRT_Light::Finalize(HdRenderParam* renderParam)
 {
-    static_cast<Hd_USTC_CG_RenderParam*>(renderParam)->AcquireSceneForEdit();
+    static_cast<Hd_USTC_CG_HWRT_RenderParam*>(renderParam)->AcquireSceneForEdit();
 
     HdLight::Finalize(renderParam);
 }
 
-VtValue Hd_USTC_CG_Light::Get(const TfToken& token) const
+VtValue Hd_USTC_CG_HWRT_Light::Get(const TfToken& token) const
 {
     VtValue val;
     TfMapLookup(_params, token, &val);
     return val;
 }
 
-Color Hd_USTC_CG_Sphere_Light::Sample(
+Color Hd_USTC_CG_HWRT_Sphere_Light::Sample(
     const GfVec3f& pos,
     GfVec3f& dir,
     GfVec3f& sampled_light_pos,
@@ -142,7 +142,7 @@ Color Hd_USTC_CG_Sphere_Light::Sample(
     return irradiance / M_PI;
 }
 
-Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
+Color Hd_USTC_CG_HWRT_Sphere_Light::Intersect(const GfRay& ray, float& depth)
 {
     double distance;
     if (ray.Intersect(GfRange3d{ position - GfVec3d{ radius }, position + GfVec3d{ radius } })) {
@@ -156,12 +156,12 @@ Color Hd_USTC_CG_Sphere_Light::Intersect(const GfRay& ray, float& depth)
     return { 0, 0, 0 };
 }
 
-void Hd_USTC_CG_Sphere_Light::Sync(
+void Hd_USTC_CG_HWRT_Sphere_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+    Hd_USTC_CG_HWRT_Light::Sync(sceneDelegate, renderParam, dirtyBits);
     auto id = GetId();
 
     radius = sceneDelegate->GetLightParamValue(id, HdLightTokens->radius).Get<float>();
@@ -182,7 +182,7 @@ void Hd_USTC_CG_Sphere_Light::Sync(
     irradiance = power / area;
 }
 
-Color Hd_USTC_CG_Dome_Light::Sample(
+Color Hd_USTC_CG_HWRT_Dome_Light::Sample(
     const GfVec3f& pos,
     GfVec3f& dir,
     GfVec3f& sampled_light_pos,
@@ -195,13 +195,13 @@ Color Hd_USTC_CG_Dome_Light::Sample(
     return Le(dir);
 }
 
-Color Hd_USTC_CG_Dome_Light::Intersect(const GfRay& ray, float& depth)
+Color Hd_USTC_CG_HWRT_Dome_Light::Intersect(const GfRay& ray, float& depth)
 {
     depth = 10000000.f;
     return Le(GfVec3f(ray.GetDirection()).GetNormalized());
 }
 
-void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
+void Hd_USTC_CG_HWRT_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate* sceneDelegate)
 {
     const VtValue v = sceneDelegate->GetLightParamValue(id, HdLightTokens->textureFile);
     if (!v.IsEmpty()) {
@@ -222,18 +222,18 @@ void Hd_USTC_CG_Dome_Light::_PrepareDomeLight(SdfPath const& id, HdSceneDelegate
     radiance = sceneDelegate->GetLightParamValue(id, HdLightTokens->color).Get<GfVec3f>() * diffuse;
 }
 
-void Hd_USTC_CG_Dome_Light::Sync(
+void Hd_USTC_CG_HWRT_Dome_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+    Hd_USTC_CG_HWRT_Light::Sync(sceneDelegate, renderParam, dirtyBits);
 
     auto id = GetId();
     _PrepareDomeLight(id, sceneDelegate);
 }
 
-Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
+Color Hd_USTC_CG_HWRT_Dome_Light::Le(const GfVec3f& dir)
 {
     if (texture != nullptr) {
         auto uv = GfVec2f((M_PI + std::atan2(dir[1], dir[0])) / 2.0 / M_PI, 0.5 - dir[2] * 0.5);
@@ -249,20 +249,20 @@ Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
     }
 }
 
-void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)
+void Hd_USTC_CG_HWRT_Dome_Light::Finalize(HdRenderParam* renderParam)
 {
     texture = nullptr;
-    Hd_USTC_CG_Light::Finalize(renderParam);
+    Hd_USTC_CG_HWRT_Light::Finalize(renderParam);
 }
 
 // HW7_TODO: write the following, you should refer to the sphere light.
 
-void Hd_USTC_CG_Distant_Light::Sync(
+void Hd_USTC_CG_HWRT_Distant_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+    Hd_USTC_CG_HWRT_Light::Sync(sceneDelegate, renderParam, dirtyBits);
     auto id = GetId();
     angle = sceneDelegate->GetLightParamValue(id, HdLightTokens->angle).Get<float>();
     angle = std::clamp(angle, 0.03f, 89.9f) * M_PI / 180.0f;
@@ -276,7 +276,7 @@ void Hd_USTC_CG_Distant_Light::Sync(
     direction = transform.TransformDir(GfVec3f(0, 0, -1)).GetNormalized();
 }
 
-Color Hd_USTC_CG_Distant_Light::Sample(
+Color Hd_USTC_CG_HWRT_Distant_Light::Sample(
     const GfVec3f& pos,
     GfVec3f& dir,
     GfVec3f& sampled_light_pos,
@@ -298,7 +298,7 @@ Color Hd_USTC_CG_Distant_Light::Sample(
     return radiance;
 }
 
-Color Hd_USTC_CG_Distant_Light::Intersect(const GfRay& ray, float& depth)
+Color Hd_USTC_CG_HWRT_Distant_Light::Intersect(const GfRay& ray, float& depth)
 {
     depth = 10000000.f;
 
@@ -308,7 +308,7 @@ Color Hd_USTC_CG_Distant_Light::Intersect(const GfRay& ray, float& depth)
     return Color(0);
 }
 
-Color Hd_USTC_CG_Rect_Light::Sample(
+Color Hd_USTC_CG_HWRT_Rect_Light::Sample(
     const GfVec3f& pos,
     GfVec3f& dir,
     GfVec3f& sampled_light_pos,
@@ -318,17 +318,17 @@ Color Hd_USTC_CG_Rect_Light::Sample(
     return {};
 }
 
-Color Hd_USTC_CG_Rect_Light::Intersect(const GfRay& ray, float& depth)
+Color Hd_USTC_CG_HWRT_Rect_Light::Intersect(const GfRay& ray, float& depth)
 {
     return {};
 }
 
-void Hd_USTC_CG_Rect_Light::Sync(
+void Hd_USTC_CG_HWRT_Rect_Light::Sync(
     HdSceneDelegate* sceneDelegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
 {
-    Hd_USTC_CG_Light::Sync(sceneDelegate, renderParam, dirtyBits);
+    Hd_USTC_CG_HWRT_Light::Sync(sceneDelegate, renderParam, dirtyBits);
 
     auto transform = Get(HdTokens->transform).GetWithDefault<GfMatrix4d>();
 

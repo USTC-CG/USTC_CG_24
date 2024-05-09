@@ -3,12 +3,12 @@
         {
             "Info": {
                 "Types": {
-                    "Hd_USTC_CG_RendererPlugin": {
+                    "Hd_USTC_CG_HWRT_RendererPlugin": {
                         "bases": [
                             "HdRendererPlugin"
                         ],
-                        "displayName": "USTC_CG_HWRT",
-                        "priority": 2
+                        "displayName": "USTC_CG HWRT",
+                        "priority": 3
                     }
                 }
             },

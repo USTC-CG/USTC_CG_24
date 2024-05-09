@@ -28,10 +28,10 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-// Hd_USTC_CG_RTCBufferAllocator
+// Hd_USTC_CG_HWRT_RTCBufferAllocator
 
 int
-Hd_USTC_CG_RTCBufferAllocator::Allocate()
+Hd_USTC_CG_HWRT_RTCBufferAllocator::Allocate()
 {
     for (size_t i = 0; i < _bitset.size(); ++i)
     {
@@ -45,14 +45,14 @@ Hd_USTC_CG_RTCBufferAllocator::Allocate()
 }
 
 void
-Hd_USTC_CG_RTCBufferAllocator::Free(int bufferIndex)
+Hd_USTC_CG_HWRT_RTCBufferAllocator::Free(int bufferIndex)
 {
     _bitset.reset(bufferIndex);
 }
 
 
 unsigned int
-Hd_USTC_CG_RTCBufferAllocator::NumBuffers()
+Hd_USTC_CG_HWRT_RTCBufferAllocator::NumBuffers()
 {
     // Technically this may overcount, since a buffer may have been freed
     // but we don't move back to fill the slot, however it will be filled
@@ -69,10 +69,10 @@ Hd_USTC_CG_RTCBufferAllocator::NumBuffers()
     return 0;
 }
 
-// Hd_USTC_CG_ConstantSampler
+// Hd_USTC_CG_HWRT_ConstantSampler
 
 bool
-Hd_USTC_CG_ConstantSampler::Sample(
+Hd_USTC_CG_HWRT_ConstantSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -82,10 +82,10 @@ Hd_USTC_CG_ConstantSampler::Sample(
     return _sampler.Sample(0, value, dataType);
 }
 
-// Hd_USTC_CG_UniformSampler
+// Hd_USTC_CG_HWRT_UniformSampler
 
 bool
-Hd_USTC_CG_UniformSampler::Sample(
+Hd_USTC_CG_HWRT_UniformSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -107,10 +107,10 @@ Hd_USTC_CG_UniformSampler::Sample(
         dataType);
 }
 
-// Hd_USTC_CG_TriangleVertexSampler
+// Hd_USTC_CG_HWRT_TriangleVertexSampler
 
 bool
-Hd_USTC_CG_TriangleVertexSampler::Sample(
+Hd_USTC_CG_HWRT_TriangleVertexSampler::Sample(
     unsigned int element,
     float u,
     float v,
@@ -121,7 +121,7 @@ Hd_USTC_CG_TriangleVertexSampler::Sample(
     {
         return false;
     }
-    Hd_USTC_CG_TypeHelper::PrimvarTypeContainer corners[3];
+    Hd_USTC_CG_HWRT_TypeHelper::PrimvarTypeContainer corners[3];
     if (!_sampler.Sample(_indices[element][0], &corners[0], dataType) ||
         !_sampler.Sample(_indices[element][1], &corners[1], dataType) ||
         !_sampler.Sample(_indices[element][2], &corners[2], dataType))
@@ -137,17 +137,17 @@ Hd_USTC_CG_TriangleVertexSampler::Sample(
     return _Interpolate(value, samples, weights, 3, dataType);
 }
 
-// Hd_USTC_CG_TriangleFaceVaryingSampler
+// Hd_USTC_CG_HWRT_TriangleFaceVaryingSampler
 
 bool
-Hd_USTC_CG_TriangleFaceVaryingSampler::Sample(
+Hd_USTC_CG_HWRT_TriangleFaceVaryingSampler::Sample(
     unsigned int element,
     float u,
     float v,
     void* value,
     HdTupleType dataType) const
 {
-    Hd_USTC_CG_TypeHelper::PrimvarTypeContainer corners[3];
+    Hd_USTC_CG_HWRT_TypeHelper::PrimvarTypeContainer corners[3];
     if (!_sampler.Sample(element * 3 + 0, &corners[0], dataType) ||
         !_sampler.Sample(element * 3 + 1, &corners[1], dataType) ||
         !_sampler.Sample(element * 3 + 2, &corners[2], dataType))
@@ -165,7 +165,7 @@ Hd_USTC_CG_TriangleFaceVaryingSampler::Sample(
 
 /* static */
 VtValue
-Hd_USTC_CG_TriangleFaceVaryingSampler::_Triangulate(
+Hd_USTC_CG_HWRT_TriangleFaceVaryingSampler::_Triangulate(
     const TfToken& name,
     const VtValue& value,
     HdMeshUtil& meshUtil)
@@ -186,14 +186,14 @@ Hd_USTC_CG_TriangleFaceVaryingSampler::_Triangulate(
     return triangulated;
 }
 
-// Hd_USTC_CG_SubdivVertexSampler
+// Hd_USTC_CG_HWRT_SubdivVertexSampler
 
-Hd_USTC_CG_SubdivVertexSampler::Hd_USTC_CG_SubdivVertexSampler(
+Hd_USTC_CG_HWRT_SubdivVertexSampler::Hd_USTC_CG_HWRT_SubdivVertexSampler(
     const TfToken& name,
     const VtValue& value,
     RTCScene meshScene,
     unsigned meshId,
-    Hd_USTC_CG_RTCBufferAllocator* allocator)
+    Hd_USTC_CG_HWRT_RTCBufferAllocator* allocator)
     : _embreeBufferId(-1)
       , _buffer(name, value)
       , _meshScene(meshScene)
@@ -234,7 +234,7 @@ Hd_USTC_CG_SubdivVertexSampler::Hd_USTC_CG_SubdivVertexSampler(
         TF_WARN(
             "Embree subdivision meshes only support %d primvars"
             " in vertex interpolation mode, excceded for rprim ",
-            Hd_USTC_CG_RTCBufferAllocator::PXR_MAX_USER_VERTEX_BUFFERS);
+            Hd_USTC_CG_HWRT_RTCBufferAllocator::PXR_MAX_USER_VERTEX_BUFFERS);
         return;
     }
 
@@ -267,7 +267,7 @@ Hd_USTC_CG_SubdivVertexSampler::Hd_USTC_CG_SubdivVertexSampler(
         _buffer.GetNumElements() /* size_t itemCount */);
 }
 
-Hd_USTC_CG_SubdivVertexSampler::~Hd_USTC_CG_SubdivVertexSampler()
+Hd_USTC_CG_HWRT_SubdivVertexSampler::~Hd_USTC_CG_HWRT_SubdivVertexSampler()
 {
     if (_embreeBufferId != -1)
     {
@@ -276,7 +276,7 @@ Hd_USTC_CG_SubdivVertexSampler::~Hd_USTC_CG_SubdivVertexSampler()
 }
 
 bool
-Hd_USTC_CG_SubdivVertexSampler::Sample(
+Hd_USTC_CG_HWRT_SubdivVertexSampler::Sample(
     unsigned int element,
     float u,
     float v,

@@ -32,20 +32,20 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-#define HDEMBREE_RENDER_SETTINGS_TOKENS \
+#define HDHWRT_RENDER_SETTINGS_TOKENS \
     (enableAmbientOcclusion)(enableSceneColors)(ambientOcclusionSamples)(renderMode)
 // Also: HdRenderSettingsTokens->convergedSamplesPerPixel
 
-TF_DECLARE_PUBLIC_TOKENS(Hd_USTC_CG_RenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+TF_DECLARE_PUBLIC_TOKENS(Hd_USTC_CG_HWRT_RenderSettingsTokens, HDHWRT_RENDER_SETTINGS_TOKENS);
 
-class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
+class Hd_USTC_CG_HWRT_RenderDelegate final : public HdRenderDelegate {
    public:
     /// Render delegate constructor.
-    Hd_USTC_CG_RenderDelegate();
+    Hd_USTC_CG_HWRT_RenderDelegate();
     /// Render delegate constructor.
-    Hd_USTC_CG_RenderDelegate(const HdRenderSettingsMap& settingsMap);
+    Hd_USTC_CG_HWRT_RenderDelegate(const HdRenderSettingsMap& settingsMap);
     /// Render delegate destructor.
-    ~Hd_USTC_CG_RenderDelegate() override;
+    ~Hd_USTC_CG_HWRT_RenderDelegate() override;
 
     /// Supported types
     const TfTokenVector& GetSupportedRprimTypes() const override;
@@ -86,19 +86,19 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     void _Initialize();
 
     std::atomic<int> _sceneVersion;
-    std::shared_ptr<Hd_USTC_CG_RenderParam> _renderParam;
+    std::shared_ptr<Hd_USTC_CG_HWRT_RenderParam> _renderParam;
     HdRenderThread _renderThread;
-    std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
+    std::shared_ptr<Hd_USTC_CG_HWRT_Renderer> _renderer;
 
-    pxr::VtArray<Hd_USTC_CG_Light*> lights;
-    pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
+    pxr::VtArray<Hd_USTC_CG_HWRT_Light*> lights;
+    pxr::TfHashMap<SdfPath, Hd_USTC_CG_HWRT_Material*, TfHash> materials;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;
     static HdResourceRegistrySharedPtr _resourceRegistry;
 
-    Hd_USTC_CG_RenderDelegate(const Hd_USTC_CG_RenderDelegate&) = delete;
-    Hd_USTC_CG_RenderDelegate& operator=(const Hd_USTC_CG_RenderDelegate&) = delete;
+    Hd_USTC_CG_HWRT_RenderDelegate(const Hd_USTC_CG_HWRT_RenderDelegate&) = delete;
+    Hd_USTC_CG_HWRT_RenderDelegate& operator=(const Hd_USTC_CG_HWRT_RenderDelegate&) = delete;
 
    public:
     HdAovDescriptor GetDefaultAovDescriptor(const TfToken& name) const override;

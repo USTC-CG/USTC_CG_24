@@ -7,13 +7,13 @@
 #include "pxr/pxr.h"
 #include "renderer.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class Hd_USTC_CG_RenderParam;
+class Hd_USTC_CG_HWRT_RenderParam;
 using namespace pxr;
-class Hd_USTC_CG_Renderer {
+class Hd_USTC_CG_HWRT_Renderer {
    public:
-    explicit Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param);
+    explicit Hd_USTC_CG_HWRT_Renderer(Hd_USTC_CG_HWRT_RenderParam* render_param);
 
-    virtual ~Hd_USTC_CG_Renderer() = default;
+    virtual ~Hd_USTC_CG_HWRT_Renderer() = default;
     void SetAovBindings(const HdRenderPassAovBindingVector& aovBindings);
     virtual void Render(HdRenderThread* render_thread);
     virtual void Clear();
@@ -33,7 +33,7 @@ class Hd_USTC_CG_Renderer {
     bool _enableSceneColors;
     std::atomic<int> _completedSamples;
 
-    Hd_USTC_CG_RenderParam* render_param;
+    Hd_USTC_CG_HWRT_RenderParam* render_param;
     // A callback that interprets embree error codes and injects them into
     // the hydra logging system.
     static void HandleRtcError(void* userPtr, RTCError code, const char* msg);
@@ -47,7 +47,7 @@ class Hd_USTC_CG_Renderer {
     // Are the aov bindings valid?
     bool _aovBindingsValid = false;
 
-    const Hd_USTC_CG_Camera* camera_ = nullptr;
+    const Hd_USTC_CG_HWRT_Camera* camera_ = nullptr;
 
     bool _ValidateAovBindings();
 };
