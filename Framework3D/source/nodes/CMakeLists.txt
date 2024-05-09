@@ -60,6 +60,14 @@ target_link_libraries(nodes hioOpenVDB)
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
 target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(nodes OpenMP::OpenMP_CXX)
+    message(STATUS "OpenMP found, building with it.")
+else()
+    message(WARNING "OpenMP not found, building without it.")
+endif()
+
 target_compile_options(nodes PRIVATE -DUSTC_CG_BUILD_MODULE=0 -DNOMINMAX)
 
 get_filename_component(NODES_FILES_DIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
