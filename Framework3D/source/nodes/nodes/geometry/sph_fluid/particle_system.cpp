@@ -55,6 +55,7 @@ void ParticleSystem::add_particle(const Vector3d X, Particle::particleType type)
     p->type_ = type; 
     p->idx_ = particles_.size(); 
 	p->mass_ = particle_mass_;
+    //std::cout << "p->idx = " << p->idx_ << " type: " << p->type_<< endl; 
 	particles_.push_back(p);
 }
 
@@ -65,15 +66,23 @@ void ParticleSystem::search_neighbors(Particle::particleType type)
 {
     // update the neighbors for each particle
     for (auto &p : particles_) {
-        p->neighbors_.clear();
-        if (p->type_ != type){
-            continue;
+        if (p->type_ == type)
+        {
+			p->neighbors_.clear();
         }
+        else // no need to clear neighborhood if currently not updating the neighborhood of this type
+            continue;
 
         // Traverse neighbor grid cells
         auto neighbor_cell_indices = get_neighbor_cell_indices(p->X_);
         for (auto &cell_idx : neighbor_cell_indices) {
             for (auto &q : cells_[cell_idx]) {
+
+                // -- Special hanlding of boundary particles: they only consider boundary neighbor particles ---
+                if (p->type_ == Particle::BOUNDARY && q->type_ != Particle::BOUNDARY)
+                    continue;
+                // -------------------------------------------------
+
                 if ((p->X_ - q->X_).norm() < 1.001 * support_radius_
                     && p->idx() != q->idx()) {
                     p->neighbors_.push_back(q);
@@ -221,9 +230,15 @@ MatrixXd ParticleSystem::sample_particle_pos_around_a_box(
 
     vector<Vector3d> pos;
 
-   for (int i = 0; i <= n_per_axis[0] * s; i++) {
-        for (int j = 0; j <= n_per_axis[1] * s; j++) {
-            for (int k = 0; k <= n_per_axis[2] * s; k++) {
+    // Special hanlding of 2d case
+    int n_x_sample = n_per_axis[0] == 1 ? 0 : n_per_axis[0] * s;
+    int n_y_sample =  n_per_axis[1] == 1 ? 0 : n_per_axis[1] * s;
+    int n_z_sample =  n_per_axis[2] == 1 ? 0 : n_per_axis[2] * s;
+
+
+   for (int i = 0; i <= n_x_sample; i++) {
+        for (int j = 0; j <= n_y_sample; j++) {
+            for (int k = 0; k <= n_z_sample; k++) {
 
                 double x = scaled_min[0] + i * step[0];
                 double y = scaled_min[1] + j * step[1];

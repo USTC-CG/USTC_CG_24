@@ -43,9 +43,18 @@ static void node_exec(ExeParams params)
 
     MatrixXd new_color = Eigen::MatrixXd::Zero(n_particles, 3);
 
-	  for(auto & q: ps.particles()[idx]->neighbors())
+    if (idx >= n_particles)
+        throw std::runtime_error("Invalid idx");
+
+    auto p = ps.particles()[idx]; 
+
+    std::cout << "[visualize neighbor search] p->idx = " << p->idx() << " type: " << p->type()
+              << " X= (" << p->x().transpose(); 
+    std::cout << "), neighbor size:" << p->neighbors().size() << std::endl;
+	  for(auto & q: p->neighbors())
 	  {
 		new_color.row(q->idx()) << 1, 0, 0;
+        std::cout << "q: idx= " << q->idx() << " x= " << q->x().transpose() << std::endl;
 	  }
 	  new_color.row(idx) << 0, 1, 0;
 
@@ -59,7 +68,8 @@ static void node_exec(ExeParams params)
 
     MatrixXd vertices = MatrixXd::Zero(n_particles, 3); 
     vertices.block(0, 0, fluid_particle_pos.rows(), 3) = fluid_particle_pos;
-    vertices.block(0, 0, boundary_particle_pos.rows(), 3) = boundary_particle_pos;
+    vertices.block(fluid_particle_pos.rows(), 0, boundary_particle_pos.rows(), 3) =
+        boundary_particle_pos;
 
 	points_component->vertices = eigen_to_usd_vertices(vertices);
 	float point_width = 0.05;
