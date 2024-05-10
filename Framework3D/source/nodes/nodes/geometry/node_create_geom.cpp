@@ -52,9 +52,22 @@ static void node_create_grid_exec(ExeParams params)
     params.set_output("Geometry", std::move(operand_base));
 }
 
+
+void node_create_circle_declare(NodeDeclarationBuilder &b)
+{
+    b.add_input<decl::Int>("resolution").min(1).max(100).default_val(10);
+    b.add_input<decl::Float>("radius").min(1).max(20);
+}
+
+void node_create_circle_exec(ExeParams exe_params)
+{
+    
+}
+
+
 static void node_register()
 {
-#define CreateMesh(lower, Upper)                             \
+#define CreateGeom(lower, Upper)                             \
     static NodeTypeInfo lower##_ntype;                       \
     strcpy_s(lower##_ntype.ui_name, "Create " #Upper);       \
     strcpy_s(lower##_ntype.id_name, "geom_create_" #lower);  \
@@ -63,8 +76,9 @@ static void node_register()
     lower##_ntype.declare = node_create_##lower##_declare;   \
     nodeRegisterType(&lower##_ntype);
 
-    CreateMesh(grid, Grid);
-    //CreateMesh(ico_sphere, Ico Sphere);
+    CreateGeom(grid, Grid);
+    CreateGeom(circle, Circle);
+    //CreateGeom(ico_sphere, Ico Sphere);
 }
 
 NOD_REGISTER_NODE(node_register)

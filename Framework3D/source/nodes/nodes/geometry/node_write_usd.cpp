@@ -2,6 +2,7 @@
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/points.h>
+#include <pxr/usd/usdGeom/curves.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
@@ -15,6 +16,7 @@
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "geom_node_base.h"
+#include "GCore/Components/CurveComponent.h"
 #include "pxr/base/gf/matrix4d.h"
 #include "pxr/base/gf/rotation.h"
 
@@ -50,6 +52,9 @@ static void node_exec(ExeParams params)
     auto mesh = geometry.get_component<MeshComponent>();
 
     auto points = geometry.get_component<PointsComponent>();
+
+    auto curve = geometry.get_component<CurveComponent>();
+
     assert(!(points && mesh));
 
     auto t = params.get_input<float>("Time Code");
@@ -107,70 +112,6 @@ static void node_exec(ExeParams params)
                 colorPrimvar.Set(mesh->displayColor);
             }
         }
-
-        // Material and Texture
-        auto material_component = geometry.get_component<MaterialComponent>();
-        if (material_component) {
-            if (legal(std::string(material_component->textures[0].c_str()))) {
-                auto texture_name = std::string(material_component->textures[0].c_str());
-                std::filesystem::path p = std::filesystem::path(texture_name).replace_extension();
-                auto file_name = "texture" + p.filename().string();
-
-                auto material_path_root = pxr::SdfPath("/TexModel");
-                auto material_path = material_path_root.AppendPath(pxr::SdfPath(file_name + "Mat"));
-                auto material_shader_path = material_path.AppendPath(pxr::SdfPath("PBRShader"));
-                auto material_stReader_path = material_path.AppendPath(pxr::SdfPath("stReader"));
-                auto material_texture_path =
-                    material_path.AppendPath(pxr::SdfPath("diffuseTexture"));
-
-                auto material = pxr::UsdShadeMaterial::Define(stage, material_path);
-                auto pbrShader = pxr::UsdShadeShader::Define(stage, material_shader_path);
-
-                pbrShader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
-                material.CreateSurfaceOutput().ConnectToSource(
-                    pbrShader.ConnectableAPI(), pxr::TfToken("surface"));
-
-                auto stReader = pxr::UsdShadeShader::Define(stage, material_stReader_path);
-                stReader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPrimvarReader_float2")));
-
-                auto diffuseTextureSampler =
-                    pxr::UsdShadeShader::Define(stage, material_texture_path);
-
-                diffuseTextureSampler.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdUVTexture")));
-                diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
-                    .Set(pxr::SdfAssetPath(texture_name));
-                diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
-                    .ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
-                diffuseTextureSampler.CreateOutput(
-                    pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
-
-                diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("wrapS"), pxr::SdfValueTypeNames->Token)
-                    .Set(pxr::TfToken("mirror"));
-
-                diffuseTextureSampler
-                    .CreateInput(pxr::TfToken("wrapT"), pxr::SdfValueTypeNames->Token)
-                    .Set(pxr::TfToken("mirror"));
-
-                pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
-                    .ConnectToSource(diffuseTextureSampler.ConnectableAPI(), pxr::TfToken("rgb"));
-
-                auto stInput = material.CreateInput(
-                    pxr::TfToken("frame:stPrimvarName"), pxr::SdfValueTypeNames->Token);
-                stInput.Set(pxr::TfToken("UVMap"));
-
-                stReader.CreateInput(pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token)
-                    .ConnectToSource(stInput);
-
-                usdgeom.GetPrim().ApplyAPI(pxr::UsdShadeTokens->MaterialBindingAPI);
-                pxr::UsdShadeMaterialBindingAPI(usdgeom).Bind(material);
-            }
-            else {
-                // TODO: Throw something
-            }
-        }
     }
     else if (points) {
         pxr::UsdGeomPoints usdpoints =
@@ -183,13 +124,75 @@ static void node_exec(ExeParams params)
         }
 
         auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdpoints);
-		if (points->displayColor.size() > 0) {
-			pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
-				pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
-			colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-			colorPrimvar.Set(points->displayColor, time);
-		}
+        if (points->displayColor.size() > 0) {
+            pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
+                pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+            colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+            colorPrimvar.Set(points->displayColor, time);
+        }
+    }
+    else if (curve) {
 
+        
+    }
+
+    // Material and Texture
+    auto material_component = geometry.get_component<MaterialComponent>();
+    if (material_component) {
+        auto usdgeom =
+            pxr::UsdGeomXformable ::Get(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+        if (legal(std::string(material_component->textures[0].c_str()))) {
+            auto texture_name = std::string(material_component->textures[0].c_str());
+            std::filesystem::path p = std::filesystem::path(texture_name).replace_extension();
+            auto file_name = "texture" + p.filename().string();
+
+            auto material_path_root = pxr::SdfPath("/TexModel");
+            auto material_path = material_path_root.AppendPath(pxr::SdfPath(file_name + "Mat"));
+            auto material_shader_path = material_path.AppendPath(pxr::SdfPath("PBRShader"));
+            auto material_stReader_path = material_path.AppendPath(pxr::SdfPath("stReader"));
+            auto material_texture_path = material_path.AppendPath(pxr::SdfPath("diffuseTexture"));
+
+            auto material = pxr::UsdShadeMaterial::Define(stage, material_path);
+            auto pbrShader = pxr::UsdShadeShader::Define(stage, material_shader_path);
+
+            pbrShader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
+            material.CreateSurfaceOutput().ConnectToSource(
+                pbrShader.ConnectableAPI(), pxr::TfToken("surface"));
+
+            auto stReader = pxr::UsdShadeShader::Define(stage, material_stReader_path);
+            stReader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPrimvarReader_float2")));
+
+            auto diffuseTextureSampler = pxr::UsdShadeShader::Define(stage, material_texture_path);
+
+            diffuseTextureSampler.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdUVTexture")));
+            diffuseTextureSampler.CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
+                .Set(pxr::SdfAssetPath(texture_name));
+            diffuseTextureSampler.CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
+                .ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
+            diffuseTextureSampler.CreateOutput(pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
+
+            diffuseTextureSampler.CreateInput(pxr::TfToken("wrapS"), pxr::SdfValueTypeNames->Token)
+                .Set(pxr::TfToken("mirror"));
+
+            diffuseTextureSampler.CreateInput(pxr::TfToken("wrapT"), pxr::SdfValueTypeNames->Token)
+                .Set(pxr::TfToken("mirror"));
+
+            pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
+                .ConnectToSource(diffuseTextureSampler.ConnectableAPI(), pxr::TfToken("rgb"));
+
+            auto stInput = material.CreateInput(
+                pxr::TfToken("frame:stPrimvarName"), pxr::SdfValueTypeNames->Token);
+            stInput.Set(pxr::TfToken("UVMap"));
+
+            stReader.CreateInput(pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token)
+                .ConnectToSource(stInput);
+
+            usdgeom.GetPrim().ApplyAPI(pxr::UsdShadeTokens->MaterialBindingAPI);
+            pxr::UsdShadeMaterialBindingAPI(usdgeom).Bind(material);
+        }
+        else {
+            // TODO: Throw something
+        }
     }
 
     auto xform_component = geometry.get_component<XformComponent>();
