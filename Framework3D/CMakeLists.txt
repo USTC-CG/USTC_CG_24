@@ -53,7 +53,6 @@ set_target_properties(Python3::Python PROPERTIES MAP_IMPORTED_CONFIG_DEBUG ";REL
 find_package(pxr REQUIRED)
 find_package(TBB REQUIRED)
 find_package(EMBREE REQUIRED)
-find_package(boost REQUIRED COMPONENTS numpy)
 
 # Include Slang
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
