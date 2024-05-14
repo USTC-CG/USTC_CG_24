@@ -8,8 +8,12 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
     class MassSpring;
-}namespace node_sph_fluid {
+}
+namespace node_sph_fluid {
     class SPHBase;
+}
+namespace node_character_animation{
+    class Animator;
 }
 
 static void reset_declaration(NodeDeclaration& declaration)
@@ -275,6 +279,13 @@ static SocketTypeInfo* make_socket_type_SPHFluidSocket()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::SPHFluidSocket);
     socktype->cpp_type = &CPPType::get<std::shared_ptr<node_sph_fluid::SPHBase>>();
+    return socktype;
+}
+
+static SocketTypeInfo* make_socket_type_AnimatorSocket()
+{
+    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::AnimatorSocket);
+    socktype->cpp_type = &CPPType::get<std::shared_ptr<node_character_animation::Animator>>();
     return socktype;
 }
 
