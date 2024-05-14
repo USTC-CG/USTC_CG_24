@@ -19,7 +19,7 @@ void Joint::compute_world_transform()
 void JointTree::compute_world_transforms_for_each_joint()
 {
     // ----------- (HW_TODO) Traverse all joint and compute its world space transform ---
-
+	// Call compute_world_transform for each joint
     // ---------------------------------------------
 }
 
@@ -89,11 +89,10 @@ void Animator::step(const shared_ptr<SkelComponent> skel)
 void Animator::update_mesh_vertices()
 {
 	// ----------- (HW_TODO) Update mesh vertices according to the current joint transforms ----
-	// 1. For each vertex, compute the new position by transforming the rest position with the joint transforms
+	// 1. get skel_->jointIndices and skel_->jointWeight;
+	// 2. For each vertex, compute the new position by transforming the rest position with the joint transforms
 	// 2. Update the vertex position in the mesh
 	// --------------------------------------------------------------------------------
-
-	// ---------------------------------------------------------------------------------
 }
 
 }  // namespace USTC_CG::node_character_animation

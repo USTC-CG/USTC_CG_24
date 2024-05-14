@@ -28,17 +28,46 @@
 
 `bindTransform`
 
-那么本次作业中，你需要实现的是`animator.cpp`中的函数：
+那么本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
+
+```c++
+void Joint::compute_world_transform()
+{
+    // ---------- (HW TODO) Compute world space trasform of this joint -----------------
+
+    // --------------------------------------------------------------------------------
+}
+
+void JointTree::compute_world_transforms_for_each_joint()
+{
+    // ----------- (HW_TODO) Traverse all joint and compute its world space transform ---
+	// Call compute_world_transform for each joint
+    // ---------------------------------------------
+}
+```
 
 ## 3. 骨骼如何驱动蒙皮运动
 
+蒙皮上的每个顶点可能受到多个关节影响，通过`jointWeight`和`jointIndices`来处理。
 
-那么本次作业中，你需要实现的是：
+你需要实现[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
+```c++
+void Animator::update_mesh_vertices()
+{
+	// ----------- (HW_TODO) Update mesh vertices according to the current joint transforms ----
+	// 1. get skel_->jointIndices and skel_->jointWeight;
+	// 2. For each vertex, compute the new position by transforming the rest position with the joint transforms
+	// 2. Update the vertex position in the mesh
+	// --------------------------------------------------------------------------------
+}
+```
+
+> 本次作业使用线性组合。LBS 
 
 ## 4. 示例结果 & 节点图
 
-如果实现正确，从`belly_dance_girl.usda`中可以得到如下的动画结果：
+如果关节的transform变换和蒙皮顶点的更新实现正确，从`belly_dance_girl.usda`中可以得到如下的动画结果：
 
 <div  align="center">    
  <img src="../images/hw10-demo.gif" style="zoom:100%" />
@@ -56,6 +85,8 @@
 
 1. Adobe的免费动画资源网站[Mixamo](https://www.mixamo.com/)，包含角色mesh和多种骨骼动画
 2. miHoYo角色MMD资源整理 [链接](https://www.hoyolab.com/article/118389) 
+
+> 拓展阅读：如果考虑一个动作平滑切换到另一个动作，应该怎么办
 
 ## (Optional) 骨骼动画 + 布料仿真
 
