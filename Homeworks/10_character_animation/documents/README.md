@@ -41,7 +41,7 @@
 + `worldTransform`: : 关节在世界坐标系下的坐标变换（4x4矩阵），对于根关节，我们作业中可以直接设置其`worldTransform = localTranform`。
 
 
-那么，子关节在`worldTransform`应该是父关节的`worldTransform`再复合上子关节的`localTransform`。为了实现这一变换，本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
+那么，子关节在`worldTransform`应该是父关节的`worldTransform`再复合上子关节的`localTransform` (公式请自己推导)。为了实现这一变换，本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
 ```c++
 void Joint::compute_world_transform()
@@ -61,17 +61,17 @@ void JointTree::compute_world_transforms_for_each_joint()
 
 ## 3. 骨骼如何驱动蒙皮运动
 
-蒙皮上的每个顶点可能受到多个关节影响，通过`jointWeight`和`jointIndices`来处理。
+蒙皮上的每个顶点可能受到多个关节影响，其运动是多个关节transform线性组合作用后的结果（这种做法被称为[LBS: Linear Blend Skinning](http://graphics.cs.cmu.edu/courses/15-466-f17/notes/skinning.html)），每个顶点相关的关节index和响应的影响权重存储在`jointWeight`和`jointIndices`中。
 
-值得注意的是 Mesh在绑定到关节时初始的坐标变换（4x4矩阵）`bindTransform`，需要先消除这个transform（通过求矩阵逆实现）。
-
-mesh顶点的运动是多个关节transform线性组合作用后的结果：
+值得注意的是由于作业框架中的每个关节的`localTransform`已经包含了Mesh在绑定到关节时初始的坐标变换（4x4矩阵）`bindTransform`，因此需要先消除这个transform（通过求矩阵逆实现）。
 
 $$
 \~{\mathbf{x}} = \sum_i w_i \mathbf{T}_i * \mathbf{B}_i^{-1} \~{\mathbf{x}}^0
 $$
 
-其中 $\~{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$ , 可以使用`GfMatrix4f::TransformAffine` 函数实现
+其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  
+
+$\~{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$ , 可以使用`GfMatrix4f::TransformAffine` 函数实现。
 
 你需要实现[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
@@ -85,8 +85,6 @@ void Animator::update_mesh_vertices()
 	// --------------------------------------------------------------------------------
 }
 ```
-
-> 本次作业使用线性组合。LBS 
 
 ## 4. 示例结果 & 节点图
 
@@ -122,7 +120,7 @@ void Animator::update_mesh_vertices()
 1. Adobe的免费动画资源网站[Mixamo](https://www.mixamo.com/)，包含角色mesh和多种骨骼动画
 2. miHoYo角色MMD资源整理 [链接](https://www.hoyolab.com/article/118389) 
 
-> 拓展阅读：如果考虑一个动作平滑切换到另一个动作，应该怎么办
+> 拓展思考：如果有多个动作顺序播放，考虑一个动作平滑切换到另一个动作，应该怎么在动作之间插值？
 
 ## (Optional) 骨骼动画 + 布料仿真
 
