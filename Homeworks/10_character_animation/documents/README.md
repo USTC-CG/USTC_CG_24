@@ -10,11 +10,17 @@
  <img src="../images/skeleton-illustration.png" style="zoom:40%" />
 </div>
 
-骨骼
+如上图所示，骨骼动画由两个主要部分构成：
 
-蒙皮
+1. 骨骼：低自由度的铰链系统，作为驱动器
 
-游戏和动画中十分常用
+2. 蒙皮：表面的mesh，绑定到骨骼，mesh顶点的运动受到多个骨骼关节的共同影响，通过插值等方式计算其最终空间坐标。
+
+由于其广泛的适用性和高效性，骨骼动画技术在游戏和动画中十分常用。
+
+<div  align="center">    
+ <img src="../images/motion-cap.png" style="zoom:60%" />
+</div>
 
 ## 2. 骨骼关节的变换关系
 
@@ -22,13 +28,20 @@
  <img src="../images/skeleton-animation.gif" style="zoom:60%" />
 </div>
 
-在上面的动图中，我们可以看到父关节的运动会带动子关节的运动。会形成一个树状结构：
+在上面的动图中，我们可以看到父关节的运动会带动子关节的运动。会形成一个类似下图的树状结构：
 
-// 此处需要一个树状图
+<div  align="center">    
+ <img src="../images/tree.png" style="zoom:60%" />
+</div>
 
-`bindTransform`
+我们在[`animator.h`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.h)中提供了`JointTree`类。
 
-那么本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
++ `localTransform`: 关节在局部坐标系下的坐标变换（4x4矩阵）
+
++ `worldTransform`: : 关节在世界坐标系下的坐标变换（4x4矩阵），对于根关节，我们作业中可以直接设置其`worldTransform = localTranform`。
+
+
+那么，子关节在`worldTransform`应该是父关节的`worldTransform`再复合上子关节的`localTransform`。为了实现这一变换，本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
 ```c++
 void Joint::compute_world_transform()
@@ -50,6 +63,16 @@ void JointTree::compute_world_transforms_for_each_joint()
 
 蒙皮上的每个顶点可能受到多个关节影响，通过`jointWeight`和`jointIndices`来处理。
 
+值得注意的是 Mesh在绑定到关节时初始的坐标变换（4x4矩阵）`bindTransform`，需要先消除这个transform（通过求矩阵逆实现）。
+
+mesh顶点的运动是多个关节transform线性组合作用后的结果：
+
+$$
+\~{\mathbf{x}} = \sum_i w_i \mathbf{T}_i * \mathbf{B}_i^{-1} \~{\mathbf{x}}^0
+$$
+
+其中 $\~{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$ , 可以使用`GfMatrix4f::TransformAffine` 函数实现
+
 你需要实现[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
 ```c++
@@ -67,7 +90,18 @@ void Animator::update_mesh_vertices()
 
 ## 4. 示例结果 & 节点图
 
-如果关节的transform变换和蒙皮顶点的更新实现正确，从`belly_dance_girl.usda`中可以得到如下的动画结果：
+如果关节的transform变换和蒙皮顶点的更新实现正确，从`arm.usda`中可以得到如下的动画结果（建议大家先在这个小文件上测试）：
+
+<div  align="center">    
+ <img src="../images/hw10-arm-demo.gif" style="zoom:40%" />
+</div>
+
+节点图如下：
+<div  align="center">    
+ <img src="../images/arm-node.png" style="zoom:80%" />
+</div>
+
+完成上面的结果后，可以尝试更大的mesh。从`belly_dance_girl.usda`中可以得到如下的动画结果（数据睿客网下载[链接](https://rec.ustc.edu.cn/share/97a11800-119e-11ef-ae31-47d3c2b414be)）：
 
 <div  align="center">    
  <img src="../images/hw10-demo.gif" style="zoom:100%" />
@@ -81,6 +115,8 @@ void Animator::update_mesh_vertices()
 
 恭喜你，至此已经完成了本次作业的必做部分！
 
+**提交作业时，需要附上`arm.usda`和`belly_dance_girl.usda`的动画结果的视频或gif。**
+
 如果有兴趣，可以自行添加新的动画文件进行展示：以下是一些可以考虑的动画资源网站（需要将相应的文件在Blender 4.1中导入并转存为usda格式，才能用于作业框架）：
 
 1. Adobe的免费动画资源网站[Mixamo](https://www.mixamo.com/)，包含角色mesh和多种骨骼动画
@@ -93,3 +129,4 @@ void Animator::update_mesh_vertices()
 本次作业我们还有一个选做部分：通过结合骨骼动画与作业8：弹簧质点仿真实现衣服随人体的运动，将在[Part2：骨骼动画+布料仿真](./README-part2.md)中介绍。
 
 ## 参考资料 & 扩展阅读材料
+1. [GAMES 105：计算机角色动画基础](https://games-105.github.io/)
