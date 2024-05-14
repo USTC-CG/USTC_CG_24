@@ -1,6 +1,6 @@
 # 角色动画简明教程
 
-在之前两次作业中，我们都是从物理方程出发求解物质的运动（弹性体、布料、流体），但由于自然界中物理和材质的复杂性，很多生物运动如人体的运动很难通过物理方程的形式准确刻画。本次作业我们将介绍另一种通过预定义骨骼驱动表面mesh运动的方法：骨骼动画，它和动作捕捉等当下流行的电影动画制造方式密切相关。 
+在之前两次作业中，我们都是从物理方程出发求解物质的运动（弹性体、布料、流体），但由于自然界中物理和材质的复杂性，很多生物运动如人体的运动很难通过物理方程的形式准确刻画。本次作业我们将介绍另一种通过预定义骨骼驱动表面模型运动的方法：骨骼动画，它和动作捕捉等当下流行的电影动画制造方式密切相关。 
 
 > 用>包裹的引用格式呈现的内容为扩展阅读/思考内容，为了实现本次作业可以不看
 
@@ -36,12 +36,17 @@
 
 我们在[`animator.h`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.h)中提供了`JointTree`类。
 
+接下来，我们介绍一些重要的transform矩阵：
+
 + `localTransform`: 关节在局部坐标系下的坐标变换（4x4矩阵）
 
-+ `worldTransform`: : 关节在世界坐标系下的坐标变换（4x4矩阵），对于根关节，我们作业中可以直接设置其`worldTransform = localTranform`。
++ `worldTransform`: (或称为 global transform): 关节在世界坐标系下的坐标变换（4x4矩阵），对于根关节，我们作业中可以直接设置其`worldTransform = localTranform`。
 
++ `bindTransform`: 模型在绑定姿势（Bind Pose）下（如 T-pose），关节相对于mesh顶点的位置和方向，它常在3D模型的创建过程中定义，并且在动画的整个生命周期中保持不变。它的作用我们很快会在下面的蒙皮运动小节看到。
 
-那么，子关节在`worldTransform`应该是父关节的`worldTransform`再复合上子关节的`localTransform` (公式请自己推导)。为了实现这一变换，本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
+那么，子关节在`worldTransform`应该是父关节的`worldTransform`再复合上子关节的`localTransform` (公式请自己推导)。
+
+为了实现这一变换，本次作业中，你需要实现的是[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
 ```c++
 void Joint::compute_world_transform()
@@ -61,9 +66,11 @@ void JointTree::compute_world_transforms_for_each_joint()
 
 ## 3. 骨骼如何驱动蒙皮运动
 
-蒙皮上的每个顶点可能受到多个关节影响，其运动是多个关节transform线性组合作用后的结果（这种做法被称为[LBS: Linear Blend Skinning](http://graphics.cs.cmu.edu/courses/15-466-f17/notes/skinning.html)），每个顶点相关的关节index和响应的影响权重存储在`jointWeight`和`jointIndices`中。
+蒙皮上的每个顶点可能受到多个关节影响，其运动是多个关节transform线性组合作用后的结果（这种做法被称为[Linear Blend Skinning，LBS](http://graphics.cs.cmu.edu/courses/15-466-f17/notes/skinning.html)），每个顶点相关的关节index和响应的影响权重存储在`jointWeight`和`jointIndices`中。
 
-值得注意的是由于作业框架中的每个关节的`localTransform`已经包含了Mesh在绑定到关节时初始的坐标变换（4x4矩阵）`bindTransform`，因此需要先消除这个transform（通过求矩阵逆实现）。
+为了让我们的mesh的顶点的空间位置从“相对于世界坐标系原点”转换为“相对于影响这个顶点的关节”，根据`bindTransform`的定义，我们可以通过对其求逆实现，称为逆绑定变换（Inverse Bind Transforms, IBTs）
+
+最后，mesh顶点位置的更新公式如下：
 
 $$
 \~{\mathbf{x}} = \sum_i w_i \mathbf{T}_i * \mathbf{B}_i^{-1} \~{\mathbf{x}}^0
@@ -128,3 +135,4 @@ void Animator::update_mesh_vertices()
 
 ## 参考资料 & 扩展阅读材料
 1. [GAMES 105：计算机角色动画基础](https://games-105.github.io/)
+2. [Game Engine Blog: How I Implemented Skeletal Animation](https://vladh.net/game-engine-skeletal-animation/)
