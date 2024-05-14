@@ -1,18 +1,31 @@
+// #define __GNUC__
+
+#include <pxr/base/gf/matrix4f.h>
+#include <pxr/base/gf/rotation.h>
+#include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
+#include <pxr/usd/usdSkel/animQuery.h>
+#include <pxr/usd/usdSkel/cache.h>
+#include <pxr/usd/usdSkel/skeleton.h>
+
+#include <memory>
 
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/SkelComponent.h"
 #include "GCore/Components/XformComponent.h"
-#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "geom_node_base.h"
-#include "pxr/base/gf/rotation.h"
+#include "pxr/usd/usdSkel/animation.h"
+#include "pxr/usd/usdSkel/bindingAPI.h"
+#include "pxr/usd/usdSkel/skeletonQuery.h"
 
 namespace USTC_CG::node_read_usd {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -43,7 +56,8 @@ static void node_exec(ExeParams params)
     if (stage) {
         // Here 'c_str' call is necessary since prim_path
         auto sdf_path = pxr::SdfPath(prim_path.c_str());
-        pxr::UsdGeomMesh usdgeom(stage->GetPrimAtPath(sdf_path));
+        auto prim = stage->GetPrimAtPath(sdf_path);
+        pxr::UsdGeomMesh usdgeom(prim);
 
         if (usdgeom) {
             // Fill in the vertices and faces here
@@ -57,7 +71,7 @@ static void node_exec(ExeParams params)
             pxr::UsdGeomPrimvar primvar = PrimVarAPI.GetPrimvar(pxr::TfToken("UVMap"));
             primvar.Get(&mesh->texcoordsArray, time);
 
-            pxr::GfMatrix4d final_transform  = usdgeom.ComputeLocalToWorldTransform(time);
+            pxr::GfMatrix4d final_transform = usdgeom.ComputeLocalToWorldTransform(time);
 
             if (final_transform != pxr::GfMatrix4d().SetIdentity()) {
                 auto xform_component = std::make_shared<XformComponent>(&geometry);
@@ -71,6 +85,48 @@ static void node_exec(ExeParams params)
                 xform_component->rotation.push_back(pxr::GfVec3f(0.0f));
                 xform_component->scale.push_back(pxr::GfVec3f(1.0f));
             }
+            using namespace pxr;
+            UsdSkelBindingAPI binding = UsdSkelBindingAPI(usdgeom);
+            SdfPathVector targets;
+            binding.GetSkeletonRel().GetTargets(&targets);
+            if (targets.size() == 1) {
+                auto prim = stage->GetPrimAtPath(targets[0]);
+
+                pxr::UsdSkelSkeleton skeleton(prim);
+                if (skeleton) {
+                    using namespace pxr;
+                    UsdSkelCache skelCache;
+                    UsdSkelSkeletonQuery skelQuery = skelCache.GetSkelQuery(skeleton);
+
+                    auto skel_component = std::make_shared<SkelComponent>(&geometry);
+                    geometry.attach_component(skel_component);
+
+                    VtArray<GfMatrix4f> xforms;
+                    skelQuery.ComputeJointLocalTransforms(&xforms, time);
+
+                    skel_component->localTransforms = xforms;
+                    skel_component->jointOrder = skelQuery.GetJointOrder();
+                    skel_component->topology = skelQuery.GetTopology();
+
+                    VtArray<float> jointWeight;
+                    binding.GetJointWeightsAttr().Get(&jointWeight, time);
+
+                    VtArray<GfMatrix4d> bindTransforms;
+                    skeleton.GetBindTransformsAttr().Get(&bindTransforms, time);
+			        skel_component->bindTransforms = bindTransforms;
+
+                    VtArray<int> jointIndices;
+                    binding.GetJointIndicesAttr().Get(&jointIndices, time);
+                    skel_component->jointWeight = jointWeight;
+                    skel_component->jointIndices = jointIndices;
+                }
+                else
+                    throw std::runtime_error("Unable to read the skeleton.");
+            }
+        }
+
+        else {
+            throw std::runtime_error("Unable to read the prim.");
         }
 
         // TODO: add material reading

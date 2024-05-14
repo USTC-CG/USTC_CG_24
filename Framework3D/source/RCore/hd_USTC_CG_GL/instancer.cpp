@@ -107,7 +107,8 @@ VtMatrix4dArray HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prot
         transforms[i] = instancerTransform;
     }
 
-    if (GetParentId().IsEmpty()) {
+    if (GetParentId().IsEmpty())
+    {
         return transforms;
     }
 

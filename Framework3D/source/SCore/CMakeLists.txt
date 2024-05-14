@@ -17,6 +17,7 @@ set_target_properties(SCore PROPERTIES ${OUTPUT_DIR})
 target_link_libraries(SCore PUBLIC 
 	usdGeom 
 	usdVol 
+	usdSkel
 	hioOpenVDB 
 	${TBB_tbb_LIBRARY}
 )

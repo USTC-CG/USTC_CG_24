@@ -107,7 +107,8 @@ VtMatrix4dArray Hd_USTC_CG_Instancer::ComputeInstanceTransforms(const SdfPath& p
         transforms[i] = instancerTransform;
     }
 
-    if (GetParentId().IsEmpty()) {
+    if (GetParentId().IsEmpty())
+    {
         return transforms;
     }
 

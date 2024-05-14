@@ -15,6 +15,7 @@ target_link_libraries(GCore
 	usdVol
 	OpenMeshCore
 	usdGeom 
+	usdSkel
 	${TBB_tbb_LIBRARY}
 )
 target_compile_features(GCore PUBLIC cxx_std_20)
