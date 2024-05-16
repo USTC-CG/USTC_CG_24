@@ -66,7 +66,7 @@ void JointTree::compute_world_transforms_for_each_joint()
 
 ## 3. 骨骼如何驱动蒙皮运动
 
-蒙皮上的每个顶点可能受到多个关节影响，其运动是多个关节transform线性组合作用后的结果（这种做法被称为[Linear Blend Skinning，LBS](http://graphics.cs.cmu.edu/courses/15-466-f17/notes/skinning.html)），每个顶点相关的关节index和响应的影响权重存储在`jointWeight`和`jointIndices`中。
+蒙皮上的每个顶点可能受到多个关节影响，其运动是多个关节transform线性组合作用后的结果（这种做法被称为[Linear Blend Skinning，LBS](http://graphics.cs.cmu.edu/courses/15-466-f17/notes/skinning.html)），每个顶点相关的关节index和响应的影响权重存储在`jointWeight`和`jointIndices`中，这两个数组的长度为 顶点数×对其有影响的关节数，影响每个顶点的关节数相同。
 
 为了让我们的mesh的顶点的空间位置从“相对于世界坐标系原点”转换为“相对于影响这个顶点的关节”，根据`bindTransform`的定义，我们可以通过对其求逆实现，称为逆绑定变换（Inverse Bind Transforms, IBTs）
 

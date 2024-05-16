@@ -5,7 +5,8 @@ namespace USTC_CG::node_character_animation {
 
 using namespace pxr;
 
-Joint::Joint(int idx, string name, int parent_idx) : idx_(idx), name_(name), parent_idx_(parent_idx)
+Joint::Joint(int idx, string name, int parent_idx, const GfMatrix4f& bind_transform) 
+: idx_(idx), name_(name), parent_idx_(parent_idx), bind_transform_(bind_transform)
 {
 }
 
@@ -23,9 +24,9 @@ void JointTree::compute_world_transforms_for_each_joint()
     // ---------------------------------------------
 }
 
-void JointTree::add_joint(int idx, std::string name, int parent_idx)
+void JointTree::add_joint(int idx, std::string name, int parent_idx, const GfMatrix4f& bind_transform)
 {
-    auto joint = make_shared<Joint>(idx, name, parent_idx);
+    auto joint = make_shared<Joint>(idx, name, parent_idx, bind_transform);
     joints_.push_back(joint);
     if (parent_idx < 0) {
         root_ = joint;
@@ -71,7 +72,7 @@ Animator::Animator(const shared_ptr<MeshComponent> mesh, const shared_ptr<SkelCo
         string joint_name = jointPath.GetName();
         int parent_idx = topology.GetParent(i);
 
-		joint_tree_.add_joint(i, joint_name, parent_idx);
+		joint_tree_.add_joint(i, joint_name, parent_idx, GfMatrix4f(skel->bindTransforms[i]));
 	}
 
 	joint_tree_.print(); 
