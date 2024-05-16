@@ -125,13 +125,38 @@ DECLARE_PYTHON_SCRIPT(add)
 
 static void node_exec_add(ExeParams params)
 {
-    auto input = params.get_input<pxr::VtArray<float>>("Buffer");
-    auto add = params.get_input<std::string>("Script Name");
     try {
         bp::object reload = bp::import("importlib").attr("reload");
-        bp::object module = bp::import(add.c_str());
+        bp::object module = bp::import("add");
+
+        bp::object declare_node_info = module.attr("declare_node")();
+        auto list = bp::list(declare_node_info);
+        auto input = bp::list(list[0]);
+        auto output = bp::list(list[1]);
+
+        bp::list input_l;
+        for (int i = 0; i < len(input); ++i) {
+            std::string s = bp::extract<std::string>(input[i]);
+            auto storage = params.get_input<GMutablePointer>(s.c_str());
+            if (storage.is_type<float>()) {
+                float val = *storage.get<float>();
+                input_l.append(val);
+            }
+        }
+
         module = reload(module);
-        bp::object result = (module.attr("process_array")(input));
+        bp::object result = module.attr("wrap_exec")(input);
+
+        if (len(output) > 1) {
+
+        }
+        else if (len(output) == 1) {
+            auto extract_float = bp::extract<float>(result);
+            if(extract_float.check()) {
+            }
+
+                
+        }
         bpn::ndarray np_arr = bpn::array(result).copy();
         std::string err;
         boost::optional<pxr::VtArray<float>> vt_arr =
