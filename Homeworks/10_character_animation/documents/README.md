@@ -101,7 +101,7 @@ void Animator::update_mesh_vertices()
  <img src="../images/hw10-arm-demo.gif" style="zoom:40%" />
 </div>
 
-节点图如下：
+节点图如下，`Prim Path`为`/Model/Mesh`。
 <div  align="center">    
  <img src="../images/arm-node.png" style="zoom:80%" />
 </div>
@@ -112,7 +112,7 @@ void Animator::update_mesh_vertices()
  <img src="../images/hw10-demo.gif" style="zoom:100%" />
 </div>
 
-所需要连接的节点图如下：
+所需要连接的节点图如下, `Prim Path`为`/root/Armature/Ch03/Mesh_001`。
 
 <div  align="center">    
  <img src="../images/nodes-dance.png" style="zoom:100%" />
