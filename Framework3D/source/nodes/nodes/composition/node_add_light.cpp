@@ -257,7 +257,7 @@ static void node_register()
     static NodeTypeInfo ntype_add_sphere_light;
 
     strcpy(ntype_add_sphere_light.ui_name, "Add Point Light");
-    strcpy_s(ntype_add_sphere_light.id_name, "comp_add_point_light");
+    strcpy(ntype_add_sphere_light.id_name, "comp_add_point_light");
 
     comp_node_type_base(&ntype_add_sphere_light);
     ntype_add_sphere_light.node_execute = node_exec_add_sphere_light;
@@ -268,7 +268,7 @@ static void node_register()
     static NodeTypeInfo ntype_add_dome_light;
 
     strcpy(ntype_add_dome_light.ui_name, "Add Dome Light");
-    strcpy_s(ntype_add_dome_light.id_name, "comp_add_dome_light");
+    strcpy(ntype_add_dome_light.id_name, "comp_add_dome_light");
 
     comp_node_type_base(&ntype_add_dome_light);
     ntype_add_dome_light.node_execute = node_exec_add_dome_light;
@@ -279,7 +279,7 @@ static void node_register()
     static NodeTypeInfo ntype_add_rect_light;
 
     strcpy(ntype_add_rect_light.ui_name, "Add Rect Light");
-    strcpy_s(ntype_add_rect_light.id_name, "comp_add_rect_light");
+    strcpy(ntype_add_rect_light.id_name, "comp_add_rect_light");
 
     comp_node_type_base(&ntype_add_rect_light);
     ntype_add_rect_light.node_execute = node_exec_add_rect_light;
@@ -290,7 +290,7 @@ static void node_register()
     static NodeTypeInfo ntype_add_distant_light;
 
     strcpy(ntype_add_distant_light.ui_name, "Add Distant Light");
-    strcpy_s(ntype_add_distant_light.id_name, "comp_add_distant_light");
+    strcpy(ntype_add_distant_light.id_name, "comp_add_distant_light");
 
     comp_node_type_base(&ntype_add_distant_light);
     ntype_add_distant_light.node_execute = node_exec_add_distant_light;

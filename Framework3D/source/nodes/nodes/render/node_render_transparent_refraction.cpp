@@ -144,7 +144,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Transparent Refraction");
-    strcpy_s(ntype.id_name, "render_transparent_refraction");
+    strcpy(ntype.id_name, "render_transparent_refraction");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

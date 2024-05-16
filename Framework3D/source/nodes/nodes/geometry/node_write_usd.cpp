@@ -235,7 +235,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Write USD");
-    strcpy_s(ntype.id_name, "geom_write_usd");
+    strcpy(ntype.id_name, "geom_write_usd");
     ntype.ALWAYS_REQUIRED = true;
 
     geo_node_type_base(&ntype);

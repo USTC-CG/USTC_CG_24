@@ -33,7 +33,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Mesh Add Texture");
-    strcpy_s(ntype.id_name, "geom_set_texture");
+    strcpy(ntype.id_name, "geom_set_texture");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

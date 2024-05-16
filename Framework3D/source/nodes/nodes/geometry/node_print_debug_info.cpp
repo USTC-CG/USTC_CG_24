@@ -21,12 +21,12 @@ static void node_exec(ExeParams params)
         std::cout << value << std::endl;
     }
 
-    //auto& stage = GlobalUsdStage::global_usd_stage;
-    //std::string str;
-    //stage->ExportToString(&str);
+    auto& stage = GlobalUsdStage::global_usd_stage;
+    std::string str;
+    stage->ExportToString(&str);
 
-    //std::ofstream out("current_stage.usda");
-    //out << str << std::endl;
+    std::ofstream out("current_stage.usda");
+    out << str << std::endl;
 }
 
 static void node_register()
@@ -34,7 +34,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Debug Info");
-    strcpy_s(ntype.id_name, "geom_print_debug_info");
+    strcpy(ntype.id_name, "geom_print_debug_info");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

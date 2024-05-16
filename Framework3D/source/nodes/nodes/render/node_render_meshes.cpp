@@ -19,7 +19,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Scene Meshes");
-    strcpy_s(ntype.id_name, "render_scene_meshes");
+    strcpy(ntype.id_name, "render_scene_meshes");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

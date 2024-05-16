@@ -45,7 +45,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Set Vertex Color");
-    strcpy_s(ntype.id_name, "geom_set_vert_color");
+    strcpy(ntype.id_name, "geom_set_vert_color");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

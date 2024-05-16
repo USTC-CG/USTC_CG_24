@@ -104,7 +104,7 @@ static void node_register()
     static NodeTypeInfo ntype_buffer##size##suffix;                                   \
                                                                                       \
     strcpy(ntype_buffer##size##suffix.ui_name, "Create Buffer" #size #suffix);        \
-    strcpy_s(ntype_buffer##size##suffix.id_name, "func_create_buffer" #size #suffix); \
+    strcpy(ntype_buffer##size##suffix.id_name, "func_create_buffer" #size #suffix); \
                                                                                       \
     func_node_type_base(&ntype_buffer##size##suffix);                                  \
     ntype_buffer##size##suffix.node_execute = node_exec_create_buffer##size##suffix;  \
@@ -123,7 +123,7 @@ static void node_register()
         "Create float"
         "3"
         "f");
-    strcpy_s(
+    strcpy(
         ntype_float3f.id_name,
         "func_create_float"
         "3"
@@ -140,7 +140,7 @@ static void node_register()
         "Create int"
         "3"
         "");
-    strcpy_s(
+    strcpy(
         ntype_int3.id_name,
         "func_create_int"
         "3"

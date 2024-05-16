@@ -183,7 +183,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "SPH Fluid");
-    strcpy_s(ntype.id_name, "geom_sph_fluid");
+    strcpy(ntype.id_name, "geom_sph_fluid");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_sph_fluid_exec;

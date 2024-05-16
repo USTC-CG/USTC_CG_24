@@ -188,7 +188,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Mass Spring");
-    strcpy_s(ntype.id_name, "geom_mass_spring");
+    strcpy(ntype.id_name, "geom_mass_spring");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_mass_spring_exec;

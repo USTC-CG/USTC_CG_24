@@ -69,8 +69,8 @@ static void node_register()
 {
 #define CreateGeom(lower, Upper)                             \
     static NodeTypeInfo lower##_ntype;                       \
-    strcpy_s(lower##_ntype.ui_name, "Create " #Upper);       \
-    strcpy_s(lower##_ntype.id_name, "geom_create_" #lower);  \
+    strcpy(lower##_ntype.ui_name, "Create " #Upper);       \
+    strcpy(lower##_ntype.id_name, "geom_create_" #lower);  \
     geo_node_type_base(&lower##_ntype);                      \
     lower##_ntype.node_execute = node_create_##lower##_exec; \
     lower##_ntype.declare = node_create_##lower##_declare;   \

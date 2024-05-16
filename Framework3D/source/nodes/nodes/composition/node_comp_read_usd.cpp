@@ -25,7 +25,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Read USD");
-    strcpy_s(ntype.id_name, "comp_read_usd");
+    strcpy(ntype.id_name, "comp_read_usd");
 
     comp_node_type_base(&ntype);
     ntype.node_execute = node_exec;

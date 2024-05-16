@@ -52,7 +52,7 @@ static void node_register()
     static NodeTypeInfo storage_in_ntype;
 
     strcpy(storage_in_ntype.ui_name, "Storage In");
-    strcpy_s(storage_in_ntype.id_name, "geom_storage_in");
+    strcpy(storage_in_ntype.id_name, "geom_storage_in");
 
     geo_node_type_base(&storage_in_ntype);
     storage_in_ntype.node_execute = node_exec_storage_in;
@@ -63,7 +63,7 @@ static void node_register()
     static NodeTypeInfo storage_out_ntype;
 
     strcpy(storage_out_ntype.ui_name, "Storage Out");
-    strcpy_s(storage_out_ntype.id_name, "geom_storage_out");
+    strcpy(storage_out_ntype.id_name, "geom_storage_out");
 
     geo_node_type_base(&storage_out_ntype);
     storage_out_ntype.node_execute = node_exec_storage_out;
@@ -73,7 +73,7 @@ static void node_register()
     static NodeTypeInfo time_gain_ntype;
 
     strcpy(time_gain_ntype.ui_name, "Time Gain");
-    strcpy_s(time_gain_ntype.id_name, "geom_time_gain");
+    strcpy(time_gain_ntype.id_name, "geom_time_gain");
 
     geo_node_type_base(&time_gain_ntype);
     time_gain_ntype.node_execute = node_exec_time_gain;
@@ -84,7 +84,7 @@ static void node_register()
     static NodeTypeInfo time_code_ntype;
 
     strcpy(time_code_ntype.ui_name, "Time Code");
-    strcpy_s(time_code_ntype.id_name, "geom_time_code");
+    strcpy(time_code_ntype.id_name, "geom_time_code");
 
     geo_node_type_base(&time_code_ntype);
     time_code_ntype.node_execute = node_exec_time_code;

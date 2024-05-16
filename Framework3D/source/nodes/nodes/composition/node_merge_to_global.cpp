@@ -36,7 +36,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Merge To Global");
-    strcpy_s(ntype.id_name, "comp_merge_to_global");
+    strcpy(ntype.id_name, "comp_merge_to_global");
 
     comp_node_type_base(&ntype);
     ntype.node_execute = node_exec;

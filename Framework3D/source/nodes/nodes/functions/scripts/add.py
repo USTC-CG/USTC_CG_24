@@ -1,10 +1,17 @@
 # script.py
+
+
+def declare_node():
+    return [["a", "b"], ["c"]]
+
+def wrap_exec(list):
+    exec_node(*list)
+
 import numpy as np
 from pxr import Tf
 from pxr import Usd, UsdGeom
 
-def process_array(arr):
-    # Assuming 'arr' is your VtArray<float>
-    nparr = np.array(arr, dtype=np.float32)+1
-    print(nparr)
-    return nparr
+
+
+def exec_node(a, b):
+    return a + b

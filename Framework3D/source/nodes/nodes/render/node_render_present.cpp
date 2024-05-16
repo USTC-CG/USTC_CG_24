@@ -20,7 +20,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Present");
-    strcpy_s(ntype.id_name, "render_present");
+    strcpy(ntype.id_name, "render_present");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

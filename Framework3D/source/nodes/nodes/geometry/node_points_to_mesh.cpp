@@ -129,7 +129,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Points To Mesh");
-    strcpy_s(ntype.id_name, "geom_points_to_mesh");
+    strcpy(ntype.id_name, "geom_points_to_mesh");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

@@ -49,7 +49,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Random UV Points");
-    strcpy_s(ntype.id_name, "geom_random_uv_points");
+    strcpy(ntype.id_name, "geom_random_uv_points");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

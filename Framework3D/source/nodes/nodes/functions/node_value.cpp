@@ -31,7 +31,7 @@ static void node_register()
 {
     static NodeTypeInfo ntype_value_int;
     strcpy(ntype_value_int.ui_name, "Int Value");
-    strcpy_s(ntype_value_int.id_name, "func_value_int");
+    strcpy(ntype_value_int.id_name, "func_value_int");
     func_node_type_base(&ntype_value_int);
     ntype_value_int.node_execute = node_exec_int;
     ntype_value_int.declare = node_declare_int;
@@ -39,7 +39,7 @@ static void node_register()
 
     static NodeTypeInfo ntype_value_float;
     strcpy(ntype_value_float.ui_name, "Float Value");
-    strcpy_s(ntype_value_float.id_name, "func_value_float");
+    strcpy(ntype_value_float.id_name, "func_value_float");
     func_node_type_base(&ntype_value_float);
     ntype_value_float.node_execute = node_exec_float;
     ntype_value_float.declare = node_declare_float;

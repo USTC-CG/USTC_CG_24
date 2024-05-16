@@ -48,7 +48,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Mesh Compose");
-    strcpy_s(ntype.id_name, "geom_mesh_compose");
+    strcpy(ntype.id_name, "geom_mesh_compose");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

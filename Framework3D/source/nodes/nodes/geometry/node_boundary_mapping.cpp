@@ -154,7 +154,7 @@ static void node_register()
     static NodeTypeInfo ntype_square, ntype_circle;
 
     strcpy(ntype_square.ui_name, "Map Boundary to Square");
-    strcpy_s(ntype_square.id_name, "geom_map_boundary_to_square");
+    strcpy(ntype_square.id_name, "geom_map_boundary_to_square");
 
     geo_node_type_base(&ntype_square);
     ntype_square.node_execute = node_map_boundary_to_square_exec;
@@ -162,7 +162,7 @@ static void node_register()
     nodeRegisterType(&ntype_square);
 
     strcpy(ntype_circle.ui_name, "Map Boundary to Circle");
-    strcpy_s(ntype_circle.id_name, "geom_map_boundary_to_circle");
+    strcpy(ntype_circle.id_name, "geom_map_boundary_to_circle");
 
     geo_node_type_base(&ntype_circle);
     ntype_circle.node_execute = node_map_boundary_to_circle_exec;

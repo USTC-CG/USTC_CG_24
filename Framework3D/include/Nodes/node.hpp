@@ -64,6 +64,8 @@ struct Node {
 
     NodeTypeInfo* typeinfo;
 
+    void* runtime_data;
+
     bool REQUIRED = false;
     bool MISSING_INPUT = false;
     std::string execution_failed = {};

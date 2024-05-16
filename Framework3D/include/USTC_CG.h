@@ -34,6 +34,6 @@
 
 
 #ifdef __APPLE__
-#define strcpy_s strcpy
+#define strcpy strcpy
 #endif
 #include <string.h>

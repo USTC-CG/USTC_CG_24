@@ -71,7 +71,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Shadertoy");
-    strcpy_s(ntype.id_name, "render_shadertoy");
+    strcpy(ntype.id_name, "render_shadertoy");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

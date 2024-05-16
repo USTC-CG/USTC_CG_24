@@ -147,7 +147,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Shadow Mapping");
-    strcpy_s(ntype.id_name, "render_shadow_mapping");
+    strcpy(ntype.id_name, "render_shadow_mapping");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

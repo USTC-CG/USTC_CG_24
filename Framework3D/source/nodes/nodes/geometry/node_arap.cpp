@@ -101,7 +101,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "ARAP Parameterization");
-    strcpy_s(ntype.id_name, "geom_arap");
+    strcpy(ntype.id_name, "geom_arap");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_arap_exec;

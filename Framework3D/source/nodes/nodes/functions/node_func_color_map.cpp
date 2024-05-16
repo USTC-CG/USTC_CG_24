@@ -58,7 +58,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Func Color Map");
-    strcpy_s(ntype.id_name, "geom_func_color_map");
+    strcpy(ntype.id_name, "geom_func_color_map");
 
     ntype.node_execute = node_func_color_map_exec;
     ntype.declare = node_func_color_map_declare;

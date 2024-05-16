@@ -45,7 +45,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Single Spring");
-    strcpy_s(ntype.id_name, "geom_single_spring");
+    strcpy(ntype.id_name, "geom_single_spring");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

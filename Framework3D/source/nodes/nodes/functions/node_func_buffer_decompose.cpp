@@ -65,7 +65,7 @@ static void node_register()
     static NodeTypeInfo ntype_buffer##size##suffix;                                      \
                                                                                          \
     strcpy(ntype_buffer##size##suffix.ui_name, "Decompose Buffer" #size #suffix);        \
-    strcpy_s(ntype_buffer##size##suffix.id_name, "func_buffer_decompose" #size #suffix); \
+    strcpy(ntype_buffer##size##suffix.id_name, "func_buffer_decompose" #size #suffix); \
                                                                                          \
     func_node_type_base(&ntype_buffer##size##suffix);                                     \
     ntype_buffer##size##suffix.node_execute = node_exec_decompose_buffer##size##suffix;  \

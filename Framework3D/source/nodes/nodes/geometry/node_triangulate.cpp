@@ -22,7 +22,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Triangulate");
-    strcpy_s(ntype.id_name, "geom_Triangulate");
+    strcpy(ntype.id_name, "geom_Triangulate");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;

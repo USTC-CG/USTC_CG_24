@@ -51,7 +51,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Debug Info");
-    strcpy_s(ntype.id_name, "render_debug_info");
+    strcpy(ntype.id_name, "render_debug_info");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
