@@ -24,4 +24,4 @@
 	url = https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git
 [submodule "Framework3D/external/entt"]
 	path = Framework3D/external/entt
-	url = https://github.com/skypjack/entt.git
+	url = https://github.com/Jerry-Shen0527/entt.git

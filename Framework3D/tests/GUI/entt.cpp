@@ -9,6 +9,8 @@
 #include <entt/meta/resolve.hpp>
 
 #include "Utils/Logging/Logging.h"
+#include "boost/python/object.hpp"
+#include "gtest/gtest.h"
 
 struct data_field {
     int a;
@@ -65,7 +67,7 @@ class test_base {
     data_field d;
 };
 
-int main()
+TEST(ENTT, reflection)
 {
     using namespace entt::literals;
 
@@ -77,5 +79,21 @@ int main()
     auto r2 = std::move(r);
 
     cout << r.data() << '\n' << r2.data() << std::endl;
+}
 
+template<typename T>
+inline constexpr bool always_false_v = false;
+
+TEST(ENTT, boost_python)
+{
+    using namespace entt::literals;
+
+    namespace bp = boost::python;
+
+    Py_Initialize();
+    entt::meta<bp::api::object_operators<bp::object>>().type("bp::object"_hs);
+
+    auto obj = entt::resolve<bp::object>().construct();
+
+    cout << obj.cast<bp::object>().ptr() << std::endl;
 }
