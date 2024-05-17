@@ -76,7 +76,7 @@ $$
 \widetilde{\mathbf{x}} = \sum_i^n w_i \mathbf{T}_i \mathbf{B}_i^{-1} \widetilde{\mathbf{x}}^0
 $$
 
-其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  $n$ 为对顶点 $\mathbf{x}$ 产生影响的关节数 （需要通过`jointIndices`的长度除以顶点数得到），$\widetilde{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$ 。
+其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  $n$ 为对顶点 $\mathbf{x}$ 产生影响的关节数 （需要通过`jointIndices`的长度除以顶点数得到）， $\widetilde{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$  。
 
 这里4x4矩阵对3维向量的变换可以使用`GfMatrix4f`的`TransformAffine` 函数实现。
 
