@@ -78,7 +78,7 @@ $$
 
 其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  $n$ 为对顶点 $\mathbf{x}$ 产生影响的关节数 （需要通过`jointIndices`的长度除以顶点数得到）， $\widetilde{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$  。
 
-这里4x4矩阵对3维向量的变换可以使用`GfMatrix4f`的`TransformAffine` 函数实现。
+这里4x4矩阵对3维向量的变换可以使用`GfMatrix4f`的[`TransformAffine`](https://openusd.org/dev/api/class_gf_matrix4f.html#ac379f460c0ef02fddd31ee3dc11f284d:~:text=%E2%97%86-,TransformAffine(),-%5B2/2%5D) 函数实现。
 
 你需要实现[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
