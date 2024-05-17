@@ -127,7 +127,7 @@ void Animator::update_mesh_vertices()
 1. Adobe的免费动画资源网站[Mixamo](https://www.mixamo.com/)，包含角色mesh和多种骨骼动画
 2. miHoYo角色MMD资源整理 [链接](https://www.hoyolab.com/article/118389) 
 
-> 拓展思考：如果有多个动作顺序播放，考虑一个动作平滑切换到另一个动作，应该怎么在动作之间插值？
+> 拓展思考：如果有多个舞蹈动画文件顺序播放，考虑一个动作平滑切换到另一个动作，应该怎么在动作之间插值？
 
 ## (Optional) 骨骼动画 + 布料仿真
 
