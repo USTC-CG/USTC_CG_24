@@ -50,7 +50,7 @@
 
 ## 3. 提供的初始结果
 
-下图的结果没有考虑布料自碰撞和与人体碰撞，所使用的usda文件下载链接：[rec link](https://rec.ustc.edu.cn/share/7f03d330-1524-11ef-a705-419a27101c12)
+下图的结果没有考虑布料自碰撞和与人体碰撞，所使用的usda文件下载链接：[rec link](https://rec.ustc.edu.cn/share/e3bbfa90-1525-11ef-86c4-b5a47b81827a)
 
 <div  align="center">    
  <img src="../images/girl-with-cloth-intersect.gif" style="zoom:70%" />
