@@ -73,12 +73,12 @@ void JointTree::compute_world_transforms_for_each_joint()
 最后，mesh顶点位置的更新公式如下：
 
 $$
-\~{\mathbf{x}} = \sum_i w_i \mathbf{T}_i * \mathbf{B}_i^{-1} \~{\mathbf{x}}^0
+\widetilde{\mathbf{x}} = \sum_i^n w_i \mathbf{T}_i \mathbf{B}_i^{-1} \widetilde{\mathbf{x}}^0
 $$
 
-其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  
+其中 $\mathbf{T}_i$ 和 $\mathbf{B}_i$ 分别为第 $i$ 个关节的 `worldTransform`和`bindTransform`,  $n$ 为对顶点 $\mathbf{x}$ 产生影响的关节数 （需要通过`jointIndices`的长度除以顶点数得到）， $\widetilde{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$  。
 
-$\~{\mathbf{x}} = [\vec{\mathbf{x}}, 1] \in \mathbb{R}^{4 \times 1}$ , 可以使用`GfMatrix4f::TransformAffine` 函数实现。
+这里4x4矩阵对3维向量的变换可以使用`GfMatrix4f`的[`TransformAffine`](https://openusd.org/dev/api/class_gf_matrix4f.html#ac379f460c0ef02fddd31ee3dc11f284d:~:text=%E2%97%86-,TransformAffine(),-%5B2/2%5D) 函数实现。
 
 你需要实现[`animator.cpp`](../../../Framework3D/source/nodes/nodes/geometry/character_animation/animator.cpp)中的函数：
 
@@ -127,7 +127,7 @@ void Animator::update_mesh_vertices()
 1. Adobe的免费动画资源网站[Mixamo](https://www.mixamo.com/)，包含角色mesh和多种骨骼动画
 2. miHoYo角色MMD资源整理 [链接](https://www.hoyolab.com/article/118389) 
 
-> 拓展思考：如果有多个动作顺序播放，考虑一个动作平滑切换到另一个动作，应该怎么在动作之间插值？
+> 拓展思考：如果有多个舞蹈动画文件顺序播放，考虑一个动作平滑切换到另一个动作，应该怎么在动作之间插值？
 
 ## (Optional) 骨骼动画 + 布料仿真
 
