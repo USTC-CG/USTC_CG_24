@@ -2,7 +2,7 @@
 
 在这一部分，我们将尝试结合基于数据方法的骨骼动画技术（本次作业）和基于物理的仿真技术（HW8 弹簧质点仿真），实现裙子随着人体一起运动并尝试考虑简单的碰撞处理。
 
-本部分为HW10选做内容。
+**本部分为HW10选做内容。由于涉及到课程上没有仔细讲的碰撞处理内容，因此不做过多要求，以尝试与体验为主。**
 
 ## 1. 布料与物体的连接
 
@@ -38,7 +38,7 @@
 </div>
 
 
-为了处理布料与人体的碰撞，一种简单的做法是为人体创建一些由简单几何体组合而成的简化模型(proxy model) 用于进行碰撞检测与处理，如下图所示。
+为了处理布料与人体的碰撞，一种简单的做法是为人体创建一些由简单几何体组合而成的简化模型(proxy model) 用于进行碰撞检测与处理，如下图所示，这是游戏中常用的做法。
 
 <div  align="center">    
  <img src="../images/collider.png" style="zoom:40%" />
@@ -46,9 +46,11 @@
 
 在本次作业中，你可以通过girl模型上的固定点大致计算模型腰部所在位置，假设在该位置存在一个球体，然后通过HW8中的选做内容-布料与球体的碰撞来进行一个简单的碰撞处理。
 
+更多碰撞处理内容可以参考老师上课的PPT和[GAMES103-基于物理的计算机动画入门: Lec9. Collision Handling](https://www.bilibili.com/video/BV12Q4y1S73g/?p=9&share_source=copy_web&vd_source=19d965dd50171e7e3327ff6e149567c2)。
+
 ## 3. 提供的初始结果
 
-下图的结果没有考虑布料自碰撞和与人体碰撞
+下图的结果没有考虑布料自碰撞和与人体碰撞，所使用的usda文件下载链接：[rec link](https://rec.ustc.edu.cn/share/7f03d330-1524-11ef-a705-419a27101c12)
 
 <div  align="center">    
  <img src="../images/girl-with-cloth-intersect.gif" style="zoom:70%" />
@@ -65,4 +67,4 @@
 **请在报告中介绍你采取的方法以及处理前后的结果对比动图/视频。**
 
 ## 参考资料
-[GAMES103]
+[GAMES103-基于物理的计算机动画入门: Lec9. Collision Handling](https://www.bilibili.com/video/BV12Q4y1S73g/?p=9&share_source=copy_web&vd_source=19d965dd50171e7e3327ff6e149567c2)
