@@ -165,7 +165,78 @@ Eigen::MatrixXd MassSpring::getSphereCollisionForce(Eigen::Vector3d center, doub
     return force;
 }
 // ----------------------------------------------------------------------------------
+ 
+bool MassSpring::set_dirichlet_bc_mask(const std::vector<bool>& mask)
+{
+	if (mask.size() == X.rows())
+	{
+		dirichlet_bc_mask = mask;
+		return true;
+	}
+	else
+		return false;
+}
 
+bool MassSpring::update_dirichlet_bc_vertices(const MatrixXd &control_vertices)
+{
+   for (int i = 0; i < dirichlet_bc_control_pair.size(); i++)
+   {
+       int idx = dirichlet_bc_control_pair[i].first;
+	   int control_idx = dirichlet_bc_control_pair[i].second;
+	   X.row(idx) = control_vertices.row(control_idx);
+   }
+
+   return true; 
+}
+
+bool MassSpring::init_dirichlet_bc_vertices_control_pair(const MatrixXd &control_vertices,
+    const std::vector<bool>& control_mask)
+{
+    
+	if (control_mask.size() != control_vertices.rows())
+			return false; 
+
+   // TODO: optimize this part from O(n) to O(1)
+   // First, get selected_control_vertices
+   std::vector<VectorXd> selected_control_vertices; 
+   std::vector<int> selected_control_idx; 
+   for (int i = 0; i < control_mask.size(); i++)
+   {
+       if (control_mask[i])
+       {
+			selected_control_vertices.push_back(control_vertices.row(i));
+            selected_control_idx.push_back(i);
+		}
+   }
+
+   // Then update mass spring fixed vertices 
+   for (int i = 0; i < dirichlet_bc_mask.size(); i++)
+   {
+       if (dirichlet_bc_mask[i])
+       {
+           // O(n^2) nearest point search, can be optimized
+           // -----------------------------------------
+           int nearest_idx = 0;
+           double nearst_dist = 1e6; 
+           VectorXd X_i = X.row(i);
+           for (int j = 0; j < selected_control_vertices.size(); j++)
+           {
+               double dist = (X_i - selected_control_vertices[j]).norm();
+               if (dist < nearst_dist)
+               {
+				   nearst_dist = dist;
+				   nearest_idx = j;
+			   }
+           }
+           //-----------------------------------------
+           
+		   X.row(i) = selected_control_vertices[nearest_idx];
+           dirichlet_bc_control_pair.push_back(std::make_pair(i, selected_control_idx[nearest_idx]));
+	   }
+   }
+
+   return true; 
+}
 
 }  // namespace USTC_CG::node_mass_spring
 

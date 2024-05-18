@@ -28,6 +28,7 @@
 #include "pxr/usd/usdSkel/skeletonQuery.h"
 
 namespace USTC_CG::node_read_usd {
+
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::String>("File Name").default_val("Default");
@@ -70,6 +71,10 @@ static void node_exec(ExeParams params)
             auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
             pxr::UsdGeomPrimvar primvar = PrimVarAPI.GetPrimvar(pxr::TfToken("UVMap"));
             primvar.Get(&mesh->texcoordsArray, time);
+
+
+            pxr::UsdGeomPrimvar primvar_control_points = PrimVarAPI.GetPrimvar(pxr::TfToken("ControlPoints"));
+			primvar_control_points.Get(&mesh->controlPoints, time); // right way to check?
 
             pxr::GfMatrix4d final_transform = usdgeom.ComputeLocalToWorldTransform(time);
 
