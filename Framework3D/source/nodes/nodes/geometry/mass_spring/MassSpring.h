@@ -4,6 +4,7 @@
 #include <set>
 #include "utils.h"
 #include <chrono>
+#include <cassert>
 
 #define TIC(name) auto start_##name = std::chrono::high_resolution_clock::now(); 
 #define TOC(name) \
@@ -54,6 +55,11 @@ class MassSpring {
     // Detect collision and compute the penalty-based collision force with given sphere
     Eigen::MatrixXd getSphereCollisionForce(Eigen::Vector3d center, double radius);
 
+    bool set_dirichlet_bc_mask(const std::vector<bool>& mask);
+    bool update_dirichlet_bc_vertices(const MatrixXd &control_vertices); 
+    bool init_dirichlet_bc_vertices_control_pair(const MatrixXd &control_vertices,
+                                      const std::vector<bool>& control_mask);
+
     // Simulation parameters
     double stiffness = 1000.0;
     double damping = 0.995;
@@ -85,5 +91,6 @@ class MassSpring {
     std::vector<double> E_rest_length;
     std::vector<bool>
         dirichlet_bc_mask;  // mask for marking fixed points (Dirichlet boundary condition)
+    std::vector<std::pair<int, int>> dirichlet_bc_control_pair;
 };
 }  // namespace USTC_CG::node_mass_spring

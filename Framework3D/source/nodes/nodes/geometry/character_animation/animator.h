@@ -22,12 +22,13 @@ class Joint
 {
 
 public:
-    Joint(int idx, string name, int parent_idx = -1); 
+    Joint(int idx, string name, int parent_idx, const GfMatrix4f& bind_transform); 
 
 	void compute_world_transform();
 
 	GfMatrix4f get_local_transform() { return local_transform_; }
 	GfMatrix4f get_world_transform() { return world_transform_; }
+	GfMatrix4f get_bind_transform() { return bind_transform_; }
 
     shared_ptr<Joint> parent_;
     vector<shared_ptr<Joint>> children_;
@@ -41,6 +42,7 @@ private:
 	
 	GfMatrix4f local_transform_;
     GfMatrix4f world_transform_;
+    GfMatrix4f bind_transform_;
 };
 
 class JointTree
@@ -53,7 +55,7 @@ class JointTree
 
 	void compute_world_transforms_for_each_joint(); 
 
-	void add_joint(int idx, std::string name, int parent_idx); 
+	void add_joint(int idx, std::string name, int parent_idx, const GfMatrix4f& bind_transform); 
 
 	void update_joint_local_transform(const VtArray<GfMatrix4f>& new_local_transforms); 
 

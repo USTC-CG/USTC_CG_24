@@ -34,9 +34,14 @@ static void node_exec(ExeParams params)
     auto mesh = geom.get_component<MeshComponent>();
     auto skel = geom.get_component<SkelComponent>();
 
-    auto animator = std::make_shared<Animator>(mesh, skel); 
+    if (!mesh) {
+        throw std::runtime_error("Read mesh error.");
+    }
+    else if (!skel)   
+        throw std::runtime_error("Read skeleton error.");
 
-    animator->step(skel);
+	auto animator = std::make_shared<Animator>(mesh, skel);
+	animator->step(skel);
 
     params.set_output("Animator", animator);
     params.set_output("Output Geometry", geom);

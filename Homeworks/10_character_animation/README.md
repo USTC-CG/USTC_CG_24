@@ -20,7 +20,7 @@
 
 - 实现骨骼的关节变换 & 蒙皮顶点更新，主要原理见[文档：角色动画简明教程](documents/README.md)
 
-- （Optional）基于作业8弹簧质点实现衣服运动并考虑布料与人体的简单碰撞处理，说明见[文档Part2：角色动画+布料仿真](documents/README.md)
+- （Optional）基于作业8弹簧质点实现衣服运动并考虑布料与人体的简单碰撞处理，说明见[文档Part2：角色动画+布料仿真](documents/README-part2.md)
 
 
 

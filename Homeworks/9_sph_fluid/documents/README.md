@@ -150,7 +150,7 @@ for (auto& p : ps_.particles()) {
 SPH中密度的计算公式为：
 
 $$
- \rho_i = \sum_{j+i} \left(\frac{m_j}{\rho_j} \right) m_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_{j+i} m_j  W_{ij}
+ \rho_i = \sum_{j+i} \left(\frac{m_j}{\rho_j} \right) \rho_j W(\mathbf{x}_ i - \mathbf{x}_ j, h) =  \sum_{j+i} m_j  W_{ij}
 $$
 
 这里我们记 $W_{ij} = W(\mathbf{x}_i, \mathbf{x}_j, h)$， $j$ 表示粒子 $i$ 的所有邻居粒子。 在SPH方法中， $h$ 表示核函数半径，我们用 $\Delta t$ 来表示时间步长。

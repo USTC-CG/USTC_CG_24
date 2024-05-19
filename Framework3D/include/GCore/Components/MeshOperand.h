@@ -16,6 +16,7 @@ struct USTC_CG_API MeshComponent : public GOperandComponent {
     pxr::VtArray<pxr::GfVec3f> vertices;
     pxr::VtArray<int> faceVertexCounts;
     pxr::VtArray<int> faceVertexIndices;
+    pxr::VtArray<float> controlPoints; // point group for combining animation and simulation 
 
     pxr::VtArray<pxr::GfVec3f> normals;
     pxr::VtArray<pxr::GfVec2f> texcoordsArray;
