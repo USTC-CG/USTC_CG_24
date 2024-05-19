@@ -4,7 +4,8 @@
 #include <cassert>
 
 #include "USTC_CG.h"
-#include "Utils/Functions/GenericPointer.hpp"
+#include "entt/meta/meta.hpp"
+#include "entt/meta/resolve.hpp"
 #include "Utils/Macro/map.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -23,12 +24,12 @@ class ResourceAllocator {
 #define PAYLOAD_NAME(RESOURCE) RESOURCE##CachePayload
 #define CACHE_SIZE(RESOURCE)   m##RESOURCE##CacheSize
 
-#define JUDGE_RESOURCE_DYNAMIC(RSC) if (CPPType::get<RSC##Handle>() == *handle.type())
+#define JUDGE_RESOURCE_DYNAMIC(RSC) if (entt::resolve<RSC##Handle>() == handle.type())
 #define JUDGE_RESOURCE(RSC)         if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
 
 #define RESOLVE_DESTROY_DYNAMIC(RESOURCE)                                                  \
     RESOURCE##Handle h;                                                                    \
-    handle.type()->copy_construct(handle.get(), &h);                                       \
+    h = handle.cast<RESOURCE##Handle>();                                                   \
     if (h) {                                                                               \
         PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };                                      \
         resolveCacheDestroy(                                                               \
@@ -73,7 +74,7 @@ class ResourceAllocator {
         RESOLVE_DESTROY_DYNAMIC(RESOURCE) \
     }
 
-    void destroy(GMutablePointer handle) noexcept
+    void destroy(entt::meta_any handle) noexcept
     {
         if constexpr (mEnabled) {
             // If code runs here, It means some of your output resource is not created;

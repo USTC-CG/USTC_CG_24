@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "USTC_CG.h"
-#include "Utils/Functions/GenericPointer.hpp"
+#include "entt/meta/meta.hpp"
 #include "node_exec.hpp"
 #include "node_tree.hpp"
 
@@ -12,13 +12,13 @@ struct NodeSocket;
 struct Node;
 
 struct RuntimeInputState {
-    GMutablePointer value = nullptr;
+    entt::meta_any value;
     bool is_forwarded = false;
     bool is_last_used = false;
 };
 
 struct RuntimeOutputState {
-    GMutablePointer value = nullptr;
+    entt::meta_any value;
     bool is_last_used = false;
 };
 
@@ -31,9 +31,9 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     void prepare_memory();
     void prepare_tree(NodeTree* tree) override;
     void execute_tree(NodeTree* tree) override;
-    GMutablePointer FindPtr(NodeSocket* socket);
-    void sync_node_from_external_storage(NodeSocket* socket, void* data) override;
-    void sync_node_to_external_storage(NodeSocket* socket, void* data) override;
+    entt::meta_any* FindPtr(NodeSocket* socket);
+    void sync_node_from_external_storage(NodeSocket* socket, const entt::meta_any& data) override;
+    void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data) override;
 
    protected:
     virtual ExeParams prepare_params(NodeTree* tree, Node* node);
@@ -49,6 +49,11 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     std::vector<NodeSocket*> output_of_nodes_to_execute;
     ptrdiff_t nodes_to_execute_count = 0;
 };
+
+inline std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor()
+{
+    return std::make_unique<EagerNodeTreeExecutor>();
+}
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorSimulation();

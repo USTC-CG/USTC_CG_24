@@ -9,6 +9,7 @@
 #include "Nodes/node_register.h"
 #include "Nodes/socket_types/buffer_socket_types.hpp"
 #include "func_node_base.h"
+#include "entt/meta/resolve.hpp"
 #include "pxr/base/vt/arrayPyBuffer.h"
 
 namespace USTC_CG::node_python_script {
@@ -137,9 +138,9 @@ static void node_exec_add(ExeParams params)
         bp::list input_l;
         for (int i = 0; i < len(input); ++i) {
             std::string s = bp::extract<std::string>(input[i]);
-            auto storage = params.get_input<GMutablePointer>(s.c_str());
-            if (storage.is_type<float>()) {
-                float val = *storage.get<float>();
+            auto storage = params.get_input<entt::meta_any>(s.c_str());
+            if (storage.type()==entt::resolve<float>()) {
+                float val = storage.cast<float>();
                 input_l.append(val);
             }
         }

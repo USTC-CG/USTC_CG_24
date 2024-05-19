@@ -193,14 +193,15 @@ void GeoNodeSystemExecution::try_execution()
         executor->prepare_tree(node_tree.get());
 
         for (auto&& node : node_tree->nodes) {
-            auto try_fill_info = [&node, this](const char* id_name, void* data) {
+            auto try_fill_info = [&node, this]<typename T>(const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
                     assert(node->outputs.size() == 1);
                     auto output_socket = node->outputs[0];
+                    entt::meta_any data = obj;
                     executor->sync_node_from_external_storage(output_socket, data);
                 }
             };
-            try_fill_info("geom_time_code", &cached_last_frame_);
+            try_fill_info("geom_time_code", cached_last_frame_);
         }
 
         executor->execute_tree(node_tree.get());
@@ -210,17 +211,19 @@ void GeoNodeSystemExecution::try_execution()
         bool has_time_advection = false;
 
         for (auto&& node : node_tree->nodes) {
-            auto try_fetch_info = [&node, this](const char* id_name, void* data) {
+            auto try_fetch_info = [&node, this]<typename T>(const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
                     assert(node->inputs.size() == 1);
                     auto output_socket = node->inputs[0];
+                    entt::meta_any data;
                     executor->sync_node_to_external_storage(output_socket, data);
+                    obj = data.cast<T>();
                     return true;
                 }
                 return false;
             };
 
-            if (try_fetch_info("geom_time_gain", &time_advected)) {
+            if (try_fetch_info("geom_time_gain", time_advected)) {
                 has_time_advection = true;
                 break;
             }

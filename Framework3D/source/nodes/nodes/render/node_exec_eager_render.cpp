@@ -34,7 +34,7 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
     if (EagerNodeTreeExecutor::execute_node(tree, node)) {
         for (auto&& input : node->inputs) {
             if (!node->typeinfo->ALWAYS_REQUIRED && input_states[index_cache[input]].is_last_used) {
-                if (input_states[index_cache[input]].value.get())
+                if (input_states[index_cache[input]].value)
                     resource_allocator.destroy(input_states[index_cache[input]].value);
                 input_states[index_cache[input]].is_last_used = false;
             }
@@ -44,7 +44,7 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
     else {
         for (auto&& output : node->outputs) {
             {
-                if (output_states[index_cache[output]].value.get())
+                if (output_states[index_cache[output]].value)
                     resource_allocator.destroy(output_states[index_cache[output]].value);
             }
         }

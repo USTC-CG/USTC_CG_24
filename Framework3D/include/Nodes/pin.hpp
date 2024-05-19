@@ -6,6 +6,8 @@
 #include "Utils/json.hpp"
 #include "all_socket_types.hpp"
 #include "id.hpp"
+#include "entt/core/type_info.hpp"
+#include "entt/meta/meta.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
@@ -28,7 +30,7 @@ struct GOperandComponent;
 
 struct SocketTypeInfo {
     char type_name[64];
-    const CPPType* cpp_type;
+    entt::meta_type cpp_type;
     SocketType type;
 
     std::function<bool(SocketType)> canLinkTo = [this](SocketType other) { return type == other; };

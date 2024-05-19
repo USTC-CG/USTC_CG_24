@@ -7,6 +7,8 @@
 #include <iostream>
 #include <map>
 #include <set>
+
+#include "entt/meta/resolve.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class EagerNodeTreeExecutorSimulation : public EagerNodeTreeExecutor {
    public:
@@ -17,8 +19,7 @@ class EagerNodeTreeExecutorSimulation : public EagerNodeTreeExecutor {
    protected:
     bool execute_node(NodeTree* tree, Node* node) override;
 
-    std::map<std::string, GMutablePointer> storage;
-    std::vector<GMutablePointer> to_destroy;
+    std::map<std::string, entt::meta_any> storage;
 };
 
 void EagerNodeTreeExecutorSimulation::prepare_tree(NodeTree* node_tree)
@@ -26,63 +27,29 @@ void EagerNodeTreeExecutorSimulation::prepare_tree(NodeTree* node_tree)
     EagerNodeTreeExecutor::prepare_tree(node_tree);
     std::set<std::string> refreshed;
 
-    for (int i = 0; i < input_states.size(); ++i) {
-        // If the input is an 'Any' type, the value type is a GMutablePointer. If the input is
-        // connected, we need to prepare the memory it points to.
-        if (input_states[i].value.is_type<GMutablePointer>()) {
-            auto& linked_sockets = input_of_nodes_to_execute[i]->directly_linked_sockets;
-            assert(linked_sockets.size() <= 1);
-
-            if (!linked_sockets.empty()) {
-                auto input = input_of_nodes_to_execute[i];
-                auto node = input->Node;
-                // Implementation for now.
-                assert(node);
-
-                auto output_state = output_states[index_cache[linked_sockets[0]]];
-
-                auto create_new_storage = [&output_state, this, i]() {
-                    auto storage_ptr = GMutablePointer{ output_state.value.type(),
-                                                        malloc(output_state.value.type()->size()) };
-                    storage_ptr.default_construct();
-
-                    return storage_ptr;
-                };
-
-                if (std::string(node->typeinfo->id_name) == "geom_storage_in") {
-                    std::string name;
-                    CPPType::get<std::string>().copy_assign(
-                        default_value_storage(node->inputs[0]), &name);
-                    name = std::string(name.c_str());
-
+    // After executing the tree, storage all the required info
+    for (int i = 0; i < input_of_nodes_to_execute.size(); ++i) {
+        auto socket = input_of_nodes_to_execute[i];
+        if (socket->type_info->type == SocketType::Any) {
+            if (std::string(socket->Node->typeinfo->id_name) == "geom_storage_in") {
+                auto node = socket->Node;
+                entt::meta_any data;
+                if (!socket->directly_linked_sockets.empty()) {
+                    auto input = node->inputs[0];
+                    std::string name = entt::resolve<std::string>()
+                                           .from_void(default_value_storage(input))
+                                           .cast<std::string>()
+                                           .c_str();
+                    if (storage.find(name) == storage.end()) {
+                        data = socket->directly_linked_sockets[0]->type_info->cpp_type.construct();
+                        storage[name] = data;
+                    }
                     refreshed.emplace(name);
-
-                    GMutablePointer ptr;
-
-                    if (storage.find(name) != storage.end()) {
-                        ptr = storage.at(name);
-
-                        if (output_state.value.type() != ptr.type()) {
-                            ptr.destruct();
-                            free(ptr.get());
-                            ptr = storage[name] = create_new_storage();
-                        }
-                    }
-                    else {
-                        ptr = storage[name] = create_new_storage();
-                    }
-                    // This really prepares the memory of the underlying GMutablePointer
-                    input_states[i].value.type()->copy_assign(&ptr, input_states[i].value.get());
-                }
-                else {
-                    auto ptr = create_new_storage();
-                    to_destroy.push_back(ptr);
-                    // This really prepares the memory of the underlying GMutablePointer
-                    input_states[i].value.type()->copy_assign(&ptr, input_states[i].value.get());
                 }
             }
         }
     }
+
     std::set<std::string> keysToDelete;
     for (auto&& value : storage) {
         if (!refreshed.contains(value.first)) {
@@ -92,21 +59,36 @@ void EagerNodeTreeExecutorSimulation::prepare_tree(NodeTree* node_tree)
     for (auto& key : keysToDelete) {
         storage.erase(key);
     }
+    refreshed.clear();
 }
 
 void EagerNodeTreeExecutorSimulation::execute_tree(NodeTree* tree)
 {
     EagerNodeTreeExecutor::execute_tree(tree);
+
+    // After executing the tree, storage all the required info
+    for (int i = 0; i < input_of_nodes_to_execute.size(); ++i) {
+        auto socket = input_of_nodes_to_execute[i];
+        if (socket->type_info->type == SocketType::Any) {
+            if (std::string(socket->Node->typeinfo->id_name) == "geom_storage_in") {
+                auto node = socket->Node;
+                entt::meta_any data;
+                sync_node_to_external_storage(input_of_nodes_to_execute[i], data);
+
+                auto input = node->inputs[0];
+                std::string name = entt::resolve<std::string>()
+                                       .from_void(default_value_storage(input))
+                                       .cast<std::string>()
+                                       .c_str();
+                storage[name] = data;
+            }
+        }
+    }
 }
 
 EagerNodeTreeExecutorSimulation::~EagerNodeTreeExecutorSimulation()
 {
-    for (auto&& value : storage) {
-        value.second.destruct();
-    }
-    for (auto destroy : to_destroy) {
-        destroy.destruct();
-    }
+    storage.clear();
 }
 
 bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
@@ -116,11 +98,12 @@ bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
     if (node->REQUIRED) {  // requirement info is valid.
         if (std::string(node->typeinfo->id_name) == "geom_storage_out") {
             auto input = node->inputs[0];
-            std::string name;
-            CPPType::get<std::string>().copy_assign(default_value_storage(input), &name);
+            std::string name = entt::resolve<std::string>()
+                                   .from_void(default_value_storage(input))
+                                   .cast<std::string>();
             name = std::string(name.c_str());
             if (storage.find(name) != storage.end()) {
-                auto pointer = storage.at(name);
+                auto& pointer = storage.at(name);
 
                 // Check all the connected input type
 
@@ -131,14 +114,13 @@ bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
                     }
                 }
 
-                CPPType::get<GMutablePointer>().copy_assign(
-                    &pointer, output_states[index_cache[node->outputs[0]]].value.get());
+                output_states[index_cache[node->outputs[0]]].value = pointer;
 
                 node->execution_failed = {};
                 return true;
             }
             else {
-                node->execution_failed = "No Matching Storage In";
+                node->execution_failed = "No cache can be found with name " + name + " (yet).";
                 return false;
             }
         }

@@ -1,10 +1,11 @@
 #pragma once
 
 #include <cassert>
+#include <iostream>
 #include <vector>
 
 #include "USTC_CG.h"
-#include "Utils/Functions/GenericPointer.hpp"
+#include "entt/meta/meta.hpp"
 // #include "Utils/Functions/GenericPointer.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -25,9 +26,15 @@ struct ExeParams {
     template<typename T>
     T get_input(const char* identifier) const
     {
-        const int index = this->get_input_index(identifier);
-        const T& value = *static_cast<T*>(inputs_[index].get());
-        return value;
+        if constexpr (std::is_same_v<T, entt::meta_any>) {
+            const int index = this->get_input_index(identifier);
+            return *inputs_[index];
+        }
+        else {
+            const int index = this->get_input_index(identifier);
+            const T& value = inputs_[index]->cast<const T&>();
+            return value;
+        }
     }
 
     /**
@@ -39,7 +46,8 @@ struct ExeParams {
         using DecayT = std::decay_t<T>;
 
         const int index = this->get_output_index(identifier);
-        *outputs_[index].get<DecayT>() = std::forward<T>(value);
+
+        outputs_[index]->cast<DecayT&>() = std::forward<T>(value);
     }
 
    private:
@@ -49,8 +57,8 @@ struct ExeParams {
     friend class EagerNodeTreeExecutor;
 
    private:
-    std::vector<GMutablePointer> inputs_;
-    std::vector<GMutablePointer> outputs_;
+    std::vector<entt::meta_any*> inputs_;
+    std::vector<entt::meta_any*> outputs_;
 };
 
 // This executes a tree. The execution strategy is left to its children.
@@ -61,11 +69,11 @@ struct NodeTreeExecutor {
     virtual void finalize(NodeTree* tree)
     {
     }
-    virtual void sync_node_from_external_storage(NodeSocket* socket, void* data)
+    virtual void sync_node_from_external_storage(NodeSocket* socket, const entt::meta_any& data)
     {
     }
 
-    virtual void sync_node_to_external_storage(NodeSocket* socket, void* data)
+    virtual void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data)
     {
     }
     void execute(NodeTree* tree)

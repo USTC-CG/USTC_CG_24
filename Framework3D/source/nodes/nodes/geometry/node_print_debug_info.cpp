@@ -14,10 +14,9 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    GMutablePointer storage = params.get_input<GMutablePointer>("Variable");
-    if (storage.is_type<float>()) {
-        float value;
-        storage.type()->copy_construct(storage.get(), &value);
+    entt::meta_any storage = params.get_input<entt::meta_any>("Variable");
+    if (storage.allow_cast<float>()) {
+        float value = storage.cast<float>();
         std::cout << value << std::endl;
     }
 
