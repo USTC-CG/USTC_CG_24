@@ -12,13 +12,18 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Any>("Variable");
 }
 
+#define TypesToPrint float, VtArray<float>
+
 static void node_exec(ExeParams params)
 {
     entt::meta_any storage = params.get_input<entt::meta_any>("Variable");
-    if (storage.allow_cast<float>()) {
-        float value = storage.cast<float>();
-        std::cout << value << std::endl;
+    using namespace pxr;
+#define PrintType(type)                                 \
+    if (storage.allow_cast<type>()) {                   \
+        std::cout << storage.cast<type>() << std::endl; \
     }
+    MACRO_MAP(PrintType, TypesToPrint)
+
 
     auto& stage = GlobalUsdStage::global_usd_stage;
     std::string str;

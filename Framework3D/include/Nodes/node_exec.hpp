@@ -47,7 +47,12 @@ struct ExeParams {
 
         const int index = this->get_output_index(identifier);
 
-        outputs_[index]->cast<DecayT&>() = std::forward<T>(value);
+        if (outputs_[index]->type()) {
+            outputs_[index]->cast<DecayT&>() = std::forward<T>(value);
+        }
+        else {
+            *outputs_[index] = std::forward<T>(value);
+        }
     }
 
    private:

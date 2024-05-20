@@ -84,20 +84,28 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                     }
 
                     auto& input_state = input_states[index_cache[directly_linked_input_socket]];
-
                     auto& output_state = output_states[index_cache[output]];
-
                     auto is_last_target = i == output->directly_linked_sockets.size() - 1;
 
                     auto value_to_forward = output_state.value;
 
-                    if (is_last_target) {
-                        input_state.value = std::move(value_to_forward);
+                    if (input_state.value.type() &&
+                        input_state.value.type() != value_to_forward.type()) {
+                        directly_linked_input_socket->Node->execution_failed =
+                            "Type mismatch input";
+                        input_state.is_forwarded = false;
                     }
                     else {
-                        input_state.value = value_to_forward;
+                        directly_linked_input_socket->Node->execution_failed = {};
+
+                        if (is_last_target) {
+                            input_state.value = std::move(value_to_forward);
+                        }
+                        else {
+                            input_state.value = value_to_forward;
+                        }
+                        input_state.is_forwarded = true;
                     }
-                    input_state.is_forwarded = true;
                 }
             }
             if (last_used_id == -1) {
