@@ -37,6 +37,7 @@ static void node_register()
     ntype_value_int.declare = node_declare_int;
     nodeRegisterType(&ntype_value_int);
 
+
     static NodeTypeInfo ntype_value_float;
     strcpy(ntype_value_float.ui_name, "Float Value");
     strcpy(ntype_value_float.id_name, "func_value_float");
