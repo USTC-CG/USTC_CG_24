@@ -31,6 +31,7 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     void prepare_memory();
     void prepare_tree(NodeTree* tree) override;
     void execute_tree(NodeTree* tree) override;
+
     entt::meta_any* FindPtr(NodeSocket* socket);
     void sync_node_from_external_storage(NodeSocket* socket, const entt::meta_any& data) override;
     void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data) override;

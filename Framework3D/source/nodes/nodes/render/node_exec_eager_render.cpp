@@ -5,12 +5,16 @@
 // #include "Utils/Functions/GenericPointer_.hpp"
 //  #include "graph/node_exec_graph.h"
 
+#include "entt/meta/context.hpp"
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
    protected:
     bool execute_node(NodeTree* tree, Node* node) override;
 
    public:
+    
+
     void finalize(NodeTree* tree) override
     {
         for (int i = 0; i < input_states.size(); ++i) {

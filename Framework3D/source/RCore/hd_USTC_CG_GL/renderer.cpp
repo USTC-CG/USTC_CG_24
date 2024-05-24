@@ -39,17 +39,17 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     executor->prepare_tree(node_tree);
 
     for (auto&& node : node_tree->nodes) {
-        auto try_fill_info = [&node, &executor]<typename T>(const char* id_name, const T& obj) {
+        auto try_fill_info = [&node, &executor, this]<typename T>(const char* id_name, const T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
                 assert(node->outputs.size() == 1);
                 auto output_socket = node->outputs[0];
-                entt::meta_any data(obj);
+                entt::meta_any data(*(render_param->context), obj);
                 executor->sync_node_from_external_storage(output_socket, data);
             }
         };
-        try_fill_info("render_scene_lights",    *render_param->lights);
-        try_fill_info("render_scene_camera",    *render_param->cameras);
-        try_fill_info("render_scene_meshes",    *render_param->meshes);
+        try_fill_info("render_scene_lights", *render_param->lights);
+        try_fill_info("render_scene_camera", *render_param->cameras);
+        try_fill_info("render_scene_meshes", *render_param->meshes);
         try_fill_info("render_scene_materials", *render_param->materials);
     }
     executor->execute_tree(node_tree);

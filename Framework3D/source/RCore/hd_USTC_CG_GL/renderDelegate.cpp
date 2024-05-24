@@ -341,6 +341,8 @@ void Hd_USTC_CG_RenderDelegate::SetRenderSetting(const TfToken& key, const VtVal
     }
     if (key == TfToken("RenderNodeTreeExecutor")) {
         _renderParam->executor = static_cast<NodeTreeExecutor*>(value.Get<void*>());
+        auto&& context = entt::locator<entt::meta_ctx>::value_or();
+        _renderParam-> context = &_renderParam->executor->get_meta_ctx();
     }
 }
 

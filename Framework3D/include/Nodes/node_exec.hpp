@@ -68,6 +68,11 @@ struct ExeParams {
 
 // This executes a tree. The execution strategy is left to its children.
 struct NodeTreeExecutor {
+   public:
+    NodeTreeExecutor() : context(entt::locator<entt::meta_ctx>::value_or())
+    {
+    }
+
     virtual ~NodeTreeExecutor() = default;
     virtual void prepare_tree(NodeTree* tree) = 0;
     virtual void execute_tree(NodeTree* tree) = 0;
@@ -86,6 +91,14 @@ struct NodeTreeExecutor {
         prepare_tree(tree);
         execute_tree(tree);
     }
+
+    entt::meta_ctx& get_meta_ctx() const
+    {
+        return context;
+    }
+
+   protected:
+    entt::meta_ctx& context;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
