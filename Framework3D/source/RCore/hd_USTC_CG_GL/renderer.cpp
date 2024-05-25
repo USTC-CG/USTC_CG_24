@@ -328,7 +328,9 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
             }
         }
     }
-
+    if (!_aovBindingsValid) {
+        _aovBindingsNeedValidation = true;
+    }
     return _aovBindingsValid;
 };
 
