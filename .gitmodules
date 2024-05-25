@@ -22,3 +22,6 @@
 [submodule "Framework3D/external/OpenMesh"]
 	path = Framework3D/external/OpenMesh
 	url = https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git
+[submodule "Framework3D/external/nvrhi"]
+	path = Framework3D/external/nvrhi
+	url = https://github.com/NVIDIAGameWorks/nvrhi.git
