@@ -178,7 +178,13 @@ class ResourceAllocator {
     template<typename RESOURCE, typename... Args>
     RESOURCE create_resource(const desc<RESOURCE>& desc, Args&&... rest)
     {
-        MACRO_MAP(CREATE_CONCRETE, RESOURCE_LIST)
+        MACRO_MAP(CREATE_CONCRETE, NVRHI_RESOURCE_LIST)
+        if constexpr (std::is_same_v<PipelineHandle, RESOURCE>) {
+            return device->createRayTracingPipeline(desc, rest...);
+        }
+        if constexpr (std::is_same_v<AccelStructHandle, RESOURCE>) {
+            return device->createAccelStruct(desc, rest...);
+        }
     }
 
     template<typename RESOURCE>
