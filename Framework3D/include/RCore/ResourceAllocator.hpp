@@ -63,12 +63,12 @@ class ResourceAllocator {
         }
     }
 
-#define CLEAR_CACHE(RESOURCE)                                                         \
-    assert(!INUSE_NAME(RESOURCE).size());                                             \
-    for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end();) { \
-        it->second.handle = nullptr;                                                  \
-        it = CACHE_NAME(RESOURCE).erase(it);                                          \
-    }
+#define CLEAR_CACHE(RESOURCE)                                                              \
+    assert(!INUSE_NAME(RESOURCE).size());                                                  \
+    for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end(); it++) { \
+        it->second.handle = nullptr;                                                       \
+    }                                                                                      \
+    CACHE_NAME(RESOURCE).clear();
 
     void terminate() noexcept
     {
@@ -333,6 +333,10 @@ class ResourceAllocator {
 
         iterator erase(iterator it);
         const_iterator find(const key_type& key) const;
+        void clear()
+        {
+            return mContainer.clear();
+        }
         iterator find(const key_type& key);
         template<typename... ARGS>
         void emplace(ARGS&&... args);

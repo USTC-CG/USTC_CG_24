@@ -52,6 +52,16 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 TF_DEFINE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
 
+struct MessageCallBack : public nvrhi::IMessageCallback {
+    void message(nvrhi::MessageSeverity severity, const char* messageText) override
+    {
+        logging(messageText, Error);
+    }
+
+    static MessageCallBack callback;
+};
+MessageCallBack MessageCallBack::callback;
+
 // Find an adapter whose name contains the given string.
 static RefCountPtr<IDXGIAdapter> FindAdapter(const std::wstring& targetName)
 {
@@ -159,7 +169,7 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
         &_renderThread, &_sceneVersion, &lights, &cameras, &meshes, &materials);
 
     nvrhi::d3d12::DeviceDesc deviceDesc;
-    // deviceDesc.errorCB = &DefaultMessageCallback::GetInstance();
+    deviceDesc.errorCB = &MessageCallBack::callback;
     {
         UINT windowStyle = m_DeviceParams.startFullscreen ? (WS_POPUP | WS_SYSMENU | WS_VISIBLE)
                            : m_DeviceParams.startMaximized
@@ -230,7 +240,31 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 
         hr = D3D12CreateDevice(
             targetAdapter, m_DeviceParams.featureLevel, IID_PPV_ARGS(&m_Device12));
+
+        D3D12_COMMAND_QUEUE_DESC queueDesc;
+        ZeroMemory(&queueDesc, sizeof(queueDesc));
+        queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        queueDesc.NodeMask = 1;
+        hr = m_Device12->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_GraphicsQueue));
+        HR_RETURN(hr)
+        m_GraphicsQueue->SetName(L"Graphics Queue");
+
+        if (m_DeviceParams.enableComputeQueue) {
+            queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            hr = m_Device12->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_ComputeQueue));
+            HR_RETURN(hr)
+            m_ComputeQueue->SetName(L"Compute Queue");
+        }
+
+        if (m_DeviceParams.enableCopyQueue) {
+            queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+            hr = m_Device12->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CopyQueue));
+            HR_RETURN(hr)
+            m_CopyQueue->SetName(L"Copy Queue");
+        }
     }
+
     deviceDesc.pDevice = m_Device12;
     deviceDesc.pGraphicsCommandQueue = m_GraphicsQueue;
     deviceDesc.pComputeCommandQueue = m_ComputeQueue;
@@ -283,6 +317,7 @@ HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(const TfToken
 Hd_USTC_CG_RenderDelegate::~Hd_USTC_CG_RenderDelegate()
 {
     _resourceRegistry.reset();
+    _renderer.reset();
     std::cout << "Destroying Tiny RenderDelegate" << std::endl;
 }
 

@@ -1,13 +1,12 @@
 #include "renderer.h"
 
+#include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_tree.hpp"
-#include "RCore/Backend.hpp"
 #include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
 #include "renderParam.h"
-#include "../../nodes/nodes/render/resource_allocator_instance.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -16,6 +15,12 @@ Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
     : _enableSceneColors(false),
       render_param(render_param)
 {
+}
+
+Hd_USTC_CG_Renderer::~Hd_USTC_CG_Renderer()
+{
+    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
+    executor->reset_allocator();
 }
 
 void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
@@ -35,12 +40,12 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     // Fill the nodes that requires value from the scene.
-    auto& executor = render_param->executor;
+    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
     auto& node_tree = render_param->node_tree;
 
     executor->prepare_tree(node_tree);
 
-    resource_allocator.set_device(render_param->nvrhi_device);
+    executor->set_device(render_param->nvrhi_device);
 
     for (auto&& node : node_tree->nodes) {
         auto try_fill_info = [&node, &executor](const char* id_name, void* data) {
@@ -76,9 +81,12 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
             auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
             rb->Present(texture);
+
             rb->SetConverged(true);
         }
     }
+
+    render_param->nvrhi_device->runGarbageCollection();
 
     executor->finalize(node_tree);
 }

@@ -18,11 +18,9 @@ using GOperandBaseHandle = std::shared_ptr<GOperandBase>;
 class USTC_CG_API GOperandBase
 {
 public:
-    GOperandBase()
-    {
-    }
+    GOperandBase();
 
-    virtual ~GOperandBase() = default;
+    virtual ~GOperandBase();
 
     GOperandBase(const GOperandBase& operand);
     GOperandBase(GOperandBase&& operand) noexcept;

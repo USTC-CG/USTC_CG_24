@@ -4,6 +4,14 @@
 #include "pxr/usd/usdGeom/xform.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+GOperandBase::GOperandBase()
+{
+}
+
+GOperandBase::~GOperandBase()
+{
+}
+
 GOperandBase::GOperandBase(const GOperandBase& operand)
 {
     *(this) = operand;

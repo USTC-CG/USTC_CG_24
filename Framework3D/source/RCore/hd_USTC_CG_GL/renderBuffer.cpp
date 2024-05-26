@@ -257,7 +257,7 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     glDeleteFramebuffers(1, &temp);
 #elif defined(USTC_CG_BACKEND_NVRHI)
 
-    auto command_list = nvrhi_device->createCommandList({});
+    auto command_list = nvrhi_device->createCommandList();
     command_list->open();
 
     auto staging =
@@ -265,13 +265,18 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     command_list->copyTexture(staging, {}, handle, {});
     command_list->close();
 
-    nvrhi_device->executeCommandList(command_list);
+    nvrhi_device->executeCommandList(command_list.Get());
     nvrhi_device->waitForIdle();
 
     size_t pitch;
     auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
 
-    memcpy(_buffer.data(), mapped, _buffer.size());
+    for (int i = 0; i < handle->getDesc().height; ++i) {
+        memcpy(
+            _buffer.data() + i * _width * HdDataSizeOfFormat(_format),
+            (uint8_t*)mapped + i * pitch,
+            _width * HdDataSizeOfFormat(_format));
+    }
 
     nvrhi_device->unmapStagingTexture(staging);
 
