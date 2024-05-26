@@ -28,6 +28,9 @@
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/pxr.h"
 
+#include "RCore/Backend.hpp"
+#include "nvrhi/d3d12.h"
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
@@ -93,11 +96,12 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     // The feed memory size must match the type
     void Clear(const float* value);
     void Clear(const int* value);
-    void Present(GLuint texture);
+    void Present(TextureHandle texture);
     GLuint fbo = 0;
     GLuint tex = 0;
+    nvrhi::IDevice* nvrhi_device;
 
-   private:
+private:
     static GLenum _GetGLFormat(HdFormat hd_format);
 
     static GLenum _GetGLType(HdFormat hd_format);

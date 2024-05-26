@@ -2,10 +2,18 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 
+#include "Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Functions/GenericPointer.hpp"
 #include "Utils/Macro/map.h"
+
+#ifdef USTC_CG_BACKEND_NVRHI
+#include <nvrhi/nvrhi.h>
+
+#endif
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
 MACRO_MAP(DESC_HANDLE_TRAIT, RESOURCE_LIST)
@@ -131,6 +139,14 @@ class ResourceAllocator {
         }
         return handle;
     }
+#ifdef USTC_CG_BACKEND_NVRHI
+    nvrhi::IDevice* device;
+    void set_device(nvrhi::IDevice* device)
+    {
+        assert(device);
+        this->device = device;
+    }
+#endif
 
 #define DEFINEContainer(RESOURCE)                                                                  \
     struct PAYLOAD_NAME(RESOURCE) {                                                                \
@@ -153,10 +169,10 @@ class ResourceAllocator {
     }
 
    private:
-#define CREATE_CONCRETE(RESOURCE)               \
-    JUDGE_RESOURCE(RESOURCE)                    \
-    {                                           \
-        return create##RESOURCE(desc, rest...); \
+#define CREATE_CONCRETE(RESOURCE)                       \
+    JUDGE_RESOURCE(RESOURCE)                            \
+    {                                                   \
+        return device->create##RESOURCE(desc, rest...); \
     }
 
     template<typename RESOURCE, typename... Args>

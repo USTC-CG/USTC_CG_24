@@ -18,6 +18,9 @@ pxr_plugin(${PXR_PACKAGE}
         nodes
         RCore
         usdImaging
+        nvrhi_d3d12
+        d3d12
+        dxgi 
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}

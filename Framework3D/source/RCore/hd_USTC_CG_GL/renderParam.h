@@ -26,6 +26,7 @@
 
 #include "Nodes/node_exec.hpp"
 #include "USTC_CG.h"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/pxr.h"
@@ -69,6 +70,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     pxr::VtArray<Hd_USTC_CG_Camera *> *cameras = nullptr;
     pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes = nullptr;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
+    nvrhi::IDevice *nvrhi_device;
 
    private:
     /// A handle to the global render thread.

@@ -26,6 +26,8 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+#ifdef USTC_CG_BACKEND_OPENGL  // Temporarily only enable opengl. Later it can be refactored to
+                               // support nvrhi
     auto color = params.get_input<TextureHandle>("Color");
 
     auto size = color->desc.size;
@@ -69,6 +71,7 @@ static void node_exec(ExeParams params)
     resource_allocator.destroy(shader);
 
     params.set_output("Color", color_texture);
+#endif
 }
 
 static void node_register()

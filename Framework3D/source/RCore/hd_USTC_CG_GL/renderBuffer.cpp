@@ -55,6 +55,8 @@ void Hd_USTC_CG_RenderBufferGL::Sync(
     HdDirtyBits *dirtyBits)
 {
     HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
+    auto ustc_renderParam = static_cast<Hd_USTC_CG_RenderParam *>(renderParam);
+    nvrhi_device = ustc_renderParam->nvrhi_device;
 }
 
 /*virtual*/
@@ -151,7 +153,7 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
     _width = dimensions[0];
     _height = dimensions[1];
     _format = format;
-
+#ifdef USTC_CG_BACKEND_OPENGL
     glGenFramebuffers(1, &fbo);
     glGenTextures(1, &tex);
 
@@ -175,7 +177,7 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+#endif
     _buffer.resize(GetbufSize(), 255);
 
     _multiSampled = multiSampled;
@@ -231,10 +233,12 @@ void Hd_USTC_CG_RenderBufferGL::Clear(const int *value)
     assert(glGetError() == 0);
 }
 
-void Hd_USTC_CG_RenderBufferGL::Present(GLuint texture)
+void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
 {
+#ifdef USTC_CG_BACKEND_OPENGL
+    auto texture = handle->texture_id;
     GLuint temp;
-    glCreateFramebuffers(1,&temp);
+    glCreateFramebuffers(1, &temp);
     // 绑定传入的纹理到帧缓冲
     glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
     glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
@@ -250,7 +254,28 @@ void Hd_USTC_CG_RenderBufferGL::Present(GLuint texture)
 
     // 解绑定帧缓冲
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDeleteFramebuffers(1,&temp);
+    glDeleteFramebuffers(1, &temp);
+#elif defined(USTC_CG_BACKEND_NVRHI)
+
+    auto command_list = nvrhi_device->createCommandList({});
+    command_list->open();
+
+    auto staging =
+        nvrhi_device->createStagingTexture(handle->getDesc(), nvrhi::CpuAccessMode::Read);
+    command_list->copyTexture(staging, {}, handle, {});
+    command_list->close();
+
+    nvrhi_device->executeCommandList(command_list);
+    nvrhi_device->waitForIdle();
+
+    size_t pitch;
+    auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
+
+    memcpy(_buffer.data(), mapped, _buffer.size());
+
+    nvrhi_device->unmapStagingTexture(staging);
+
+#endif
 }
 
 GLenum Hd_USTC_CG_RenderBufferGL::_GetGLFormat(HdFormat hd_format)

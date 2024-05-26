@@ -24,6 +24,8 @@
 
 #include "renderDelegate.h"
 
+#include <dxgi1_5.h>
+
 #include <iostream>
 
 #include "Nodes/node_exec.hpp"
@@ -35,15 +37,65 @@
 #include "instancer.h"
 #include "light.h"
 #include "material.h"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
 #include "renderPass.h"
 #include "renderer.h"
 
+#define HR_RETURN(hr) \
+    if (FAILED(hr))   \
+        assert(false);
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 TF_DEFINE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+
+// Find an adapter whose name contains the given string.
+static RefCountPtr<IDXGIAdapter> FindAdapter(const std::wstring& targetName)
+{
+    RefCountPtr<IDXGIAdapter> targetAdapter;
+    RefCountPtr<IDXGIFactory1> DXGIFactory;
+    HRESULT hres = CreateDXGIFactory1(IID_PPV_ARGS(&DXGIFactory));
+    if (hres != S_OK) {
+        logging(
+            "ERROR in CreateDXGIFactory.\n"
+            "For more info, get log from debug D3D runtime: (1) Install DX SDK, and enable Debug "
+            "D3D from DX Control Panel Utility. (2) Install and start DbgView. (3) Try running the "
+            "program again.\n");
+        return targetAdapter;
+    }
+
+    unsigned int adapterNo = 0;
+    while (SUCCEEDED(hres)) {
+        RefCountPtr<IDXGIAdapter> pAdapter;
+        hres = DXGIFactory->EnumAdapters(adapterNo, &pAdapter);
+
+        if (SUCCEEDED(hres)) {
+            DXGI_ADAPTER_DESC aDesc;
+            pAdapter->GetDesc(&aDesc);
+
+            // If no name is specified, return the first adapater.  This is the same behaviour as
+            // the default specified for D3D11CreateDevice when no adapter is specified.
+            if (targetName.length() == 0) {
+                targetAdapter = pAdapter;
+                break;
+            }
+
+            std::wstring aName = aDesc.Description;
+
+            if (aName.find(targetName) != std::string::npos) {
+                targetAdapter = pAdapter;
+                break;
+            }
+        }
+
+        adapterNo++;
+    }
+
+    return targetAdapter;
+}
 
 const TfTokenVector Hd_USTC_CG_RenderDelegate::SUPPORTED_RPRIM_TYPES = {
     HdPrimTypeTokens->mesh,
@@ -105,6 +157,86 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
 
     _renderParam = std::make_shared<Hd_USTC_CG_RenderParam>(
         &_renderThread, &_sceneVersion, &lights, &cameras, &meshes, &materials);
+
+    nvrhi::d3d12::DeviceDesc deviceDesc;
+    // deviceDesc.errorCB = &DefaultMessageCallback::GetInstance();
+    {
+        UINT windowStyle = m_DeviceParams.startFullscreen ? (WS_POPUP | WS_SYSMENU | WS_VISIBLE)
+                           : m_DeviceParams.startMaximized
+                               ? (WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE)
+                               : (WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+
+        RECT rect = {
+            0, 0, LONG(m_DeviceParams.backBufferWidth), LONG(m_DeviceParams.backBufferHeight)
+        };
+        AdjustWindowRect(&rect, windowStyle, FALSE);
+
+        RefCountPtr<IDXGIAdapter> targetAdapter;
+
+        if (m_DeviceParams.adapter) {
+            targetAdapter = m_DeviceParams.adapter;
+        }
+        else {
+            targetAdapter = FindAdapter(m_DeviceParams.adapterNameSubstring);
+
+            if (!targetAdapter) {
+                std::wstring adapterNameStr(
+                    m_DeviceParams.adapterNameSubstring.begin(),
+                    m_DeviceParams.adapterNameSubstring.end());
+                assert(false);
+            }
+        }
+
+        {
+            DXGI_ADAPTER_DESC aDesc;
+            targetAdapter->GetDesc(&aDesc);
+
+            std::wstring adapterName = aDesc.Description;
+
+            // A stupid but non-deprecated and portable way of converting a wstring to a string
+            std::stringstream ss;
+            std::wstringstream wss;
+            for (auto c : adapterName)
+                ss << wss.narrow(c, '?');
+        }
+
+        HRESULT hr = E_FAIL;
+
+        RECT clientRect;
+        GetClientRect(m_hWnd, &clientRect);
+        UINT width = clientRect.right - clientRect.left;
+        UINT height = clientRect.bottom - clientRect.top;
+
+        if (m_DeviceParams.enableDebugRuntime) {
+            RefCountPtr<ID3D12Debug> pDebug;
+            hr = D3D12GetDebugInterface(IID_PPV_ARGS(&pDebug));
+            HR_RETURN(hr)
+
+            pDebug->EnableDebugLayer();
+        }
+
+        RefCountPtr<IDXGIFactory2> pDxgiFactory;
+        UINT dxgiFactoryFlags = m_DeviceParams.enableDebugRuntime ? DXGI_CREATE_FACTORY_DEBUG : 0;
+        hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&pDxgiFactory));
+        HR_RETURN(hr)
+
+        RefCountPtr<IDXGIFactory5> pDxgiFactory5;
+        if (SUCCEEDED(pDxgiFactory->QueryInterface(IID_PPV_ARGS(&pDxgiFactory5)))) {
+            BOOL supported = 0;
+            if (SUCCEEDED(pDxgiFactory5->CheckFeatureSupport(
+                    DXGI_FEATURE_PRESENT_ALLOW_TEARING, &supported, sizeof(supported))))
+                m_TearingSupported = (supported != 0);
+        }
+
+        hr = D3D12CreateDevice(
+            targetAdapter, m_DeviceParams.featureLevel, IID_PPV_ARGS(&m_Device12));
+    }
+    deviceDesc.pDevice = m_Device12;
+    deviceDesc.pGraphicsCommandQueue = m_GraphicsQueue;
+    deviceDesc.pComputeCommandQueue = m_ComputeQueue;
+    deviceDesc.pCopyCommandQueue = m_CopyQueue;
+    nvrhi_device = nvrhi::d3d12::createDevice(deviceDesc);
+    _renderParam->nvrhi_device = nvrhi_device.Get();
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());
 
