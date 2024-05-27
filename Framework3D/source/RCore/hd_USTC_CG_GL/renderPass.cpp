@@ -69,11 +69,15 @@ void Hd_USTC_CG_RenderPass::_Execute(
     const HdRenderPassStateSharedPtr& renderPassState,
     const TfTokenVector& renderTags)
 {
+
+    assert(glGetError() == GL_NO_ERROR);
+
     int currentSceneVersion = _sceneVersion->load();
     if (_lastSceneVersion != currentSceneVersion) {
         needStartRender = true;
         _lastSceneVersion = currentSceneVersion;
     }
+    assert(glGetError() == GL_NO_ERROR);
 
     // Likewise the render settings.
     HdRenderDelegate* renderDelegate = GetRenderIndex()->GetRenderDelegate();
@@ -86,10 +90,12 @@ void Hd_USTC_CG_RenderPass::_Execute(
     }
 
     // Determine whether we need to update the renderer camera.
+    assert(glGetError() == GL_NO_ERROR);
 
     const GfMatrix4d view = renderPassState->GetWorldToViewMatrix();
     const GfMatrix4d proj = renderPassState->GetProjectionMatrix();
     const GfRect2i dataWindow = _GetDataWindow(renderPassState);
+    assert(glGetError() == GL_NO_ERROR);
 
     if (_viewMatrix != view || _projMatrix != proj || _dataWindow != dataWindow) {
         _viewMatrix = view;
@@ -103,6 +109,7 @@ void Hd_USTC_CG_RenderPass::_Execute(
     }
 
     // Determine whether we need to update the renderer AOV bindings.
+    assert(glGetError() == GL_NO_ERROR);
 
     HdRenderPassAovBindingVector aovBindings = renderPassState->GetAovBindings();
     if (_aovBindings != aovBindings) {
@@ -114,12 +121,14 @@ void Hd_USTC_CG_RenderPass::_Execute(
         _renderer->Clear();
         needStartRender = true;
     }
+    assert(glGetError() == GL_NO_ERROR);
 
     if (_renderer->nodetree_modified(false)) {
         _renderer->Clear();
 
         needStartRender = true;
     }
+    assert(glGetError() == GL_NO_ERROR);
 
     TF_VERIFY(!_aovBindings.empty(), "No aov bindings to render into");
     // Only start a new render if something in the scene has changed.

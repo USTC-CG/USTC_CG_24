@@ -54,9 +54,9 @@ void Hd_USTC_CG_RenderBufferGL::Sync(
     HdRenderParam *renderParam,
     HdDirtyBits *dirtyBits)
 {
-    HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
     auto ustc_renderParam = static_cast<Hd_USTC_CG_RenderParam *>(renderParam);
     nvrhi_device = ustc_renderParam->nvrhi_device;
+    HdRenderBuffer::Sync(sceneDelegate, renderParam, dirtyBits);
 }
 
 /*virtual*/
@@ -72,6 +72,7 @@ void Hd_USTC_CG_RenderBufferGL::_Deallocate()
     // recovery path...
     TF_VERIFY(!IsMapped());
 
+#ifdef USTC_CG_BACKEND_OPENGL
     if (fbo) {
         glDeleteFramebuffers(1, &fbo);
     }
@@ -80,6 +81,11 @@ void Hd_USTC_CG_RenderBufferGL::_Deallocate()
     }
     fbo = 0;
     tex = 0;
+#endif
+
+#ifdef USTC_CG_BACKEND_NVRHI
+    staging = nullptr;
+#endif
 
     _width = 0;
     _height = 0;
@@ -178,6 +184,14 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
+
+    TextureDesc d;
+    d.width = _width;
+    d.height = _height;
+    d.format = nvrhi::Format::RGBA32_FLOAT;  // TODO
+    d.initialState = nvrhi::ResourceStates::CopyDest;
+    staging = nvrhi_device->createStagingTexture(d, nvrhi::CpuAccessMode::Read);
+
     _buffer.resize(GetbufSize(), 255);
 
     _multiSampled = multiSampled;
@@ -216,21 +230,25 @@ void Hd_USTC_CG_RenderBufferGL::Clear(const float *value)
 {
     uint8_t buffer[16];
     _WriteOutput(_format, buffer, value);
-
+#ifdef USTC_CG_BACKEND_OPENGL
     glBindTexture(GL_TEXTURE_2D, tex);
     glClearTexImage(tex, 0, _GetGLFormat(_format), _GetGLType(_format), buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 }
 void Hd_USTC_CG_RenderBufferGL::Clear(const int *value)
 {
     uint8_t buffer[16];
     _WriteOutput(_format, buffer, value);
 
+#ifdef USTC_CG_BACKEND_OPENGL
+
     glBindTexture(GL_TEXTURE_2D, tex);
     glClearTexImage(tex, 0, _GetGLFormat(_format), _GetGLType(_format), buffer);
     glBindTexture(GL_TEXTURE_2D, 0);
-
     assert(glGetError() == 0);
+
+#endif
 }
 
 void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
@@ -260,8 +278,6 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     auto command_list = nvrhi_device->createCommandList();
     command_list->open();
 
-    auto staging =
-        nvrhi_device->createStagingTexture(handle->getDesc(), nvrhi::CpuAccessMode::Read);
     command_list->copyTexture(staging, {}, handle, {});
     command_list->close();
 
@@ -274,13 +290,15 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     for (int i = 0; i < handle->getDesc().height; ++i) {
         memcpy(
             _buffer.data() + i * _width * HdDataSizeOfFormat(_format),
-            (uint8_t*)mapped + i * pitch,
+            (uint8_t *)mapped + i * pitch,
             _width * HdDataSizeOfFormat(_format));
     }
 
     nvrhi_device->unmapStagingTexture(staging);
 
 #endif
+
+    assert(glGetError() == GL_NO_ERROR);
 }
 
 GLenum Hd_USTC_CG_RenderBufferGL::_GetGLFormat(HdFormat hd_format)
@@ -364,8 +382,11 @@ GLsizei Hd_USTC_CG_RenderBufferGL::GetbufSize()
 
 void *Hd_USTC_CG_RenderBufferGL::Map()
 {
+#ifdef USTC_CG_BACKEND_OPENGL
     glGetTextureImage(
         tex, 0, _GetGLFormat(_format), _GetGLType(_format), GetbufSize(), _buffer.data());
+#endif
+
     _mappers++;
     return _buffer.data();
 }

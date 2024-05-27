@@ -23,13 +23,12 @@
 //
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
+#include "RCore/Backend.hpp"
 #include "USTC_CG.h"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/pxr.h"
-
-#include "RCore/Backend.hpp"
-#include "nvrhi/d3d12.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
@@ -97,11 +96,16 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     void Clear(const float* value);
     void Clear(const int* value);
     void Present(TextureHandle texture);
+
+#ifdef USTC_CG_BACKEND_OPENGL
     GLuint fbo = 0;
     GLuint tex = 0;
-    nvrhi::IDevice* nvrhi_device;
+#endif
 
-private:
+    nvrhi::IDevice* nvrhi_device;
+    nvrhi::StagingTextureHandle staging;
+
+   private:
     static GLenum _GetGLFormat(HdFormat hd_format);
 
     static GLenum _GetGLType(HdFormat hd_format);
