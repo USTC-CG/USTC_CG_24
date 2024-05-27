@@ -3,6 +3,21 @@
 #include "nvrhi/nvrhi.h"
 
 namespace nvrhi {
+inline bool operator==(const ShaderDesc& lhs, const ShaderDesc& rhs)
+{
+    return lhs.shaderType == rhs.shaderType && lhs.debugName == rhs.debugName &&
+           lhs.entryName == rhs.entryName && lhs.hlslExtensionsUAV == rhs.hlslExtensionsUAV &&
+           lhs.useSpecificShaderExt == rhs.useSpecificShaderExt &&
+           lhs.numCustomSemantics == rhs.numCustomSemantics &&
+           lhs.pCustomSemantics == rhs.pCustomSemantics && lhs.fastGSFlags == rhs.fastGSFlags &&
+           lhs.pCoordinateSwizzling == rhs.pCoordinateSwizzling;
+}
+
+inline bool operator!=(const ShaderDesc& lhs, const ShaderDesc& rhs)
+{
+    return !(lhs == rhs);
+}
+
 inline bool operator==(const TextureDesc& lhs, const TextureDesc& rhs)
 {
     return lhs.width == rhs.width && lhs.height == rhs.height && lhs.depth == rhs.depth &&
@@ -19,20 +34,6 @@ inline bool operator==(const TextureDesc& lhs, const TextureDesc& rhs)
 }
 
 inline bool operator!=(const TextureDesc& lhs, const TextureDesc& rhs)
-{
-    return !(lhs == rhs);
-}
-inline bool operator==(const ShaderDesc& lhs, const ShaderDesc& rhs)
-{
-    return lhs.shaderType == rhs.shaderType && lhs.debugName == rhs.debugName &&
-           lhs.entryName == rhs.entryName && lhs.hlslExtensionsUAV == rhs.hlslExtensionsUAV &&
-           lhs.useSpecificShaderExt == rhs.useSpecificShaderExt &&
-           lhs.numCustomSemantics == rhs.numCustomSemantics &&
-           lhs.pCustomSemantics == rhs.pCustomSemantics && lhs.fastGSFlags == rhs.fastGSFlags &&
-           lhs.pCoordinateSwizzling == rhs.pCoordinateSwizzling;
-}
-
-inline bool operator!=(const ShaderDesc& lhs, const ShaderDesc& rhs)
 {
     return !(lhs == rhs);
 }

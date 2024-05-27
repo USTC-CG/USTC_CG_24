@@ -42,15 +42,14 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 [shader("raygeneration")] void RayGen() {
     uint2 LaunchIndex = DispatchRaysIndex().xy;
     uint2 LaunchDimensions = DispatchRaysDimensions().xy;
-
     // Setup the ray
     RayDesc ray;
     ray.Origin = float3(
         lerp(-1, 1, float(LaunchIndex.x) / float(LaunchDimensions.x)),
         lerp(-1, 1, float(LaunchIndex.y) / float(LaunchDimensions.y)),
-        0);
+        -1);
     ray.Direction = float3(0, 0, 1);
-    ray.TMin = 0.1f;
+    ray.TMin = 0.01f;
     ray.TMax = 1000.f;
 
     // Trace the ray
@@ -59,8 +58,7 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
 
-    RTOutput[LaunchIndex.xy] = float4(payload.ShadedColorAndHitT.rgb, 1.f);
-    // RTOutput[LaunchIndex.xy] = float4(ray.Origin.xyz, 1.f);
+    RTOutput[LaunchIndex.xy] = float4(payload.ShadedColorAndHitT.rgb, 1.f); 
 }
 
     // ---[ Closest Hit Shader ]---
@@ -77,5 +75,5 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 
 [shader("miss")] void Miss(inout HitInfo payload
                            : SV_RayPayload) {
-    payload.ShadedColorAndHitT = float4(0.2f, 0.2f, 0.2f, -1.f);
+    payload.ShadedColorAndHitT = float4(0.1f, 0.2f, 0.2f, -1.f);
 }

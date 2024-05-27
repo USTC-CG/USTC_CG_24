@@ -393,7 +393,9 @@ typename ResourceAllocator::AssociativeContainer<K, V, H>::iterator
 ResourceAllocator::AssociativeContainer<K, V, H>::find(const key_type& key)
 {
     return std::find_if(
-        mContainer.begin(), mContainer.end(), [&key](const auto& v) { return v.first == key; });
+        mContainer.begin(), mContainer.end(), [&key](const auto& v) {
+            return v.first == key;
+        });
 }
 
 template<typename K, typename V, typename H>
