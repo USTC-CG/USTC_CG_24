@@ -104,7 +104,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     pxr::VtArray<Hd_USTC_CG_Camera*> cameras;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
     pxr::VtArray<Hd_USTC_CG_Mesh*> meshes;
-    nvrhi::d3d12::DeviceHandle nvrhi_device;
+    nvrhi::DeviceHandle nvrhi_device;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;
@@ -121,7 +121,6 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     HdRenderSettingDescriptorList _settingDescriptors;
 
    private:
-
 #define USE_DX12 1
     struct DeviceCreationParameters {
         bool startMaximized = false;
@@ -137,13 +136,14 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
         uint32_t swapChainSampleCount = 1;
         uint32_t swapChainSampleQuality = 0;
         uint32_t maxFramesInFlight = 2;
-        bool enableDebugRuntime = false;
+        bool enableDebugRuntime = true;
         bool enableNvrhiValidationLayer = false;
         bool vsyncEnabled = false;
-        bool enableRayTracingExtensions = false;  // for vulkan
-        bool enableComputeQueue = false;
-        bool enableCopyQueue = false;
+        bool enableRayTracingExtensions = true;  // for vulkan
+        bool enableComputeQueue = true;
+        bool enableCopyQueue = true;
 
+        int adapterIndex = -1;
 
 #if USE_DX11 || USE_DX12
         // Adapter to create the device on. Setting this to non-null overrides adapterNameSubstring.
@@ -186,6 +186,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     };
     DeviceCreationParameters m_DeviceParams;
 
+    RefCountPtr<IDXGIFactory2> m_DxgiFactory2;
     RefCountPtr<ID3D12Device> m_Device12;
     RefCountPtr<ID3D12CommandQueue> m_GraphicsQueue;
     RefCountPtr<ID3D12CommandQueue> m_ComputeQueue;

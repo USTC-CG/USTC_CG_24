@@ -38,6 +38,7 @@
 #include "light.h"
 #include "material.h"
 #include "nvrhi/d3d12.h"
+#include "nvrhi/validation.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hd/extComputation.h"
 #include "renderBuffer.h"
@@ -270,6 +271,10 @@ void Hd_USTC_CG_RenderDelegate::_Initialize()
     deviceDesc.pComputeCommandQueue = m_ComputeQueue;
     deviceDesc.pCopyCommandQueue = m_CopyQueue;
     nvrhi_device = nvrhi::d3d12::createDevice(deviceDesc);
+
+    if (m_DeviceParams.enableNvrhiValidationLayer) {
+        nvrhi_device = nvrhi::validation::createValidationLayer(nvrhi_device);
+    }
     _renderParam->nvrhi_device = nvrhi_device.Get();
 
     _renderer = std::make_shared<Hd_USTC_CG_Renderer>(_renderParam.get());

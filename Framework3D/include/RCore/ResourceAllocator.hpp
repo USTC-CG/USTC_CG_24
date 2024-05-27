@@ -8,6 +8,7 @@
 #include "USTC_CG.h"
 #include "Utils/Functions/GenericPointer.hpp"
 #include "Utils/Macro/map.h"
+#include "internal/resources.hpp"
 
 #ifdef USTC_CG_BACKEND_NVRHI
 #include <nvrhi/nvrhi.h>
@@ -179,6 +180,9 @@ class ResourceAllocator {
     RESOURCE create_resource(const desc<RESOURCE>& desc, Args&&... rest)
     {
         MACRO_MAP(CREATE_CONCRETE, NVRHI_RESOURCE_LIST)
+        if constexpr (std::is_same_v<ShaderCompileHandle, RESOURCE>) {
+            return createShaderCompile(desc);
+        }
         if constexpr (std::is_same_v<PipelineHandle, RESOURCE>) {
             return device->createRayTracingPipeline(desc, rest...);
         }

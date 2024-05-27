@@ -157,7 +157,7 @@ namespace rt {
         return lhs.geometryData.triangles == rhs.geometryData.triangles &&
                lhs.useTransform == rhs.useTransform && lhs.flags == rhs.flags &&
                lhs.geometryType == rhs.geometryType &&
-               memcmp(lhs.transform, rhs.transform, sizeof(nvrhi::rt::AffineTransform));
+               memcmp(lhs.transform, rhs.transform, sizeof(nvrhi::rt::AffineTransform)) == 0;
     }
 
     inline bool operator!=(const GeometryDesc& lhs, const GeometryDesc& rhs)

@@ -20,6 +20,8 @@ pxr_plugin(${PXR_PACKAGE}
         usdImaging
         d3d12
         dxgi 
+        d3dcompiler 
+        dxcompiler
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}
