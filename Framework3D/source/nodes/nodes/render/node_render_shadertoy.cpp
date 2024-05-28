@@ -22,6 +22,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+#ifdef USTC_CG_BACKEND_OPENGL
     auto cameras = params.get_input<CameraArray>("Camera");
 
     auto free_camera = cameras.back();
@@ -64,6 +65,8 @@ static void node_exec(ExeParams params)
     resource_allocator.destroy(shader);
 
     params.set_output("Color", color_texture);
+#endif
+
 }
 
 static void node_register()

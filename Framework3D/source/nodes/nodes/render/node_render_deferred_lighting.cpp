@@ -13,6 +13,7 @@
 #include "resource_allocator_instance.hpp"
 #include "rich_type_buffer.hpp"
 #include "utils/draw_fullscreen.h"
+#include "pxr/base/gf/matrix4f.h"
 
 namespace USTC_CG::node_deferred_lighting {
 
@@ -43,6 +44,7 @@ struct LightInfo {
 static void node_exec(ExeParams params)
 {
     // Fetch all the information
+#ifdef USTC_CG_BACKEND_OPENGL 
 
     auto lights = params.get_input<LightArray>("Lights");
 
@@ -166,6 +168,7 @@ static void node_exec(ExeParams params)
     if (!shader_error.empty()) {
         throw std::runtime_error(shader_error);
     }
+#endif
 }
 
 static void node_register()

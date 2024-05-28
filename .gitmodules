@@ -25,3 +25,6 @@
 [submodule "Framework3D/external/entt"]
 	path = Framework3D/external/entt
 	url = https://github.com/Jerry-Shen0527/entt.git
+[submodule "Framework3D/external/nvrhi"]
+	path = Framework3D/external/nvrhi
+	url = https://github.com/NVIDIAGameWorks/nvrhi.git

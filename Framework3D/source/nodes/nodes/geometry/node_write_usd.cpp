@@ -35,7 +35,7 @@ bool legal(const std::string& string)
         return false;
     }
     if (std::find_if(string.begin(), string.end(), [](char val) {
-            return val == '(' || val == ')' || val == '-';
+            return val == '(' || val == ')' || val == '-' || val == ',';
         }) == string.end()) {
         return true;
     }

@@ -7,6 +7,10 @@
 #include "node_exec.hpp"
 #include "node_tree.hpp"
 
+namespace nvrhi {
+class IDevice;
+}
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct NodeSocket;
 struct Node;
@@ -55,6 +59,19 @@ inline std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor()
 {
     return std::make_unique<EagerNodeTreeExecutor>();
 }
+class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
+   protected:
+    bool execute_node(NodeTree* tree, Node* node) override;
+
+   public:
+    void finalize(NodeTree* tree) override;
+    virtual void set_device(
+        nvrhi::IDevice*
+            device);  // Make this virtual to send it to vtable. A better practice should definitely
+                      // be better solving the 'resource allocator' setting issue.
+
+    virtual void reset_allocator();
+};
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorSimulation();

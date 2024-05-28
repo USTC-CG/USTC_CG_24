@@ -1,7 +1,8 @@
 #include "renderer.h"
 
+#include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_tree.hpp"
-#include "RCore/Backend.hpp"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
 #include "renderBuffer.h"
@@ -16,8 +17,16 @@ Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
 {
 }
 
+Hd_USTC_CG_Renderer::~Hd_USTC_CG_Renderer()
+{
+    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
+    executor->reset_allocator();
+}
+
 void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
 {
+    assert(glGetError() == GL_NO_ERROR);
+
     _completedSamples.store(0);
 
     // Commit any pending changes to the scene.
@@ -33,10 +42,12 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     // Fill the nodes that requires value from the scene.
-    auto& executor = render_param->executor;
+    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
     auto& node_tree = render_param->node_tree;
 
     executor->prepare_tree(node_tree);
+
+    executor->set_device(render_param->nvrhi_device);
 
     for (auto&& node : node_tree->nodes) {
         auto try_fill_info = [&node, &executor, this]<typename T>(const char* id_name, const T& obj) {
@@ -74,11 +85,14 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     if (texture) {
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
             auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
-            rb->Present(texture->texture_id);
+            rb->Present(texture);
 
             rb->SetConverged(true);
         }
     }
+    assert(glGetError() == GL_NO_ERROR);
+
+    render_param->nvrhi_device->runGarbageCollection();
 
     executor->finalize(node_tree);
 }
@@ -88,35 +102,50 @@ void Hd_USTC_CG_Renderer::Clear()
     if (!_ValidateAovBindings()) {
         return;
     }
+    assert(glGetError() == GL_NO_ERROR);
 
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
         if (_aovBindings[i].clearValue.IsEmpty()) {
             continue;
         }
+        assert(glGetError() == GL_NO_ERROR);
 
         auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+        assert(glGetError() == GL_NO_ERROR);
 
         rb->Map();
+        assert(glGetError() == GL_NO_ERROR);
+
         if (_aovNames[i].name == HdAovTokens->color) {
             GfVec4f clearColor = _GetClearColor(_aovBindings[i].clearValue);
 
             rb->Clear(clearColor.data());
+            assert(glGetError() == GL_NO_ERROR);
+
         }
         else if (rb->GetFormat() == HdFormatInt32) {
             int32_t clearValue = _aovBindings[i].clearValue.Get<int32_t>();
             rb->Clear(&clearValue);
+            assert(glGetError() == GL_NO_ERROR);
+
         }
         else if (rb->GetFormat() == HdFormatFloat32) {
             float clearValue = _aovBindings[i].clearValue.Get<float>();
             rb->Clear(&clearValue);
+            assert(glGetError() == GL_NO_ERROR);
+
         }
         else if (rb->GetFormat() == HdFormatFloat32Vec3) {
             auto clearValue = _aovBindings[i].clearValue.Get<GfVec3f>();
             rb->Clear(clearValue.data());
+            assert(glGetError() == GL_NO_ERROR);
+
         }  // else, _ValidateAovBindings would have already warned.
 
         rb->Unmap();
         rb->SetConverged(false);
+        assert(glGetError() == GL_NO_ERROR);
+
     }
 }
 
@@ -321,7 +350,9 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
             }
         }
     }
-
+    if (!_aovBindingsValid) {
+        _aovBindingsNeedValidation = true;
+    }
     return _aovBindingsValid;
 };
 

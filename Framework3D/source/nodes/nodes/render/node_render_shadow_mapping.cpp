@@ -27,6 +27,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+#ifdef USTC_CG_BACKEND_OPENGL 
     auto meshes = params.get_input<MeshArray>("Meshes");
     auto lights = params.get_input<LightArray>("Lights");
     auto resolution = params.get_input<int>("resolution");
@@ -141,6 +142,7 @@ static void node_exec(ExeParams params)
     if (!shader_error.empty()) {
         throw std::runtime_error(shader_error);
     }
+#endif
 }
 static void node_register()
 {

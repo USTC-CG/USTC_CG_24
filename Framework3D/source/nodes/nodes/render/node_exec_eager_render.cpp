@@ -8,30 +8,6 @@
 #include "entt/meta/context.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
-   protected:
-    bool execute_node(NodeTree* tree, Node* node) override;
-
-   public:
-    
-
-    void finalize(NodeTree* tree) override
-    {
-        for (int i = 0; i < input_states.size(); ++i) {
-            if (input_states[i].is_last_used) {
-                resource_allocator.destroy(input_states[i].value);
-                input_states[i].is_last_used = false;
-            }
-        }
-
-        for (int i = 0; i < output_states.size(); ++i) {
-            if (output_states[i].is_last_used) {
-                resource_allocator.destroy(output_states[i].value);
-                output_states[i].is_last_used = false;
-            }
-        }
-    }
-};
 
 bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
 {
@@ -54,6 +30,33 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
         }
     }
     return false;
+}
+
+void EagerNodeTreeExecutorRender::finalize(NodeTree* tree)
+{
+    for (int i = 0; i < input_states.size(); ++i) {
+        if (input_states[i].is_last_used) {
+            resource_allocator.destroy(input_states[i].value);
+            input_states[i].is_last_used = false;
+        }
+    }
+
+    for (int i = 0; i < output_states.size(); ++i) {
+        if (output_states[i].is_last_used) {
+            resource_allocator.destroy(output_states[i].value);
+            output_states[i].is_last_used = false;
+        }
+    }
+}
+
+void EagerNodeTreeExecutorRender::set_device(nvrhi::IDevice* device)
+{
+    resource_allocator.set_device(device);
+}
+
+void EagerNodeTreeExecutorRender::reset_allocator()
+{
+    resource_allocator.terminate();
 }
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender()

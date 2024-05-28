@@ -23,7 +23,9 @@
 //
 #ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
 #define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_BUFFER_H
+#include "RCore/Backend.hpp"
 #include "USTC_CG.h"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/garch/glApi.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/pxr.h"
@@ -93,9 +95,15 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     // The feed memory size must match the type
     void Clear(const float* value);
     void Clear(const int* value);
-    void Present(GLuint texture);
+    void Present(TextureHandle texture);
+
+#ifdef USTC_CG_BACKEND_OPENGL
     GLuint fbo = 0;
     GLuint tex = 0;
+#endif
+
+    nvrhi::IDevice* nvrhi_device;
+    nvrhi::StagingTextureHandle staging;
 
    private:
     static GLenum _GetGLFormat(HdFormat hd_format);

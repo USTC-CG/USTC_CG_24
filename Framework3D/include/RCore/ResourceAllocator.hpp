@@ -2,11 +2,20 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 
+#include "Backend.hpp"
 #include "USTC_CG.h"
 #include "entt/meta/meta.hpp"
 #include "entt/meta/resolve.hpp"
 #include "Utils/Macro/map.h"
+#include "internal/resources.hpp"
+
+#ifdef USTC_CG_BACKEND_NVRHI
+#include <nvrhi/nvrhi.h>
+
+#endif
+
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
 MACRO_MAP(DESC_HANDLE_TRAIT, RESOURCE_LIST)
@@ -56,12 +65,12 @@ class ResourceAllocator {
         }
     }
 
-#define CLEAR_CACHE(RESOURCE)                                                         \
-    assert(!INUSE_NAME(RESOURCE).size());                                             \
-    for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end();) { \
-        it->second.handle = nullptr;                                                  \
-        it = CACHE_NAME(RESOURCE).erase(it);                                          \
-    }
+#define CLEAR_CACHE(RESOURCE)                                                              \
+    assert(!INUSE_NAME(RESOURCE).size());                                                  \
+    for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end(); it++) { \
+        it->second.handle = nullptr;                                                       \
+    }                                                                                      \
+    CACHE_NAME(RESOURCE).clear();
 
     void terminate() noexcept
     {
@@ -132,6 +141,14 @@ class ResourceAllocator {
         }
         return handle;
     }
+#ifdef USTC_CG_BACKEND_NVRHI
+    nvrhi::IDevice* device;
+    void set_device(nvrhi::IDevice* device)
+    {
+        assert(device);
+        this->device = device;
+    }
+#endif
 
 #define DEFINEContainer(RESOURCE)                                                                  \
     struct PAYLOAD_NAME(RESOURCE) {                                                                \
@@ -154,16 +171,25 @@ class ResourceAllocator {
     }
 
    private:
-#define CREATE_CONCRETE(RESOURCE)               \
-    JUDGE_RESOURCE(RESOURCE)                    \
-    {                                           \
-        return create##RESOURCE(desc, rest...); \
+#define CREATE_CONCRETE(RESOURCE)                       \
+    JUDGE_RESOURCE(RESOURCE)                            \
+    {                                                   \
+        return device->create##RESOURCE(desc, rest...); \
     }
 
     template<typename RESOURCE, typename... Args>
     RESOURCE create_resource(const desc<RESOURCE>& desc, Args&&... rest)
     {
-        MACRO_MAP(CREATE_CONCRETE, RESOURCE_LIST)
+        MACRO_MAP(CREATE_CONCRETE, NVRHI_RESOURCE_LIST)
+        if constexpr (std::is_same_v<ShaderCompileHandle, RESOURCE>) {
+            return createShaderCompile(desc);
+        }
+        if constexpr (std::is_same_v<PipelineHandle, RESOURCE>) {
+            return device->createRayTracingPipeline(desc, rest...);
+        }
+        if constexpr (std::is_same_v<AccelStructHandle, RESOURCE>) {
+            return device->createAccelStruct(desc, rest...);
+        }
     }
 
     template<typename RESOURCE>
@@ -318,6 +344,10 @@ class ResourceAllocator {
 
         iterator erase(iterator it);
         const_iterator find(const key_type& key) const;
+        void clear()
+        {
+            return mContainer.clear();
+        }
         iterator find(const key_type& key);
         template<typename... ARGS>
         void emplace(ARGS&&... args);
@@ -364,7 +394,9 @@ typename ResourceAllocator::AssociativeContainer<K, V, H>::iterator
 ResourceAllocator::AssociativeContainer<K, V, H>::find(const key_type& key)
 {
     return std::find_if(
-        mContainer.begin(), mContainer.end(), [&key](const auto& v) { return v.first == key; });
+        mContainer.begin(), mContainer.end(), [&key](const auto& v) {
+            return v.first == key;
+        });
 }
 
 template<typename K, typename V, typename H>

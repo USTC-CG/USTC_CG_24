@@ -13,7 +13,7 @@ class Hd_USTC_CG_Renderer {
    public:
     explicit Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param);
 
-    virtual ~Hd_USTC_CG_Renderer() = default;
+    virtual ~Hd_USTC_CG_Renderer();
     void SetAovBindings(const HdRenderPassAovBindingVector& aovBindings);
     virtual void Render(HdRenderThread* render_thread);
     virtual void Clear();

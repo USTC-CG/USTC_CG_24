@@ -31,6 +31,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+#ifdef USTC_CG_BACKEND_OPENGL 
     auto lights = params.get_input<LightArray>("Lights");
     auto baseColor = params.get_input<TextureHandle>("diffuseColor");
     auto normal_texture = params.get_input<TextureHandle>("Normal");
@@ -138,6 +139,7 @@ static void node_exec(ExeParams params)
     if (!shader_error.empty()) {
         throw std::runtime_error(shader_error);
     }
+#endif
 }
 static void node_register()
 {

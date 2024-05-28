@@ -21,11 +21,11 @@
 // KIND, either express or implied. See the Apache License for the specific
 // language governing permissions and limitations under the Apache License.
 //
-#ifndef PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
-#define PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H
+#pragma once
 
 #include "Nodes/node_exec.hpp"
 #include "USTC_CG.h"
+#include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/pxr.h"
@@ -70,6 +70,7 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes = nullptr;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
     entt::meta_ctx* context;
+    nvrhi::IDevice *nvrhi_device;
 
 private:
     /// A handle to the global render thread.
@@ -78,5 +79,3 @@ private:
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
-
-#endif  // PXR_IMAGING_PLUGIN_HD_EMBREE_RENDER_PARAM_H

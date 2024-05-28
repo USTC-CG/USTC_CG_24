@@ -24,8 +24,12 @@
 #ifndef EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDER_DELEGATE_H
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_RENDER_DELEGATE_H
 
+#include <dxgi.h>
+#include <dxgi1_2.h>
+
 #include "Nodes/node_exec.hpp"
 #include "Nodes/node_tree.hpp"
+#include "nvrhi/d3d12.h"
 #include "pxr/base/tf/staticTokens.h"
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/pxr.h"
@@ -41,6 +45,7 @@ using namespace pxr;
 // Also: HdRenderSettingsTokens->convergedSamplesPerPixel
 
 TF_DECLARE_PUBLIC_TOKENS(HdEmbreeRenderSettingsTokens, HDEMBREE_RENDER_SETTINGS_TOKENS);
+using nvrhi::RefCountPtr;
 
 class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
    public:
@@ -94,11 +99,11 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     std::shared_ptr<Hd_USTC_CG_RenderParam> _renderParam;
     HdRenderThread _renderThread;
     std::shared_ptr<Hd_USTC_CG_Renderer> _renderer;
-    std::unique_ptr<NodeTreeExecutor> executor;
     pxr::VtArray<Hd_USTC_CG_Light*> lights;
     pxr::VtArray<Hd_USTC_CG_Camera*> cameras;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material*, TfHash> materials;
     pxr::VtArray<Hd_USTC_CG_Mesh*> meshes;
+    nvrhi::DeviceHandle nvrhi_device;
 
     static std::mutex _mutexResourceRegistry;
     static std::atomic_int _counterResourceRegistry;
@@ -113,6 +118,81 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
    private:
     // A list of render setting exports.
     HdRenderSettingDescriptorList _settingDescriptors;
+
+   private:
+#define USE_DX12 1
+    struct DeviceCreationParameters {
+        bool startMaximized = false;
+        bool startFullscreen = false;
+        bool allowModeSwitch = true;
+        int windowPosX = -1;  // -1 means use default placement
+        int windowPosY = -1;
+        uint32_t backBufferWidth = 1280;
+        uint32_t backBufferHeight = 720;
+        uint32_t refreshRate = 0;
+        uint32_t swapChainBufferCount = 3;
+        nvrhi::Format swapChainFormat = nvrhi::Format::SRGBA8_UNORM;
+        uint32_t swapChainSampleCount = 1;
+        uint32_t swapChainSampleQuality = 0;
+        uint32_t maxFramesInFlight = 2;
+        bool enableDebugRuntime = true;
+        bool enableNvrhiValidationLayer = false;
+        bool vsyncEnabled = false;
+        bool enableRayTracingExtensions = true;  // for vulkan
+        bool enableComputeQueue = true;
+        bool enableCopyQueue = true;
+
+        int adapterIndex = -1;
+
+#if USE_DX11 || USE_DX12
+        // Adapter to create the device on. Setting this to non-null overrides adapterNameSubstring.
+        // If device creation fails on the specified adapter, it will *not* try any other adapters.
+        IDXGIAdapter* adapter = nullptr;
+#endif
+
+        // For use in the case of multiple adapters; only effective if 'adapter' is null. If this is
+        // non-null, device creation will try to match the given string against an adapter name.  If
+        // the specified string exists as a sub-string of the adapter name, the device and window
+        // will be created on that adapter.  Case sensitive.
+        std::wstring adapterNameSubstring = L"";
+
+        // set to true to enable DPI scale factors to be computed per monitor
+        // this will keep the on-screen window size in pixels constant
+        //
+        // if set to false, the DPI scale factors will be constant but the system
+        // may scale the contents of the window based on DPI
+        //
+        // note that the backbuffer size is never updated automatically; if the app
+        // wishes to scale up rendering based on DPI, then it must set this to true
+        // and respond to DPI scale factor changes by resizing the backbuffer explicitly
+        bool enablePerMonitorDPI = false;
+
+#if USE_DX11 || USE_DX12
+        DXGI_USAGE swapChainUsage = DXGI_USAGE_SHADER_INPUT | DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_1;
+#endif
+
+#if USE_VK
+        std::vector<std::string> requiredVulkanInstanceExtensions;
+        std::vector<std::string> requiredVulkanDeviceExtensions;
+        std::vector<std::string> requiredVulkanLayers;
+        std::vector<std::string> optionalVulkanInstanceExtensions;
+        std::vector<std::string> optionalVulkanDeviceExtensions;
+        std::vector<std::string> optionalVulkanLayers;
+        std::vector<size_t> ignoredVulkanValidationMessageLocations;
+        std::function<void(vk::DeviceCreateInfo&)> deviceCreateInfoCallback;
+#endif
+    };
+    DeviceCreationParameters m_DeviceParams;
+
+    RefCountPtr<IDXGIFactory2> m_DxgiFactory2;
+    RefCountPtr<ID3D12Device> m_Device12;
+    RefCountPtr<ID3D12CommandQueue> m_GraphicsQueue;
+    RefCountPtr<ID3D12CommandQueue> m_ComputeQueue;
+    RefCountPtr<ID3D12CommandQueue> m_CopyQueue;
+    RefCountPtr<IDXGIAdapter> m_DxgiAdapter;
+    HWND m_hWnd = nullptr;
+    bool m_TearingSupported = false;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

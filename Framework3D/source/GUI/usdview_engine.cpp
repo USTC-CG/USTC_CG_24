@@ -20,7 +20,7 @@ class UsdviewEngineImpl {
     enum class CamType { First, Third };
     struct Status {
         CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 0;
+        unsigned renderer_id = 1;
     } engine_status;
 
     float timecode = 0;
@@ -295,10 +295,12 @@ void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_exe
         auto size = ImGui::GetContentRegionAvail();
         size.y -= 28;
 
-        impl_->OnResize(size.x, size.y);
+        if (size.x > 0 && size.y > 0) {
+            impl_->OnResize(size.x, size.y);
 
-        impl_->OnFrame(delta_time, render_node_tree, get_executor);
-        impl_->time_controller(delta_time);
+            impl_->OnFrame(delta_time, render_node_tree, get_executor);
+            impl_->time_controller(delta_time);
+        }
     }
     else {
         ImGui::PopStyleVar(1);
