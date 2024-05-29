@@ -8,6 +8,10 @@
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "nvrhi/nvrhi.h"
+
+namespace nvrhi {
+using CommandListDesc = nvrhi::CommandListParameters;
+}
 struct IDxcBlob;
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define USING_NVRHI_SYMBOL(RESOURCE) \
@@ -18,11 +22,23 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
     using nvrhi::rt::RESOURCE##Desc;    \
     using nvrhi::rt::RESOURCE##Handle;
 
-#define NVRHI_RESOURCE_LIST    Texture, Shader, Buffer, BindingLayout, BindingSet
+#define NVRHI_RESOURCE_LIST    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList
 #define NVRHI_RT_RESOURCE_LIST Pipeline, AccelStruct
 #define RESOURCE_LIST          NVRHI_RESOURCE_LIST, NVRHI_RT_RESOURCE_LIST, ShaderCompile
 
-MACRO_MAP(USING_NVRHI_SYMBOL, NVRHI_RESOURCE_LIST);
+using nvrhi::BindingLayoutDesc;
+using nvrhi::BindingLayoutHandle;
+using nvrhi::BindingSetDesc;
+using nvrhi::BindingSetHandle;
+using nvrhi::BufferDesc;
+using nvrhi::BufferHandle;
+using nvrhi::CommandListDesc;
+using nvrhi::CommandListHandle;
+using nvrhi::ShaderDesc;
+using nvrhi::ShaderHandle;
+using nvrhi::TextureDesc;
+using nvrhi::TextureHandle;
+;
 MACRO_MAP(USING_NVRHI_RT_SYMBOL, NVRHI_RT_RESOURCE_LIST);
 
 struct ShaderCompileResult {

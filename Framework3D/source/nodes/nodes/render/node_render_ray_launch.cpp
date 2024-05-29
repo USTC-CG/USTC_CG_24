@@ -91,7 +91,7 @@ static void node_exec(ExeParams params)
     float transform[12] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
     memcpy(instanceDesc.transform, &transform, sizeof(transform));
 
-    auto m_CommandList = resource_allocator.device->createCommandList();
+    auto m_CommandList = resource_allocator.create(CommandListDesc{});
     m_CommandList->open();
     nvrhi::utils::BuildBottomLevelAccelStruct(m_CommandList, blas, blas_desc);
     m_CommandList->buildTopLevelAccelStruct(m_TopLevelAS, &instanceDesc, 1);
@@ -166,7 +166,7 @@ static void node_exec(ExeParams params)
         };
         auto binding_set = resource_allocator.create(binding_set_desc, globalBindingLayout.Get());
 
-        auto command_list = resource_allocator.device->createCommandList();
+        auto command_list = resource_allocator.create(CommandListDesc{});
 
         nvrhi::rt::State state;
         nvrhi::rt::ShaderTableHandle sbt = raytracing_pipeline->createShaderTable();
@@ -191,11 +191,13 @@ static void node_exec(ExeParams params)
         resource_allocator.destroy(raygen_shader);
         resource_allocator.destroy(chs_shader);
         resource_allocator.destroy(miss_shader);
+        resource_allocator.destroy(command_list);
     }
     resource_allocator.destroy(vertexBuffer);
     resource_allocator.destroy(indexBuffer);
     resource_allocator.destroy(blas);
     resource_allocator.destroy(m_TopLevelAS);
+    resource_allocator.destroy(m_CommandList);
     auto error = raytrace_compiled->error_string;
     auto buffer_size = raytrace_compiled->blob->GetBufferSize();
     resource_allocator.destroy(raytrace_compiled);

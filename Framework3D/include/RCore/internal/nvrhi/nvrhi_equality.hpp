@@ -3,6 +3,19 @@
 #include "nvrhi/nvrhi.h"
 
 namespace nvrhi {
+
+inline bool operator==(const CommandListParameters& lhs, const CommandListParameters& rhs)
+{
+    return lhs.enableImmediateExecution == rhs.enableImmediateExecution &&
+           lhs.uploadChunkSize == rhs.uploadChunkSize &&
+           lhs.scratchChunkSize == rhs.scratchChunkSize &&
+           lhs.scratchMaxMemory == rhs.scratchMaxMemory && lhs.queueType == rhs.queueType;
+}
+
+inline bool operator!=(const CommandListParameters& lhs, const CommandListParameters& rhs)
+{
+    return !(lhs == rhs);
+}
 inline bool operator==(const ShaderDesc& lhs, const ShaderDesc& rhs)
 {
     return lhs.shaderType == rhs.shaderType && lhs.debugName == rhs.debugName &&
