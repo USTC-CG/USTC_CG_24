@@ -275,13 +275,15 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     glDeleteFramebuffers(1, &temp);
 #elif defined(USTC_CG_BACKEND_NVRHI)
 
-    auto command_list = nvrhi_device->createCommandList();
-    command_list->open();
+    if (!m_CommandList) {
+        m_CommandList = nvrhi_device->createCommandList();
+    }
+    m_CommandList->open();
 
-    command_list->copyTexture(staging, {}, handle, {});
-    command_list->close();
+    m_CommandList->copyTexture(staging, {}, handle, {});
+    m_CommandList->close();
 
-    nvrhi_device->executeCommandList(command_list.Get());
+    nvrhi_device->executeCommandList(m_CommandList.Get());
     nvrhi_device->waitForIdle();
 
     size_t pitch;

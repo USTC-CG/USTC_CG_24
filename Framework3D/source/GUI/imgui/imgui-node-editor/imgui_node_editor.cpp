@@ -1939,7 +1939,6 @@ bool ed::EditorContext::DoLink(
     link->m_IsLive = true;
 
     link->UpdateEndpoints();
-    MakeDirty(SaveReasonFlags::AddLink);
     return true;
 }
 

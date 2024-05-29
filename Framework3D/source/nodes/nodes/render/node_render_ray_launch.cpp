@@ -166,8 +166,6 @@ static void node_exec(ExeParams params)
         };
         auto binding_set = resource_allocator.create(binding_set_desc, globalBindingLayout.Get());
 
-        auto command_list = resource_allocator.create(CommandListDesc{});
-
         nvrhi::rt::State state;
         nvrhi::rt::ShaderTableHandle sbt = raytracing_pipeline->createShaderTable();
         sbt->setRayGenerationShader("RayGen");
@@ -175,14 +173,14 @@ static void node_exec(ExeParams params)
         sbt->addMissShader("Miss");
         state.setShaderTable(sbt).addBindingSet(binding_set);
 
-        command_list->open();
-        command_list->setRayTracingState(state);
+        m_CommandList->open();
+        m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
         args.width = size[0];
         args.height = size[1];
-        command_list->dispatchRays(args);
-        command_list->close();
-        resource_allocator.device->executeCommandList(command_list);
+        m_CommandList->dispatchRays(args);
+        m_CommandList->close();
+        resource_allocator.device->executeCommandList(m_CommandList);
         resource_allocator.device->waitForIdle();  // This is not fully efficient.
 
         resource_allocator.destroy(raytracing_pipeline);
@@ -191,7 +189,6 @@ static void node_exec(ExeParams params)
         resource_allocator.destroy(raygen_shader);
         resource_allocator.destroy(chs_shader);
         resource_allocator.destroy(miss_shader);
-        resource_allocator.destroy(command_list);
     }
     resource_allocator.destroy(vertexBuffer);
     resource_allocator.destroy(indexBuffer);

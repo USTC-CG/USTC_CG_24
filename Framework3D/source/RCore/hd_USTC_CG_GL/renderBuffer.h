@@ -102,10 +102,11 @@ class Hd_USTC_CG_RenderBufferGL : public HdRenderBuffer {
     GLuint tex = 0;
 #endif
 
+   private:
     nvrhi::IDevice* nvrhi_device;
     nvrhi::StagingTextureHandle staging;
+    CommandListHandle m_CommandList;
 
-   private:
     static GLenum _GetGLFormat(HdFormat hd_format);
 
     static GLenum _GetGLType(HdFormat hd_format);

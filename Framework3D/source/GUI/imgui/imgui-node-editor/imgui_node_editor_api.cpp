@@ -344,7 +344,7 @@ bool ax::NodeEditor::AcceptNewItem(const ImVec4& color, float thickness)
     auto result = context.AcceptItem();
     if (result != Result::Indeterminate)
         context.SetStyle(ImColor(color), thickness);
-
+    s_Editor->MakeDirty(SaveReasonFlags::AddLink);
     return result == Result::True;
 }
 
