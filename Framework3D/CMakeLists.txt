@@ -59,6 +59,10 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(SLANG_ROOT_DIR ${PROJECT_SOURCE_DIR}/SDK/common/slang)
 find_package(Slang REQUIRED COMPONENTS slang slang-rt gfx)
 
+set(DXC_ROOT_DIR ${PROJECT_SOURCE_DIR}/SDK/common/dxc)
+find_package(DXC REQUIRED)
+
+
 set(TBB_tbb_LIBRARY TBB::tbb TBB::tbbmalloc TBB::tbbmalloc_proxy)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	set_target_properties(TBB::tbb PROPERTIES INTERFACE_COMPILE_DEFINITIONS "TBB_USE_DEBUG=1")

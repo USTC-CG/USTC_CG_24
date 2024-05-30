@@ -3,7 +3,6 @@
 #include <wrl.h>
 
 #include <filesystem>
-#include <regex>
 
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
@@ -14,6 +13,8 @@ using CommandListDesc = nvrhi::CommandListParameters;
 }
 struct IDxcBlob;
 USTC_CG_NAMESPACE_OPEN_SCOPE
+struct ShaderCompileResult;
+struct ShaderCompileDesc;
 #define USING_NVRHI_SYMBOL(RESOURCE) \
     using nvrhi::RESOURCE##Desc;     \
     using nvrhi::RESOURCE##Handle;
@@ -41,12 +42,24 @@ using nvrhi::TextureHandle;
 ;
 MACRO_MAP(USING_NVRHI_RT_SYMBOL, NVRHI_RT_RESOURCE_LIST);
 
+using ShaderCompileHandle = std::shared_ptr<ShaderCompileResult>;
+
 struct ShaderCompileResult {
+    void* getBufferPointer() const;
+    size_t getBufferSize() const;
+
+    [[nodiscard]] const std::string& get_error_string() const
+    {
+        return error_string;
+    }
+
+   private:
+    friend ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc);
+
     Microsoft::WRL::ComPtr<IDxcBlob> blob;
     std::string error_string;
 };
 
-using ShaderCompileHandle = std::shared_ptr<ShaderCompileResult>;
 struct ShaderCompileDesc {
     friend bool operator==(const ShaderCompileDesc& lhs, const ShaderCompileDesc& rhs)
     {

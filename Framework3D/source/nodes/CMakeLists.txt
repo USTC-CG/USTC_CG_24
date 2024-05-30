@@ -59,7 +59,7 @@ target_link_libraries(nodes Eigen3::Eigen)
 target_link_libraries(nodes Python3::Python)
 target_link_libraries(nodes hioOpenVDB EnTT::EnTT)
 target_link_libraries(nodes hioOpenVDB)
-target_link_libraries(nodes nvrhi d3dcompiler dxcompiler)
+target_link_libraries(nodes nvrhi DXC::dxc)
 
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
 target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)

@@ -1,8 +1,3 @@
-#ifdef _WIN32
-#include <Windows.h>
-#include <dxcapi.h>
-#endif
-
 #include "NODES_FILES_DIR.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
@@ -114,27 +109,21 @@ static void node_exec(ExeParams params)
     shader_desc.entryName = "RayGen";
     shader_desc.shaderType = nvrhi::ShaderType::RayGeneration;
     shader_desc.debugName =
-        std::to_string(reinterpret_cast<long long>(raytrace_compiled->blob->GetBufferPointer()));
+        std::to_string(reinterpret_cast<long long>(raytrace_compiled->getBufferPointer()));
 
-    if (raytrace_compiled->blob->GetBufferSize()) {
+    if (raytrace_compiled->getBufferSize()) {
         auto raygen_shader = resource_allocator.create(
-            shader_desc,
-            raytrace_compiled->blob->GetBufferPointer(),
-            raytrace_compiled->blob->GetBufferSize());
+            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
 
         shader_desc.entryName = "ClosestHit";
         shader_desc.shaderType = nvrhi::ShaderType::ClosestHit;
         auto chs_shader = resource_allocator.create(
-            shader_desc,
-            raytrace_compiled->blob->GetBufferPointer(),
-            raytrace_compiled->blob->GetBufferSize());
+            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
 
         shader_desc.entryName = "Miss";
         shader_desc.shaderType = nvrhi::ShaderType::Miss;
         auto miss_shader = resource_allocator.create(
-            shader_desc,
-            raytrace_compiled->blob->GetBufferPointer(),
-            raytrace_compiled->blob->GetBufferSize());
+            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
 
         // 3. Prepare the hitgroup and pipeline
 
@@ -195,8 +184,8 @@ static void node_exec(ExeParams params)
     resource_allocator.destroy(blas);
     resource_allocator.destroy(m_TopLevelAS);
     resource_allocator.destroy(m_CommandList);
-    auto error = raytrace_compiled->error_string;
-    auto buffer_size = raytrace_compiled->blob->GetBufferSize();
+    auto error = raytrace_compiled->get_error_string();
+    auto buffer_size = raytrace_compiled->getBufferSize();
     resource_allocator.destroy(raytrace_compiled);
 
     params.set_output("Result", result_texture);

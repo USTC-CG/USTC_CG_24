@@ -13,6 +13,16 @@
 using namespace Microsoft::WRL;
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+void* ShaderCompileResult::getBufferPointer() const
+{
+    return blob->GetBufferPointer();
+}
+
+size_t ShaderCompileResult::getBufferSize() const
+{
+    return blob->GetBufferSize();
+}
+
 void ShaderCompileDesc::set_path(const std::filesystem::path& path)
 {
     this->path = path;
