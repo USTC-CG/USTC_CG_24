@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-#include "pxr/imaging/HD_USTC_CG_HWRT/shaderCompiler.h"
+#include "pxr/imaging/hd_USTC_CG_GL/shaderCompiler.h"
 #include "slang-com-ptr.h"
 
 using namespace USTC_CG;

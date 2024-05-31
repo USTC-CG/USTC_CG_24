@@ -13,7 +13,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 
 std::filesystem::path SlangShaderCompiler::find_root(const std::filesystem::path& p)
 {
-    auto mark_prelude_name = "slang/prelude/slang-cuda-prelude.h";
+    auto mark_prelude_name = "/slang/prelude/slang-cuda-prelude.h";
     auto current = absolute(p);
 
     while (!exists(current / mark_prelude_name)) {

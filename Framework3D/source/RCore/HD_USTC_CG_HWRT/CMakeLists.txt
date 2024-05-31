@@ -34,7 +34,6 @@ pxr_plugin(${PXR_PACKAGE}
         usdLux
         RCore
         usdImaging
-        SLANG::slang
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}
@@ -53,7 +52,6 @@ pxr_plugin(${PXR_PACKAGE}
         camera
         light
         texture
-        shaderCompiler
         integrators/ao
         integrators/direct
         integrators/path

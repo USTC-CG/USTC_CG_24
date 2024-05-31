@@ -5,7 +5,7 @@
 #include "api.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class HD_USTC_CG_HWRT_API SlangShaderCompiler {
+class HD_USTC_CG_GL_API SlangShaderCompiler {
    public:
     static std::filesystem::path find_root(const std::filesystem::path& p);
     static SlangResult addCUDAPrelude(slang::IGlobalSession* session);
