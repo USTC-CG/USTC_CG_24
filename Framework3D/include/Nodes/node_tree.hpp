@@ -60,20 +60,22 @@ class NodeTree {
 
     bool IsPinLinked(SocketID id) const;
 
-    Node* nodeAddNode(const char* str);
+    Node* addNode(const char* str);
 
     unsigned UniqueID();
 
     void update_socket_vectors_and_owner_node();
     void ensure_topology_cache();
-    NodeLink* nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock);
+    NodeLink* addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock);
 
-    NodeLink* nodeAddLink(SocketID startPinId, SocketID endPinId);
+    NodeLink* addLink(SocketID startPinId, SocketID endPinId);
 
     void RemoveLink(LinkId linkId);
 
     void delete_node(NodeId nodeId);
-    bool CanCreateLink(NodeSocket* node_socket, NodeSocket* node_socket1);
+    static bool CanCreateLink(NodeSocket* node_socket, NodeSocket* node_socket1);
+    static bool CanCreateDirectLink(NodeSocket* socket1, NodeSocket* socket2);
+    static bool CanCreateConvertLink(NodeSocket* node_socket, NodeSocket* node_socket1);
 
    private:
     void delete_socket(SocketID socketId);

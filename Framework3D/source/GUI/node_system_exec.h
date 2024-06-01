@@ -31,7 +31,7 @@ class NodeSystemExecution {
         return node_tree->FindLink(id);
     }
 
-    void CreateLink(SocketID startPinId, SocketID endPinId);
+    virtual void CreateLink(SocketID startPinId, SocketID endPinId);
 
     virtual void MarkDirty()
     {

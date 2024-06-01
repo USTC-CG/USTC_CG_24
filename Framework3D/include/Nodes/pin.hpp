@@ -5,9 +5,9 @@
 #include "Utils/Functions/CPPType.hpp"
 #include "Utils/json.hpp"
 #include "all_socket_types.hpp"
-#include "id.hpp"
 #include "entt/core/type_info.hpp"
 #include "entt/meta/meta.hpp"
+#include "id.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
@@ -33,7 +33,14 @@ struct SocketTypeInfo {
     entt::meta_type cpp_type;
     SocketType type;
 
-    std::function<bool(SocketType)> canLinkTo = [this](SocketType other) { return type == other; };
+    std::function<bool(SocketType)> canConvertTo = [this](SocketType other) {
+        if (other == SocketType::Any) {
+            return true;
+        }
+        return type == other;
+    };
+
+    std::function<Node*(SocketType)> conversionNode = [this](SocketType other) { return nullptr; };
 };
 
 struct NodeSocket {

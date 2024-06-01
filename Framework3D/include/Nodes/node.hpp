@@ -46,6 +46,7 @@ struct NodeTypeInfo {
     NodeDeclareFunction declare;
     ExecFunction node_execute;
     bool ALWAYS_REQUIRED = false;
+    bool INVISIBLE = false;
 
     std::unique_ptr<NodeDeclaration> static_declaration;
 };
@@ -59,8 +60,6 @@ struct Node {
     float Color[4];
     NodeType Type;
     float Size[2];
-
-    Operator* operator_;
 
     NodeTypeInfo* typeinfo;
 

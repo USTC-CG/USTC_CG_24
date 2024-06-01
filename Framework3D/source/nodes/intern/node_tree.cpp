@@ -75,7 +75,7 @@ bool NodeTree::IsPinLinked(SocketID id) const
     return !FindPin(id)->directly_linked_links.empty();
 }
 
-Node* NodeTree::nodeAddNode(const char* idname)
+Node* NodeTree::addNode(const char* idname)
 {
     auto node = std::make_unique<Node>();
     node->ID = UniqueID();
@@ -95,8 +95,7 @@ unsigned NodeTree::UniqueID()
     return current_id++;
 }
 
-NodeLink*
-NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock)
+NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock)
 {
     SetDirty(true);
 
@@ -116,6 +115,10 @@ NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSo
         link->tosock = fromsock;
         std::swap(link->StartPinID, link->EndPinID);
     }
+    else {
+        assert(false);
+    }
+
     auto bare_ptr = link.get();
     links.push_back(std::move(link));
 
@@ -124,14 +127,14 @@ NodeTree::nodeAddLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSo
     return bare_ptr;
 }
 
-NodeLink* NodeTree::nodeAddLink(SocketID startPinId, SocketID endPinId)
+NodeLink* NodeTree::addLink(SocketID startPinId, SocketID endPinId)
 {
     SetDirty(true);
     auto socket1 = FindPin(startPinId);
     auto socket2 = FindPin(endPinId);
 
     if (socket1 && socket2)
-        return nodeAddLink(socket1->Node, socket1, socket2->Node, socket2);
+        return addLink(socket1->Node, socket1, socket2->Node, socket2);
 
     return nullptr;
 }
@@ -175,15 +178,25 @@ bool NodeTree::CanCreateLink(NodeSocket* a, NodeSocket* b)
     if (!in->directly_linked_sockets.empty()) {
         return false;
     }
-    if (in->type_info->canLinkTo(out->type_info->type)) {
+    if (CanCreateDirectLink(out, in)) {
         return true;
     }
 
-    if (out->type_info->canLinkTo(in->type_info->type)) {
+    if (CanCreateConvertLink(out, in)) {
         return true;
     }
 
     return false;
+}
+
+bool NodeTree::CanCreateDirectLink(NodeSocket* socket1, NodeSocket* socket2)
+{
+    return socket1->type_info->type == socket2->type_info->type;
+}
+
+bool NodeTree::CanCreateConvertLink(NodeSocket* out, NodeSocket* in)
+{
+    return out->type_info->canConvertTo(in->type_info->type);
 }
 
 void NodeTree::delete_socket(SocketID socketId)
@@ -547,7 +560,7 @@ void NodeTree::Deserialize(const std::string& str)
     }
 
     for (auto&& link_json : value["links_info"]) {
-        nodeAddLink(link_json["StartPinID"].get<unsigned>(), link_json["EndPinID"].get<unsigned>());
+        addLink(link_json["StartPinID"].get<unsigned>(), link_json["EndPinID"].get<unsigned>());
     }
 
     ensure_topology_cache();

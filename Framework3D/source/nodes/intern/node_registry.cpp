@@ -219,7 +219,7 @@ static SocketTypeInfo* make_socket_type_Any()
 {
     SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Any);
     // socktype->cpp_type = entt::resolve<entt::meta_any>();
-    socktype->canLinkTo = [](SocketType type) { return true; };
+    socktype->canConvertTo = [](SocketType type) { return true; };
     return socktype;
 }
 

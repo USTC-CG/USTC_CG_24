@@ -113,11 +113,13 @@ struct NodeSystemImpl {
 
    protected:
     size_t frame = 0;
+    ImVec2 newNodePostion;
+    bool location_remembered = false;
     void TouchNode(NodeId id);
     float GetTouchProgress(NodeId id);
     void UpdateTouch();
-    Node* FindNode(NodeId id);
-    bool CanCreateLink(NodeSocket* a, NodeSocket* b);
+    Node* FindNode(NodeId id) const;
+    bool CanCreateLink(NodeSocket* a, NodeSocket* b) const;
 
     std::unique_ptr<NodeSystemExecution> node_system_execution_;
     static const int m_PinIconSize = 20;
@@ -632,7 +634,10 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     }
 
     if (ImGui::BeginPopup("Create New Node")) {
-        auto newNodePostion = openPopupPosition;
+        if (!location_remembered) {
+            newNodePostion = openPopupPosition;
+            location_remembered = true;
+        }
 
         Node* node = node_system_execution_->create_node_menu();
         // ImGui::Separator();
@@ -640,6 +645,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         //     node = SpawnComment();
 
         if (node) {
+            location_remembered = false;
             createNewNode = false;
             node_system_execution_->MarkDirty();
 
@@ -770,7 +776,7 @@ void NodeSystemImpl::UpdateTouch()
     }
 }
 
-Node* NodeSystemImpl::FindNode(NodeId id)
+Node* NodeSystemImpl::FindNode(NodeId id) const
 {
     for (auto&& node : node_system_execution_->get_nodes())
         if (node->ID == id)
@@ -779,7 +785,7 @@ Node* NodeSystemImpl::FindNode(NodeId id)
     return nullptr;
 }
 
-bool NodeSystemImpl::CanCreateLink(NodeSocket* a, NodeSocket* b)
+bool NodeSystemImpl::CanCreateLink(NodeSocket* a, NodeSocket* b) const
 {
     return node_system_execution_->CanCreateLink(a, b);
 }
