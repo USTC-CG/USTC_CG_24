@@ -151,6 +151,7 @@ def process_SDK(target):
     copytree_to_binaries("OpenUSD/plugin/usd", "usd", target=target)
 
     copytree_common_to_binaries("embree/bin", target=target)
+    copytree_common_to_binaries("dxc/bin/x64", target=target)
     copytree_common_to_binaries("slang/prelude", dst="slang/prelude", target=target)
 
     if os.name == "nt":

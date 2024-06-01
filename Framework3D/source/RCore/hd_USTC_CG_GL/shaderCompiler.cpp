@@ -13,7 +13,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 
 std::filesystem::path SlangShaderCompiler::find_root(const std::filesystem::path& p)
 {
-    auto mark_prelude_name = "/slang/prelude/slang-cuda-prelude.h";
+    auto mark_prelude_name = "slang/prelude/slang-cuda-prelude.h";
     auto current = absolute(p);
 
     while (!exists(current / mark_prelude_name)) {
@@ -30,13 +30,15 @@ std::filesystem::path SlangShaderCompiler::find_root(const std::filesystem::path
     return current;
 }
 
+#if USTC_CG_WITH_CUDA
+
 SlangResult SlangShaderCompiler::addCUDAPrelude(slang::IGlobalSession* session)
 {
     std::filesystem::path includePath = ".";
 
     auto root = find_root(includePath);
 
-    auto prelude_name = "/slang/prelude/slang-cuda-prelude.h";
+    auto prelude_name = "slang/prelude/slang-cuda-prelude.h";
     std::ostringstream prelude;
     prelude << "#include \"" << root.generic_string() + prelude_name << "\"\n\n";
 
@@ -68,6 +70,8 @@ SlangResult SlangShaderCompiler::addOptiXSupport(SlangCompileRequest* slangReque
     addOptiXSupportPreDefine(slangRequest);
     return addOptiXHeaderInclude(slangRequest);
 }
+
+#endif
 
 void SlangShaderCompiler::save_file(const std::string& filename, const char* data)
 {

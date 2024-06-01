@@ -18,6 +18,7 @@ function(get_relative_paths folder output_list)
 endfunction()
 
 get_relative_paths(shaders RelativeShaderPaths)
+message("shit ${RelativeShaderPaths}")
 get_relative_paths(optix optixHeaders)
 
 pxr_plugin(${PXR_PACKAGE}

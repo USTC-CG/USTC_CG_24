@@ -13,6 +13,9 @@ project(
 option(USTC_CG_WITH_CUDA OFF)
 if(USTC_CG_WITH_CUDA)
 enable_language(CUDA)
+add_compile_definitions(USTC_CG_WITH_CUDA=1)
+else()
+add_compile_definitions(USTC_CG_WITH_CUDA=0)
 endif()
 
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")

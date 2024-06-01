@@ -39,24 +39,25 @@ TEST(SLANG, createSession)
     globalSession->createSession(sessionDesc, session.writeRef());
     ASSERT_NE(session.get(), nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd\HD_USTC_CG_HWRT\resources\shadersshader.slang";
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd\hd_USTC_CG_GL\resources\shadersshader.slang";
 
     Slang::ComPtr<slang::IBlob> outDiagnostic;
     Slang::ComPtr<slang::IModule> module_;
 
     module_ = session->loadModule(shaderPath.generic_string().c_str(), outDiagnostic.writeRef());
 }
+TEST(SLANG, findRoot)
+{
+    ASSERT_NE(SlangShaderCompiler::find_root("."), std::filesystem::path(""));
+}
+#if USTC_CG_WITH_CUDA
 
 TEST(SLANG, setPrelude)
 {
     auto globalSession = createGlobal();
 
     ASSERT_EQ(SlangShaderCompiler::addCUDAPrelude(globalSession), SLANG_OK);
-}
-
-TEST(SLANG, findRoot)
-{
-    ASSERT_NE(SlangShaderCompiler::find_root("."), std::filesystem::path(""));
 }
 
 TEST(SLANG, compileFromGlobal)
@@ -71,7 +72,8 @@ TEST(SLANG, compileFromGlobal)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
     const SlangResult compileRes = spCompile(slangRequest);
@@ -102,7 +104,8 @@ TEST(SLANG, codeGen)
     spTranslationUnit_addPreprocessorDefine(
         slangRequest, translationUnitIndex, "SLANG_CUDA_ENABLE_OPTIX", "1");
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
 
@@ -132,7 +135,8 @@ TEST(SLANG, genPTX)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
 
     SlangShaderCompiler::addOptiXSupport(slangRequest);
 
@@ -176,7 +180,8 @@ TEST(SLANG, reflection)
     int translationUnitIndex =
         spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") / "usd/HD_USTC_CG_HWRT/resources/shaders/shader.slang";
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
     const SlangResult compileRes = spCompile(slangRequest);
@@ -247,4 +252,40 @@ TEST(SLANG, reflection)
     print(TypeParameter);
 
     reflection_log.close();
+}
+
+#endif
+
+TEST(SLANG, compileFromGlobal)
+{
+    auto globalSession = createGlobal();
+
+    SlangCompileRequest* slangRequest = spCreateCompileRequest(globalSession);
+
+    int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
+    spSetTargetFlags(slangRequest, targetIndex, SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM);
+    int translationUnitIndex =
+        spAddTranslationUnit(slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
+
+    auto profile_id = globalSession->findProfile("lib_6_5");
+
+    auto shaderPath =
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
+    spAddTranslationUnitSourceFile(
+        slangRequest, translationUnitIndex, shaderPath.generic_string().c_str());
+
+    slangRequest->setTargetProfile(targetIndex, profile_id);
+
+    const SlangResult compileRes = spCompile(slangRequest);
+
+    if (SLANG_FAILED(compileRes)) {
+        if (auto diagnostics = spGetDiagnosticOutput(slangRequest)) {
+            std::cerr << "Error diagnostics: " << diagnostics;
+        }
+    }
+    ASSERT_EQ(compileRes, SLANG_OK);
+
+    if (SLANG_FAILED(compileRes)) {
+        spDestroyCompileRequest(slangRequest);
+    }
 }
