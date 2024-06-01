@@ -2,7 +2,6 @@
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/points.h>
-#include <pxr/usd/usdGeom/curves.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
@@ -17,7 +16,6 @@
 #include "Nodes/node_register.h"
 #include "geom_node_base.h"
 #include "GCore/Components/CurveComponent.h"
-#include "pxr/base/gf/matrix4d.h"
 #include "pxr/base/gf/rotation.h"
 
 namespace USTC_CG::node_write_usd {
