@@ -99,6 +99,11 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
 {
     SetDirty(true);
 
+    if (fromsock->in_out == PinKind::Input) {
+        std::swap(fromnode, tonode);
+        std::swap(fromsock, tosock);
+    }
+
     auto link = std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
 
     if ((fromsock->in_out) == PinKind::Output && (tosock->in_out) == PinKind::Input) {
@@ -108,6 +113,8 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
         link->tosock = tosock;
     }
     else if ((fromsock->in_out) == PinKind::Input && (tosock->in_out) == PinKind::Output) {
+
+        assert(false);
         /* OK but flip */
         link->fromnode = tonode;
         link->fromsock = tosock;
