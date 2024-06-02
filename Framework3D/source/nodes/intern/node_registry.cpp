@@ -5,6 +5,7 @@
 #include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
+#include "boost/python/object.hpp"
 #include "boost/python/numpy.hpp"
 #include "entt/meta/resolve.hpp"
 #include "rich_type_buffer.hpp"
@@ -65,6 +66,13 @@ const std::map<std::string, NodeTypeInfo*>& get_composition_node_registry()
     return composition_node_registry;
 }
 
+static std::map<std::string, NodeTypeInfo*> conversion_node_registry;
+
+const std::map<std::string, NodeTypeInfo*>& get_conversion_node_registry()
+{
+    return conversion_node_registry;
+}
+
 void nodeRegisterType(NodeTypeInfo* type_info)
 {
     switch (type_info->node_type_of_grpah) {
@@ -73,6 +81,9 @@ void nodeRegisterType(NodeTypeInfo* type_info)
         case NodeTypeOfGrpah::Function: func_node_registry[type_info->id_name] = type_info; break;
         case NodeTypeOfGrpah::Composition:
             composition_node_registry[type_info->id_name] = type_info;
+            break;
+        case NodeTypeOfGrpah::Conversion:
+            conversion_node_registry[type_info->id_name] = type_info;
             break;
         default: logging("Unknown graph type of node.", Error);
     }
@@ -98,6 +109,7 @@ NodeTypeInfo* nodeTypeFind(const char* idname)
         find_type(get_render_node_registry());
         find_type(get_func_node_registry());
         find_type(get_composition_node_registry());
+        find_type(get_conversion_node_registry());
 
         if (nt)
             return nt;
@@ -200,7 +212,7 @@ static SocketTypeInfo* make_socket_type_Int()
 
     socket_type->conversionNode = [](SocketType other) -> std::string {
         if (other == SocketType::Float) {
-            return "int_to_float";
+            return "conv_Int_to_Float";
         }
         return {};
     };
@@ -269,6 +281,14 @@ static SocketTypeInfo* make_socket_type_Texture()
 {
     SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Texture);
     socket_type->cpp_type = entt::resolve<TextureHandle>();
+    socket_type->conversionNode = [socket_type](SocketType type) -> std::string {
+        if (type == SocketType::NumpyArray) {
+            return "conv_Texture_to_NumpyArray";
+        }
+
+        return "";
+    };
+
     return socket_type;
 }
 
@@ -276,6 +296,20 @@ static SocketTypeInfo* make_socket_type_Materials()
 {
     SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Materials);
     socket_type->cpp_type = entt::resolve<MaterialMap>();
+    return socket_type;
+}
+
+static SocketTypeInfo* make_socket_type_PyObj()
+{
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::PyObj);
+    socket_type->cpp_type = entt::resolve<boost::python::object>();
+    return socket_type;
+}
+
+static SocketTypeInfo* make_socket_type_NumpyArray()
+{
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::NumpyArray);
+    socket_type->cpp_type = entt::resolve<boost::python::numpy::ndarray>();
     return socket_type;
 }
 

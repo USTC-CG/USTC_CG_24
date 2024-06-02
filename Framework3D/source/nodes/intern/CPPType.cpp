@@ -14,9 +14,9 @@
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "rich_type_buffer.hpp"
+#include "boost/python/numpy.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-
 namespace node_mass_spring {
 class MassSpring;
 }
@@ -37,6 +37,8 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(int32_t);
     BLI_CPP_TYPE_REGISTER(std::string);
     BLI_CPP_TYPE_REGISTER(entt::any);
+    BLI_CPP_TYPE_REGISTER(boost::python::object);
+    BLI_CPP_TYPE_REGISTER(boost::python::numpy::ndarray);
     BLI_CPP_TYPE_REGISTER(GOperandBase);
     BLI_CPP_TYPE_REGISTER(LightArray);
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);

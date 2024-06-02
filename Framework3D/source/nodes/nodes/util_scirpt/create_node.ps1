@@ -2,16 +2,16 @@ param(
     [string]$filename
 )
 
-# ´´½¨ CPP ÎÄ¼þÂ·¾¶
+# ï¿½ï¿½ï¿½ï¿½ CPP ï¿½Ä¼ï¿½Â·ï¿½ï¿½
 $cppFilePath = "node_${filename}.cpp"
 
-# ¼ì²éÎÄ¼þÊÇ·ñÒÑ´æÔÚ
+# ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ç·ï¿½ï¿½Ñ´ï¿½ï¿½ï¿½
 if (Test-Path $cppFilePath) {
-    Write-Host "ÎÄ¼þÒÑ´æÔÚ: $cppFilePath"
+    Write-Host "ï¿½Ä¼ï¿½ï¿½Ñ´ï¿½ï¿½ï¿½: $cppFilePath"
     exit
 }
 
-# ÒªÐ´ÈëµÄÄÚÈÝ
+# ÒªÐ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 $content = @"
 #include "NODES_FILES_DIR.h"
 #include "Nodes/node.hpp"
@@ -36,7 +36,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "$filename");
-    strcpy_s(ntype.id_name, "node_$filename");
+    strcpy(ntype.id_name, "node_$filename");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
@@ -48,7 +48,7 @@ NOD_REGISTER_NODE(node_register)
 }  // namespace USTC_CG::node_$filename
 "@
 
-# ½«ÄÚÈÝÐ´ÈëÎÄ¼þ
+# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½Ä¼ï¿½
 $content | Out-File -FilePath $cppFilePath -Encoding utf8
 
-Write-Host "ÒÑ´´½¨ÎÄ¼þ: $cppFilePath"
+Write-Host "ï¿½Ñ´ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½: $cppFilePath"

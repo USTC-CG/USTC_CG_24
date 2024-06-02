@@ -36,7 +36,7 @@ struct NodeLink {
 using ExecFunction = void (*)(ExeParams params);
 using NodeDeclareFunction = void (*)(NodeDeclarationBuilder& builder);
 
-enum class NodeTypeOfGrpah { Geometry, Function, Render, Composition };
+enum class NodeTypeOfGrpah { Geometry, Function, Render, Composition, Conversion };
 
 // There can be many instances of nodes, while each of them has a type. The
 // templates should be declared statically. It contains the information of the

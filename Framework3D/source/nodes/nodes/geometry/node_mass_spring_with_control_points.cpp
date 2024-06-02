@@ -130,7 +130,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Mass Spring With Control Points");
-    strcpy_s(ntype.id_name, "geom_mass_spring_with_control_points");
+    strcpy(ntype.id_name, "geom_mass_spring_with_control_points");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_mass_spring_exec;

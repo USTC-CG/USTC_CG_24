@@ -199,7 +199,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Ray Launch");
-    strcpy_s(ntype.id_name, "render_ray_launch");
+    strcpy(ntype.id_name, "render_ray_launch");
 
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;

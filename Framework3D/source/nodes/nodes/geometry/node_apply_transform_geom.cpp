@@ -77,7 +77,7 @@ static void node_register()
     static NodeTypeInfo ntype;
 
     strcpy(ntype.ui_name, "Apply Transform Geometry");
-    strcpy_s(ntype.id_name, "geom_apply_transform_geom");
+    strcpy(ntype.id_name, "geom_apply_transform_geom");
 
     geo_node_type_base(&ntype);
     ntype.node_execute = node_exec;
