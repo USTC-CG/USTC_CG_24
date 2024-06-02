@@ -33,14 +33,24 @@ struct SocketTypeInfo {
     entt::meta_type cpp_type;
     SocketType type;
 
-    std::function<bool(SocketType)> canConvertTo = [this](SocketType other) {
+    bool canConvertTo(SocketType other)
+    {
+        if (type == SocketType::Any) {
+            return true;
+        }
         if (other == SocketType::Any) {
             return true;
         }
-        return type == other;
-    };
 
-    std::function<Node*(SocketType)> conversionNode = [this](SocketType other) { return nullptr; };
+        if (conversionNode) {
+            if (!conversionNode(other).empty()) {
+                return true;
+            }
+        }
+        return type == other;
+    }
+
+    std::function<std::string(SocketType)> conversionNode = nullptr;
 };
 
 struct NodeSocket {

@@ -11,11 +11,17 @@ class Operator;
 struct NodeLink {
     LinkId ID;
 
-    Node *fromnode, *tonode;
-    NodeSocket *fromsock, *tosock;
+    Node* from_node = nullptr;
+    Node* to_node = nullptr;
+    NodeSocket* from_sock = nullptr;
+    NodeSocket* to_sock = nullptr;
 
     SocketID StartPinID;
     SocketID EndPinID;
+
+    // Used for invisible nodes when conversion
+    NodeLink* fromLink = nullptr;
+    NodeLink* nextLink = nullptr;
 
     NodeLink(LinkId id, SocketID startPinId, SocketID endPinId)
         : ID(id),
@@ -26,7 +32,6 @@ struct NodeLink {
 
     void Serialize(nlohmann::json& value);
 };
-
 
 using ExecFunction = void (*)(ExeParams params);
 using NodeDeclareFunction = void (*)(NodeDeclarationBuilder& builder);

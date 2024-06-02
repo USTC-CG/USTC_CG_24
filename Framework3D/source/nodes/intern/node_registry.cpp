@@ -139,12 +139,12 @@ SocketTypeInfo* make_standard_socket_type(SocketType socket)
     return type_info;
 }
 
-#define MakeType(Type, Item, Size, Buffer)                                                    \
-    static SocketTypeInfo* make_socket_type_##Type##Size##Buffer()                            \
-    {                                                                                         \
-        SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Type##Size##Buffer); \
-        socktype->cpp_type = entt::resolve<pxr::VtArray<Item>>();                             \
-        return socktype;                                                                      \
+#define MakeType(Type, Item, Size, Buffer)                                                       \
+    static SocketTypeInfo* make_socket_type_##Type##Size##Buffer()                               \
+    {                                                                                            \
+        SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Type##Size##Buffer); \
+        socket_type->cpp_type = entt::resolve<pxr::VtArray<Item>>();                             \
+        return socket_type;                                                                      \
     }
 
 MakeType(Float, float, 1, Buffer);
@@ -157,140 +157,147 @@ MakeType(Int, pxr::GfVec3i, 3, Buffer);
 MakeType(Int, pxr::GfVec4i, 4, Buffer);
 static SocketTypeInfo* make_socket_type_Float2()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float2);
-    socktype->cpp_type = entt::resolve<pxr::GfVec2f>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Float2);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec2f>();
+    return socket_type;
 };
 static SocketTypeInfo* make_socket_type_Float3()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float3);
-    socktype->cpp_type = entt::resolve<pxr::GfVec3f>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Float3);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec3f>();
+    return socket_type;
 };
 static SocketTypeInfo* make_socket_type_Float4()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float4);
-    socktype->cpp_type = entt::resolve<pxr::GfVec4f>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Float4);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec4f>();
+    return socket_type;
 };
 static SocketTypeInfo* make_socket_type_Int2()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int2);
-    socktype->cpp_type = entt::resolve<pxr::GfVec2i>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Int2);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec2i>();
+    return socket_type;
 };
 static SocketTypeInfo* make_socket_type_Int3()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int3);
-    socktype->cpp_type = entt::resolve<pxr::GfVec3i>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Int3);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec3i>();
+    return socket_type;
 };
 static SocketTypeInfo* make_socket_type_Int4()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int4);
-    socktype->cpp_type = entt::resolve<pxr::GfVec4i>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Int4);
+    socket_type->cpp_type = entt::resolve<pxr::GfVec4i>();
+    return socket_type;
 };
 #undef MakeTypeBuffer
 
 static SocketTypeInfo* make_socket_type_Int()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Int);
-    socktype->cpp_type = entt::resolve<int>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Int);
+    socket_type->cpp_type = entt::resolve<int>();
+
+    socket_type->conversionNode = [](SocketType other) -> std::string {
+        if (other == SocketType::Float) {
+            return "int_to_float";
+        }
+        return {};
+    };
+
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Float()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Float);
-    socktype->cpp_type = entt::resolve<float>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Float);
+    socket_type->cpp_type = entt::resolve<float>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_String()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::String);
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::String);
 
-    socktype->cpp_type = entt::resolve<std::string>();
-    return socktype;
+    socket_type->cpp_type = entt::resolve<std::string>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Any()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Any);
-    // socktype->cpp_type = entt::resolve<entt::meta_any>();
-    socktype->canConvertTo = [](SocketType type) { return true; };
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Any);
+    // socket_type->cpp_type = entt::resolve<entt::meta_any>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Geometry()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Geometry);
-    socktype->cpp_type = entt::resolve<GOperandBase>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Geometry);
+    socket_type->cpp_type = entt::resolve<GOperandBase>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Lights()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Lights);
-    socktype->cpp_type = entt::resolve<LightArray>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Lights);
+    socket_type->cpp_type = entt::resolve<LightArray>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Layer()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Layer);
-    socktype->cpp_type = entt::resolve<pxr::UsdStageRefPtr>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Layer);
+    socket_type->cpp_type = entt::resolve<pxr::UsdStageRefPtr>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Camera()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Camera);
-    socktype->cpp_type = entt::resolve<CameraArray>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Camera);
+    socket_type->cpp_type = entt::resolve<CameraArray>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Meshes()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Meshes);
-    socktype->cpp_type = entt::resolve<MeshArray>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Meshes);
+    socket_type->cpp_type = entt::resolve<MeshArray>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Texture()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Texture);
-    socktype->cpp_type = entt::resolve<TextureHandle>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Texture);
+    socket_type->cpp_type = entt::resolve<TextureHandle>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_Materials()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::Materials);
-    socktype->cpp_type = entt::resolve<MaterialMap>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Materials);
+    socket_type->cpp_type = entt::resolve<MaterialMap>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_MassSpringSocket()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::MassSpringSocket);
-    socktype->cpp_type = entt::resolve<std::shared_ptr<node_mass_spring::MassSpring>>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::MassSpringSocket);
+    socket_type->cpp_type = entt::resolve<std::shared_ptr<node_mass_spring::MassSpring>>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_SPHFluidSocket()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::SPHFluidSocket);
-    socktype->cpp_type = entt::resolve<std::shared_ptr<node_sph_fluid::SPHBase>>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::SPHFluidSocket);
+    socket_type->cpp_type = entt::resolve<std::shared_ptr<node_sph_fluid::SPHBase>>();
+    return socket_type;
 }
 
 static SocketTypeInfo* make_socket_type_AnimatorSocket()
 {
-    SocketTypeInfo* socktype = make_standard_socket_type(SocketType::AnimatorSocket);
-    socktype->cpp_type = entt::resolve<std::shared_ptr<node_character_animation::Animator>>();
-    return socktype;
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::AnimatorSocket);
+    socket_type->cpp_type = entt::resolve<std::shared_ptr<node_character_animation::Animator>>();
+    return socket_type;
 }
 
 void register_socket(SocketTypeInfo* type_info)

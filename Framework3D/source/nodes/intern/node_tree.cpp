@@ -104,46 +104,49 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
         std::swap(fromsock, tosock);
     }
 
-    auto link = std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
+    std::string node_name;
+    if (fromsock->type_info->conversionNode)
+        node_name = fromsock->type_info->conversionNode(tosock->type_info->type);
 
-    if ((fromsock->in_out) == PinKind::Output && (tosock->in_out) == PinKind::Input) {
-        link->fromnode = fromnode;
-        link->fromsock = fromsock;
-        link->tonode = tonode;
-        link->tosock = tosock;
-    }
-    else if ((fromsock->in_out) == PinKind::Input && (tosock->in_out) == PinKind::Output) {
+    NodeLink* bare_ptr = nullptr;
+    if (!node_name.empty()) {
+        auto middle_node = addNode(node_name.c_str());
+        assert(middle_node->inputs.size() == 1);
+        assert(middle_node->outputs.size() == 1);
 
-        assert(false);
-        /* OK but flip */
-        link->fromnode = tonode;
-        link->fromsock = tosock;
-        link->tonode = fromnode;
-        link->tosock = fromsock;
-        std::swap(link->StartPinID, link->EndPinID);
+        auto middle_tosock = middle_node->inputs[0];
+        auto middle_fromsock = middle_node->outputs[0];
+
+        auto firstLink = addLink(fromnode, fromsock, middle_node, middle_tosock);
+        
+        auto nextLink = addLink(middle_node, middle_fromsock, tonode, tosock);
+        assert(firstLink);
+        assert(nextLink);
+        firstLink->nextLink = nextLink;
+        nextLink->fromLink = firstLink;
     }
     else {
-        assert(false);
+        auto link = std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
+
+        link->from_node = fromnode;
+        link->from_sock = fromsock;
+        link->to_node = tonode;
+        link->to_sock = tosock;
+        bare_ptr = link.get();
+        links.push_back(std::move(link));
     }
-
-    auto bare_ptr = link.get();
-    links.push_back(std::move(link));
-
     ensure_topology_cache();
-
     return bare_ptr;
 }
 
-NodeLink* NodeTree::addLink(SocketID startPinId, SocketID endPinId)
+void NodeTree::addLink(SocketID startPinId, SocketID endPinId)
 {
     SetDirty(true);
     auto socket1 = FindPin(startPinId);
     auto socket2 = FindPin(endPinId);
 
     if (socket1 && socket2)
-        return addLink(socket1->Node, socket1, socket2->Node, socket2);
-
-    return nullptr;
+        addLink(socket1->Node, socket1, socket2->Node, socket2);
 }
 
 void NodeTree::RemoveLink(LinkId linkId)
@@ -153,6 +156,12 @@ void NodeTree::RemoveLink(LinkId linkId)
     auto link = std::find_if(
         links.begin(), links.end(), [linkId](auto& link) { return link->ID == linkId; });
     if (link != links.end()) {
+        if ((*link)->nextLink) {
+            auto nextLinkId = (*link)->nextLink->ID;
+            delete_node((*link)->to_node->ID);
+            RemoveLink(nextLinkId);
+        }
+
         links.erase(link);
     }
 }
@@ -232,12 +241,12 @@ void NodeTree::update_directly_linked_links_and_sockets()
         node->has_available_linked_outputs = false;
     }
     for (auto&& link : links) {
-        link->fromsock->directly_linked_links.push_back(link.get());
-        link->fromsock->directly_linked_sockets.push_back(link->tosock);
-        link->tosock->directly_linked_links.push_back(link.get());
+        link->from_sock->directly_linked_links.push_back(link.get());
+        link->from_sock->directly_linked_sockets.push_back(link->to_sock);
+        link->to_sock->directly_linked_links.push_back(link.get());
         if (link) {
-            link->fromnode->has_available_linked_outputs = true;
-            link->tonode->has_available_linked_inputs = true;
+            link->from_node->has_available_linked_outputs = true;
+            link->to_node->has_available_linked_inputs = true;
         }
     }
 
@@ -245,7 +254,7 @@ void NodeTree::update_directly_linked_links_and_sockets()
         if (socket) {
             for (NodeLink* link : socket->directly_linked_links) {
                 /* Do this after sorting the input links. */
-                socket->directly_linked_sockets.push_back(link->fromsock);
+                socket->directly_linked_sockets.push_back(link->from_sock);
             }
         }
     }

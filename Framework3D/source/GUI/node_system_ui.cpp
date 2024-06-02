@@ -307,6 +307,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
     ed::SetCurrentEditor(m_Editor);
 
+    // float leftPaneWidth =  200;
     // ShowLeftPane(leftPaneWidth - 4.0f);
 
     // ImGui::SameLine(0.0f, 12.0f);
@@ -325,6 +326,10 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         for (auto&& node : node_system_execution_->get_nodes()) {
             if (node->Type != NodeType::Blueprint && node->Type != NodeType::Simple)
                 continue;
+
+            if (node->typeinfo->INVISIBLE) {
+                continue;
+            }
 
             const auto isSimple = node->Type == NodeType::Simple;
 
@@ -468,13 +473,22 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         }
 
         for (auto& link : node_system_execution_->get_links()) {
-            auto type = link->fromsock->type_info->type;
+            auto type = link->from_sock->type_info->type;
             if (type == SocketType::Any)
-                type = link->tosock->type_info->type;
+                type = link->to_sock->type_info->type;
 
             ImColor color = GetIconColor(type);
 
-            ed::Link(link->ID, link->StartPinID, link->EndPinID, color, 2.0f);
+            auto linkId = link->ID;
+            auto startPin = link->StartPinID;
+            auto endPin = link->EndPinID;
+
+            // If there is an invisible node after the link, use the first as the id for the ui link
+            if (link->nextLink) {
+                endPin = link->nextLink->to_sock->ID;
+            }
+
+            ed::Link(linkId, startPin, endPin, color, 2.0f);
         }
 
         if (!createNewNode) {

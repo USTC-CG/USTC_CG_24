@@ -68,7 +68,7 @@ class NodeTree {
     void ensure_topology_cache();
     NodeLink* addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock);
 
-    NodeLink* addLink(SocketID startPinId, SocketID endPinId);
+    void addLink(SocketID startPinId, SocketID endPinId);
 
     void RemoveLink(LinkId linkId);
 

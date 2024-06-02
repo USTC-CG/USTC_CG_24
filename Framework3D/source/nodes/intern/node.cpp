@@ -27,26 +27,37 @@ NodeSocket* nodeAddSocket(
 
 void NodeLink::Serialize(nlohmann::json& value)
 {
-    auto& link = value[std::to_string(ID.Get())];
-    link["ID"] = ID.Get();
-    link["StartPinID"] = StartPinID.Get();
-    link["EndPinID"] = EndPinID.Get();
+    if (!fromLink) {
+        auto& link = value[std::to_string(ID.Get())];
+        link["ID"] = ID.Get();
+
+        auto startPin = StartPinID.Get();
+        auto endPin = EndPinID.Get();
+
+        link["StartPinID"] = startPin;
+        if (nextLink) {
+            endPin = nextLink->EndPinID.Get();
+        }
+        link["EndPinID"] = endPin;
+    }
 }
 
 void Node::Serialize(nlohmann::json& value)
 {
-    auto& node = value[std::to_string(ID.Get())];
-    node["ID"] = ID.Get();
-    node["id_name"] = typeinfo->id_name;
-    auto& input_socket_json = node["inputs"];
-    auto& output_socket_json = node["outputs"];
+    if (!typeinfo->INVISIBLE) {
+        auto& node = value[std::to_string(ID.Get())];
+        node["ID"] = ID.Get();
+        node["id_name"] = typeinfo->id_name;
+        auto& input_socket_json = node["inputs"];
+        auto& output_socket_json = node["outputs"];
 
-    for (int i = 0; i < inputs.size(); ++i) {
-        input_socket_json[std::to_string(i)] = inputs[i]->ID.Get();
-    }
+        for (int i = 0; i < inputs.size(); ++i) {
+            input_socket_json[std::to_string(i)] = inputs[i]->ID.Get();
+        }
 
-    for (int i = 0; i < outputs.size(); ++i) {
-        output_socket_json[std::to_string(i)] = outputs[i]->ID.Get();
+        for (int i = 0; i < outputs.size(); ++i) {
+            output_socket_json[std::to_string(i)] = outputs[i]->ID.Get();
+        }
     }
 }
 
