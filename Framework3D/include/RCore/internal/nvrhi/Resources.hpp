@@ -7,10 +7,28 @@
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "nvrhi/nvrhi.h"
+#include "nvrhi_format.hpp"
 
 namespace nvrhi {
 using CommandListDesc = nvrhi::CommandListParameters;
-}
+
+struct StagingTextureDesc : public nvrhi::TextureDesc { };
+
+struct CPUBuffer {
+    void* data;
+
+    ~CPUBuffer()
+    {
+        delete[] data;
+    }
+};
+
+struct CPUBufferDesc {
+    size_t size;
+};
+
+using CPUBufferHandle = std::shared_ptr<CPUBuffer>;
+}  // namespace nvrhi
 struct IDxcBlob;
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct ShaderCompileResult;
@@ -23,23 +41,12 @@ struct ShaderCompileDesc;
     using nvrhi::rt::RESOURCE##Desc;    \
     using nvrhi::rt::RESOURCE##Handle;
 
-#define NVRHI_RESOURCE_LIST    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList
+#define NVRHI_RESOURCE_LIST \
+    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList, StagingTexture
 #define NVRHI_RT_RESOURCE_LIST Pipeline, AccelStruct
 #define RESOURCE_LIST          NVRHI_RESOURCE_LIST, NVRHI_RT_RESOURCE_LIST, ShaderCompile
 
-using nvrhi::BindingLayoutDesc;
-using nvrhi::BindingLayoutHandle;
-using nvrhi::BindingSetDesc;
-using nvrhi::BindingSetHandle;
-using nvrhi::BufferDesc;
-using nvrhi::BufferHandle;
-using nvrhi::CommandListDesc;
-using nvrhi::CommandListHandle;
-using nvrhi::ShaderDesc;
-using nvrhi::ShaderHandle;
-using nvrhi::TextureDesc;
-using nvrhi::TextureHandle;
-;
+MACRO_MAP(USING_NVRHI_SYMBOL, NVRHI_RESOURCE_LIST);
 MACRO_MAP(USING_NVRHI_RT_SYMBOL, NVRHI_RT_RESOURCE_LIST);
 
 using ShaderCompileHandle = std::shared_ptr<ShaderCompileResult>;

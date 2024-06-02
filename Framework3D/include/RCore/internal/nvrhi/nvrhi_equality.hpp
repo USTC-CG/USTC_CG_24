@@ -106,6 +106,17 @@ inline bool operator!=(const BindingLayoutDesc& lhs, const BindingLayoutDesc& rh
 {
     return !(lhs == rhs);
 }
+
+inline bool operator==(const StagingTextureDesc& lhs, const StagingTextureDesc& rhs)
+{
+    return static_cast<const nvrhi::TextureDesc&>(lhs) ==
+           static_cast<const nvrhi::TextureDesc&>(rhs);
+}
+
+inline bool operator!=(const StagingTextureDesc& lhs, const StagingTextureDesc& rhs)
+{
+    return !(lhs == rhs);
+}
 namespace rt {
     inline bool operator==(const PipelineHitGroupDesc& lhs, const PipelineHitGroupDesc& rhs)
     {

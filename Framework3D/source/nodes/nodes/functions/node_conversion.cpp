@@ -1,4 +1,5 @@
-﻿#include "NODES_FILES_DIR.h"
+﻿#include "../render/resource_allocator_instance.hpp"
+#include "NODES_FILES_DIR.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -8,6 +9,7 @@
 #include "boost/python/numpy.hpp"
 #include "func_node_base.h"
 #include "nvrhi/utils.h"
+#include "pxr/imaging/hd/types.h"
 
 namespace USTC_CG::node_conversion {
 static void node_declare_Int_to_Float(NodeDeclarationBuilder& b)
@@ -27,13 +29,45 @@ static void node_exec_Int_to_Float(ExeParams params)
 
 void node_exec_Texture_to_NumpyArray(ExeParams exe_params)
 {
-    auto t = exe_params.get_input<TextureHandle>("Texture");
+    auto handle = exe_params.get_input<TextureHandle>("Texture");
 
-    std::vector shape{ t->getDesc().width, t->getDesc().height };
+    std::vector shape{ handle->getDesc().width, handle->getDesc().height };
     std::vector<unsigned> stride{ sizeof(float), sizeof(float) };
-    void* data = nullptr;
-    auto arr = bpn::from_data<std::vector<unsigned>>(
-        data, bpn::dtype::get_builtin<float>(), shape, stride, boost::python::object{});
+
+    auto m_CommandList =
+        resource_allocator.create(CommandListDesc{ .queueType = nvrhi::CommandQueue::Copy });
+
+    auto staging = resource_allocator.create(
+        StagingTextureDesc{ handle->getDesc() }, nvrhi::CpuAccessMode::Read);
+
+    auto nvrhi_device = resource_allocator.device;
+    auto width = handle->getDesc().width;
+    auto height = handle->getDesc().height;
+    auto s = boost::python::make_tuple(width, height, 3u);
+    auto arr = bpn::empty(s, bpn::dtype::get_builtin<float>());
+
+    m_CommandList->open();
+
+    m_CommandList->copyTexture(staging, {}, handle, {});
+    m_CommandList->close();
+
+    nvrhi_device->executeCommandList(m_CommandList.Get());
+    nvrhi_device->waitForIdle();
+
+    size_t pitch;
+    auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
+
+    auto hd_format = HdFormat_from_nvrhi_format(handle->getDesc().format);
+    for (int i = 0; i < handle->getDesc().height; ++i) {
+        memcpy(
+            arr.get_data() + i * width * HdDataSizeOfFormat(hd_format),
+            (uint8_t*)mapped + i * pitch,
+            width * pxr::HdDataSizeOfFormat(hd_format));
+    }
+
+    nvrhi_device->unmapStagingTexture(staging);
+
+    resource_allocator.destroy(m_CommandList);
 
     exe_params.set_output("NumpyArray", arr);
 }

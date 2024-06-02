@@ -5,10 +5,12 @@
 #include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
-#include "boost/python/object.hpp"
-#include "boost/python/numpy.hpp"
+
 #include "entt/meta/resolve.hpp"
 #include "rich_type_buffer.hpp"
+
+#include "boost/python.hpp"
+#include "boost/python/numpy.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
 class MassSpring;

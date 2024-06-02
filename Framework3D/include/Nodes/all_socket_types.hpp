@@ -1,12 +1,6 @@
 #pragma once
 
 #include "USTC_CG.h"
-
-USTC_CG_NAMESPACE_OPEN_SCOPE
-#include "boost/python/numpy/ndarray.hpp"
-using nparray = boost::python::numpy::ndarray;
-USTC_CG_NAMESPACE_CLOSE_SCOPE
-
 #define BASIC_SOCKET_TYPES Int, String, Float, Any
 
 #define STAGE_SOCKET_TYPES Layer, PyObj, NumpyArray

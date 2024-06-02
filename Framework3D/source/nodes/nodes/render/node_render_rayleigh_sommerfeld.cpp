@@ -26,6 +26,8 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
+    using nparray = boost::python::numpy::ndarray;
+
     auto arr = params.get_input<nparray>("Input");
 
     namespace bp = boost::python;
@@ -33,8 +35,8 @@ static void node_exec(ExeParams params)
     try {
         LOAD_MODULE(rayleight_sommerfeld)
 
-        bp::object obj = module.attr("compute")(arr);
-        bp::numpy::ndarray result = bp::numpy::array{ obj };
+        bp::object rst = module.attr("compute")(arr);
+        bp::numpy::ndarray result = bp::numpy::array(rst);
     }
     catch (const bp::error_already_set&) {
         PyErr_Print();
@@ -52,6 +54,7 @@ static void node_register()
     render_node_type_base(&ntype);
     ntype.node_execute = node_exec;
     ntype.declare = node_declare;
+    ntype.ALWAYS_REQUIRED = true;
     nodeRegisterType(&ntype);
 }
 
