@@ -54,6 +54,9 @@ struct NodeTypeInfo {
     bool INVISIBLE = false;
 
     std::unique_ptr<NodeDeclaration> static_declaration;
+
+    SocketType conversion_from;
+    SocketType conversion_to;
 };
 
 struct Node {

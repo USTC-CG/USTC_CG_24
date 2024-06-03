@@ -31,12 +31,12 @@ static void node_exec(ExeParams params)
     auto arr = params.get_input<nparray>("Input");
 
     namespace bp = boost::python;
-
     try {
-        LOAD_MODULE(rayleight_sommerfeld)
+        LOAD_MODULE(rayleigh_sommerfeld)
 
         bp::object rst = module.attr("compute")(arr);
         bp::numpy::ndarray result = bp::numpy::array(rst);
+        params.set_output("Output", result);
     }
     catch (const bp::error_already_set&) {
         PyErr_Print();

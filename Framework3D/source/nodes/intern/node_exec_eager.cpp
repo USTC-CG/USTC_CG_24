@@ -215,6 +215,8 @@ void EagerNodeTreeExecutor::prepare_tree(NodeTree* tree)
 
 void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
 {
+    auto gilState = PyGILState_Ensure();
+
     for (int i = 0; i < nodes_to_execute_count; ++i) {
         auto node = nodes_to_execute[i];
         auto result = execute_node(tree, node);
@@ -222,6 +224,8 @@ void EagerNodeTreeExecutor::execute_tree(NodeTree* tree)
             forward_output_to_input(node);
         }
     }
+
+    PyGILState_Release(gilState);
 }
 
 entt::meta_any* EagerNodeTreeExecutor::FindPtr(NodeSocket* socket)

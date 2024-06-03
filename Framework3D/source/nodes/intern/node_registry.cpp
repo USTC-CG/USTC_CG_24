@@ -5,12 +5,10 @@
 #include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
-
-#include "entt/meta/resolve.hpp"
-#include "rich_type_buffer.hpp"
-
 #include "boost/python.hpp"
 #include "boost/python/numpy.hpp"
+#include "entt/meta/resolve.hpp"
+#include "rich_type_buffer.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace node_mass_spring {
 class MassSpring;
@@ -145,11 +143,29 @@ const char* get_socket_typename(SocketType socket)
     }
 }
 
+#define TYPE_STRING(CASE) \
+    case SocketType::CASE: return #CASE;
+
+const char* get_socket_name_string(SocketType socket)
+{
+    switch (socket) {
+        MACRO_MAP(TYPE_STRING, ALL_SOCKET_TYPES)
+        default: return "";
+    }
+}
+
 SocketTypeInfo* make_standard_socket_type(SocketType socket)
 {
     auto type_info = new SocketTypeInfo();
     type_info->type = socket;
     strcpy(type_info->type_name, get_socket_typename(socket));
+
+    for (auto&& node_registry : conversion_node_registry) {
+        if (node_registry.second->conversion_from == socket) {
+            type_info->conversionTo.emplace(node_registry.second->conversion_to);
+        }
+    }
+
     return type_info;
 }
 
@@ -211,13 +227,6 @@ static SocketTypeInfo* make_socket_type_Int()
 {
     SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Int);
     socket_type->cpp_type = entt::resolve<int>();
-
-    socket_type->conversionNode = [](SocketType other) -> std::string {
-        if (other == SocketType::Float) {
-            return "conv_Int_to_Float";
-        }
-        return {};
-    };
 
     return socket_type;
 }
@@ -283,14 +292,6 @@ static SocketTypeInfo* make_socket_type_Texture()
 {
     SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Texture);
     socket_type->cpp_type = entt::resolve<TextureHandle>();
-    socket_type->conversionNode = [socket_type](SocketType type) -> std::string {
-        if (type == SocketType::NumpyArray) {
-            return "conv_Texture_to_NumpyArray";
-        }
-
-        return "";
-    };
-
     return socket_type;
 }
 
@@ -350,7 +351,8 @@ void register_sockets()
 
 void register_all()
 {
-    SetEnvironmentVariable("PYTHONPATH", FUNC_NODES_FILES_DIR "/scripts");
+    SetEnvironmentVariable(
+        "PYTHONPATH", FUNC_NODES_FILES_DIR "/scripts;" RENDER_NODES_FILES_DIR "/scripts");
 
     Py_Initialize();
     boost::python::numpy::initialize();

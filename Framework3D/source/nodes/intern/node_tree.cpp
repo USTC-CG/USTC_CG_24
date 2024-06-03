@@ -105,8 +105,7 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
     }
 
     std::string node_name;
-    if (fromsock->type_info->conversionNode)
-        node_name = fromsock->type_info->conversionNode(tosock->type_info->type);
+    node_name = fromsock->type_info->conversionNode(tosock->type_info->type);
 
     NodeLink* bare_ptr = nullptr;
     if (!node_name.empty()) {
@@ -118,7 +117,7 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
         auto middle_fromsock = middle_node->outputs[0];
 
         auto firstLink = addLink(fromnode, fromsock, middle_node, middle_tosock);
-        
+
         auto nextLink = addLink(middle_node, middle_fromsock, tonode, tosock);
         assert(firstLink);
         assert(nextLink);

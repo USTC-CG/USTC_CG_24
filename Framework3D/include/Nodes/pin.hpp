@@ -12,8 +12,9 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 #define TypeSizeEnum(Type, Size) Type##Size##Buffer
 enum class SocketType : uint32_t { ALL_SOCKET_TYPES };
-
 #undef TypeSizeEnum
+
+const char* get_socket_name_string(SocketType socket);
 
 enum class PinKind { Output, Input };
 
@@ -42,15 +43,22 @@ struct SocketTypeInfo {
             return true;
         }
 
-        if (conversionNode) {
-            if (!conversionNode(other).empty()) {
-                return true;
-            }
+        if (!conversionNode(other).empty()) {
+            return true;
         }
         return type == other;
     }
 
-    std::function<std::string(SocketType)> conversionNode = nullptr;
+    std::string conversionNode(SocketType to_type) const
+    {
+        if (conversionTo.contains(to_type)) {
+            return std::string("conv_") + get_socket_name_string(type) + "_to_" +
+                   get_socket_name_string(to_type);
+        }
+        return {};
+    }
+
+    std::unordered_set<SocketType> conversionTo;
 };
 
 struct NodeSocket {
