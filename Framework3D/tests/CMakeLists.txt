@@ -28,3 +28,4 @@ endfunction(UCG_ADD_TEST)
 
 add_subdirectory(RCore)
 add_subdirectory(GUI)
+add_subdirectory(Node)
