@@ -46,10 +46,10 @@ class Particle {
         return type_ == BOUNDARY;
     }
 
-    const std::vector<std::shared_ptr<Particle>>& const neighbors()
+    const std::vector<std::shared_ptr<Particle>>&  neighbors()
     {
         return neighbors_;
-    };
+    }
 
     // protected:
     double density_;

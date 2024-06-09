@@ -247,6 +247,7 @@ Color Hd_USTC_CG_Dome_Light::Le(const GfVec3f& dir)
     else {
         return radiance;
     }
+    return {};
 }
 
 void Hd_USTC_CG_Dome_Light::Finalize(HdRenderParam* renderParam)

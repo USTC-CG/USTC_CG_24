@@ -28,9 +28,9 @@ static void node_mass_spring_declare(NodeDeclarationBuilder& b)
 
     // Simulation parameters 
     b.add_input<decl::Float>("stiffness").default_val(1000).min(100).max(10000);
-    b.add_input<decl::Float>("h").default_val(0.01).min(0.0).max(0.5);
-    b.add_input<decl::Float>("damping").default_val(0.995).min(0.0).max(1.0);
-    b.add_input<decl::Float>("gravity").default_val(-9.8);
+    b.add_input<decl::Float>("h").default_val(0.01).min(0.0f).max(0.5f);
+    b.add_input<decl::Float>("damping").default_val(0.995f).min(0.0f).max(1.0);
+    b.add_input<decl::Float>("gravity").default_val(-9.8f);
 
     // Useful switches (0 or 1). You can add more if you like.
     b.add_input<decl::Int>("time integrator type").default_val(0).min(0).max(1); // 0 for implicit Euler, 1 for semi-implicit Euler

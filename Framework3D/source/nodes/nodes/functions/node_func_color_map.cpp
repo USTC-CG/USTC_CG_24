@@ -25,8 +25,6 @@ static void node_func_color_map_exec(ExeParams params)
     float min = *minmax.first;
     float max = *minmax.second;
 
-    float range = max - min;
-
     pxr::VtArray<pxr::GfVec3f> colors(input.size());
 
     for (size_t i = 0; i < input.size(); ++i) {

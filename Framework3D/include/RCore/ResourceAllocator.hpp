@@ -6,9 +6,9 @@
 
 #include "Backend.hpp"
 #include "USTC_CG.h"
+#include "Utils/Macro/map.h"
 #include "entt/meta/meta.hpp"
 #include "entt/meta/resolve.hpp"
-#include "Utils/Macro/map.h"
 #include "internal/resources.hpp"
 
 #ifdef USTC_CG_BACKEND_NVRHI
@@ -94,10 +94,10 @@ class ResourceAllocator {
         }
     }
 
-#define FOREACH_DESTROY(NAMESPACE, RESOURCE) \
-    JUDGE_RESOURCE(NAMESPACE, RESOURCE)      \
-    {                                        \
-        RESOLVE_DESTROY(NAMESPACE, RESOURCE) \
+#define FOREACH_DESTROY(RESOURCE) \
+    JUDGE_RESOURCE(RESOURCE)      \
+    {                             \
+        RESOLVE_DESTROY(RESOURCE) \
     }
 
     template<typename RESOURCE>
@@ -394,9 +394,7 @@ typename ResourceAllocator::AssociativeContainer<K, V, H>::iterator
 ResourceAllocator::AssociativeContainer<K, V, H>::find(const key_type& key)
 {
     return std::find_if(
-        mContainer.begin(), mContainer.end(), [&key](const auto& v) {
-            return v.first == key;
-        });
+        mContainer.begin(), mContainer.end(), [&key](const auto& v) { return v.first == key; });
 }
 
 template<typename K, typename V, typename H>

@@ -37,7 +37,7 @@ class MassSpring {
     // energy related function
     virtual double computeEnergy(double stiffness);
     virtual Eigen::MatrixXd computeGrad(double stiffness);
-    virtual Eigen::SparseMatrix<double> computeHessianSparse(double stiffness);
+    virtual Eigen::SparseMatrix<double> computeHessianSparse(double stiffness_);
 
     // make matrix positive definite
     // Eigen::SparseMatrix<double> makeSPD(const Eigen::SparseMatrix<double> &A);
@@ -72,7 +72,7 @@ class MassSpring {
     // (HW Optional) sphere collision parameters
     double collision_penalty_k = 10000.0;
     double collision_scale_factor = 1.1; 
-    Eigen::Vector3f sphere_center = Eigen::Vector3f(0, -0.5, 0.2);
+    Eigen::Vector3f sphere_center = Eigen::Vector3f(0, -0.5f, 0.2f);
     double sphere_radius = 0.4;
 
     // Useful switches

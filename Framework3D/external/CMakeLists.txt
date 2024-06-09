@@ -1,6 +1,6 @@
 add_subdirectory(eigen)
 set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-
+target_compile_options (eigen INTERFACE /wd5054)
 # glfw
 add_subdirectory(glfw)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)

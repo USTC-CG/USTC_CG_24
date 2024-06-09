@@ -50,6 +50,7 @@ void ShaderCompileDesc::update_last_write_time(const std::filesystem::path& path
         }
     }
     catch (const fs::filesystem_error& e) {
+        (void)e;
         lastWriteTime = {};
     }
 }

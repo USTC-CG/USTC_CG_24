@@ -12,7 +12,6 @@ static void node_declare_storage_in(NodeDeclarationBuilder& b)
 
 static void node_exec_storage_in(ExeParams params)
 {
-
 }
 
 static void node_declare_storage_out(NodeDeclarationBuilder& b)
@@ -28,7 +27,7 @@ static void node_exec_storage_out(ExeParams params)
 // Through one execution, how much time is advected? Unit is seconds.
 static void node_declare_time_gain(NodeDeclarationBuilder& b)
 {
-    b.add_input<decl::Float>("time").default_val(0.0333333333f).min(0).max(0.2);
+    b.add_input<decl::Float>("time").default_val(0.0333333333f).min(0).max(0.2f);
 }
 
 static void node_exec_time_gain(ExeParams params)

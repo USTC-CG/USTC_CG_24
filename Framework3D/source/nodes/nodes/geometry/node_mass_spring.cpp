@@ -27,14 +27,14 @@ static void node_mass_spring_declare(NodeDeclarationBuilder& b)
 
     // Simulation parameters 
     b.add_input<decl::Float>("stiffness").default_val(1000).min(100).max(10000);
-    b.add_input<decl::Float>("h").default_val(0.01).min(0.0).max(0.5);
-    b.add_input<decl::Float>("damping").default_val(0.995).min(0.0).max(1.0);
-    b.add_input<decl::Float>("gravity").default_val(-9.8);
+    b.add_input<decl::Float>("h").default_val(0.01f).min(0.0f).max(0.5f);
+    b.add_input<decl::Float>("damping").default_val(0.995f).min(0.0f).max(1.0f);
+    b.add_input<decl::Float>("gravity").default_val(-9.8f);
 
     // --------- HW Optional: if you implement sphere collision, please uncomment the following lines ------------
     b.add_input<decl::Float>("collision penalty_k").default_val(10000).min(100).max(100000); 
-    b.add_input<decl::Float>("collision scale factor").default_val(1.1).min(1.0).max(2.0); 
-    b.add_input<decl::Float>("sphere radius").default_val(0.4).min(0.0).max(5.0);; 
+    b.add_input<decl::Float>("collision scale factor").default_val(1.1f).min(1.0f).max(2.0f); 
+    b.add_input<decl::Float>("sphere radius").default_val(0.4f).min(0.0f).max(5.0f);; 
     b.add_input<decl::Float3>("sphere center");
     // -----------------------------------------------------------------------------------------------------------
 

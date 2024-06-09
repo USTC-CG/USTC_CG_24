@@ -11,7 +11,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct NodeSocket;
 struct Node;
-struct NodeTree;
+class NodeTree;
 
 struct ExeParams {
     const Node& node_;

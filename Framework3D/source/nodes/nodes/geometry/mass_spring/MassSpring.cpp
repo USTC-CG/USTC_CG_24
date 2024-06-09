@@ -114,13 +114,13 @@ Eigen::MatrixXd MassSpring::computeGrad(double stiffness)
     return g;
 }
 
-Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
+Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness_)
 {
     unsigned n_vertices = X.rows();
     Eigen::SparseMatrix<double> H(n_vertices * 3, n_vertices * 3);
 
     unsigned i = 0;
-    auto k = stiffness;
+    auto k = stiffness_;
     const auto I = Eigen::MatrixXd::Identity(3, 3);
     for (const auto& e : E) {
         // --------------------------------------------------

@@ -22,9 +22,9 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("Rotate Y").min(-180).max(180).default_val(0);
     b.add_input<decl::Float>("Rotate Z").min(-180).max(180).default_val(0);
 
-    b.add_input<decl::Float>("Scale X").min(0.1).max(10).default_val(1);
-    b.add_input<decl::Float>("Scale Y").min(0.1).max(10).default_val(1);
-    b.add_input<decl::Float>("Scale Z").min(0.1).max(10).default_val(1);
+    b.add_input<decl::Float>("Scale X").min(0.1f).max(10).default_val(1);
+    b.add_input<decl::Float>("Scale Y").min(0.1f).max(10).default_val(1);
+    b.add_input<decl::Float>("Scale Z").min(0.1f).max(10).default_val(1);
 
     b.add_output<decl::Geometry>("Geometry");
 }

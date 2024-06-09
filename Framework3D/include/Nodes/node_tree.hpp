@@ -100,15 +100,15 @@ class NodeTree {
 
     void SetDirty(bool dirty = true)
     {
-        this->dirty = dirty;
+        this->dirty_ = dirty;
     }
     bool GetDirty()
     {
-        return dirty;
+        return dirty_;
     }
 
    private:
-    bool dirty = true;
+    bool dirty_ = true;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

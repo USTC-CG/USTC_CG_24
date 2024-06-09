@@ -73,7 +73,15 @@ endif()
 
 add_subdirectory(external)
 
+
+# Suppress warnings:
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+add_compile_options(/W3 /wd4100 /wd4996 /wd4819 /wd4267 /wd4244)
+add_compile_options(/wd4702 /wd4018 /wd4458 /wd4459 /wd4189)
+add_compile_options(/wd4305 /wd4456 /wd4312)
 add_compile_definitions(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+add_compile_definitions(TBB_SUPPRESS_DEPRECATED_MESSAGES=1)
+
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/GCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/SCore)

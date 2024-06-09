@@ -24,7 +24,7 @@ static void node_declare_add_sphere_light(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("R").default_val(1).min(0).max(10);
     b.add_input<decl::Float>("G").default_val(1).min(0).max(10);
     b.add_input<decl::Float>("B").default_val(1).min(0).max(10);
-    b.add_input<decl::Float>("radius").default_val(0.1).min(0).max(1);
+    b.add_input<decl::Float>("radius").default_val(0.1f).min(0).max(1);
 
     b.add_input<decl::String>("Path").default_val("Light");
 }
@@ -137,8 +137,8 @@ static void node_declare_add_rect_light(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("Rotate Y").default_val(0).min(-180).max(180);
     b.add_input<decl::Float>("Rotate Z").default_val(0).min(-180).max(180);
 
-    b.add_input<decl::Float>("Width").default_val(0.5).min(0.1).max(5);
-    b.add_input<decl::Float>("Height").default_val(0.5).min(0.1).max(5);
+    b.add_input<decl::Float>("Width").default_val(0.5f).min(0.1f).max(5);
+    b.add_input<decl::Float>("Height").default_val(0.5f).min(0.1f).max(5);
 
     b.add_input<decl::String>("Path").default_val("RectLight");
 }
@@ -204,7 +204,7 @@ static void node_declare_add_distant_light(NodeDeclarationBuilder& b)
     b.add_input<decl::Float>("Rotate X").default_val(0).min(-180).max(180);
     b.add_input<decl::Float>("Rotate Y").default_val(0).min(-180).max(180);
     b.add_input<decl::Float>("Rotate Z").default_val(0).min(-180).max(180);
-    b.add_input<decl::Float>("Angle").default_val(1).min(0.01).max(30);
+    b.add_input<decl::Float>("Angle").default_val(1).min(0.01f).max(30);
 
     b.add_input<decl::String>("Path").default_val("DistantLight");
 }

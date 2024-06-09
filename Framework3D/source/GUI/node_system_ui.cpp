@@ -875,8 +875,6 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
             ed::Flow(link->ID);
     }
     ImGui::Spring();
-    if (ImGui::Button("Save"))
-        ;
     ImGui::EndHorizontal();
 
     std::vector<NodeId> selectedNodes;

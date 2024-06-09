@@ -3,6 +3,7 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 GOperandComponentHandle VolumeComponet::copy(GOperandBase* operand) const
 {
+    (void)(operand);
     return {};
 }
 

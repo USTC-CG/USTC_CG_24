@@ -8,7 +8,7 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeTree;
-struct UsdviewEngineImpl;
+class UsdviewEngineImpl;
 
 class UsdviewEngine {
 public:
