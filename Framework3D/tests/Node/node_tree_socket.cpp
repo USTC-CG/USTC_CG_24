@@ -6,7 +6,14 @@
 
 using namespace USTC_CG;
 
+class TestEnv: public testing::TestWithParam<int> {
+
+
+    
+};
+
 TEST(NODE_TREE_SOCKET, add_socket)
 {
-    NodeTree tree;
+    auto tree = std::make_shared<NodeTree>();
+    auto node = tree->addNode("node_dynamic_socket");
 }
