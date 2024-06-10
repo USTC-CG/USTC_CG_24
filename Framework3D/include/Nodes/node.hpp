@@ -82,6 +82,8 @@ struct Node {
 
     std::function<void()> override_left_pane_info = nullptr;
 
+    std::unique_ptr<NodeTree> subtree = nullptr;
+
     bool has_available_linked_inputs = false;
     bool has_available_linked_outputs = false;
 
@@ -114,15 +116,15 @@ struct Node {
         return outputs;
     }
 
-    [[nodiscard]] std::vector<NodeSocket*>& get_inputs()
-    {
-        return inputs;
-    }
+    //[[nodiscard]] std::vector<NodeSocket*>& get_inputs()
+    //{
+    //    return inputs;
+    //}
 
-    [[nodiscard]] std::vector<NodeSocket*>& get_outputs()
-    {
-        return outputs;
-    }
+    //[[nodiscard]] std::vector<NodeSocket*>& get_outputs()
+    //{
+    //    return outputs;
+    //}
 
     bool valid()
     {

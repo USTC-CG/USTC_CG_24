@@ -18,6 +18,9 @@ enum class PinKind { Output, Input };
 
 enum class NodeType {
     Blueprint,
+    NodeGroup,
+    GroupIn,
+    GroupOut,
     Simple,
     Comment,
 };

@@ -473,6 +473,30 @@ void NodeTree::refresh_node_socket(
 
 void NodeTree::refresh_node(Node* node)
 {
+    build_sockets_from_type_info(node);
+
+    auto out_date = [this](
+                        const std::vector<NodeSocket*>& olds,
+                        std::vector<NodeSocket*>& news) {
+        for (auto old : olds) {
+            if (std::find(news.begin(), news.end(), old) == news.end()) {
+                auto out_dated_socket = std::find_if(
+                    sockets.begin(), sockets.end(), [old](auto&& ptr) {
+                        return old == ptr.get();
+                    });
+                sockets.erase(out_dated_socket);
+            }
+        }
+    };
+    out_date(old_inputs, new_inputs);
+    out_date(old_outputs, new_outputs);
+
+    node->get_inputs() = new_inputs;
+    node->get_outputs() = new_outputs;
+}
+
+void NodeTree::build_sockets_from_type_info(Node* node)
+{
     auto ntype = node->typeinfo;
 
     assert(ntype->static_declaration);
@@ -503,29 +527,6 @@ void NodeTree::refresh_node(Node* node)
         //     ++new_panel;
         // }
     }
-
-    auto out_date = [this](
-                        const std::vector<NodeSocket*>& olds,
-                        std::vector<NodeSocket*>& news) {
-        for (auto old : olds) {
-            if (std::find(news.begin(), news.end(), old) == news.end()) {
-                auto out_dated_socket = std::find_if(
-                    sockets.begin(), sockets.end(), [old](auto&& ptr) {
-                        return old == ptr.get();
-                    });
-                sockets.erase(out_dated_socket);
-            }
-        }
-    };
-    out_date(old_inputs, new_inputs);
-    out_date(old_outputs, new_outputs);
-
-    node->get_inputs() = new_inputs;
-    node->get_outputs() = new_outputs;
-}
-
-void NodeTree::build_sockets_from_type_info(Node* node)
-{
 }
 
 void NodeTree::try_fill_value_by_deserialization(Node* node)
