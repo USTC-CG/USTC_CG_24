@@ -10,32 +10,32 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 
 void decl::Int::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->dataField.default_value) {
+    if (!socket->dataField.value) {
         socket->dataField.min = soft_min;
         socket->dataField.max = soft_max;
-        socket->dataField.default_value =
+        socket->dataField.value =
             std::max(std::min(default_value_, soft_max), soft_min);
     }
 }
 
 void decl::Float::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->dataField.default_value) {
+    if (!socket->dataField.value) {
         // TODO: When shall we destroy these?
         auto* default_value = &(socket->dataField);
         default_value->min = soft_min;
         default_value->max = soft_max;
-        default_value->default_value =
+        default_value->value =
             std::max(std::min(default_value_, soft_max), soft_min);
     }
 }
 
 void decl::String::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->dataField.default_value) {
-        socket->dataField.default_value = std::string(256, 0);
+    if (!socket->dataField.value) {
+        socket->dataField.value = std::string(256, 0);
         memcpy(
-            socket->dataField.default_value.cast<std::string&>().data(),
+            socket->dataField.value.cast<std::string&>().data(),
             default_value_.data(),
             default_value_.size());
     }

@@ -71,11 +71,10 @@ struct Node {
 
     float Color[4];
     NodeType Type;
-    float Size[2];
+
+    unsigned Size[2];
 
     NodeTypeInfo* typeinfo;
-
-    void* runtime_data;
 
     bool REQUIRED = false;
     bool MISSING_INPUT = false;
@@ -86,16 +85,11 @@ struct Node {
     bool has_available_linked_inputs = false;
     bool has_available_linked_outputs = false;
 
-    Node(int id = 0, const char* name = "Unknown")
-        : ID(id),
-          ui_name(name),
-          Type(NodeType::Blueprint)
-    {
-        Size[0] = 0;
-        Size[1] = 0;
-    }
+    explicit Node(NodeTree* node_tree, int id, const char* idname);
 
-    void Serialize(nlohmann::json& value);
+    Node(NodeTree* node_tree, const char* idname);
+
+    void serialize(nlohmann::json& value);
 
     void add_socket(NodeSocket* socket, PinKind in_out)
     {
@@ -130,9 +124,19 @@ struct Node {
         return outputs;
     }
 
+    bool valid()
+    {
+        return valid_;
+    }
+
    private:
+    bool pre_init_node(const char* idname);
+
     std::vector<NodeSocket*> inputs;
     std::vector<NodeSocket*> outputs;
+
+    NodeTree* tree_;
+    bool valid_ = false;
 };
 
 void nodeRegisterType(NodeTypeInfo* type_info);

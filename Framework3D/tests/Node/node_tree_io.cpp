@@ -19,7 +19,7 @@ class NODE_TREE_SOCKET_TEST : public testing::TestWithParam<int> {
 TEST_P(NODE_TREE_SOCKET_TEST, add_socket)
 {
     auto tree = std::make_shared<NodeTree>();
-    auto node = tree->addNode("node_dynamic_socket");
+    auto node = tree->add_node("node_dynamic_socket");
     auto result = tree->Serialize();
     std::cout << result;
 }

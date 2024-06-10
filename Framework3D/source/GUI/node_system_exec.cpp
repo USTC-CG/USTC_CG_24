@@ -51,13 +51,13 @@ void NodeSystemExecution::Deserialize(const std::string& str)
 
 void NodeSystemExecution::CreateLink(SocketID startPinId, SocketID endPinId)
 {
-    node_tree->addLink(startPinId, endPinId);
+    node_tree->add_link(startPinId, endPinId);
     MarkDirty();
 }
 
 void NodeSystemExecution::RemoveLink(LinkId linkId)
 {
-    node_tree->RemoveLink(linkId);
+    node_tree->remove_link(linkId);
     MarkDirty();
 }
 
@@ -107,7 +107,7 @@ void NodeSystemExecution::try_execution()
 
 bool NodeSystemExecution::CanCreateLink(NodeSocket* a, NodeSocket* b)
 {
-    return node_tree->CanCreateLink(a, b);
+    return node_tree->can_create_link(a, b);
 }
 
 Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry)
@@ -117,7 +117,7 @@ Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTyp
     for (auto&& value : registry) {
         auto name = value.second->ui_name;
         if (ImGui::MenuItem(name))
-            node = node_tree->addNode(value.second->id_name);
+            node = node_tree->add_node(value.second->id_name);
     }
 
     if (node) {
@@ -258,7 +258,7 @@ Node* GeoNodeSystemExecution::create_node_menu()
         for (auto&& value : func_node_registry) {
             auto name = value.second->ui_name;
             if (ImGui::MenuItem(name))
-                node = node_tree->addNode(value.second->id_name);
+                node = node_tree->add_node(value.second->id_name);
         }
         ImGui::EndMenu();
     }
@@ -266,7 +266,7 @@ Node* GeoNodeSystemExecution::create_node_menu()
     for (auto&& value : geo_node_registry) {
         auto name = value.second->ui_name;
         if (ImGui::MenuItem(name))
-            node = node_tree->addNode(value.second->id_name);
+            node = node_tree->add_node(value.second->id_name);
     }
 
     return node;
@@ -289,7 +289,7 @@ Node* RenderNodeSystemExecution::create_node_menu()
         for (auto&& value : func_node_registry) {
             auto name = value.second->ui_name;
             if (ImGui::MenuItem(name))
-                node = node_tree->addNode(value.second->id_name);
+                node = node_tree->add_node(value.second->id_name);
         }
         ImGui::EndMenu();
     }
@@ -297,7 +297,7 @@ Node* RenderNodeSystemExecution::create_node_menu()
     for (auto&& value : render_registry) {
         auto name = value.second->ui_name;
         if (ImGui::MenuItem(name))
-            node = node_tree->addNode(value.second->id_name);
+            node = node_tree->add_node(value.second->id_name);
     }
 
     return node;
@@ -332,7 +332,7 @@ Node* CompositionNodeSystemExecution::create_node_menu()
         for (auto&& value : func_node_registry) {
             auto name = value.second->ui_name;
             if (ImGui::MenuItem(name))
-                node = node_tree->addNode(value.second->id_name);
+                node = node_tree->add_node(value.second->id_name);
         }
         ImGui::EndMenu();
     }
@@ -340,7 +340,7 @@ Node* CompositionNodeSystemExecution::create_node_menu()
     for (auto&& value : composition_registry) {
         auto name = value.second->ui_name;
         if (ImGui::MenuItem(name))
-            node = node_tree->addNode(value.second->id_name);
+            node = node_tree->add_node(value.second->id_name);
     }
 
     return node;

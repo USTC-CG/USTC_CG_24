@@ -292,7 +292,7 @@ void NodeSocket::Serialize(nlohmann::json& value)
     socket["ui_name"] = ui_name;
     socket["in_out"] = in_out;
 
-    if (dataField.default_value) {
+    if (dataField.value) {
         switch (type_info->type) {
             case SocketType::Int:
                 socket["value"] = default_value_typed<int>();
@@ -321,7 +321,7 @@ void NodeSocket::DeserializeInfo(nlohmann::json& socket_json)
 
 void NodeSocket::DeserializeValue(const nlohmann::json& value)
 {
-    if (dataField.default_value) {
+    if (dataField.value) {
         if (value.find("value") != value.end()) {
             switch (type_info->type) {
                 case SocketType::Int:

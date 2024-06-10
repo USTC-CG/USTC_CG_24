@@ -20,9 +20,9 @@ ExeParams EagerNodeTreeExecutor::prepare_params(NodeTree* tree, Node* node)
             // Is set by previous node
             input_ptr = &input_states[index_cache[input]].value;
         }
-        else if (input->directly_linked_sockets.empty() && input->dataField.default_value) {
+        else if (input->directly_linked_sockets.empty() && input->dataField.value) {
             auto type = input_states[index_cache[input]].value.type();
-            auto value = input->dataField.default_value;
+            auto value = input->dataField.value;
             // Has default value
             input_states[index_cache[input]].value = value;
             input_ptr = &input_states[index_cache[input]].value;

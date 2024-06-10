@@ -43,7 +43,25 @@ void NodeLink::Serialize(nlohmann::json& value)
     }
 }
 
-void Node::Serialize(nlohmann::json& value)
+Node::Node(NodeTree* node_tree, int id, const char* idname)
+    : ID(id),
+      ui_name("Unknown"),
+      Type(NodeType::Blueprint),
+      tree_(node_tree)
+{
+    valid_ = pre_init_node(idname);
+}
+
+Node::Node(NodeTree* node_tree, const char* idname)
+    : ui_name("Unknown"),
+      Type(NodeType::Blueprint),
+      tree_(node_tree)
+{
+    ID = tree_->UniqueID();
+    valid_ = pre_init_node(idname);
+}
+
+void Node::serialize(nlohmann::json& value)
 {
     if (!typeinfo->INVISIBLE) {
         auto& node = value[std::to_string(ID.Get())];
@@ -98,6 +116,19 @@ size_t Node::find_socket_id(const char* identifier, PinKind in_out) const
     }
     assert(false);
     return -1;
+}
+
+bool Node::pre_init_node(const char* idname)
+{
+    typeinfo = nodeTypeFind(idname);
+    if (!typeinfo) {
+        assert(false);
+        return false;
+    }
+    ui_name = typeinfo->ui_name;
+    memcpy(Color, typeinfo->color, sizeof(float) * 4);
+
+    return true;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

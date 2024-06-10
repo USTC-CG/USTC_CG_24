@@ -11,13 +11,15 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 unsigned NodeTree::input_socket_id(NodeSocket* socket)
 {
     return std::distance(
-        input_sockets.begin(), std::find(input_sockets.begin(), input_sockets.end(), socket));
+        input_sockets.begin(),
+        std::find(input_sockets.begin(), input_sockets.end(), socket));
 }
 
 unsigned NodeTree::output_socket_id(NodeSocket* socket)
 {
     return std::distance(
-        output_sockets.begin(), std::find(output_sockets.begin(), output_sockets.end(), socket));
+        output_sockets.begin(),
+        std::find(output_sockets.begin(), output_sockets.end(), socket));
 }
 
 void NodeTree::clear()
@@ -31,19 +33,7 @@ void NodeTree::clear()
     toposort_left_to_right.clear();
 }
 
-bool NodeTree::pre_init_node(const char* idname, Node* node)
-{
-    auto typeinfo = nodeTypeFind(idname);
-    if (!typeinfo) {
-        return false;
-    }
-    node->typeinfo = nodeTypeFind(idname);
-    node->ui_name = node->typeinfo->ui_name;
-    memcpy(node->Color, typeinfo->color, sizeof(float) * 4);
-    return true;
-}
-
-NodeSocket* NodeTree::FindPin(SocketID id) const
+NodeSocket* NodeTree::find_pin(SocketID id) const
 {
     if (!id)
         return nullptr;
@@ -56,7 +46,7 @@ NodeSocket* NodeTree::FindPin(SocketID id) const
     return nullptr;
 }
 
-NodeLink* NodeTree::FindLink(LinkId id) const
+NodeLink* NodeTree::find_link(LinkId id) const
 {
     if (!id)
         return nullptr;
@@ -70,16 +60,14 @@ NodeLink* NodeTree::FindLink(LinkId id) const
     return nullptr;
 }
 
-bool NodeTree::IsPinLinked(SocketID id) const
+bool NodeTree::is_pin_linked(SocketID id) const
 {
-    return !FindPin(id)->directly_linked_links.empty();
+    return !find_pin(id)->directly_linked_links.empty();
 }
 
-Node* NodeTree::addNode(const char* idname)
+Node* NodeTree::add_node(const char* idname)
 {
-    auto node = std::make_unique<Node>();
-    node->ID = UniqueID();
-    pre_init_node(idname, node.get());
+    auto node = std::make_unique<Node>(this, idname);
     refresh_node(node.get());
     auto bare = node.get();
     nodes.push_back(std::move(node));
@@ -95,7 +83,11 @@ unsigned NodeTree::UniqueID()
     return current_id++;
 }
 
-NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock)
+NodeLink* NodeTree::add_link(
+    Node* fromnode,
+    NodeSocket* fromsock,
+    Node* tonode,
+    NodeSocket* tosock)
 {
     SetDirty(true);
 
@@ -109,23 +101,25 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
 
     NodeLink* bare_ptr = nullptr;
     if (!node_name.empty()) {
-        auto middle_node = addNode(node_name.c_str());
+        auto middle_node = add_node(node_name.c_str());
         assert(middle_node->get_inputs().size() == 1);
         assert(middle_node->get_outputs().size() == 1);
 
         auto middle_tosock = middle_node->get_inputs()[0];
         auto middle_fromsock = middle_node->get_outputs()[0];
 
-        auto firstLink = addLink(fromnode, fromsock, middle_node, middle_tosock);
+        auto firstLink =
+            add_link(fromnode, fromsock, middle_node, middle_tosock);
 
-        auto nextLink = addLink(middle_node, middle_fromsock, tonode, tosock);
+        auto nextLink = add_link(middle_node, middle_fromsock, tonode, tosock);
         assert(firstLink);
         assert(nextLink);
         firstLink->nextLink = nextLink;
         nextLink->fromLink = firstLink;
     }
     else {
-        auto link = std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
+        auto link =
+            std::make_unique<NodeLink>(UniqueID(), fromsock->ID, tosock->ID);
 
         link->from_node = fromnode;
         link->from_sock = fromsock;
@@ -138,27 +132,28 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
     return bare_ptr;
 }
 
-void NodeTree::addLink(SocketID startPinId, SocketID endPinId)
+void NodeTree::add_link(SocketID startPinId, SocketID endPinId)
 {
     SetDirty(true);
-    auto socket1 = FindPin(startPinId);
-    auto socket2 = FindPin(endPinId);
+    auto socket1 = find_pin(startPinId);
+    auto socket2 = find_pin(endPinId);
 
     if (socket1 && socket2)
-        addLink(socket1->Node, socket1, socket2->Node, socket2);
+        add_link(socket1->Node, socket1, socket2->Node, socket2);
 }
 
-void NodeTree::RemoveLink(LinkId linkId)
+void NodeTree::remove_link(LinkId linkId)
 {
     SetDirty(true);
 
-    auto link = std::find_if(
-        links.begin(), links.end(), [linkId](auto& link) { return link->ID == linkId; });
+    auto link = std::find_if(links.begin(), links.end(), [linkId](auto& link) {
+        return link->ID == linkId;
+    });
     if (link != links.end()) {
         if ((*link)->nextLink) {
             auto nextLinkId = (*link)->nextLink->ID;
             delete_node((*link)->to_node->ID);
-            RemoveLink(nextLinkId);
+            remove_link(nextLinkId);
         }
 
         links.erase(link);
@@ -167,8 +162,9 @@ void NodeTree::RemoveLink(LinkId linkId)
 
 void NodeTree::delete_node(NodeId nodeId)
 {
-    auto id = std::find_if(
-        nodes.begin(), nodes.end(), [nodeId](auto&& node) { return node->ID == nodeId; });
+    auto id = std::find_if(nodes.begin(), nodes.end(), [nodeId](auto&& node) {
+        return node->ID == nodeId;
+    });
     if (id != nodes.end()) {
         for (auto& socket : (*id)->get_inputs()) {
             delete_socket(socket->ID);
@@ -182,7 +178,7 @@ void NodeTree::delete_node(NodeId nodeId)
     }
 }
 
-bool NodeTree::CanCreateLink(NodeSocket* a, NodeSocket* b)
+bool NodeTree::can_create_link(NodeSocket* a, NodeSocket* b)
 {
     if (!a || !b || a == b || a->in_out == b->in_out || a->Node == b->Node)
         return false;
@@ -193,32 +189,33 @@ bool NodeTree::CanCreateLink(NodeSocket* a, NodeSocket* b)
     if (!in->directly_linked_sockets.empty()) {
         return false;
     }
-    if (CanCreateDirectLink(out, in)) {
+    if (can_create_direct_link(out, in)) {
         return true;
     }
 
-    if (CanCreateConvertLink(out, in)) {
+    if (can_create_convert_link(out, in)) {
         return true;
     }
 
     return false;
 }
 
-bool NodeTree::CanCreateDirectLink(NodeSocket* socket1, NodeSocket* socket2)
+bool NodeTree::can_create_direct_link(NodeSocket* socket1, NodeSocket* socket2)
 {
     return socket1->type_info->type == socket2->type_info->type;
 }
 
-bool NodeTree::CanCreateConvertLink(NodeSocket* out, NodeSocket* in)
+bool NodeTree::can_create_convert_link(NodeSocket* out, NodeSocket* in)
 {
     return out->type_info->canConvertTo(in->type_info->type);
 }
 
 void NodeTree::delete_socket(SocketID socketId)
 {
-    auto id = std::find_if(sockets.begin(), sockets.end(), [socketId](auto&& socket) {
-        return socket->ID == socketId;
-    });
+    auto id =
+        std::find_if(sockets.begin(), sockets.end(), [socketId](auto&& socket) {
+            return socket->ID == socketId;
+        });
 
     if (id != sockets.end()) {
         sockets.erase(id);
@@ -326,8 +323,9 @@ static void toposort_from_start_node(
             return false;
         };
 
-        const auto& sockets =
-            (direction == ToposortDirection::LeftToRight) ? node.get_inputs() : node.get_outputs();
+        const auto& sockets = (direction == ToposortDirection::LeftToRight)
+                                  ? node.get_inputs()
+                                  : node.get_outputs();
         while (true) {
             if (item.socket_index == sockets.size()) {
                 /* All sockets have already been visited. */
@@ -343,7 +341,8 @@ static void toposort_from_start_node(
                 continue;
             }
 
-            NodeSocket& linked_socket = *socket.directly_linked_sockets[item.link_index];
+            NodeSocket& linked_socket =
+                *socket.directly_linked_sockets[item.link_index];
             Node& linked_node = *linked_socket.Node;
             if (handle_linked_node(linked_node)) {
                 /* The linked node has already been visited. */
@@ -374,7 +373,8 @@ static void update_toposort(
     r_sorted_nodes.reserve(tree_runtime.nodes.size());
     r_cycle_detected = false;
 
-    std::unordered_map<Node*, ToposortNodeState> node_states(tree_runtime.nodes.size());
+    std::unordered_map<Node*, ToposortNodeState> node_states(
+        tree_runtime.nodes.size());
     for (auto&& node : tree_runtime.nodes) {
         if (!node_states.contains(node.get())) {
             node_states[node.get()] = ToposortNodeState{};
@@ -385,13 +385,19 @@ static void update_toposort(
             /* Ignore nodes that are done already. */
             continue;
         }
-        if ((direction == ToposortDirection::LeftToRight) ? node->has_available_linked_outputs
-                                                          : node->has_available_linked_inputs) {
+        if ((direction == ToposortDirection::LeftToRight)
+                ? node->has_available_linked_outputs
+                : node->has_available_linked_inputs) {
             /* Ignore non-start nodes. */
             continue;
         }
         toposort_from_start_node(
-            ntree, direction, *node, node_states, r_sorted_nodes, r_cycle_detected);
+            ntree,
+            direction,
+            *node,
+            node_states,
+            r_sorted_nodes,
+            r_cycle_detected);
     }
 
     if (r_sorted_nodes.size() < tree_runtime.nodes.size()) {
@@ -405,7 +411,12 @@ static void update_toposort(
             of a
              * loop. */
             toposort_from_start_node(
-                ntree, direction, *node, node_states, r_sorted_nodes, r_cycle_detected);
+                ntree,
+                direction,
+                *node,
+                node_states,
+                r_sorted_nodes,
+                r_cycle_detected);
         }
     }
 
@@ -419,9 +430,15 @@ void NodeTree::ensure_topology_cache()
     update_directly_linked_links_and_sockets();
 
     update_toposort(
-        *this, ToposortDirection::LeftToRight, toposort_left_to_right, has_available_link_cycle);
+        *this,
+        ToposortDirection::LeftToRight,
+        toposort_left_to_right,
+        has_available_link_cycle);
     update_toposort(
-        *this, ToposortDirection::RightToLeft, toposort_right_to_left, has_available_link_cycle);
+        *this,
+        ToposortDirection::RightToLeft,
+        toposort_right_to_left,
+        has_available_link_cycle);
 }
 
 void NodeTree::refresh_node_socket(
@@ -433,8 +450,11 @@ void NodeTree::refresh_node_socket(
     // TODO: This is a badly implemented zone. Refactor this.
     NodeSocket* new_socket;
     auto old_socket = std::find_if(
-        old_sockets.begin(), old_sockets.end(), [&socket_declaration](NodeSocket* socket) {
-            return std::string(socket->identifier) == socket_declaration.identifier &&
+        old_sockets.begin(),
+        old_sockets.end(),
+        [&socket_declaration](NodeSocket* socket) {
+            return std::string(socket->identifier) ==
+                       socket_declaration.identifier &&
                    socket->in_out == socket_declaration.in_out &&
                    socket->type_info->type == socket_declaration.type;
         });
@@ -464,12 +484,14 @@ void NodeTree::refresh_node(Node* node)
     std::vector<NodeSocket*> new_outputs;
 
     for (const ItemDeclarationPtr& item_decl : node_decl.items) {
-        if (auto socket_decl = dynamic_cast<const SocketDeclaration*>(item_decl.get())) {
+        if (auto socket_decl =
+                dynamic_cast<const SocketDeclaration*>(item_decl.get())) {
             if (socket_decl->in_out == PinKind::Input) {
                 refresh_node_socket(node, *socket_decl, old_inputs, new_inputs);
             }
             else {
-                refresh_node_socket(node, *socket_decl, old_outputs, new_outputs);
+                refresh_node_socket(
+                    node, *socket_decl, old_outputs, new_outputs);
             }
         }
 
@@ -482,11 +504,15 @@ void NodeTree::refresh_node(Node* node)
         // }
     }
 
-    auto out_date = [this](const std::vector<NodeSocket*>& olds, std::vector<NodeSocket*>& news) {
+    auto out_date = [this](
+                        const std::vector<NodeSocket*>& olds,
+                        std::vector<NodeSocket*>& news) {
         for (auto old : olds) {
             if (std::find(news.begin(), news.end(), old) == news.end()) {
                 auto out_dated_socket = std::find_if(
-                    sockets.begin(), sockets.end(), [old](auto&& ptr) { return old == ptr.get(); });
+                    sockets.begin(), sockets.end(), [old](auto&& ptr) {
+                        return old == ptr.get();
+                    });
                 sockets.erase(out_dated_socket);
             }
         }
@@ -498,13 +524,21 @@ void NodeTree::refresh_node(Node* node)
     node->get_outputs() = new_outputs;
 }
 
+void NodeTree::build_sockets_from_type_info(Node* node)
+{
+}
+
+void NodeTree::try_fill_value_by_deserialization(Node* node)
+{
+}
+
 std::string NodeTree::Serialize()
 {
     nlohmann::json value;
 
     auto& node_info = value["nodes_info"];
     for (auto&& node : nodes) {
-        node->Serialize(node_info);
+        node->serialize(node_info);
     }
 
     auto& links_info = value["links_info"];
@@ -550,19 +584,22 @@ void NodeTree::Deserialize(const std::string& str)
     }
 
     for (auto&& node_json : value["nodes_info"]) {
-        auto node = std::make_unique<Node>();
-        node->ID = node_json["ID"].get<unsigned>();
+        auto id = node_json["ID"].get<unsigned>();
         auto id_name = node_json["id_name"].get<std::string>();
-        if (!pre_init_node(id_name.c_str(), node.get()))
+
+        auto node = std::make_unique<Node>(this, id, id_name.c_str());
+        if (!node->valid())
             continue;
 
         for (auto&& input_id : node_json["inputs"]) {
-            assert(FindPin(input_id.get<unsigned>()));
-            node->get_inputs().push_back(FindPin(input_id.get<unsigned>()));
+            assert(find_pin(input_id.get<unsigned>()));
+            node->add_socket(
+                (find_pin(input_id.get<unsigned>())), PinKind::Input);
         }
 
         for (auto&& output_id : node_json["outputs"]) {
-            node->get_outputs().push_back(FindPin(output_id.get<unsigned>()));
+            node->add_socket(
+                find_pin(output_id.get<unsigned>()), PinKind::Output);
         }
         refresh_node(node.get());
         nodes.push_back(std::move(node));
@@ -570,12 +607,15 @@ void NodeTree::Deserialize(const std::string& str)
 
     // Get the saved value in the sockets
     for (auto&& node_socket : sockets) {
-        const auto& socket_value = value["sockets_info"][std::to_string(node_socket->ID.Get())];
+        const auto& socket_value =
+            value["sockets_info"][std::to_string(node_socket->ID.Get())];
         node_socket->DeserializeValue(socket_value);
     }
 
     for (auto&& link_json : value["links_info"]) {
-        addLink(link_json["StartPinID"].get<unsigned>(), link_json["EndPinID"].get<unsigned>());
+        add_link(
+            link_json["StartPinID"].get<unsigned>(),
+            link_json["EndPinID"].get<unsigned>());
     }
 
     ensure_topology_cache();

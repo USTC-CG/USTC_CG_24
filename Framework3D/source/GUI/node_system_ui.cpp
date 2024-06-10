@@ -165,14 +165,15 @@ struct NodeSystemImpl {
 
 Node* NodeSystemImpl::SpawnComment()
 {
-    auto& m_Nodes = node_system_execution_->get_nodes();
-    m_Nodes.emplace_back(
-        new Node(node_system_execution_->GetNextId(), "Test Comment"));
-    m_Nodes.back()->Type = NodeType::Comment;
-    m_Nodes.back()->Size[0] = 300;
-    m_Nodes.back()->Size[1] = 200;
+    return nullptr;
+    //auto& m_Nodes = node_system_execution_->get_nodes();
+    //m_Nodes.emplace_back(
+    //    new Node(node_system_execution_->GetNextId(), "Test Comment"));
+    //m_Nodes.back()->Type = NodeType::Comment;
+    //m_Nodes.back()->Size[0] = 300;
+    //m_Nodes.back()->Size[1] = 200;
 
-    return m_Nodes.back().get();
+    //return m_Nodes.back().get();
 }
 
 void NodeSystemImpl::OnStart()
@@ -277,7 +278,7 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
             changed |= ImGui::SliderInt(
                 (input->ui_name + ("##" + std::to_string(input->ID.Get())))
                     .c_str(),
-                &input->dataField.default_value.cast<int&>(),
+                &input->dataField.value.cast<int&>(),
                 input->dataField.min.cast<int>(),
                 input->dataField.max.cast<int>());
             break;
@@ -286,7 +287,7 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
             changed |= ImGui::SliderFloat(
                 (input->ui_name + ("##" + std::to_string(input->ID.Get())))
                     .c_str(),
-                &input->dataField.default_value.cast<float&>(),
+                &input->dataField.value.cast<float&>(),
                 input->dataField.min.cast<float>(),
                 input->dataField.max.cast<float>());
             break;
@@ -295,7 +296,7 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
             changed |= ImGui::InputText(
                 (input->ui_name + ("##" + std::to_string(input->ID.Get())))
                     .c_str(),
-                input->dataField.default_value.cast<std::string&>().data(),
+                input->dataField.value.cast<std::string&>().data(),
                 255);
             break;
     }

@@ -62,7 +62,7 @@ struct NodeSocket {
 
     // This is for simple data fields in the node graph.
     struct bNodeSocketValue {
-        entt::meta_any default_value;
+        entt::meta_any value;
         entt::meta_any min;
         entt::meta_any max;
     } dataField;
@@ -87,6 +87,17 @@ struct NodeSocket {
     template<typename T>
     const T& default_value_typed() const;
 
+    friend bool operator==(const NodeSocket& lhs, const NodeSocket& rhs)
+    {
+        return strcmp(lhs.identifier, rhs.identifier) == 0 &&
+               lhs.dataField.value == rhs.dataField.value;
+    }
+
+    friend bool operator!=(const NodeSocket& lhs, const NodeSocket& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
     ~NodeSocket()
     {
     }
@@ -95,12 +106,12 @@ struct NodeSocket {
 template<typename T>
 T NodeSocket::default_value_typed()
 {
-    return dataField.default_value.cast<T>();
+    return dataField.value.cast<T>();
 }
 
 template<typename T>
 const T& NodeSocket::default_value_typed() const
 {
-    return dataField.default_value.cast<const T&>();
+    return dataField.value.cast<const T&>();
 }
 USTC_CG_NAMESPACE_CLOSE_SCOPE

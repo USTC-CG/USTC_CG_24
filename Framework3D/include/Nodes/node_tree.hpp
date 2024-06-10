@@ -15,7 +15,7 @@ struct NodeSocket;
 
 class NodeTree {
    public:
-    NodeTree()
+    NodeTree() : has_available_link_cycle(false)
     {
         links.reserve(32);
         sockets.reserve(32);
@@ -52,30 +52,39 @@ class NodeTree {
     std::vector<Node*> toposort_left_to_right;
 
     void clear();
-    bool pre_init_node(const char* idname, Node* node);
 
-    NodeSocket* FindPin(SocketID id) const;
+    NodeSocket* find_pin(SocketID id) const;
 
-    NodeLink* FindLink(LinkId id) const;
+    NodeLink* find_link(LinkId id) const;
 
-    bool IsPinLinked(SocketID id) const;
+    bool is_pin_linked(SocketID id) const;
 
-    Node* addNode(const char* str);
+    Node* add_node(const char* str);
 
     unsigned UniqueID();
 
     void update_socket_vectors_and_owner_node();
     void ensure_topology_cache();
-    NodeLink* addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, NodeSocket* tosock);
+    NodeLink* add_link(
+        Node* fromnode,
+        NodeSocket* fromsock,
+        Node* tonode,
+        NodeSocket* tosock);
 
-    void addLink(SocketID startPinId, SocketID endPinId);
+    void add_link(SocketID startPinId, SocketID endPinId);
 
-    void RemoveLink(LinkId linkId);
+    void remove_link(LinkId linkId);
 
     void delete_node(NodeId nodeId);
-    static bool CanCreateLink(NodeSocket* node_socket, NodeSocket* node_socket1);
-    static bool CanCreateDirectLink(NodeSocket* socket1, NodeSocket* socket2);
-    static bool CanCreateConvertLink(NodeSocket* node_socket, NodeSocket* node_socket1);
+    static bool can_create_link(
+        NodeSocket* node_socket,
+        NodeSocket* node_socket1);
+    static bool can_create_direct_link(
+        NodeSocket* socket1,
+        NodeSocket* socket2);
+    static bool can_create_convert_link(
+        NodeSocket* node_socket,
+        NodeSocket* node_socket1);
 
    private:
     void delete_socket(SocketID socketId);
@@ -88,6 +97,8 @@ class NodeTree {
         const std::vector<NodeSocket*>& old_sockets,
         std::vector<NodeSocket*>& new_sockets);
     void refresh_node(Node* node);
+    void build_sockets_from_type_info(Node* node);
+    void try_fill_value_by_deserialization(Node* node);
 
     // There is definitely better solution. However this is the most
     std::unordered_set<unsigned> used_ids;

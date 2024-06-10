@@ -23,12 +23,12 @@ class NodeSystemExecution {
 
     NodeSocket* FindPin(SocketID id)
     {
-        return node_tree->FindPin(id);
+        return node_tree->find_pin(id);
     }
 
     NodeLink* FindLink(LinkId id)
     {
-        return node_tree->FindLink(id);
+        return node_tree->find_link(id);
     }
 
     virtual void CreateLink(SocketID startPinId, SocketID endPinId);
@@ -42,7 +42,7 @@ class NodeSystemExecution {
 
     bool IsPinLinked(SocketID id)
     {
-        return node_tree->IsPinLinked(id);
+        return node_tree->is_pin_linked(id);
     }
 
     void delete_node(NodeId id);
