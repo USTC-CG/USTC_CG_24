@@ -106,6 +106,9 @@ struct NodeSocket {
 template<typename T>
 T NodeSocket::default_value_typed()
 {
+    if constexpr (std::is_same_v<T, std::string>) {
+        return std::string(dataField.value.cast<std::string>().data());
+    }
     return dataField.value.cast<T>();
 }
 

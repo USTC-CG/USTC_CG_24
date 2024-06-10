@@ -20,7 +20,8 @@ ExeParams EagerNodeTreeExecutor::prepare_params(NodeTree* tree, Node* node)
             // Is set by previous node
             input_ptr = &input_states[index_cache[input]].value;
         }
-        else if (input->directly_linked_sockets.empty() && input->dataField.value) {
+        else if (
+            input->directly_linked_sockets.empty() && input->dataField.value) {
             auto type = input_states[index_cache[input]].value.type();
             auto value = input->dataField.value;
             // Has default value
@@ -75,28 +76,39 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
             int last_used_id = -1;
 
             for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
-                auto directly_linked_input_socket = output->directly_linked_sockets[i];
+                auto directly_linked_input_socket =
+                    output->directly_linked_sockets[i];
 
-                if (index_cache.find(directly_linked_input_socket) != index_cache.end()) {
+                if (index_cache.find(directly_linked_input_socket) !=
+                    index_cache.end()) {
                     if (directly_linked_input_socket->Node->REQUIRED) {
-                        last_used_id =
-                            std::max(last_used_id, int(index_cache[directly_linked_input_socket]));
+                        last_used_id = std::max(
+                            last_used_id,
+                            int(index_cache[directly_linked_input_socket]));
                     }
 
-                    auto& input_state = input_states[index_cache[directly_linked_input_socket]];
+                    auto& input_state =
+                        input_states[index_cache[directly_linked_input_socket]];
                     auto& output_state = output_states[index_cache[output]];
-                    auto is_last_target = i == output->directly_linked_sockets.size() - 1;
+                    auto is_last_target =
+                        i == output->directly_linked_sockets.size() - 1;
 
                     auto value_to_forward = output_state.value;
 
-                    if (input_state.value.type() &&
+                    if (!value_to_forward.type()) {
+                        input_state.is_forwarded = true;
+                    }
+
+                    else if (
+                        input_state.value.type() &&
                         input_state.value.type() != value_to_forward.type()) {
                         directly_linked_input_socket->Node->execution_failed =
                             "Type mismatch input";
                         input_state.is_forwarded = false;
                     }
                     else {
-                        directly_linked_input_socket->Node->execution_failed = {};
+                        directly_linked_input_socket->Node
+                            ->execution_failed = {};
 
                         if (is_last_target) {
                             input_state.value = std::move(value_to_forward);
@@ -152,19 +164,21 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
         if (node->REQUIRED) {
             for (auto input : node->get_inputs()) {
                 assert(input->directly_linked_sockets.size() <= 1);
-                for (auto directly_linked_socket : input->directly_linked_sockets) {
+                for (auto directly_linked_socket :
+                     input->directly_linked_sockets) {
                     directly_linked_socket->Node->REQUIRED = true;
                 }
             }
         }
     }
 
-    auto split =
-        std::stable_partition(nodes_to_execute.begin(), nodes_to_execute.end(), [](Node* node) {
+    auto split = std::stable_partition(
+        nodes_to_execute.begin(), nodes_to_execute.end(), [](Node* node) {
             return node->REQUIRED;
         });
 
-    // Now the nodes is split into two parts, and the topology sequence is correct.
+    // Now the nodes is split into two parts, and the topology sequence is
+    // correct.
 
     nodes_to_execute_count = std::distance(nodes_to_execute.begin(), split);
 
@@ -250,7 +264,9 @@ void EagerNodeTreeExecutor::sync_node_from_external_storage(
     }
 }
 
-void EagerNodeTreeExecutor::sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data)
+void EagerNodeTreeExecutor::sync_node_to_external_storage(
+    NodeSocket* socket,
+    entt::meta_any& data)
 {
     if (index_cache.find(socket) != index_cache.end()) {
         const entt::meta_any* ptr = FindPtr(socket);

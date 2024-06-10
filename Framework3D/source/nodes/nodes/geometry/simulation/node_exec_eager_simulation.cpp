@@ -37,8 +37,8 @@ void EagerNodeTreeExecutorSimulation::prepare_tree(NodeTree* node_tree)
                 entt::meta_any data;
                 if (!socket->directly_linked_sockets.empty()) {
                     auto input = node->get_inputs()[0];
-                    std::string name = std::string(
-                        input->default_value_typed<std::string>().data());
+                    std::string name =
+                        input->default_value_typed<std::string>();
                     if (storage.find(name) == storage.end()) {
                         data = socket->directly_linked_sockets[0]
                                    ->type_info->cpp_type.construct();
@@ -78,8 +78,7 @@ void EagerNodeTreeExecutorSimulation::execute_tree(NodeTree* tree)
                     input_of_nodes_to_execute[i], data);
 
                 auto input = node->get_inputs()[0];
-                std::string name = std::string(
-                    input->default_value_typed<std::string>().data());
+                std::string name = input->default_value_typed<std::string>();
                 storage[name] = data;
             }
         }
@@ -99,23 +98,23 @@ bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
         if (std::string(node->typeinfo->id_name) == "geom_storage_out") {
             auto input = node->get_inputs()[0];
             std::string name = input->default_value_typed<std::string>();
-            name = std::string(name.c_str());
             if (storage.find(name) != storage.end()) {
-                auto& pointer = storage.at(name);
+                auto& storaged_value = storage.at(name);
 
                 // Check all the connected input type
 
                 for (auto input :
                      node->get_outputs()[0]->directly_linked_sockets) {
-                    if (pointer.type() !=
-                        input_states[index_cache[input]].value.type()) {
-                        node->execution_failed = "Type Mismatch";
+                    if (storaged_value.type() &&
+                        storaged_value.type() !=
+                            input_states[index_cache[input]].value.type()) {
+                        node->execution_failed = "Type Mismatch, filling default value.";
                         return false;
                     }
                 }
 
                 output_states[index_cache[node->get_outputs()[0]]].value =
-                    pointer;
+                    storaged_value;
 
                 node->execution_failed = {};
                 return true;
