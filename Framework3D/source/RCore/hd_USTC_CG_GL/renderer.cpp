@@ -52,8 +52,8 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     for (auto&& node : node_tree->nodes) {
         auto try_fill_info = [&node, &executor, this]<typename T>(const char* id_name, const T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
-                assert(node->outputs.size() == 1);
-                auto output_socket = node->outputs[0];
+                assert(node->get_outputs().size() == 1);
+                auto output_socket = node->get_outputs()[0];
                 entt::meta_any data(*(render_param->context), obj);
                 executor->sync_node_from_external_storage(output_socket, data);
             }
@@ -69,8 +69,8 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     for (auto&& node : node_tree->nodes) {
         auto try_fetch_info = [&node, &executor]<typename T>(const char* id_name, T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
-                assert(node->inputs.size() == 1);
-                auto output_socket = node->inputs[0];
+                assert(node->get_inputs().size() == 1);
+                auto output_socket = node->get_inputs()[0];
                 entt::meta_any data;
                 executor->sync_node_to_external_storage(output_socket, data);
                 obj = data.cast<T>();

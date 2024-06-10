@@ -136,13 +136,13 @@ Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTyp
                 ImGui::Unindent();
             };
 
-            for (int i = 0; i < node->inputs.size(); ++i) {
-                NodeSocket* socket = node->inputs[i];
+            for (int i = 0; i < node->get_inputs().size(); ++i) {
+                NodeSocket* socket = node->get_inputs()[i];
                 print_func(socket, i);
             }
 
-            for (int i = 0; i < node->outputs.size(); ++i) {
-                NodeSocket* socket = node->outputs[i];
+            for (int i = 0; i < node->get_outputs().size(); ++i) {
+                NodeSocket* socket = node->get_outputs()[i];
                 print_func(socket, i);
             }
         };
@@ -195,8 +195,8 @@ void GeoNodeSystemExecution::try_execution()
         for (auto&& node : node_tree->nodes) {
             auto try_fill_info = [&node, this]<typename T>(const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
-                    assert(node->outputs.size() == 1);
-                    auto output_socket = node->outputs[0];
+                    assert(node->get_outputs().size() == 1);
+                    auto output_socket = node->get_outputs()[0];
                     entt::meta_any data = obj;
                     executor->sync_node_from_external_storage(output_socket, data);
                 }
@@ -213,8 +213,8 @@ void GeoNodeSystemExecution::try_execution()
         for (auto&& node : node_tree->nodes) {
             auto try_fetch_info = [&node, this]<typename T>(const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
-                    assert(node->inputs.size() == 1);
-                    auto output_socket = node->inputs[0];
+                    assert(node->get_inputs().size() == 1);
+                    auto output_socket = node->get_inputs()[0];
                     entt::meta_any data;
                     executor->sync_node_to_external_storage(output_socket, data);
                     obj = data.cast<T>();

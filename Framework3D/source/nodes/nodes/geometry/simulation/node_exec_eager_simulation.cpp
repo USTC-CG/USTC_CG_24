@@ -35,7 +35,7 @@ void EagerNodeTreeExecutorSimulation::prepare_tree(NodeTree* node_tree)
                 auto node = socket->Node;
                 entt::meta_any data;
                 if (!socket->directly_linked_sockets.empty()) {
-                    auto input = node->inputs[0];
+                    auto input = node->get_inputs()[0];
                     std::string name = entt::resolve<std::string>()
                                            .from_void(default_value_storage(input))
                                            .cast<std::string>()
@@ -75,7 +75,7 @@ void EagerNodeTreeExecutorSimulation::execute_tree(NodeTree* tree)
                 entt::meta_any data;
                 sync_node_to_external_storage(input_of_nodes_to_execute[i], data);
 
-                auto input = node->inputs[0];
+                auto input = node->get_inputs()[0];
                 std::string name = entt::resolve<std::string>()
                                        .from_void(default_value_storage(input))
                                        .cast<std::string>()
@@ -97,7 +97,7 @@ bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
 
     if (node->REQUIRED) {  // requirement info is valid.
         if (std::string(node->typeinfo->id_name) == "geom_storage_out") {
-            auto input = node->inputs[0];
+            auto input = node->get_inputs()[0];
             std::string name = entt::resolve<std::string>()
                                    .from_void(default_value_storage(input))
                                    .cast<std::string>();
@@ -107,14 +107,14 @@ bool EagerNodeTreeExecutorSimulation::execute_node(NodeTree* tree, Node* node)
 
                 // Check all the connected input type
 
-                for (auto input : node->outputs[0]->directly_linked_sockets) {
+                for (auto input : node->get_outputs()[0]->directly_linked_sockets) {
                     if (pointer.type() != input_states[index_cache[input]].value.type()) {
                         node->execution_failed = "Type Mismatch";
                         return false;
                     }
                 }
 
-                output_states[index_cache[node->outputs[0]]].value = pointer;
+                output_states[index_cache[node->get_outputs()[0]]].value = pointer;
 
                 node->execution_failed = {};
                 return true;

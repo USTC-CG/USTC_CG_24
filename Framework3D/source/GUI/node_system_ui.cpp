@@ -359,7 +359,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 builder.EndHeader();
             }
 
-            for (auto& input : node->inputs) {
+            for (auto& input : node->get_inputs()) {
                 auto alpha = ImGui::GetStyle().Alpha;
                 if (newLinkPin && !CanCreateLink(newLinkPin, input) && input != newLinkPin)
                     alpha = alpha * (48.0f / 255.0f);
@@ -395,7 +395,7 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 ImGui::Spring(1, 0);
             }
 
-            for (auto& output : node->outputs) {
+            for (auto& output : node->get_outputs()) {
                 auto alpha = ImGui::GetStyle().Alpha;
                 if (newLinkPin && !CanCreateLink(newLinkPin, output) && output != newLinkPin)
                     alpha = alpha * (48.0f / 255.0f);
@@ -600,8 +600,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         if (node) {
             ImGui::Text("ID: %p", node->ID.AsPointer());
             ImGui::Text("Type: %s", node->Type == NodeType::Blueprint ? "Blueprint" : "Comment");
-            ImGui::Text("Inputs: %d", (int)node->inputs.size());
-            ImGui::Text("Outputs: %d", (int)node->outputs.size());
+            ImGui::Text("Inputs: %d", (int)node->get_inputs().size());
+            ImGui::Text("Outputs: %d", (int)node->get_outputs().size());
         }
         else
             ImGui::Text("Unknown node: %p", contextNodeId.AsPointer());
@@ -666,7 +666,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             ed::SetNodePosition(node->ID, newNodePostion);
 
             if (auto startPin = newNodeLinkPin) {
-                auto& pins = startPin->in_out == PinKind::Input ? node->outputs : node->inputs;
+                auto& pins =
+                    startPin->in_out == PinKind::Input ? node->get_outputs() : node->get_inputs();
 
                 for (auto& pin : pins) {
                     if (CanCreateLink(startPin, pin)) {

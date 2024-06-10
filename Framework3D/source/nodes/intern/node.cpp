@@ -61,6 +61,44 @@ void Node::Serialize(nlohmann::json& value)
     }
 }
 
+NodeSocket* Node::find_socket(const char* identifier, PinKind in_out) const
+{
+    const std::vector<NodeSocket*>* socket_group;
+
+    if (in_out == PinKind::Input) {
+        socket_group = &inputs;
+    }
+    else {
+        socket_group = &outputs;
+    }
+
+    const auto id = find_socket_id(identifier, in_out);
+    return (*socket_group)[id];
+}
+
+size_t Node::find_socket_id(const char* identifier, PinKind in_out) const
+{
+    int counter = 0;
+
+    const std::vector<NodeSocket*>* socket_group;
+
+    if (in_out == PinKind::Input) {
+        socket_group = &inputs;
+    }
+    else {
+        socket_group = &outputs;
+    }
+
+    for (NodeSocket* socket : *socket_group) {
+        if (std::string(socket->identifier) == identifier) {
+            return counter;
+        }
+        counter++;
+    }
+    assert(false);
+    return -1;
+}
+
 void NodeSocket::Serialize(nlohmann::json& value)
 {
     auto& socket = value[std::to_string(ID.Get())];

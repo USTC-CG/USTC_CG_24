@@ -13,7 +13,7 @@ ExeParams EagerNodeTreeExecutor::prepare_params(NodeTree* tree, Node* node)
     node->MISSING_INPUT = false;
 
     ExeParams params{ *node };
-    for (auto&& input : node->inputs) {
+    for (auto&& input : node->get_inputs()) {
         entt::meta_any* input_ptr;
 
         if (input_states[index_cache[input]].is_forwarded) {
@@ -37,7 +37,7 @@ ExeParams EagerNodeTreeExecutor::prepare_params(NodeTree* tree, Node* node)
         params.inputs_.push_back(input_ptr);
     }
 
-    for (auto&& output : node->outputs) {
+    for (auto&& output : node->get_outputs()) {
         entt::meta_any* output_ptr = &output_states[index_cache[output]].value;
         params.outputs_.push_back(output_ptr);
     }
@@ -65,7 +65,7 @@ bool EagerNodeTreeExecutor::execute_node(NodeTree* tree, Node* node)
 
 void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
 {
-    for (auto&& output : node->outputs) {
+    for (auto&& output : node->get_outputs()) {
         if (output->directly_linked_sockets.empty()) {
             auto& output_state = output_states[index_cache[output]];
             assert(output_state.is_last_used == false);
@@ -150,7 +150,7 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
         }
 
         if (node->REQUIRED) {
-            for (auto input : node->inputs) {
+            for (auto input : node->get_inputs()) {
                 assert(input->directly_linked_sockets.size() <= 1);
                 for (auto directly_linked_socket : input->directly_linked_sockets) {
                     directly_linked_socket->Node->REQUIRED = true;
@@ -171,13 +171,13 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
     for (int i = 0; i < nodes_to_execute_count; ++i) {
         input_of_nodes_to_execute.insert(
             input_of_nodes_to_execute.end(),
-            nodes_to_execute[i]->inputs.begin(),
-            nodes_to_execute[i]->inputs.end());
+            nodes_to_execute[i]->get_inputs().begin(),
+            nodes_to_execute[i]->get_inputs().end());
 
         output_of_nodes_to_execute.insert(
             output_of_nodes_to_execute.end(),
-            nodes_to_execute[i]->outputs.begin(),
-            nodes_to_execute[i]->outputs.end());
+            nodes_to_execute[i]->get_outputs().begin(),
+            nodes_to_execute[i]->get_outputs().end());
     }
 }
 

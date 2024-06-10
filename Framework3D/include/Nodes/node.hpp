@@ -62,8 +62,6 @@ struct NodeTypeInfo {
 struct Node {
     NodeId ID;
     std::string ui_name;
-    std::vector<NodeSocket*> inputs;
-    std::vector<NodeSocket*> outputs;
 
     float Color[4];
     NodeType Type;
@@ -92,6 +90,43 @@ struct Node {
     }
 
     void Serialize(nlohmann::json& value);
+
+    void add_socket(NodeSocket* socket, PinKind in_out)
+    {
+        if (in_out == PinKind::Input) {
+            inputs.push_back(socket);
+        }
+        else {
+            outputs.push_back(socket);
+        }
+    }
+
+    NodeSocket* find_socket(const char* identifier, PinKind in_out) const;
+    size_t find_socket_id(const char* identifier, PinKind in_out) const;
+
+    [[nodiscard]] const std::vector<NodeSocket*>& get_inputs() const
+    {
+        return inputs;
+    }
+
+    [[nodiscard]] const std::vector<NodeSocket*>& get_outputs() const
+    {
+        return outputs;
+    }
+
+    [[nodiscard]] std::vector<NodeSocket*>& get_inputs()
+    {
+        return inputs;
+    }
+
+    [[nodiscard]] std::vector<NodeSocket*>& get_outputs()
+    {
+        return outputs;
+    }
+
+   private:
+    std::vector<NodeSocket*> inputs;
+    std::vector<NodeSocket*> outputs;
 };
 
 void nodeRegisterType(NodeTypeInfo* type_info);

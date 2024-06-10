@@ -110,11 +110,11 @@ NodeLink* NodeTree::addLink(Node* fromnode, NodeSocket* fromsock, Node* tonode, 
     NodeLink* bare_ptr = nullptr;
     if (!node_name.empty()) {
         auto middle_node = addNode(node_name.c_str());
-        assert(middle_node->inputs.size() == 1);
-        assert(middle_node->outputs.size() == 1);
+        assert(middle_node->get_inputs().size() == 1);
+        assert(middle_node->get_outputs().size() == 1);
 
-        auto middle_tosock = middle_node->inputs[0];
-        auto middle_fromsock = middle_node->outputs[0];
+        auto middle_tosock = middle_node->get_inputs()[0];
+        auto middle_fromsock = middle_node->get_outputs()[0];
 
         auto firstLink = addLink(fromnode, fromsock, middle_node, middle_tosock);
 
@@ -170,11 +170,11 @@ void NodeTree::delete_node(NodeId nodeId)
     auto id = std::find_if(
         nodes.begin(), nodes.end(), [nodeId](auto&& node) { return node->ID == nodeId; });
     if (id != nodes.end()) {
-        for (auto& socket : (*id)->inputs) {
+        for (auto& socket : (*id)->get_inputs()) {
             delete_socket(socket->ID);
         }
 
-        for (auto& socket : (*id)->outputs) {
+        for (auto& socket : (*id)->get_outputs()) {
             delete_socket(socket->ID);
         }
 
@@ -228,11 +228,11 @@ void NodeTree::delete_socket(SocketID socketId)
 void NodeTree::update_directly_linked_links_and_sockets()
 {
     for (auto&& node : nodes) {
-        for (auto socket : node->inputs) {
+        for (auto socket : node->get_inputs()) {
             socket->directly_linked_links.clear();
             socket->directly_linked_sockets.clear();
         }
-        for (auto socket : node->outputs) {
+        for (auto socket : node->get_outputs()) {
             socket->directly_linked_links.clear();
             socket->directly_linked_sockets.clear();
         }
@@ -327,7 +327,7 @@ static void toposort_from_start_node(
         };
 
         const auto& sockets =
-            (direction == ToposortDirection::LeftToRight) ? node.inputs : node.outputs;
+            (direction == ToposortDirection::LeftToRight) ? node.get_inputs() : node.get_outputs();
         while (true) {
             if (item.socket_index == sockets.size()) {
                 /* All sockets have already been visited. */
@@ -458,8 +458,8 @@ void NodeTree::refresh_node(Node* node)
     assert(ntype->static_declaration);
     auto& node_decl = *ntype->static_declaration;
 
-    auto& old_inputs = node->inputs;
-    auto& old_outputs = node->outputs;
+    auto& old_inputs = node->get_inputs();
+    auto& old_outputs = node->get_outputs();
     std::vector<NodeSocket*> new_inputs;
     std::vector<NodeSocket*> new_outputs;
 
@@ -482,7 +482,7 @@ void NodeTree::refresh_node(Node* node)
         // }
     }
 
-    auto out_date = [this](std::vector<NodeSocket*>& olds, std::vector<NodeSocket*>& news) {
+    auto out_date = [this](const std::vector<NodeSocket*>& olds, std::vector<NodeSocket*>& news) {
         for (auto old : olds) {
             if (std::find(news.begin(), news.end(), old) == news.end()) {
                 auto out_dated_socket = std::find_if(
@@ -494,8 +494,8 @@ void NodeTree::refresh_node(Node* node)
     out_date(old_inputs, new_inputs);
     out_date(old_outputs, new_outputs);
 
-    node->inputs = new_inputs;
-    node->outputs = new_outputs;
+    node->get_inputs() = new_inputs;
+    node->get_outputs() = new_outputs;
 }
 
 std::string NodeTree::Serialize()
@@ -558,11 +558,11 @@ void NodeTree::Deserialize(const std::string& str)
 
         for (auto&& input_id : node_json["inputs"]) {
             assert(FindPin(input_id.get<unsigned>()));
-            node->inputs.push_back(FindPin(input_id.get<unsigned>()));
+            node->get_inputs().push_back(FindPin(input_id.get<unsigned>()));
         }
 
         for (auto&& output_id : node_json["outputs"]) {
-            node->outputs.push_back(FindPin(output_id.get<unsigned>()));
+            node->get_outputs().push_back(FindPin(output_id.get<unsigned>()));
         }
         refresh_node(node.get());
         nodes.push_back(std::move(node));

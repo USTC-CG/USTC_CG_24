@@ -12,7 +12,7 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
 {
     if (EagerNodeTreeExecutor::execute_node(tree, node)) {
-        for (auto&& input : node->inputs) {
+        for (auto&& input : node->get_inputs()) {
             if (!node->typeinfo->ALWAYS_REQUIRED && input_states[index_cache[input]].is_last_used) {
                 if (input_states[index_cache[input]].value)
                     resource_allocator.destroy(input_states[index_cache[input]].value);
@@ -22,7 +22,7 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
         return true;
     }
     else {
-        for (auto&& output : node->outputs) {
+        for (auto&& output : node->get_outputs()) {
             {
                 if (output_states[index_cache[output]].value)
                     resource_allocator.destroy(output_states[index_cache[output]].value);
