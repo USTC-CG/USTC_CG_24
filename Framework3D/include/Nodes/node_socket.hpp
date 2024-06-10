@@ -2,10 +2,8 @@
 
 #include "GCore/Components.h"
 #include "USTC_CG.h"
-#include "Utils/Functions/CPPType.hpp"
 #include "Utils/json.hpp"
 #include "all_socket_types.hpp"
-#include "entt/core/type_info.hpp"
 #include "entt/meta/meta.hpp"
 #include "id.hpp"
 
@@ -34,26 +32,13 @@ struct SocketTypeInfo {
     entt::meta_type cpp_type;
     SocketType type;
 
-    bool canConvertTo(SocketType other)
-    {
-        if (type == SocketType::Any) {
-            return true;
-        }
-        if (other == SocketType::Any) {
-            return true;
-        }
-
-        if (!conversionNode(other).empty()) {
-            return true;
-        }
-        return type == other;
-    }
+    bool canConvertTo(SocketType other) const;
 
     std::string conversionNode(SocketType to_type) const
     {
         if (conversionTo.contains(to_type)) {
-            return std::string("conv_") + get_socket_name_string(type) + "_to_" +
-                   get_socket_name_string(to_type);
+            return std::string("conv_") + get_socket_name_string(type) +
+                   "_to_" + get_socket_name_string(to_type);
         }
         return {};
     }
@@ -75,9 +60,20 @@ struct NodeSocket {
     SocketTypeInfo* type_info;
     PinKind in_out;
 
-    void* default_value = nullptr;
+    // This is for simple data fields in the node graph.
+    struct bNodeSocketValue {
+        entt::meta_any default_value;
+        entt::meta_any min;
+        entt::meta_any max;
+    } dataField;
 
-    NodeSocket(int id = 0) : ID(id), Node(nullptr), in_out(PinKind::Input)
+    explicit NodeSocket(int id = 0)
+        : identifier{},
+          ui_name{},
+          ID(id),
+          Node(nullptr),
+          type_info(nullptr),
+          in_out(PinKind::Input)
     {
     }
 
@@ -87,45 +83,24 @@ struct NodeSocket {
 
     /** Utility to access the value of the socket. */
     template<typename T>
-    T* default_value_typed();
+    T default_value_typed();
     template<typename T>
-    const T* default_value_typed() const;
+    const T& default_value_typed() const;
 
     ~NodeSocket()
     {
-        free(default_value);
     }
 };
 
 template<typename T>
-T* NodeSocket::default_value_typed()
+T NodeSocket::default_value_typed()
 {
-    return static_cast<T*>(this->default_value);
+    return dataField.default_value.cast<T>();
 }
 
 template<typename T>
-const T* NodeSocket::default_value_typed() const
+const T& NodeSocket::default_value_typed() const
 {
-    return static_cast<const T*>(this->default_value);
+    return dataField.default_value.cast<const T&>();
 }
-
-template<typename T>
-struct bNodeSocketValue {
-    T value;
-    T min;
-    T max;
-};
-
-using bNodeSocketValueInt = bNodeSocketValue<int>;
-using bNodeSocketValueFloat = bNodeSocketValue<float>;
-
-struct bNodeSocketValueString {
-    std::string value;
-};
-
-// TODO: template this.
-void* default_value_storage(NodeSocket* socket);
-void* default_value_min(NodeSocket* socket);
-void* default_value_max(NodeSocket* socket);
-
 USTC_CG_NAMESPACE_CLOSE_SCOPE

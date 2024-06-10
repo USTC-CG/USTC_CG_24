@@ -23,7 +23,7 @@
 #include "Nodes/id.hpp"
 #include "Nodes/node.hpp"
 #include "Nodes/node_exec_eager.hpp"
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 #include "Utils/json.hpp"
 #include "imgui_impl_opengl3_loader.h"
 #include "node_system_ui.h"
@@ -73,11 +73,12 @@ static bool Splitter(
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiID id = window->GetID("##Splitter");
     ImRect bb;
-    bb.Min =
-        window->DC.CursorPos + (split_vertically ? ImVec2(*size1, 0.0f) : ImVec2(0.0f, *size1));
+    bb.Min = window->DC.CursorPos +
+             (split_vertically ? ImVec2(*size1, 0.0f) : ImVec2(0.0f, *size1));
     bb.Max = bb.Min + CalcItemSize(
-                          split_vertically ? ImVec2(thickness, splitter_long_axis_size)
-                                           : ImVec2(splitter_long_axis_size, thickness),
+                          split_vertically
+                              ? ImVec2(thickness, splitter_long_axis_size)
+                              : ImVec2(splitter_long_axis_size, thickness),
                           0.0f,
                           0.0f);
     return SplitterBehavior(
@@ -165,7 +166,8 @@ struct NodeSystemImpl {
 Node* NodeSystemImpl::SpawnComment()
 {
     auto& m_Nodes = node_system_execution_->get_nodes();
-    m_Nodes.emplace_back(new Node(node_system_execution_->GetNextId(), "Test Comment"));
+    m_Nodes.emplace_back(
+        new Node(node_system_execution_->GetNextId(), "Test Comment"));
     m_Nodes.back()->Type = NodeType::Comment;
     m_Nodes.back()->Size[0] = 300;
     m_Nodes.back()->Size[1] = 200;
@@ -182,7 +184,8 @@ void NodeSystemImpl::OnStart()
         node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();
     }
     else if (node_system_type == NodeSystemType::Composition) {
-        node_system_execution_ = std::make_unique<CompositionNodeSystemExecution>();
+        node_system_execution_ =
+            std::make_unique<CompositionNodeSystemExecution>();
     }
 
     ed::Config config;
@@ -226,7 +229,9 @@ void NodeSystemImpl::OnStart()
         file.seekg(0, std::ios_base::beg);
 
         data.reserve(size);
-        data.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+        data.assign(
+            std::istreambuf_iterator<char>(file),
+            std::istreambuf_iterator<char>());
 
         if (data.size() > 0) {
             ptr->node_system_execution_->Deserialize(data);
@@ -239,7 +244,8 @@ void NodeSystemImpl::OnStart()
 
     m_Editor = ed::CreateEditor(&config);
 
-    m_HeaderBackground = LoadTexture(BlueprintBackground, sizeof(BlueprintBackground));
+    m_HeaderBackground =
+        LoadTexture(BlueprintBackground, sizeof(BlueprintBackground));
 }
 
 void NodeSystemImpl::OnStop()
@@ -269,24 +275,27 @@ bool NodeSystemImpl::draw_socket_controllers(NodeSocket* input)
             break;
         case SocketType::Int:
             changed |= ImGui::SliderInt(
-                (input->ui_name + ("##" + std::to_string(input->ID.Get()))).c_str(),
-                (int*)default_value_storage(input),
-                *(int*)default_value_min(input),
-                *(int*)default_value_max(input));
+                (input->ui_name + ("##" + std::to_string(input->ID.Get())))
+                    .c_str(),
+                &input->dataField.default_value.cast<int&>(),
+                input->dataField.min.cast<int>(),
+                input->dataField.max.cast<int>());
             break;
 
         case SocketType::Float:
             changed |= ImGui::SliderFloat(
-                (input->ui_name + ("##" + std::to_string(input->ID.Get()))).c_str(),
-                (float*)default_value_storage(input),
-                *(float*)default_value_min(input),
-                *(float*)default_value_max(input));
+                (input->ui_name + ("##" + std::to_string(input->ID.Get())))
+                    .c_str(),
+                &input->dataField.default_value.cast<float&>(),
+                input->dataField.min.cast<float>(),
+                input->dataField.max.cast<float>());
             break;
 
         case SocketType::String:
             changed |= ImGui::InputText(
-                (input->ui_name + ("##" + std::to_string(input->ID.Get()))).c_str(),
-                (static_cast<std::string*>(default_value_storage(input)))->data(),
+                (input->ui_name + ("##" + std::to_string(input->ID.Get())))
+                    .c_str(),
+                input->dataField.default_value.cast<std::string&>().data(),
                 255);
             break;
     }
@@ -324,7 +333,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             GetTextureHeight(m_HeaderBackground));
 
         for (auto&& node : node_system_execution_->get_nodes()) {
-            if (node->Type != NodeType::Blueprint && node->Type != NodeType::Simple)
+            if (node->Type != NodeType::Blueprint &&
+                node->Type != NodeType::Simple)
                 continue;
 
             if (node->typeinfo->INVISIBLE) {
@@ -351,7 +361,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 ImGui::Spring(0);
                 ImGui::TextUnformatted(node->ui_name.c_str());
                 if (!node->execution_failed.empty()) {
-                    ImGui::TextUnformatted((": " + node->execution_failed).c_str());
+                    ImGui::TextUnformatted(
+                        (": " + node->execution_failed).c_str());
                 }
                 ImGui::Spring(1);
                 ImGui::Dummy(ImVec2(0, 28));
@@ -361,14 +372,17 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
             for (auto& input : node->get_inputs()) {
                 auto alpha = ImGui::GetStyle().Alpha;
-                if (newLinkPin && !CanCreateLink(newLinkPin, input) && input != newLinkPin)
+                if (newLinkPin && !CanCreateLink(newLinkPin, input) &&
+                    input != newLinkPin)
                     alpha = alpha * (48.0f / 255.0f);
 
                 builder.Input(input->ID);
                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 
                 DrawPinIcon(
-                    *input, node_system_execution_->IsPinLinked(input->ID), (int)(alpha * 255));
+                    *input,
+                    node_system_execution_->IsPinLinked(input->ID),
+                    (int)(alpha * 255));
                 ImGui::Spring(0);
 
                 if (node_system_execution_->IsPinLinked(input->ID)) {
@@ -397,7 +411,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
             for (auto& output : node->get_outputs()) {
                 auto alpha = ImGui::GetStyle().Alpha;
-                if (newLinkPin && !CanCreateLink(newLinkPin, output) && output != newLinkPin)
+                if (newLinkPin && !CanCreateLink(newLinkPin, output) &&
+                    output != newLinkPin)
                     alpha = alpha * (48.0f / 255.0f);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
@@ -407,7 +422,9 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                 ImGui::TextUnformatted(output->ui_name);
                 ImGui::Spring(0);
                 DrawPinIcon(
-                    *output, node_system_execution_->IsPinLinked(output->ID), (int)(alpha * 255));
+                    *output,
+                    node_system_execution_->IsPinLinked(output->ID),
+                    (int)(alpha * 255));
                 ImGui::PopStyleVar();
 
                 builder.EndOutput();
@@ -423,8 +440,10 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             const float commentAlpha = 0.75f;
 
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, commentAlpha);
-            ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(255, 255, 255, 64));
-            ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(255, 255, 255, 64));
+            ed::PushStyleColor(
+                ed::StyleColor_NodeBg, ImColor(255, 255, 255, 64));
+            ed::PushStyleColor(
+                ed::StyleColor_NodeBorder, ImColor(255, 255, 255, 64));
             ed::BeginNode(node->ID);
             ImGui::PushID(node->ID.AsPointer());
             ImGui::BeginVertical("content");
@@ -447,7 +466,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
 
                 auto min = ed::GetGroupMin();
                 ImGui::SetCursorScreenPos(
-                    min - ImVec2(-8, ImGui::GetTextLineHeightWithSpacing() + 4));
+                    min -
+                    ImVec2(-8, ImGui::GetTextLineHeightWithSpacing() + 4));
                 ImGui::BeginGroup();
                 ImGui::TextUnformatted(node->ui_name.c_str());
                 ImGui::EndGroup();
@@ -483,7 +503,8 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             auto startPin = link->StartPinID;
             auto endPin = link->EndPinID;
 
-            // If there is an invisible node after the link, use the first as the id for the ui link
+            // If there is an invisible node after the link, use the first as
+            // the id for the ui link
             if (link->nextLink) {
                 endPin = link->nextLink->to_sock->ID;
             }
@@ -494,19 +515,22 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         if (!createNewNode) {
             if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f)) {
                 auto showLabel = [](const char* label, ImColor color) {
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+                    ImGui::SetCursorPosY(
+                        ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
                     auto size = ImGui::CalcTextSize(label);
 
                     auto padding = ImGui::GetStyle().FramePadding;
                     auto spacing = ImGui::GetStyle().ItemSpacing;
 
-                    ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
+                    ImGui::SetCursorPos(
+                        ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
 
                     auto rectMin = ImGui::GetCursorScreenPos() - padding;
                     auto rectMax = ImGui::GetCursorScreenPos() + size + padding;
 
                     auto drawList = ImGui::GetWindowDrawList();
-                    drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
+                    drawList->AddRectFilled(
+                        rectMin, rectMax, color, size.y * 0.15f);
                     ImGui::TextUnformatted(label);
                 };
 
@@ -518,10 +542,14 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                     newLinkPin = startPin ? startPin : endPin;
 
                     if (startPin && endPin) {
-                        if (node_system_execution_->CanCreateLink(startPin, endPin)) {
-                            showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-                            if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f)) {
-                                node_system_execution_->CreateLink(startPinId, endPinId);
+                        if (node_system_execution_->CanCreateLink(
+                                startPin, endPin)) {
+                            showLabel(
+                                "+ Create Link", ImColor(32, 45, 32, 180));
+                            if (ed::AcceptNewItem(
+                                    ImColor(128, 255, 128), 4.0f)) {
+                                node_system_execution_->CreateLink(
+                                    startPinId, endPinId);
                             }
                         }
                     }
@@ -555,7 +583,9 @@ void NodeSystemImpl::OnFrame(float deltaTime)
                         auto id = std::find_if(
                             node_system_execution_->get_nodes().begin(),
                             node_system_execution_->get_nodes().end(),
-                            [nodeId](auto& node) { return node->ID == nodeId; });
+                            [nodeId](auto& node) {
+                                return node->ID == nodeId;
+                            });
                         if (id != node_system_execution_->get_nodes().end())
                             node_system_execution_->delete_node(nodeId);
                     }
@@ -599,7 +629,9 @@ void NodeSystemImpl::OnFrame(float deltaTime)
         ImGui::Separator();
         if (node) {
             ImGui::Text("ID: %p", node->ID.AsPointer());
-            ImGui::Text("Type: %s", node->Type == NodeType::Blueprint ? "Blueprint" : "Comment");
+            ImGui::Text(
+                "Type: %s",
+                node->Type == NodeType::Blueprint ? "Blueprint" : "Comment");
             ImGui::Text("Inputs: %d", (int)node->get_inputs().size());
             ImGui::Text("Outputs: %d", (int)node->get_outputs().size());
         }
@@ -666,14 +698,16 @@ void NodeSystemImpl::OnFrame(float deltaTime)
             ed::SetNodePosition(node->ID, newNodePostion);
 
             if (auto startPin = newNodeLinkPin) {
-                auto& pins =
-                    startPin->in_out == PinKind::Input ? node->get_outputs() : node->get_inputs();
+                auto& pins = startPin->in_out == PinKind::Input
+                                 ? node->get_outputs()
+                                 : node->get_inputs();
 
                 for (auto& pin : pins) {
                     if (CanCreateLink(startPin, pin)) {
                         auto endPin = pin;
 
-                        node_system_execution_->CreateLink(startPin->ID, endPin->ID);
+                        node_system_execution_->CreateLink(
+                            startPin->ID, endPin->ID);
 
                         break;
                     }
@@ -698,11 +732,13 @@ void NodeSystemImpl::OnFrame(float deltaTime)
     }
 }
 
-ImTextureID NodeSystemImpl::LoadTexture(const unsigned char* data, size_t buffer_size)
+ImTextureID NodeSystemImpl::LoadTexture(
+    const unsigned char* data,
+    size_t buffer_size)
 {
     int width = 0, height = 0, component = 0;
-    if (auto loaded_data =
-            stbi_load_from_memory(data, buffer_size, &width, &height, &component, 4)) {
+    if (auto loaded_data = stbi_load_from_memory(
+            data, buffer_size, &width, &height, &component, 4)) {
         auto texture = CreateTexture(loaded_data, width, height);
         stbi_image_free(loaded_data);
         return texture;
@@ -711,7 +747,8 @@ ImTextureID NodeSystemImpl::LoadTexture(const unsigned char* data, size_t buffer
         return nullptr;
 }
 
-ImTextureID NodeSystemImpl::CreateTexture(const void* data, int width, int height)
+ImTextureID
+NodeSystemImpl::CreateTexture(const void* data, int width, int height)
 {
     m_Textures.resize(m_Textures.size() + 1);
     ImTexture& texture = m_Textures.back();
@@ -723,13 +760,23 @@ ImTextureID NodeSystemImpl::CreateTexture(const void* data, int width, int heigh
     glBindTexture(GL_TEXTURE_2D, texture.TextureID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        data);
     glBindTexture(GL_TEXTURE_2D, last_texture);
 
     texture.Width = width;
     texture.Height = height;
 
-    return reinterpret_cast<ImTextureID>(static_cast<std::intptr_t>(texture.TextureID));
+    return reinterpret_cast<ImTextureID>(
+        static_cast<std::intptr_t>(texture.TextureID));
 }
 
 void NodeSystemImpl::DestroyTexture(ImTextureID texture)
@@ -759,13 +806,16 @@ int NodeSystemImpl::GetTextureHeight(ImTextureID texture)
     return 0;
 }
 
-ImVector<NodeSystemImpl::ImTexture>::iterator NodeSystemImpl::FindTexture(ImTextureID texture)
+ImVector<NodeSystemImpl::ImTexture>::iterator NodeSystemImpl::FindTexture(
+    ImTextureID texture)
 {
-    auto textureID = static_cast<GLuint>(reinterpret_cast<std::intptr_t>(texture));
+    auto textureID =
+        static_cast<GLuint>(reinterpret_cast<std::intptr_t>(texture));
 
-    return std::find_if(m_Textures.begin(), m_Textures.end(), [textureID](ImTexture& texture) {
-        return texture.TextureID == textureID;
-    });
+    return std::find_if(
+        m_Textures.begin(), m_Textures.end(), [textureID](ImTexture& texture) {
+            return texture.TextureID == textureID;
+        });
 }
 
 void NodeSystemImpl::TouchNode(NodeId id)
@@ -860,7 +910,10 @@ void NodeSystem::set_required_time_code(float time_code_to_render)
 void NodeSystemImpl::ShowLeftPane(float paneWidth)
 {
     auto& io = ImGui::GetIO();
-    ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
+    ImGui::Text(
+        "FPS: %.2f (%.2gms)",
+        io.Framerate,
+        io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
     ImGui::BeginChild("Selection", ImVec2(paneWidth, 0));
 
@@ -883,17 +936,18 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
     selectedNodes.resize(ed::GetSelectedObjectCount());
     selectedLinks.resize(ed::GetSelectedObjectCount());
 
-    int nodeCount =
-        ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
-    int linkCount =
-        ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+    int nodeCount = ed::GetSelectedNodes(
+        selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+    int linkCount = ed::GetSelectedLinks(
+        selectedLinks.data(), static_cast<int>(selectedLinks.size()));
 
     selectedNodes.resize(nodeCount);
     selectedLinks.resize(linkCount);
 
     ImGui::GetWindowDrawList()->AddRectFilled(
         ImGui::GetCursorScreenPos(),
-        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
+        ImGui::GetCursorScreenPos() +
+            ImVec2(paneWidth, ImGui::GetTextLineHeight()),
         ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]),
         ImGui::GetTextLineHeight() * 0.25f);
     ImGui::Spacing();
@@ -913,11 +967,13 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
         }
 
         bool isSelected =
-            std::find(selectedNodes.begin(), selectedNodes.end(), node->ID) != selectedNodes.end();
+            std::find(selectedNodes.begin(), selectedNodes.end(), node->ID) !=
+            selectedNodes.end();
         ImGui::SetNextItemAllowOverlap();
         if (ImGui::Selectable(
                 (node->ui_name + "##" +
-                 std::to_string(reinterpret_cast<uintptr_t>(node->ID.AsPointer())))
+                 std::to_string(
+                     reinterpret_cast<uintptr_t>(node->ID.AsPointer())))
                     .c_str(),
                 &isSelected)) {
             if (io.KeyCtrl) {
@@ -939,7 +995,8 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
 
     ImGui::GetWindowDrawList()->AddRectFilled(
         ImGui::GetCursorScreenPos(),
-        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
+        ImGui::GetCursorScreenPos() +
+            ImVec2(paneWidth, ImGui::GetTextLineHeight()),
         ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]),
         ImGui::GetTextLineHeight() * 0.25f);
     ImGui::Spacing();
@@ -967,7 +1024,8 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
 
     ImGui::GetWindowDrawList()->AddRectFilled(
         ImGui::GetCursorScreenPos(),
-        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
+        ImGui::GetCursorScreenPos() +
+            ImVec2(paneWidth, ImGui::GetTextLineHeight()),
         ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]),
         ImGui::GetTextLineHeight() * 0.25f);
     ImGui::Spacing();
@@ -979,7 +1037,10 @@ void NodeSystemImpl::ShowLeftPane(float paneWidth)
     ImGui::EndChild();
 }
 
-void NodeSystemImpl::DrawPinIcon(const NodeSocket& pin, bool connected, int alpha)
+void NodeSystemImpl::DrawPinIcon(
+    const NodeSocket& pin,
+    bool connected,
+    int alpha)
 {
     IconType iconType;
 
@@ -987,7 +1048,8 @@ void NodeSystemImpl::DrawPinIcon(const NodeSocket& pin, bool connected, int alph
 
     if (pin.type_info->type == SocketType::Any) {
         if (pin.directly_linked_sockets.size() > 0) {
-            color = GetIconColor(pin.directly_linked_sockets[0]->type_info->type);
+            color =
+                GetIconColor(pin.directly_linked_sockets[0]->type_info->type);
         }
     }
 
@@ -998,7 +1060,9 @@ void NodeSystemImpl::DrawPinIcon(const NodeSocket& pin, bool connected, int alph
     }
 
     Widgets::Icon(
-        ImVec2(static_cast<float>(m_PinIconSize), static_cast<float>(m_PinIconSize)),
+        ImVec2(
+            static_cast<float>(m_PinIconSize),
+            static_cast<float>(m_PinIconSize)),
         iconType,
         connected,
         color,
@@ -1007,12 +1071,15 @@ void NodeSystemImpl::DrawPinIcon(const NodeSocket& pin, bool connected, int alph
 
 ImColor GetIconColor(SocketType type)
 {
-    int hashValue_r = hash_str_to_uint32(std::string("r") + get_socket_typename(type));
+    int hashValue_r =
+        hash_str_to_uint32(std::string("r") + get_socket_typename(type));
     hashValue_r = std::abs(hashValue_r);
-    int hashValue_g = hash_str_to_uint32(std::string("g") + get_socket_typename(type));
+    int hashValue_g =
+        hash_str_to_uint32(std::string("g") + get_socket_typename(type));
     hashValue_g = std::abs(hashValue_g);
 
-    int hashValue_b = hash_str_to_uint32(std::string("b") + get_socket_typename(type));
+    int hashValue_b =
+        hash_str_to_uint32(std::string("b") + get_socket_typename(type));
     hashValue_b = std::abs(hashValue_b);
 
     switch (type) {

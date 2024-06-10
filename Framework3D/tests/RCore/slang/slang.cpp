@@ -40,7 +40,7 @@ TEST(SLANG, createSession)
     ASSERT_NE(session.get(), nullptr);
 
     auto shaderPath =
-        SlangShaderCompiler::find_root(".") / "usd\hd_USTC_CG_GL\resources\shadersshader.slang";
+        SlangShaderCompiler::find_root(".") / "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
 
     Slang::ComPtr<slang::IBlob> outDiagnostic;
     Slang::ComPtr<slang::IModule> module_;

@@ -4,7 +4,7 @@
 
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 #include "Utils/json.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

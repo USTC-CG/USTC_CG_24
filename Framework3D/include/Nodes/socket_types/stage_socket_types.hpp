@@ -2,7 +2,7 @@
 
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/make_standard_type.hpp"
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "basic_socket_types.hpp"

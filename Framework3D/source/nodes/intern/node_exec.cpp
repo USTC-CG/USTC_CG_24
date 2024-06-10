@@ -1,7 +1,7 @@
 #include "Nodes/node_exec.hpp"
 
 #include "Nodes/node.hpp"
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 int ExeParams::get_input_index(const char* identifier) const

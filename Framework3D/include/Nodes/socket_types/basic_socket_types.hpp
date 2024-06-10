@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

@@ -7,3 +7,4 @@ out/
 CMakeSettings.json
 .VSCodeCounter/
 SDK.zip
+*.user

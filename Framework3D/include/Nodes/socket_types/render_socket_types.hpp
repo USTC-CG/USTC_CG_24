@@ -4,7 +4,7 @@
 #include "Utils/Macro/map.h"
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/make_standard_type.hpp"
-#include "Nodes/pin.hpp"
+#include "Nodes/node_socket.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 namespace decl {

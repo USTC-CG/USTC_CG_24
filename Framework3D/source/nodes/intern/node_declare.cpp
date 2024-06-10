@@ -2,44 +2,42 @@
 
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/node.hpp"
+#include "Nodes/socket_types/geo_socket_types.hpp"
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "Nodes/socket_types/stage_socket_types.hpp"
-#include "Nodes/socket_types/geo_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
 void decl::Int::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->default_value) {
-        // TODO: When shall we destroy these?
-        auto default_value = new bNodeSocketValueInt();
-        default_value->min = soft_min;
-        default_value->max = soft_max;
-        default_value->value = std::max(std::min(default_value_, soft_max), soft_min);
-        socket->default_value = default_value;
+    if (!socket->dataField.default_value) {
+        socket->dataField.min = soft_min;
+        socket->dataField.max = soft_max;
+        socket->dataField.default_value =
+            std::max(std::min(default_value_, soft_max), soft_min);
     }
 }
 
 void decl::Float::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->default_value) {
+    if (!socket->dataField.default_value) {
         // TODO: When shall we destroy these?
-        auto default_value = new bNodeSocketValueFloat();
+        auto* default_value = &(socket->dataField);
         default_value->min = soft_min;
         default_value->max = soft_max;
-        default_value->value = std::max(std::min(default_value_, soft_max), soft_min);
-        socket->default_value = default_value;
+        default_value->default_value =
+            std::max(std::min(default_value_, soft_max), soft_min);
     }
 }
 
 void decl::String::update_default_value(NodeSocket* socket) const
 {
-    if (!socket->default_value) {
-        // TODO: When shall we destroy these?
-        auto default_value = new bNodeSocketValueString();
-        default_value->value.resize(256);
-        memcpy(default_value->value.data(), default_value_.data(), default_value_.size());
-        socket->default_value = default_value;
+    if (!socket->dataField.default_value) {
+        socket->dataField.default_value = std::string(256, 0);
+        memcpy(
+            socket->dataField.default_value.cast<std::string&>().data(),
+            default_value_.data(),
+            default_value_.size());
     }
 }
 

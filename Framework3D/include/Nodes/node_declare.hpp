@@ -1,7 +1,7 @@
 #pragma once
 
 #include "USTC_CG.h"
-#include "pin.hpp"
+#include "node_socket.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeTree;
