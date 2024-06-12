@@ -207,6 +207,13 @@ static SocketTypeInfo* make_socket_type_PyObj()
     return socket_type;
 }
 
+static SocketTypeInfo* make_socket_type_SocketGroup()
+{
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::SocketGroup);
+    socket_type->cpp_type = entt::resolve<SocketGroup>();
+    return socket_type;
+}
+
 static SocketTypeInfo* make_socket_type_NumpyArray()
 {
     SocketTypeInfo* socket_type =

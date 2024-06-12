@@ -14,6 +14,7 @@
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
 #include "rich_type_buffer.hpp"
+#include "Nodes/node_socket.hpp"
 #include "boost/python/numpy.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -45,6 +46,7 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(MeshArray);
     BLI_CPP_TYPE_REGISTER(CameraArray);
     BLI_CPP_TYPE_REGISTER(MaterialMap);
+    BLI_CPP_TYPE_REGISTER(SocketGroup);
     BLI_CPP_TYPE_REGISTER(std::shared_ptr<node_mass_spring::MassSpring>);
     BLI_CPP_TYPE_REGISTER(std::shared_ptr<node_sph_fluid::SPHBase>);
     BLI_CPP_TYPE_REGISTER(std::shared_ptr<node_character_animation::Animator>);

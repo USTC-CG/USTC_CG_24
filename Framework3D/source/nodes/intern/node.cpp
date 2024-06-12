@@ -183,7 +183,7 @@ void Node::remove_socket(NodeSocket* socket, PinKind kind)
                 tree_->sockets.erase(out_dated_socket);
             }
             break;
-        default:;
+        default: break;
     }
 }
 

@@ -120,4 +120,10 @@ const T& NodeSocket::default_value_typed() const
 {
     return dataField.value.cast<const T&>();
 }
+
+struct SocketGroup {
+    std::vector<NodeSocket*> sockets;
+    bool runtime_dynamic = false;
+};
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE
