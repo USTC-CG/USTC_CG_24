@@ -8,6 +8,7 @@
 #include "Utils/Macro/map.h"
 #include "nvrhi/nvrhi.h"
 #include "nvrhi_format.hpp"
+#include "slang-com-ptr.h"
 
 namespace nvrhi {
 using CommandListDesc = nvrhi::CommandListParameters;
@@ -41,8 +42,9 @@ struct ShaderCompileDesc;
     using nvrhi::rt::RESOURCE##Desc;    \
     using nvrhi::rt::RESOURCE##Handle;
 
-#define NVRHI_RESOURCE_LIST \
-    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList, StagingTexture
+#define NVRHI_RESOURCE_LIST                                          \
+    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList, \
+        StagingTexture
 #define NVRHI_RT_RESOURCE_LIST Pipeline, AccelStruct
 #define RESOURCE_LIST          NVRHI_RESOURCE_LIST, NVRHI_RT_RESOURCE_LIST, ShaderCompile
 
@@ -52,7 +54,7 @@ MACRO_MAP(USING_NVRHI_RT_SYMBOL, NVRHI_RT_RESOURCE_LIST);
 using ShaderCompileHandle = std::shared_ptr<ShaderCompileResult>;
 
 struct ShaderCompileResult {
-    void* getBufferPointer() const;
+    void const* getBufferPointer() const;
     size_t getBufferSize() const;
 
     [[nodiscard]] const std::string& get_error_string() const
@@ -61,20 +63,25 @@ struct ShaderCompileResult {
     }
 
    private:
-    friend ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc);
+    friend ShaderCompileHandle createShaderCompile(
+        const ShaderCompileDesc& desc);
 
-    Microsoft::WRL::ComPtr<IDxcBlob> blob;
+    Slang::ComPtr<ISlangBlob> blob;
     std::string error_string;
 };
 
 struct ShaderCompileDesc {
-    friend bool operator==(const ShaderCompileDesc& lhs, const ShaderCompileDesc& rhs)
+    friend bool operator==(
+        const ShaderCompileDesc& lhs,
+        const ShaderCompileDesc& rhs)
     {
         return lhs.path == rhs.path && lhs.entry_name == rhs.entry_name &&
                lhs.lastWriteTime == rhs.lastWriteTime;
     }
 
-    friend bool operator!=(const ShaderCompileDesc& lhs, const ShaderCompileDesc& rhs)
+    friend bool operator!=(
+        const ShaderCompileDesc& lhs,
+        const ShaderCompileDesc& rhs)
     {
         return !(lhs == rhs);
     }
@@ -89,7 +96,8 @@ struct ShaderCompileDesc {
     void update_last_write_time(const std::filesystem::path& path);
 
     std::string get_profile() const;
-    friend ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc);
+    friend ShaderCompileHandle createShaderCompile(
+        const ShaderCompileDesc& desc);
     std::filesystem::path path;
     std::filesystem::file_time_type lastWriteTime;
     std::string entry_name;

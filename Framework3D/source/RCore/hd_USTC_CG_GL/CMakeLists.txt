@@ -39,7 +39,6 @@ pxr_plugin(${PXR_PACKAGE}
         d3d12
         dxgi 
         DXC::dxc
-        SLANG::slang
 
     INCLUDE_DIRS
         ${TBB_INCLUDE_DIRS}
@@ -56,7 +55,6 @@ pxr_plugin(${PXR_PACKAGE}
         camera
         light
         material
-        shaderCompiler
 
         geometries/mesh
 

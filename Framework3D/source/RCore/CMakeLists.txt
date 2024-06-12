@@ -17,7 +17,7 @@ target_include_directories(RCore PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_compile_options(RCore PRIVATE -DUSTC_CG_BUILD_MODULE=1 -DNOMINMAX)
 set_target_properties(RCore PROPERTIES ${OUTPUT_DIR})
 
-target_link_libraries(RCore PUBLIC usdGeom nodes)
+target_link_libraries(RCore PUBLIC usdGeom nodes SLANG::slang)
 target_compile_features(RCore PUBLIC cxx_std_20)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/macros)

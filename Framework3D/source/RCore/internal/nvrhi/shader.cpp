@@ -9,18 +9,21 @@
 #include <string>
 
 #include "RCore/Backend.hpp"
+#include "shaderCompiler.h"
+#include "slang-com-ptr.h"
+#include "slang.h"
 
 using namespace Microsoft::WRL;
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-void* ShaderCompileResult::getBufferPointer() const
+void const* ShaderCompileResult::getBufferPointer() const
 {
-    return blob->GetBufferPointer();
+    return blob->getBufferPointer();
 }
 
 size_t ShaderCompileResult::getBufferSize() const
 {
-    return blob->GetBufferSize();
+    return blob->getBufferSize();
 }
 
 void ShaderCompileDesc::set_path(const std::filesystem::path& path)
@@ -41,7 +44,8 @@ void ShaderCompileDesc::set_entry_name(const std::string& entry_name)
 }
 namespace fs = std::filesystem;
 
-void ShaderCompileDesc::update_last_write_time(const std::filesystem::path& path)
+void ShaderCompileDesc::update_last_write_time(
+    const std::filesystem::path& path)
 {
     try {
         auto possibly_newer_lastWriteTime = fs::last_write_time(path);
@@ -80,7 +84,7 @@ std::string ShaderCompileDesc::get_profile() const
     return "lib_6_5";
 }
 
-HRESULT CompileHLSLToDXIL(
+HRESULT DxcCompileHLSLToDXIL(
     const wchar_t* filename,
     const char* entryPoint,
     const char* profile,
@@ -139,7 +143,11 @@ HRESULT CompileHLSLToDXIL(
 
     ComPtr<IDxcResult> pResults;
     hr = pCompiler->Compile(
-        &sourceBuffer, args, _countof(args), pIncludeHandler.Get(), IID_PPV_ARGS(&pResults));
+        &sourceBuffer,
+        args,
+        _countof(args),
+        pIncludeHandler.Get(),
+        IID_PPV_ARGS(&pResults));
     if (FAILED(hr)) {
         std::wcerr << L"Compilation failed." << std::endl;
         return hr;
@@ -162,12 +170,71 @@ HRESULT CompileHLSLToDXIL(
     return S_OK;
 }
 
+Slang::ComPtr<slang::IGlobalSession> globalSession;
+
+Slang::ComPtr<slang::IGlobalSession> createGlobal()
+{
+    Slang::ComPtr<slang::IGlobalSession> globalSession;
+    slang::createGlobalSession(globalSession.writeRef());
+    return globalSession;
+}
+void SlangCompileHLSLToDXIL(
+    const char* filename,
+    const char* entryPoint,
+    const char* profile,
+    Slang::ComPtr<ISlangBlob>& ppResultBlob,
+    std::string& error_string)
+{
+    if (!globalSession) {
+        globalSession = createGlobal();
+    }
+
+    SlangCompileRequest* slangRequest = spCreateCompileRequest(globalSession);
+    int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
+
+    spSetTargetFlags(
+        slangRequest, targetIndex, SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM);
+    int translationUnitIndex = spAddTranslationUnit(
+        slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
+
+    auto profile_id = globalSession->findProfile(profile);
+
+    auto shaderPath = SlangShaderCompiler::find_root(".") /
+                      "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
+    spAddTranslationUnitSourceFile(
+        slangRequest, translationUnitIndex, filename);
+
+    slangRequest->setTargetProfile(targetIndex, profile_id);
+
+    const SlangResult compileRes = slangRequest->compile();
+
+    if (SLANG_FAILED(compileRes)) {
+        if (auto diagnostics = spGetDiagnosticOutput(slangRequest)) {
+            error_string = diagnostics;
+            std::cerr << "Error diagnostics: " << diagnostics;
+        }
+    }
+    assert(compileRes == SLANG_OK);
+
+    auto Result =
+        slangRequest->getTargetCodeBlob(targetIndex, ppResultBlob.writeRef());
+
+    if (SLANG_FAILED(compileRes)) {
+        spDestroyCompileRequest(slangRequest);
+    }
+}
+
 ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc)
 {
-    ComPtr<IDxcBlob> blob;
+    Slang::ComPtr<ISlangBlob> blob;
+
     std::string error_string;
-    CompileHLSLToDXIL(
-        desc.path.c_str(), desc.entry_name.c_str(), desc.get_profile().c_str(), blob, error_string);
+    SlangCompileHLSLToDXIL(
+        desc.path.generic_string().c_str(),
+        desc.entry_name.c_str(),
+        desc.get_profile().c_str(),
+        blob,
+        error_string);
     ShaderCompileHandle ret = std::make_shared<ShaderCompileResult>();
     ret->blob = blob;
     ret->error_string = error_string;

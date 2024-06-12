@@ -2,11 +2,10 @@
 #include <filesystem>
 
 #include "USTC_CG.h"
-#include "api.h"
 #include "slang.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class HD_USTC_CG_GL_API SlangShaderCompiler {
+class SlangShaderCompiler {
    public:
     static std::filesystem::path find_root(const std::filesystem::path& p);
 
@@ -16,7 +15,8 @@ class HD_USTC_CG_GL_API SlangShaderCompiler {
     static SlangResult addCUDAPrelude(slang::IGlobalSession* session);
 
     static SlangResult addOptiXHeaderInclude(SlangCompileRequest* slangRequest);
-    static SlangResult addOptiXSupportPreDefine(SlangCompileRequest* slangRequest);
+    static SlangResult addOptiXSupportPreDefine(
+        SlangCompileRequest* slangRequest);
     static SlangResult addOptiXSupport(SlangCompileRequest* slangRequest);
 #endif
 };
