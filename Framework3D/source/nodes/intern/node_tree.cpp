@@ -68,7 +68,6 @@ bool NodeTree::is_pin_linked(SocketID id) const
 Node* NodeTree::add_node(const char* idname)
 {
     auto node = std::make_unique<Node>(this, idname);
-    refresh_node(node.get());
     auto bare = node.get();
     nodes.push_back(std::move(node));
     return bare;
@@ -471,62 +470,8 @@ void NodeTree::refresh_node_socket(
     new_sockets.push_back(new_socket);
 }
 
-void NodeTree::refresh_node(Node* node)
-{
-    build_sockets_from_type_info(node);
-
-    auto out_date = [this](
-                        const std::vector<NodeSocket*>& olds,
-                        std::vector<NodeSocket*>& news) {
-        for (auto old : olds) {
-            if (std::find(news.begin(), news.end(), old) == news.end()) {
-                auto out_dated_socket = std::find_if(
-                    sockets.begin(), sockets.end(), [old](auto&& ptr) {
-                        return old == ptr.get();
-                    });
-                sockets.erase(out_dated_socket);
-            }
-        }
-    };
-    out_date(old_inputs, new_inputs);
-    out_date(old_outputs, new_outputs);
-
-    node->get_inputs() = new_inputs;
-    node->get_outputs() = new_outputs;
-}
-
 void NodeTree::build_sockets_from_type_info(Node* node)
 {
-    auto ntype = node->typeinfo;
-
-    assert(ntype->static_declaration);
-    auto& node_decl = *ntype->static_declaration;
-
-    auto& old_inputs = node->get_inputs();
-    auto& old_outputs = node->get_outputs();
-    std::vector<NodeSocket*> new_inputs;
-    std::vector<NodeSocket*> new_outputs;
-
-    for (const ItemDeclarationPtr& item_decl : node_decl.items) {
-        if (auto socket_decl =
-                dynamic_cast<const SocketDeclaration*>(item_decl.get())) {
-            if (socket_decl->in_out == PinKind::Input) {
-                refresh_node_socket(node, *socket_decl, old_inputs, new_inputs);
-            }
-            else {
-                refresh_node_socket(
-                    node, *socket_decl, old_outputs, new_outputs);
-            }
-        }
-
-        // TODO: Panels
-        // else if (
-        //     const PanelDeclaration* panel_decl =
-        //         dynamic_cast<const PanelDeclaration*>(item_decl.get())) {
-        //     refresh_node_panel(*panel_decl, old_panels, *new_panel);
-        //     ++new_panel;
-        // }
-    }
 }
 
 void NodeTree::try_fill_value_by_deserialization(Node* node)
@@ -589,20 +534,11 @@ void NodeTree::Deserialize(const std::string& str)
         auto id_name = node_json["id_name"].get<std::string>();
 
         auto node = std::make_unique<Node>(this, id, id_name.c_str());
+
         if (!node->valid())
             continue;
 
-        for (auto&& input_id : node_json["inputs"]) {
-            assert(find_pin(input_id.get<unsigned>()));
-            node->add_socket(
-                (find_pin(input_id.get<unsigned>())), PinKind::Input);
-        }
-
-        for (auto&& output_id : node_json["outputs"]) {
-            node->add_socket(
-                find_pin(output_id.get<unsigned>()), PinKind::Output);
-        }
-        refresh_node(node.get());
+        node->deserialize(node_json);
         nodes.push_back(std::move(node));
     }
 

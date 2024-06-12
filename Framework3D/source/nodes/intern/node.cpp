@@ -59,6 +59,7 @@ Node::Node(NodeTree* node_tree, const char* idname)
 {
     ID = tree_->UniqueID();
     valid_ = pre_init_node(idname);
+    refresh_node();
 }
 
 void Node::serialize(nlohmann::json& value)
@@ -116,6 +117,74 @@ size_t Node::find_socket_id(const char* identifier, PinKind in_out) const
     }
     assert(false);
     return -1;
+}
+
+void Node::refresh_node()
+{
+    auto ntype = typeinfo;
+
+    assert(ntype->static_declaration);
+    auto& node_decl = *ntype->static_declaration;
+
+    auto& old_inputs = get_inputs();
+    auto& old_outputs = get_outputs();
+    std::vector<NodeSocket*> new_inputs;
+    std::vector<NodeSocket*> new_outputs;
+
+    for (const ItemDeclarationPtr& item_decl : node_decl.items) {
+        if (auto socket_decl =
+                dynamic_cast<const SocketDeclaration*>(item_decl.get())) {
+            if (socket_decl->in_out == PinKind::Input) {
+                tree_->refresh_node_socket(
+                    this, *socket_decl, old_inputs, new_inputs);
+            }
+            else {
+                tree_->refresh_node_socket(
+                    this, *socket_decl, old_outputs, new_outputs);
+            }
+        }
+
+        // TODO: Panels
+        // else if (
+        //     const PanelDeclaration* panel_decl =
+        //         dynamic_cast<const PanelDeclaration*>(item_decl.get())) {
+        //     refresh_node_panel(*panel_decl, old_panels, *new_panel);
+        //     ++new_panel;
+        // }
+    }
+
+    auto out_date = [this](
+                        const std::vector<NodeSocket*>& olds,
+                        std::vector<NodeSocket*>& news) {
+        for (auto old : olds) {
+            if (std::find(news.begin(), news.end(), old) == news.end()) {
+                auto out_dated_socket = std::find_if(
+                    tree_->sockets.begin(),
+                    tree_->sockets.end(),
+                    [old](auto&& ptr) { return old == ptr.get(); });
+                tree_->sockets.erase(out_dated_socket);
+            }
+        }
+    };
+    out_date(old_inputs, new_inputs);
+    out_date(old_outputs, new_outputs);
+
+    get_inputs() = new_inputs;
+    get_outputs() = new_outputs;
+}
+
+void Node::deserialize(const nlohmann::json& node_json)
+{
+    for (auto&& input_id : node_json["inputs"]) {
+        assert(tree_->find_pin(input_id.get<unsigned>()));
+        add_socket(tree_->find_pin(input_id.get<unsigned>()), PinKind::Input);
+    }
+
+    for (auto&& output_id : node_json["outputs"]) {
+        add_socket(tree_->find_pin(output_id.get<unsigned>()), PinKind::Output);
+    }
+
+    refresh_node();
 }
 
 bool Node::pre_init_node(const char* idname)

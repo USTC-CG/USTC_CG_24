@@ -116,22 +116,28 @@ struct Node {
         return outputs;
     }
 
-    //[[nodiscard]] std::vector<NodeSocket*>& get_inputs()
-    //{
-    //    return inputs;
-    //}
+    [[nodiscard]] std::vector<NodeSocket*>& get_inputs()
+    {
+        return inputs;
+    }
 
-    //[[nodiscard]] std::vector<NodeSocket*>& get_outputs()
-    //{
-    //    return outputs;
-    //}
+    [[nodiscard]] std::vector<NodeSocket*>& get_outputs()
+    {
+        return outputs;
+    }
 
     bool valid()
     {
         return valid_;
     }
 
-   private:
+
+    void refresh_node();
+    // For this deserialization, we assume there are some sockets already present in the node tree
+    void deserialize(const nlohmann::json& node_json);
+
+private:
+
     bool pre_init_node(const char* idname);
 
     std::vector<NodeSocket*> inputs;

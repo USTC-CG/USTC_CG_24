@@ -86,17 +86,17 @@ class NodeTree {
         NodeSocket* node_socket,
         NodeSocket* node_socket1);
 
-   private:
-    void delete_socket(SocketID socketId);
-
-    void update_directly_linked_links_and_sockets();
-
     void refresh_node_socket(
         Node* node,
         const SocketDeclaration& socket_declaration,
         const std::vector<NodeSocket*>& old_sockets,
         std::vector<NodeSocket*>& new_sockets);
-    void refresh_node(Node* node);
+
+   private:
+    void delete_socket(SocketID socketId);
+
+    void update_directly_linked_links_and_sockets();
+
     void build_sockets_from_type_info(Node* node);
     void try_fill_value_by_deserialization(Node* node);
 
