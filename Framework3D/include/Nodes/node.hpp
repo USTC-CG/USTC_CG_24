@@ -92,16 +92,9 @@ struct Node {
     Node(NodeTree* node_tree, const char* idname);
 
     void serialize(nlohmann::json& value);
-
-    void add_socket(NodeSocket* socket, PinKind in_out)
-    {
-        if (in_out == PinKind::Input) {
-            inputs.push_back(socket);
-        }
-        else {
-            outputs.push_back(socket);
-        }
-    }
+    // During deserialization, we first deserialize all the sockets, then
+    // according the info of the node, we record the information.
+    void register_socket_to_node(NodeSocket* socket, PinKind in_out);
 
     NodeSocket* find_socket(const char* identifier, PinKind in_out) const;
     size_t find_socket_id(const char* identifier, PinKind in_out) const;
@@ -116,28 +109,30 @@ struct Node {
         return outputs;
     }
 
-    [[nodiscard]] std::vector<NodeSocket*>& get_inputs()
-    {
-        return inputs;
-    }
-
-    [[nodiscard]] std::vector<NodeSocket*>& get_outputs()
-    {
-        return outputs;
-    }
-
     bool valid()
     {
         return valid_;
     }
 
+    void generate_socket_group_based_on_declaration(
+        const SocketDeclaration& socket_declaration,
+        const std::vector<NodeSocket*>& old_sockets,
+        std::vector<NodeSocket*>& new_sockets);
 
-    void refresh_node();
-    // For this deserialization, we assume there are some sockets already present in the node tree
+    void remove_socket(NodeSocket* socket, PinKind kind);
+
+    // For this deserialization, we assume there are some sockets already
+    // present in the node tree.
     void deserialize(const nlohmann::json& node_json);
 
-private:
-
+   private:
+    void out_date_sockets(
+        const std::vector<NodeSocket*>& olds,
+        PinKind pin_kind);
+    // refresh_node serves for this purpose - The node always complies with the
+    // type description, while preserves the connection & id from the loaded
+    // result. So we only outdate a limited set of the sockets.
+    void refresh_node();
     bool pre_init_node(const char* idname);
 
     std::vector<NodeSocket*> inputs;

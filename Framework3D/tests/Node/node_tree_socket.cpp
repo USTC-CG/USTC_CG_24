@@ -23,7 +23,7 @@ TEST_P(NODE_TREE_SOCKET_TEST, add_socket)
     nlohmann::json value;
     node->serialize(value);
 
-    //node->add_socket(,PinKind::Input);
+    //node->register_socket(,PinKind::Input);
     std::cout << value;
 }
 

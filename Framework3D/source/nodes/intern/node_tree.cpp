@@ -440,44 +440,6 @@ void NodeTree::ensure_topology_cache()
         has_available_link_cycle);
 }
 
-void NodeTree::refresh_node_socket(
-    Node* node,
-    const SocketDeclaration& socket_declaration,
-    const std::vector<NodeSocket*>& old_sockets,
-    std::vector<NodeSocket*>& new_sockets)
-{
-    // TODO: This is a badly implemented zone. Refactor this.
-    NodeSocket* new_socket;
-    auto old_socket = std::find_if(
-        old_sockets.begin(),
-        old_sockets.end(),
-        [&socket_declaration](NodeSocket* socket) {
-            return std::string(socket->identifier) ==
-                       socket_declaration.identifier &&
-                   socket->in_out == socket_declaration.in_out &&
-                   socket->type_info->type == socket_declaration.type;
-        });
-    if (old_socket != old_sockets.end()) {
-        (*old_socket)->Node = node;
-        new_socket = *old_socket;
-        new_socket->type_info->type = socket_declaration.type;
-        socket_declaration.update_default_value(new_socket);
-    }
-    else {
-        new_socket = socket_declaration.build(this, node);
-        sockets.emplace_back(new_socket);
-    }
-    new_sockets.push_back(new_socket);
-}
-
-void NodeTree::build_sockets_from_type_info(Node* node)
-{
-}
-
-void NodeTree::try_fill_value_by_deserialization(Node* node)
-{
-}
-
 std::string NodeTree::Serialize()
 {
     nlohmann::json value;

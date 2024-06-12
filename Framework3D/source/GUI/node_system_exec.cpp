@@ -28,7 +28,8 @@ Node* NodeSystemExecution::create_node_menu()
 {
     Node* node = nullptr;
 
-    USTC_CG::logging("Create node system not implemented for this type.", Error);
+    USTC_CG::logging(
+        "Create node system not implemented for this type.", Error);
 
     return node;
 }
@@ -75,11 +76,15 @@ void NodeSystemExecution::trigger_refresh_topology()
 void NodeSystemExecution::show_debug_info()
 {
     ImGui::Text("Node count: %i", node_tree->nodes.size());
-    ImGui::Text("Socket count: %i", node_tree->sockets.size());
+    ImGui::Text("Socket count: %i", node_tree->socket_count());
     ImGui::Text("Link count: %i", node_tree->links.size());
     ImGui::Text("Topology left to right:");
-    for (size_t i = 0; i < node_tree->get_toposort_left_to_right().size(); i++) {
-        ImGui::Text("%i,%s", i, node_tree->get_toposort_left_to_right()[i]->typeinfo->ui_name);
+    for (size_t i = 0; i < node_tree->get_toposort_left_to_right().size();
+         i++) {
+        ImGui::Text(
+            "%i,%s",
+            i,
+            node_tree->get_toposort_left_to_right()[i]->typeinfo->ui_name);
     }
 
     if (node_tree->has_available_link_cycle) {
@@ -110,7 +115,8 @@ bool NodeSystemExecution::CanCreateLink(NodeSocket* a, NodeSocket* b)
     return node_tree->can_create_link(a, b);
 }
 
-Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry)
+Node* NodeSystemExecution::default_node_menu(
+    const std::map<std::string, NodeTypeInfo*>& registry)
 {
     Node* node = nullptr;
 
@@ -130,9 +136,13 @@ Node* NodeSystemExecution::default_node_menu(const std::map<std::string, NodeTyp
                     ImGui::Text("Output %i:", i);
                 }
                 ImGui::Indent();
-                ImGui::Text("directly_linked_links %i", socket->directly_linked_links.size());
+                ImGui::Text(
+                    "directly_linked_links %i",
+                    socket->directly_linked_links.size());
 
-                ImGui::Text("directly_linked_sockets %i", socket->directly_linked_sockets.size());
+                ImGui::Text(
+                    "directly_linked_sockets %i",
+                    socket->directly_linked_sockets.size());
                 ImGui::Unindent();
             };
 
@@ -193,12 +203,14 @@ void GeoNodeSystemExecution::try_execution()
         executor->prepare_tree(node_tree.get());
 
         for (auto&& node : node_tree->nodes) {
-            auto try_fill_info = [&node, this]<typename T>(const char* id_name, T& obj) {
+            auto try_fill_info = [&node, this]<typename T>(
+                                     const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
                     assert(node->get_outputs().size() == 1);
                     auto output_socket = node->get_outputs()[0];
                     entt::meta_any data = obj;
-                    executor->sync_node_from_external_storage(output_socket, data);
+                    executor->sync_node_from_external_storage(
+                        output_socket, data);
                 }
             };
             try_fill_info("geom_time_code", cached_last_frame_);
@@ -211,12 +223,14 @@ void GeoNodeSystemExecution::try_execution()
         bool has_time_advection = false;
 
         for (auto&& node : node_tree->nodes) {
-            auto try_fetch_info = [&node, this]<typename T>(const char* id_name, T& obj) {
+            auto try_fetch_info = [&node, this]<typename T>(
+                                      const char* id_name, T& obj) {
                 if (std::string(node->typeinfo->id_name) == id_name) {
                     assert(node->get_inputs().size() == 1);
                     auto output_socket = node->get_inputs()[0];
                     entt::meta_any data;
-                    executor->sync_node_to_external_storage(output_socket, data);
+                    executor->sync_node_to_external_storage(
+                        output_socket, data);
                     obj = data.cast<T>();
                     return true;
                 }
@@ -232,10 +246,12 @@ void GeoNodeSystemExecution::try_execution()
         if (has_time_advection) {
             if (cached_last_frame_ == 0) {  // Means this is the first frame.
                 cached_last_frame_ = std::numeric_limits<float>::epsilon();
-                time_code_to_render_ = cached_last_frame_;  // Avoid repeated running
+                time_code_to_render_ =
+                    cached_last_frame_;  // Avoid repeated running
             }
             else
-                cached_last_frame_ += time_advected * GlobalUsdStage::timeCodesPerSecond;
+                cached_last_frame_ +=
+                    time_advected * GlobalUsdStage::timeCodesPerSecond;
         }
         else {
             cached_last_frame_ = std::numeric_limits<float>::max();

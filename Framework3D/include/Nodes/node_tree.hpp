@@ -27,7 +27,6 @@ class NodeTree {
     }
 
     std::vector<std::unique_ptr<NodeLink>> links;
-    std::vector<std::unique_ptr<NodeSocket>> sockets;
     std::vector<std::unique_ptr<Node>> nodes;
     bool has_available_link_cycle;
 
@@ -85,20 +84,20 @@ class NodeTree {
     static bool can_create_convert_link(
         NodeSocket* node_socket,
         NodeSocket* node_socket1);
+    friend struct Node;
 
-    void refresh_node_socket(
-        Node* node,
-        const SocketDeclaration& socket_declaration,
-        const std::vector<NodeSocket*>& old_sockets,
-        std::vector<NodeSocket*>& new_sockets);
+    size_t socket_count() const
+    {
+        return sockets.size();
+    }
 
    private:
+    // No one directly edits these sockets.
+    std::vector<std::unique_ptr<NodeSocket>> sockets;
+
     void delete_socket(SocketID socketId);
 
     void update_directly_linked_links_and_sockets();
-
-    void build_sockets_from_type_info(Node* node);
-    void try_fill_value_by_deserialization(Node* node);
 
     // There is definitely better solution. However this is the most
     std::unordered_set<unsigned> used_ids;

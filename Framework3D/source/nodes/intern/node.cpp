@@ -81,6 +81,16 @@ void Node::serialize(nlohmann::json& value)
     }
 }
 
+void Node::register_socket_to_node(NodeSocket* socket, PinKind in_out)
+{
+    if (in_out == PinKind::Input) {
+        inputs.push_back(socket);
+    }
+    else {
+        outputs.push_back(socket);
+    }
+}
+
 NodeSocket* Node::find_socket(const char* identifier, PinKind in_out) const
 {
     const std::vector<NodeSocket*>* socket_group;
@@ -119,6 +129,73 @@ size_t Node::find_socket_id(const char* identifier, PinKind in_out) const
     return -1;
 }
 
+void Node::generate_socket_group_based_on_declaration(
+    const SocketDeclaration& socket_declaration,
+    const std::vector<NodeSocket*>& old_sockets,
+    std::vector<NodeSocket*>& new_sockets)
+{
+    // TODO: This is a badly implemented zone. Refactor this.
+    NodeSocket* new_socket;
+    auto old_socket = std::find_if(
+        old_sockets.begin(),
+        old_sockets.end(),
+        [&socket_declaration](NodeSocket* socket) {
+            return std::string(socket->identifier) ==
+                       socket_declaration.identifier &&
+                   socket->in_out == socket_declaration.in_out &&
+                   socket->type_info->type == socket_declaration.type;
+        });
+    if (old_socket != old_sockets.end()) {
+        (*old_socket)->Node = this;
+        new_socket = *old_socket;
+        new_socket->type_info->type = socket_declaration.type;
+        socket_declaration.update_default_value(new_socket);
+    }
+    else {
+        new_socket = socket_declaration.build(tree_, this);
+        tree_->sockets.emplace_back(new_socket);
+    }
+    new_sockets.push_back(new_socket);
+}
+
+void Node::remove_socket(NodeSocket* socket, PinKind kind)
+{
+    switch (kind) {
+        case PinKind::Output:
+            if (std::find(outputs.begin(), outputs.end(), socket) ==
+                outputs.end()) {
+                // If the sockets is not
+                auto out_dated_socket = std::find_if(
+                    tree_->sockets.begin(),
+                    tree_->sockets.end(),
+                    [socket](auto&& ptr) { return socket == ptr.get(); });
+                tree_->sockets.erase(out_dated_socket);
+            }
+            break;
+        case PinKind::Input:
+            if (std::find(inputs.begin(), inputs.end(), socket) ==
+                inputs.end()) {
+                // If the sockets is not
+                auto out_dated_socket = std::find_if(
+                    tree_->sockets.begin(),
+                    tree_->sockets.end(),
+                    [socket](auto&& ptr) { return socket == ptr.get(); });
+                tree_->sockets.erase(out_dated_socket);
+            }
+            break;
+        default:;
+    }
+}
+
+void Node::out_date_sockets(
+    const std::vector<NodeSocket*>& olds,
+    PinKind pin_kind)
+{
+    for (auto old : olds) {
+        remove_socket(old, pin_kind);
+    }
+}
+
 void Node::refresh_node()
 {
     auto ntype = typeinfo;
@@ -135,15 +212,14 @@ void Node::refresh_node()
         if (auto socket_decl =
                 dynamic_cast<const SocketDeclaration*>(item_decl.get())) {
             if (socket_decl->in_out == PinKind::Input) {
-                tree_->refresh_node_socket(
-                    this, *socket_decl, old_inputs, new_inputs);
+                generate_socket_group_based_on_declaration(
+                    *socket_decl, old_inputs, new_inputs);
             }
             else {
-                tree_->refresh_node_socket(
-                    this, *socket_decl, old_outputs, new_outputs);
+                generate_socket_group_based_on_declaration(
+                    *socket_decl, old_outputs, new_outputs);
             }
         }
-
         // TODO: Panels
         // else if (
         //     const PanelDeclaration* panel_decl =
@@ -152,36 +228,24 @@ void Node::refresh_node()
         //     ++new_panel;
         // }
     }
+    inputs = new_inputs;
+    outputs = new_outputs;
 
-    auto out_date = [this](
-                        const std::vector<NodeSocket*>& olds,
-                        std::vector<NodeSocket*>& news) {
-        for (auto old : olds) {
-            if (std::find(news.begin(), news.end(), old) == news.end()) {
-                auto out_dated_socket = std::find_if(
-                    tree_->sockets.begin(),
-                    tree_->sockets.end(),
-                    [old](auto&& ptr) { return old == ptr.get(); });
-                tree_->sockets.erase(out_dated_socket);
-            }
-        }
-    };
-    out_date(old_inputs, new_inputs);
-    out_date(old_outputs, new_outputs);
-
-    get_inputs() = new_inputs;
-    get_outputs() = new_outputs;
+    out_date_sockets(old_inputs, PinKind::Input);
+    out_date_sockets(old_outputs, PinKind::Output);
 }
 
 void Node::deserialize(const nlohmann::json& node_json)
 {
     for (auto&& input_id : node_json["inputs"]) {
         assert(tree_->find_pin(input_id.get<unsigned>()));
-        add_socket(tree_->find_pin(input_id.get<unsigned>()), PinKind::Input);
+        register_socket_to_node(
+            tree_->find_pin(input_id.get<unsigned>()), PinKind::Input);
     }
 
     for (auto&& output_id : node_json["outputs"]) {
-        add_socket(tree_->find_pin(output_id.get<unsigned>()), PinKind::Output);
+        register_socket_to_node(
+            tree_->find_pin(output_id.get<unsigned>()), PinKind::Output);
     }
 
     refresh_node();
