@@ -7,6 +7,7 @@
 #include "pxr/base/gf/rect2i.h"
 #include "pxr/imaging/hd/camera.h"
 #include "pxr/imaging/hdx/renderSetupTask.h"
+#include "pxr/base/gf/matrix4d.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
 class Hd_USTC_CG_Camera : public HdCamera

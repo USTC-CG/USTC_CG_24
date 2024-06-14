@@ -93,6 +93,7 @@ class Hd_USTC_CG_RenderDelegate final : public HdRenderDelegate {
     static const TfTokenVector SUPPORTED_SPRIM_TYPES;
     static const TfTokenVector SUPPORTED_BPRIM_TYPES;
 
+    void CreateD3DDevice();
     void _Initialize();
 
     std::atomic<int> _sceneVersion;

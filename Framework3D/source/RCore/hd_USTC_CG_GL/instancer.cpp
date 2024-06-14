@@ -35,12 +35,14 @@
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 using namespace pxr;
-HdEmbreeInstancer::HdEmbreeInstancer(HdSceneDelegate* delegate, const SdfPath& id)
+Hd_USTC_CG_GL_Instancer::Hd_USTC_CG_GL_Instancer(
+    HdSceneDelegate* delegate,
+    const SdfPath& id)
     : HdInstancer(delegate, id)
 {
 }
 
-HdEmbreeInstancer::~HdEmbreeInstancer()
+Hd_USTC_CG_GL_Instancer::~Hd_USTC_CG_GL_Instancer()
 {
     TF_FOR_ALL(it, _primvarMap)
     {
@@ -49,7 +51,7 @@ HdEmbreeInstancer::~HdEmbreeInstancer()
     _primvarMap.clear();
 }
 
-void HdEmbreeInstancer::Sync(
+void Hd_USTC_CG_GL_Instancer::Sync(
     HdSceneDelegate* delegate,
     HdRenderParam* renderParam,
     HdDirtyBits* dirtyBits)
@@ -61,7 +63,9 @@ void HdEmbreeInstancer::Sync(
     }
 }
 
-void HdEmbreeInstancer::_SyncPrimvars(HdSceneDelegate* delegate, HdDirtyBits dirtyBits)
+void Hd_USTC_CG_GL_Instancer::_SyncPrimvars(
+    HdSceneDelegate* delegate,
+    HdDirtyBits dirtyBits)
 {
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
@@ -84,7 +88,8 @@ void HdEmbreeInstancer::_SyncPrimvars(HdSceneDelegate* delegate, HdDirtyBits dir
     }
 }
 
-VtMatrix4dArray HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prototypeId)
+VtMatrix4dArray Hd_USTC_CG_GL_Instancer::ComputeInstanceTransforms(
+    const SdfPath& prototypeId)
 {
     HD_TRACE_FUNCTION();
     HF_MALLOC_TAG_FUNCTION();
@@ -99,20 +104,22 @@ VtMatrix4dArray HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prot
     // }
     // If any transform isn't provided, it's assumed to be the identity.
 
-    GfMatrix4d instancerTransform = GetDelegate()->GetInstancerTransform(GetId());
-    VtIntArray instanceIndices = GetDelegate()->GetInstanceIndices(GetId(), prototypeId);
+    GfMatrix4d instancerTransform =
+        GetDelegate()->GetInstancerTransform(GetId());
+    VtIntArray instanceIndices =
+        GetDelegate()->GetInstanceIndices(GetId(), prototypeId);
 
     VtMatrix4dArray transforms(instanceIndices.size());
     for (size_t i = 0; i < instanceIndices.size(); ++i) {
         transforms[i] = instancerTransform;
     }
 
-    if (GetParentId().IsEmpty())
-    {
+    if (GetParentId().IsEmpty()) {
         return transforms;
     }
 
-    HdInstancer* parentInstancer = GetDelegate()->GetRenderIndex().GetInstancer(GetParentId());
+    HdInstancer* parentInstancer =
+        GetDelegate()->GetRenderIndex().GetInstancer(GetParentId());
     if (!TF_VERIFY(parentInstancer)) {
         return transforms;
     }
@@ -123,12 +130,14 @@ VtMatrix4dArray HdEmbreeInstancer::ComputeInstanceTransforms(const SdfPath& prot
     //     parentXf * xf
     // }
     VtMatrix4dArray parentTransforms =
-        static_cast<HdEmbreeInstancer*>(parentInstancer)->ComputeInstanceTransforms(GetId());
+        static_cast<Hd_USTC_CG_GL_Instancer*>(parentInstancer)
+            ->ComputeInstanceTransforms(GetId());
 
     VtMatrix4dArray final(parentTransforms.size() * transforms.size());
     for (size_t i = 0; i < parentTransforms.size(); ++i) {
         for (size_t j = 0; j < transforms.size(); ++j) {
-            final[i * transforms.size() + j] = transforms[j] * parentTransforms[i];
+            final[i * transforms.size() + j] =
+                transforms[j] * parentTransforms[i];
         }
     }
     return final;

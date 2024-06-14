@@ -33,22 +33,31 @@ class ResourceAllocator {
 #define PAYLOAD_NAME(RESOURCE) RESOURCE##CachePayload
 #define CACHE_SIZE(RESOURCE)   m##RESOURCE##CacheSize
 
-#define JUDGE_RESOURCE_DYNAMIC(RSC) if (entt::resolve<RSC##Handle>() == handle.type())
-#define JUDGE_RESOURCE(RSC)         if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
+#define JUDGE_RESOURCE_DYNAMIC(RSC) \
+    if (entt::resolve<RSC##Handle>() == handle.type())
+#define JUDGE_RESOURCE(RSC) if constexpr (std::is_same_v<RSC##Handle, RESOURCE>)
 
-#define RESOLVE_DESTROY_DYNAMIC(RESOURCE)                                                  \
-    RESOURCE##Handle h;                                                                    \
-    h = handle.cast<RESOURCE##Handle>();                                                   \
-    if (h) {                                                                               \
-        PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 };                                      \
-        resolveCacheDestroy(                                                               \
-            h, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE)); \
+#define RESOLVE_DESTROY_DYNAMIC(RESOURCE)             \
+    RESOURCE##Handle h;                               \
+    h = handle.cast<RESOURCE##Handle>();              \
+    if (h) {                                          \
+        PAYLOAD_NAME(RESOURCE) payload{ h, mAge, 0 }; \
+        resolveCacheDestroy(                          \
+            h,                                        \
+            CACHE_SIZE(RESOURCE),                     \
+            payload,                                  \
+            CACHE_NAME(RESOURCE),                     \
+            INUSE_NAME(RESOURCE));                    \
     }
 
 #define RESOLVE_DESTROY(RESOURCE)                      \
     PAYLOAD_NAME(RESOURCE) payload{ handle, mAge, 0 }; \
     resolveCacheDestroy(                               \
-        handle, CACHE_SIZE(RESOURCE), payload, CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE));
+        handle,                                        \
+        CACHE_SIZE(RESOURCE),                          \
+        payload,                                       \
+        CACHE_NAME(RESOURCE),                          \
+        INUSE_NAME(RESOURCE));
 
    public:
     explicit ResourceAllocator() noexcept;
@@ -65,11 +74,13 @@ class ResourceAllocator {
         }
     }
 
-#define CLEAR_CACHE(RESOURCE)                                                              \
-    assert(!INUSE_NAME(RESOURCE).size());                                                  \
-    for (auto it = CACHE_NAME(RESOURCE).begin(); it != CACHE_NAME(RESOURCE).end(); it++) { \
-        it->second.handle = nullptr;                                                       \
-    }                                                                                      \
+#define CLEAR_CACHE(RESOURCE)                    \
+    assert(!INUSE_NAME(RESOURCE).size());        \
+    for (auto it = CACHE_NAME(RESOURCE).begin(); \
+         it != CACHE_NAME(RESOURCE).end();       \
+         it++) {                                 \
+        it->second.handle = nullptr;             \
+    }                                            \
     CACHE_NAME(RESOURCE).clear();
 
     void terminate() noexcept
@@ -86,7 +97,8 @@ class ResourceAllocator {
     void destroy(entt::meta_any handle) noexcept
     {
         if constexpr (mEnabled) {
-            // If code runs here, It means some of your output resource is not created;
+            // If code runs here, It means some of your output resource is not
+            // created;
             MACRO_MAP(FOREACH_DESTROY_DYNAMIC, RESOURCE_LIST)
         }
         else {
@@ -120,7 +132,12 @@ class ResourceAllocator {
 
 #define RESOLVE_CREATE(RESOURCE) \
     resolveCacheCreate(          \
-        handle, desc, CACHE_SIZE(RESOURCE), CACHE_NAME(RESOURCE), INUSE_NAME(RESOURCE), rest...);
+        handle,                  \
+        desc,                    \
+        CACHE_SIZE(RESOURCE),    \
+        CACHE_NAME(RESOURCE),    \
+        INUSE_NAME(RESOURCE),    \
+        rest...);
 
 #define FOREACH_CREATE(RESOURCE) \
     JUDGE_RESOURCE(RESOURCE)     \
@@ -150,24 +167,27 @@ class ResourceAllocator {
     }
 #endif
 
-#define DEFINEContainer(RESOURCE)                                                                  \
-    struct PAYLOAD_NAME(RESOURCE) {                                                                \
-        RESOURCE##Handle handle;                                                                   \
-        size_t age = 0;                                                                            \
-        uint32_t size = 0;                                                                         \
-    };                                                                                             \
-    using RESOURCE##CacheContainer = AssociativeContainer<RESOURCE##Desc, RESOURCE##CachePayload>; \
-    using RESOURCE##InUseContainer = AssociativeContainer<RESOURCE##Handle, RESOURCE##Desc>;       \
-    RESOURCE##CacheContainer CACHE_NAME(RESOURCE);                                                 \
-    RESOURCE##InUseContainer INUSE_NAME(RESOURCE);                                                 \
+#define DEFINEContainer(RESOURCE)                                     \
+    struct PAYLOAD_NAME(RESOURCE) {                                   \
+        RESOURCE##Handle handle;                                      \
+        size_t age = 0;                                               \
+        uint32_t size = 0;                                            \
+    };                                                                \
+    using RESOURCE##CacheContainer =                                  \
+        AssociativeContainer<RESOURCE##Desc, RESOURCE##CachePayload>; \
+    using RESOURCE##InUseContainer =                                  \
+        AssociativeContainer<RESOURCE##Handle, RESOURCE##Desc>;       \
+    RESOURCE##CacheContainer CACHE_NAME(RESOURCE);                    \
+    RESOURCE##InUseContainer INUSE_NAME(RESOURCE);                    \
     uint32_t CACHE_SIZE(RESOURCE) = 0;
 
-#define PURGE(RESOURCE)                                                                     \
-    RESOURCE##CacheContainer::iterator purge(const RESOURCE##CacheContainer::iterator& pos) \
-    {                                                                                       \
-        pos->second.handle = nullptr;                                                       \
-        m##RESOURCE##CacheSize -= pos->second.size;                                         \
-        return CACHE_NAME(RESOURCE).erase(pos);                                             \
+#define PURGE(RESOURCE)                                \
+    RESOURCE##CacheContainer::iterator purge(          \
+        const RESOURCE##CacheContainer::iterator& pos) \
+    {                                                  \
+        pos->second.handle = nullptr;                  \
+        m##RESOURCE##CacheSize -= pos->second.size;    \
+        return CACHE_NAME(RESOURCE).erase(pos);        \
     }
 
    private:
@@ -203,7 +223,8 @@ class ResourceAllocator {
     {
         auto it = cache.find(desc);
         if (it != cache.end()) {
-            // we do, move the entry to the in-use list, and remove from the cache
+            // we do, move the entry to the in-use list, and remove from the
+            // cache
             handle = it->second.handle;
             cacheSize -= it->second.size;
             cache.erase(it);
@@ -230,7 +251,9 @@ class ResourceAllocator {
     {
         // find the texture in the in-use list (it must be there!)
         auto it = inUseCache.find(handle);
-        assert(it != inUseCache.end());
+        if (it == inUseCache.end()) {
+            return;
+        }
 
         // move it to the cache
         auto key = it->second;
@@ -265,14 +288,21 @@ class ResourceAllocator {
 
         if ((cacheSize >= CACHE_CAPACITY)) {
             using ContainerType = std::remove_cvref_t<decltype(cache_in)>;
-            using Vector = std::vector<
-                std::pair<typename ContainerType::key_type, typename ContainerType::value_type>>;
+            using Vector = std::vector<std::pair<
+                typename ContainerType::key_type,
+                typename ContainerType::value_type>>;
             auto cache = Vector();
-            std::copy(cache_in.begin(), cache_in.end(), std::back_insert_iterator<Vector>(cache));
+            std::copy(
+                cache_in.begin(),
+                cache_in.end(),
+                std::back_insert_iterator<Vector>(cache));
 
-            std::sort(cache.begin(), cache.end(), [](const auto& lhs, const auto& rhs) {
-                return lhs.second.age < rhs.second.age;
-            });
+            std::sort(
+                cache.begin(),
+                cache.end(),
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs.second.age < rhs.second.age;
+                });
 
             auto curr = cache.begin();
             while (cacheSize >= CACHE_CAPACITY) {
@@ -303,9 +333,10 @@ class ResourceAllocator {
 
     template<typename Key, typename Value, typename Hasher = Hasher<Key>>
     class AssociativeContainer {
-        // We use a std::vector instead of a std::multimap because we don't expect many items
-        // in the cache and std::multimap generates tons of code. std::multimap starts getting
-        // significantly better around 1000 items.
+        // We use a std::vector instead of a std::multimap because we don't
+        // expect many items in the cache and std::multimap generates tons of
+        // code. std::multimap starts getting significantly better around 1000
+        // items.
         using Container = std::vector<std::pair<Key, Value>>;
         Container mContainer;
 
@@ -371,7 +402,8 @@ ResourceAllocator::AssociativeContainer<K, V, H>::AssociativeContainer()
 
 template<typename K, typename V, typename H>
 
-ResourceAllocator::AssociativeContainer<K, V, H>::~AssociativeContainer() noexcept
+ResourceAllocator::AssociativeContainer<K, V, H>::
+    ~AssociativeContainer() noexcept
 {
 }
 
@@ -384,7 +416,8 @@ ResourceAllocator::AssociativeContainer<K, V, H>::erase(iterator it)
 
 template<typename K, typename V, typename H>
 typename ResourceAllocator::AssociativeContainer<K, V, H>::const_iterator
-ResourceAllocator::AssociativeContainer<K, V, H>::find(const key_type& key) const
+ResourceAllocator::AssociativeContainer<K, V, H>::find(
+    const key_type& key) const
 {
     return const_cast<AssociativeContainer*>(this)->find(key);
 }
@@ -394,7 +427,9 @@ typename ResourceAllocator::AssociativeContainer<K, V, H>::iterator
 ResourceAllocator::AssociativeContainer<K, V, H>::find(const key_type& key)
 {
     return std::find_if(
-        mContainer.begin(), mContainer.end(), [&key](const auto& v) { return v.first == key; });
+        mContainer.begin(), mContainer.end(), [&key](const auto& v) {
+            return v.first == key;
+        });
 }
 
 template<typename K, typename V, typename H>

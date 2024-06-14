@@ -24,6 +24,7 @@
 #ifndef EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 #define EXTRAS_IMAGING_EXAMPLES_HD_TINY_MESH_H
 
+#include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "pxr/base/gf/matrix4f.h"
 #include "pxr/imaging/garch/glApi.h"
@@ -32,6 +33,7 @@
 #include "pxr/pxr.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+class Hd_USTC_CG_RenderParam;
 using namespace pxr;
 
 class Hd_USTC_CG_Mesh final : public HdMesh {
@@ -49,35 +51,54 @@ class Hd_USTC_CG_Mesh final : public HdMesh {
         HdDirtyBits* dirtyBits,
         const TfToken& reprToken) override;
 
-    void RefreshGLBuffer();
-    void RefreshTexcoordGLBuffer(TfToken texcoord_name);
-
     void Finalize(HdRenderParam* renderParam) override;
-    GLuint VAO = 0;
-    GLuint VBO = 0;
-    GLuint EBO = 0;
-    GLuint normalBuffer = 0;
-    GLuint texcoords = 0;
+
     GfMatrix4f transform;
-    VtVec3iArray triangulatedIndices;
+    VtArray<GfVec3i> triangulatedIndices;
     VtIntArray trianglePrimitiveParams;
     VtArray<GfVec3f> points;
     VtVec3fArray computedNormals;
     static constexpr GLuint normalLocation = 1;
     static constexpr GLuint texcoordLocation = 2;
 
+    nvrhi::rt::AccelStructHandle BLAS;
+    BufferHandle vertexBuffer;
+    BufferHandle indexBuffer;
+
+#ifdef USTC_CG_BACKEND_OPENGL
+
+    void RefreshGLBuffer();
+    void RefreshTexcoordGLBuffer(TfToken texcoord_name);
+
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
+    GLuint normalBuffer = 0;
+    GLuint texcoords = 0;
+#endif
+
    protected:
+    void updateBLAS(Hd_USTC_CG_RenderParam* render_param);
+    void updateTLAS(
+        Hd_USTC_CG_RenderParam* render_param,
+        HdSceneDelegate* sceneDelegate,
+        HdDirtyBits* dirtyBits);
+
     uint32_t _dirtyBits;
     bool _texcoordsClean;
 
     void _InitRepr(const TfToken& reprToken, HdDirtyBits* dirtyBits) override;
-    void _SetMaterialId(HdSceneDelegate* scene_delegate, Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
+    void _SetMaterialId(
+        HdSceneDelegate* scene_delegate,
+        Hd_USTC_CG_Mesh* hd_ustc_cg_mesh);
 
     HdDirtyBits _PropagateDirtyBits(HdDirtyBits bits) const override;
     TfTokenVector _UpdateComputedPrimvarSources(
         HdSceneDelegate* sceneDelegate,
         HdDirtyBits dirtyBits);
-    void _UpdatePrimvarSources(HdSceneDelegate* sceneDelegate, HdDirtyBits dirtyBits);
+    void _UpdatePrimvarSources(
+        HdSceneDelegate* sceneDelegate,
+        HdDirtyBits dirtyBits);
 
     // This class does not support copying.
     Hd_USTC_CG_Mesh(const Hd_USTC_CG_Mesh&) = delete;

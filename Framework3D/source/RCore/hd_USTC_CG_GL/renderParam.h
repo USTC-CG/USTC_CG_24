@@ -29,6 +29,7 @@
 #include "pxr/imaging/hd/renderDelegate.h"
 #include "pxr/imaging/hd/renderThread.h"
 #include "pxr/pxr.h"
+#include "renderTLAS.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class Hd_USTC_CG_Material;
@@ -52,15 +53,21 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
         pxr::VtArray<Hd_USTC_CG_Light *> *lights,
         pxr::VtArray<Hd_USTC_CG_Camera *> *cameras,
         pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes,
-        pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials)
+        pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials,
+        nvrhi::IDevice *device)
         : _renderThread(renderThread),
           _sceneVersion(sceneVersion),
           lights(lights),
           cameras(cameras),
           meshes(meshes),
-          materials(materials)
+          materials(materials),
+          context(nullptr),
+          nvrhi_device(device),
+          TLAS(new Hd_USTC_CG_GL_RenderTLAS(device))
     {
+        m_command_list = nvrhi_device->createCommandList();
     }
+
     HdRenderThread *_renderThread = nullptr;
 
     NodeTreeExecutor *executor;
@@ -69,10 +76,16 @@ class Hd_USTC_CG_RenderParam final : public HdRenderParam {
     pxr::VtArray<Hd_USTC_CG_Camera *> *cameras = nullptr;
     pxr::VtArray<Hd_USTC_CG_Mesh *> *meshes = nullptr;
     pxr::TfHashMap<SdfPath, Hd_USTC_CG_Material *, TfHash> *materials = nullptr;
-    entt::meta_ctx* context;
-    nvrhi::IDevice *nvrhi_device;
 
-private:
+    entt::meta_ctx *context;
+    nvrhi::IDevice *nvrhi_device;
+    nvrhi::CommandListHandle m_command_list;
+
+    std::mutex command_list_mutex;
+
+    std::unique_ptr<Hd_USTC_CG_GL_RenderTLAS> TLAS;
+
+   private:
     /// A handle to the global render thread.
     /// A version counter for edits to _scene.
     std::atomic<int> *_sceneVersion;

@@ -5,6 +5,7 @@ set(CPP_FILES
 	hd_USTC_CG_GL/light.cpp
 	hd_USTC_CG_GL/material.cpp
 	hd_USTC_CG_GL/camera.cpp
+	hd_USTC_CG_GL/renderTLAS.cpp
 	hd_USTC_CG_GL/geometries/mesh.cpp
 )
 

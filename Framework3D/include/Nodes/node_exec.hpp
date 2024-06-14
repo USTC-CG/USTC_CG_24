@@ -61,10 +61,28 @@ struct ExeParams {
 
     friend class EagerNodeTreeExecutor;
 
+    template<typename T>
+    friend T& force_get_output_to_execute(
+        ExeParams& params,
+        const char* identifier);
+
    private:
     std::vector<entt::meta_any*> inputs_;
     std::vector<entt::meta_any*> outputs_;
 };
+
+template<typename T>
+T& force_get_output_to_execute(ExeParams& params, const char* identifier)
+{
+    if constexpr (std::is_same_v<T, entt::meta_any>) {
+        const int index = params.get_output_index(identifier);
+        return *params.outputs_[index];
+    }
+    else {
+        const int index = params.get_output_index(identifier);
+        return params.outputs_[index]->cast<T&>();
+    }
+}
 
 // This executes a tree. The execution strategy is left to its children.
 struct NodeTreeExecutor {
@@ -79,11 +97,15 @@ struct NodeTreeExecutor {
     virtual void finalize(NodeTree* tree)
     {
     }
-    virtual void sync_node_from_external_storage(NodeSocket* socket, const entt::meta_any& data)
+    virtual void sync_node_from_external_storage(
+        NodeSocket* socket,
+        const entt::meta_any& data)
     {
     }
 
-    virtual void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data)
+    virtual void sync_node_to_external_storage(
+        NodeSocket* socket,
+        entt::meta_any& data)
     {
     }
     void execute(NodeTree* tree)

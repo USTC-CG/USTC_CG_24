@@ -49,6 +49,7 @@ pxr_plugin(${PXR_PACKAGE}
         rendererPlugin
         renderPass
         renderBuffer
+        renderTLAS
         config
         sampler
         instancer

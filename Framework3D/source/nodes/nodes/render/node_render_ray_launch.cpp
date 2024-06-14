@@ -6,17 +6,15 @@
 #include "nvrhi/utils.h"
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
+#include "utils/cam_to_view_contants.h"
 
 namespace USTC_CG::node_scene_ray_launch {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::AccelStruct>("Accel Struct");
     b.add_input<decl::Camera>("Camera");
-    b.add_output<decl::Texture>("Result");
+    b.add_output<decl::Texture>("Barycentric");
 }
-
-float triangle_corner[9] = { -0.6, -0.3, 0, 0.6, -0.3, 0, 0, 0.6, 0 };
-
-unsigned indices[3] = { 0, 1, 2 };
 
 static void node_exec(ExeParams params)
 {
@@ -34,65 +32,7 @@ static void node_exec(ExeParams params)
 
     auto result_texture = resource_allocator.create(output_desc);
 
-    // 1. Build the acceleration struct. You should do this in the 'Hd_USTC_CG_Mesh' sync, and don't
-    // try to use resource_allocator. Use things like device->create... Directly. Note that there
-    // are BLAS and TLAS. Get familiar with these ideas first.
-    BufferDesc buffer_desc;
-
-    buffer_desc.byteSize = 3 * 3 * sizeof(float);
-    buffer_desc.format = nvrhi::Format::RGB32_FLOAT;
-    buffer_desc.isAccelStructBuildInput = true;
-    buffer_desc.cpuAccess = nvrhi::CpuAccessMode::Write;
-    auto vertexBuffer = resource_allocator.create(buffer_desc);
-
-    buffer_desc.byteSize = 3 * sizeof(unsigned);
-    buffer_desc.format = nvrhi::Format ::R32_UINT;
-    auto indexBuffer = resource_allocator.create(buffer_desc);
-
-    auto buffer = resource_allocator.device->mapBuffer(vertexBuffer, nvrhi::CpuAccessMode::Write);
-    memcpy(buffer, triangle_corner, 3 * 3 * sizeof(float));
-    resource_allocator.device->unmapBuffer(vertexBuffer);
-
-    buffer = resource_allocator.device->mapBuffer(indexBuffer, nvrhi::CpuAccessMode::Write);
-    memcpy(buffer, indices, 3 * sizeof(unsigned));
-    resource_allocator.device->unmapBuffer(indexBuffer);
-
-    nvrhi::rt::AccelStructDesc blas_desc;
-    nvrhi::rt::GeometryDesc geometry_desc;
-    geometry_desc.geometryType = nvrhi::rt::GeometryType::Triangles;
-    nvrhi::rt::GeometryTriangles triangles;
-    triangles.setVertexBuffer(vertexBuffer)
-        .setIndexBuffer(indexBuffer)
-        .setIndexCount(3)
-        .setVertexCount(3)
-        .setVertexStride(3 * sizeof(float))
-        .setVertexFormat(nvrhi::Format::RGB32_FLOAT)
-        .setIndexFormat(nvrhi::Format::R32_UINT);
-    geometry_desc.setTriangles(triangles);
-    blas_desc.addBottomLevelGeometry(geometry_desc);
-    blas_desc.isTopLevel = false;
-    AccelStructHandle blas = resource_allocator.create(blas_desc);
-
-    nvrhi::rt::AccelStructDesc tlasDesc;
-    tlasDesc.isTopLevel = true;
-    tlasDesc.topLevelMaxInstances = 1;
-
-    auto m_TopLevelAS = resource_allocator.create(tlasDesc);
-
-    nvrhi::rt::InstanceDesc instanceDesc;
-    instanceDesc.bottomLevelAS = blas;
-    instanceDesc.instanceMask = 1;
-    instanceDesc.flags = nvrhi::rt::InstanceFlags::TriangleFrontCounterclockwise;
-    float transform[12] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
-    memcpy(instanceDesc.transform, &transform, sizeof(transform));
-
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
-    m_CommandList->open();
-    nvrhi::utils::BuildBottomLevelAccelStruct(m_CommandList, blas, blas_desc);
-    m_CommandList->buildTopLevelAccelStruct(m_TopLevelAS, &instanceDesc, 1);
-
-    m_CommandList->close();
-    resource_allocator.device->executeCommandList(m_CommandList);
 
     // 2. Prepare the shader
 
@@ -105,38 +45,48 @@ static void node_exec(ExeParams params)
 
     auto raytrace_compiled = resource_allocator.create(shader_compile_desc);
 
-    ShaderDesc shader_desc;
-    shader_desc.entryName = "RayGen";
-    shader_desc.shaderType = nvrhi::ShaderType::RayGeneration;
-    shader_desc.debugName =
-        std::to_string(reinterpret_cast<long long>(raytrace_compiled->getBufferPointer()));
-
-    if (raytrace_compiled->getBufferSize()) {
+    if (raytrace_compiled->get_error_string().empty()) {
+        ShaderDesc shader_desc;
+        shader_desc.entryName = "RayGen";
+        shader_desc.shaderType = nvrhi::ShaderType::RayGeneration;
+        shader_desc.debugName = std::to_string(
+            reinterpret_cast<long long>(raytrace_compiled->getBufferPointer()));
         auto raygen_shader = resource_allocator.create(
-            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
+            shader_desc,
+            raytrace_compiled->getBufferPointer(),
+            raytrace_compiled->getBufferSize());
 
         shader_desc.entryName = "ClosestHit";
         shader_desc.shaderType = nvrhi::ShaderType::ClosestHit;
         auto chs_shader = resource_allocator.create(
-            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
+            shader_desc,
+            raytrace_compiled->getBufferPointer(),
+            raytrace_compiled->getBufferSize());
 
         shader_desc.entryName = "Miss";
         shader_desc.shaderType = nvrhi::ShaderType::Miss;
         auto miss_shader = resource_allocator.create(
-            shader_desc, raytrace_compiled->getBufferPointer(), raytrace_compiled->getBufferSize());
+            shader_desc,
+            raytrace_compiled->getBufferPointer(),
+            raytrace_compiled->getBufferSize());
 
         // 3. Prepare the hitgroup and pipeline
 
         nvrhi::BindingLayoutDesc globalBindingLayoutDesc;
         globalBindingLayoutDesc.visibility = nvrhi::ShaderType::All;
-        globalBindingLayoutDesc.bindings = { { 0, nvrhi::ResourceType::RayTracingAccelStruct },
-                                             { 0, nvrhi::ResourceType::Texture_UAV } };
-        auto globalBindingLayout = resource_allocator.create(globalBindingLayoutDesc);
+        globalBindingLayoutDesc.bindings = {
+            { 0, nvrhi::ResourceType::ConstantBuffer },
+            { 0, nvrhi::ResourceType::RayTracingAccelStruct },
+            { 0, nvrhi::ResourceType::Texture_UAV }
+        };
+        auto globalBindingLayout =
+            resource_allocator.create(globalBindingLayoutDesc);
 
         nvrhi::rt::PipelineDesc pipeline_desc;
         pipeline_desc.maxPayloadSize = 4 * sizeof(float);
         pipeline_desc.globalBindingLayouts = { globalBindingLayout };
-        pipeline_desc.shaders = { { "", raygen_shader, nullptr }, { "", miss_shader, nullptr } };
+        pipeline_desc.shaders = { { "", raygen_shader, nullptr },
+                                  { "", miss_shader, nullptr } };
 
         pipeline_desc.hitGroups = { {
             "HitGroup",
@@ -146,23 +96,39 @@ static void node_exec(ExeParams params)
             nullptr,  // bindingLayout
             false     // isProceduralPrimitive
         } };
-
+        auto m_TopLevelAS = params.get_input<AccelStructHandle>("Accel Struct");
         auto raytracing_pipeline = resource_allocator.create(pipeline_desc);
         BindingSetDesc binding_set_desc;
+
+        auto constant_buffer = resource_allocator.create(
+            BufferDesc{ .byteSize = sizeof(PlanarViewConstants),
+                        .debugName = "constantBuffer",
+                        .isConstantBuffer = true,
+                        .initialState = nvrhi::ResourceStates::ConstantBuffer,
+                        .cpuAccess = nvrhi::CpuAccessMode::Write });
+
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
+            nvrhi::BindingSetItem::ConstantBuffer(0, constant_buffer.Get()),
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
             nvrhi::BindingSetItem::Texture_UAV(0, result_texture.Get())
         };
-        auto binding_set = resource_allocator.create(binding_set_desc, globalBindingLayout.Get());
+        auto binding_set = resource_allocator.create(
+            binding_set_desc, globalBindingLayout.Get());
 
         nvrhi::rt::State state;
-        nvrhi::rt::ShaderTableHandle sbt = raytracing_pipeline->createShaderTable();
+        nvrhi::rt::ShaderTableHandle sbt =
+            raytracing_pipeline->createShaderTable();
         sbt->setRayGenerationShader("RayGen");
         sbt->addHitGroup("HitGroup");
         sbt->addMissShader("Miss");
         state.setShaderTable(sbt).addBindingSet(binding_set);
 
         m_CommandList->open();
+        PlanarViewConstants view_constant =
+            camera_to_view_constants(free_camera);
+        m_CommandList->writeBuffer(
+            constant_buffer.Get(), &view_constant, sizeof(PlanarViewConstants));
+
         m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
         args.width = size[0];
@@ -170,8 +136,10 @@ static void node_exec(ExeParams params)
         m_CommandList->dispatchRays(args);
         m_CommandList->close();
         resource_allocator.device->executeCommandList(m_CommandList);
-        resource_allocator.device->waitForIdle();  // This is not fully efficient.
+        resource_allocator.device
+            ->waitForIdle();  // This is not fully efficient.
 
+        resource_allocator.destroy(constant_buffer);
         resource_allocator.destroy(raytracing_pipeline);
         resource_allocator.destroy(globalBindingLayout);
         resource_allocator.destroy(binding_set);
@@ -179,17 +147,13 @@ static void node_exec(ExeParams params)
         resource_allocator.destroy(chs_shader);
         resource_allocator.destroy(miss_shader);
     }
-    resource_allocator.destroy(vertexBuffer);
-    resource_allocator.destroy(indexBuffer);
-    resource_allocator.destroy(blas);
-    resource_allocator.destroy(m_TopLevelAS);
+
     resource_allocator.destroy(m_CommandList);
     auto error = raytrace_compiled->get_error_string();
-    auto buffer_size = raytrace_compiled->getBufferSize();
     resource_allocator.destroy(raytrace_compiled);
 
-    params.set_output("Result", result_texture);
-    if (!buffer_size && error.size()) {
+    params.set_output("Barycentric", result_texture);
+    if (error.size()) {
         throw std::runtime_error(error);
     }
 }

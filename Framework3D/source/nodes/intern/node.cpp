@@ -203,8 +203,8 @@ void Node::refresh_node()
     assert(ntype->static_declaration);
     auto& node_decl = *ntype->static_declaration;
 
-    auto& old_inputs = get_inputs();
-    auto& old_outputs = get_outputs();
+    auto old_inputs = get_inputs();
+    auto old_outputs = get_outputs();
     std::vector<NodeSocket*> new_inputs;
     std::vector<NodeSocket*> new_outputs;
 
@@ -244,6 +244,7 @@ void Node::deserialize(const nlohmann::json& node_json)
     }
 
     for (auto&& output_id : node_json["outputs"]) {
+        assert(tree_->find_pin(output_id.get<unsigned>()));
         register_socket_to_node(
             tree_->find_pin(output_id.get<unsigned>()), PinKind::Output);
     }

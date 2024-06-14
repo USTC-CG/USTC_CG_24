@@ -1,7 +1,7 @@
 #include <memory>
 
-#include "GCore/Components/XformComponent.h"
 #include "GCore/Components/MeshOperand.h"
+#include "GCore/Components/XformComponent.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -60,12 +60,11 @@ static void node_exec(ExeParams params)
     pxr::GfMatrix4d mat_r_z;
     mat_r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 }, r_z });
 
-	auto transform = mat_r_x * mat_r_y * mat_r_z * s * t;
-	final_transform = final_transform * transform;
+    auto transform = mat_r_x * mat_r_y * mat_r_z * s * t;
+    final_transform = final_transform * transform;
 
     auto mesh = geometry.get_component<MeshComponent>();
-    for (int i = 0; i < mesh->vertices.size(); i++)
-    {
+    for (int i = 0; i < mesh->vertices.size(); i++) {
         mesh->vertices[i] = final_transform.TransformAffine(mesh->vertices[i]);
     }
 

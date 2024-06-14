@@ -5,7 +5,8 @@
 
 #define STAGE_SOCKET_TYPES Layer, PyObj, NumpyArray, SocketGroup
 
-#define RENDER_SOCKET_TYPES Lights, Camera, Texture, Meshes, Materials
+#define RENDER_SOCKET_TYPES \
+    Lights, Camera, Texture, Meshes, Materials, AccelStruct
 
 #define BUFFER_TYPES                                                        \
     Int1Buffer, Int2Buffer, Int3Buffer, Int4Buffer, Float1Buffer,           \

@@ -49,6 +49,8 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
 
     executor->set_device(render_param->nvrhi_device);
 
+
+    
     for (auto&& node : node_tree->nodes) {
         auto try_fill_info = [&node, &executor, this]<typename T>(const char* id_name, const T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
@@ -62,6 +64,7 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         try_fill_info("render_scene_camera", *render_param->cameras);
         try_fill_info("render_scene_meshes", *render_param->meshes);
         try_fill_info("render_scene_materials", *render_param->materials);
+        try_fill_info("node_accel_struct", render_param->TLAS->get_tlas());
     }
     executor->execute_tree(node_tree);
 

@@ -211,17 +211,13 @@ void SlangCompileHLSLToDXIL(
     if (SLANG_FAILED(compileRes)) {
         if (auto diagnostics = spGetDiagnosticOutput(slangRequest)) {
             error_string = diagnostics;
-            std::cerr << "Error diagnostics: " << diagnostics;
         }
     }
-    assert(compileRes == SLANG_OK);
 
     auto Result =
         slangRequest->getTargetCodeBlob(targetIndex, ppResultBlob.writeRef());
 
-    if (SLANG_FAILED(compileRes)) {
-        spDestroyCompileRequest(slangRequest);
-    }
+    spDestroyCompileRequest(slangRequest);
 }
 
 ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc)
