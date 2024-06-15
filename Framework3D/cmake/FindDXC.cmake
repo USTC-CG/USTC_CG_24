@@ -1,4 +1,4 @@
-message("dxc downloaded files at ${DXC_ROOT_DIR}, trying to find ${Dxc_FIND_COMPONENTS}")
+message("dxc downloaded files at ${DXC_ROOT_DIR}")
 
 include(FindPackageHandleStandardArgs)
 
@@ -8,20 +8,20 @@ set(DXC_SEARCH_DIR ${DXC_ROOT_DIR}/inc)
 # Find the DXC include dir
 ##################################
 
-find_path(DXC_INCLUDE_DIRS dxcapi.h
-    HINTS ${DXC_INCLUDE_DIR} ${DXC_SEARCH_DIR})
+find_path(DXC_INCLUDE_DIR dxcapi.h
+    HINTS ${DXC_SEARCH_DIR})
 
 set(DXC_ROOT_DIR ${DXC_INCLUDE_DIR}/..)
-set(DXC_LIBRARY ${DXC_ROOT_DIR}/lib/x64)
+set(DXC_LIBRARY_DIR ${DXC_ROOT_DIR}/lib/x64)
 
 set(DXC_SEARCH_COMPOMPONENTS dxc)
 set(DXC_LIB_PATH_SUFFIX "lib/x64")
 # Find each component
 
-
+message("DXC_LIBRARY_DIR: ${DXC_LIBRARY_DIR}")
 # Search for the libraries
 find_library(DXC_dxcompiler_LIBRARY dxcompiler
-    HINTS ${SLANG_LIBRARY} ${DXC_SEARCH_DIR}
+    HINTS ${DXC_LIBRARY_DIR} ${DXC_ROOT_DIR}
     PATH_SUFFIXES ${DXC_LIB_PATH_SUFFIX})
 
 if(DXC_dxcompiler_LIBRARY)
@@ -38,7 +38,7 @@ mark_as_advanced(DXC_dxcompiler_LIBRARY)
 
 message("Dxc libraries found: ${DXC_LIBRARIES}")
 
-find_package_handle_standard_args(DXC REQUIRED_VARS DXC_INCLUDE_DIRS DXC_LIBRARIES)
+find_package_handle_standard_args(DXC REQUIRED_VARS DXC_INCLUDE_DIR DXC_LIBRARIES)
 
 ##################################
 # Create targets
@@ -47,7 +47,7 @@ find_package_handle_standard_args(DXC REQUIRED_VARS DXC_INCLUDE_DIRS DXC_LIBRARI
 if(NOT CMAKE_VERSION VERSION_LESS 3.0 AND DXC_FOUND)
 add_library(DXC::dxc SHARED IMPORTED)
 set_target_properties(DXC::dxc PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES  ${DXC_INCLUDE_DIRS}
+          INTERFACE_INCLUDE_DIRECTORIES  ${DXC_INCLUDE_DIR}
           IMPORTED_IMPLIB  ${DXC_LIBRARIES}
           IMPORTED_LOCATION  ${DXC_LIBRARIES})
 endif()
