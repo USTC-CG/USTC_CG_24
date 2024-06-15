@@ -39,7 +39,7 @@ static void node_exec(ExeParams params)
     ShaderCompileDesc shader_compile_desc;
     shader_compile_desc.set_path(
         std::filesystem::path(RENDER_NODES_FILES_DIR) /
-        std::filesystem::path("shaders/ray_launch.hlsl"));
+        std::filesystem::path("shaders/ray_launch.slang"));
     shader_compile_desc.shaderType = nvrhi::ShaderType::AllRayTracing;
     // shader_compile_desc.set_entry_name("ClosestHit");
 

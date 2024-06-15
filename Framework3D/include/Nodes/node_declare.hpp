@@ -82,6 +82,12 @@ class NodeDeclarationBuilder {
     typename DeclType::Builder& add_output(
         const char* name,
         const char* identifier = "");
+
+    template<typename DeclType>
+    typename DeclType::Builder& add_storage(
+        const char* name,
+        const char* identifier = "");
+
     void finalize();
 
    private:
@@ -112,6 +118,14 @@ typename DeclType::Builder& NodeDeclarationBuilder::add_output(
     const char* identifier)
 {
     return add_socket<DeclType>(name, "", identifier, PinKind::Output);
+}
+
+template<typename DeclType>
+typename DeclType::Builder& NodeDeclarationBuilder::add_storage(
+    const char* name,
+    const char* identifier)
+{
+    return add_socket<DeclType>(name, "", identifier, PinKind::Storage);
 }
 
 template<typename DeclType>

@@ -14,7 +14,7 @@ enum class SocketType : uint32_t { ALL_SOCKET_TYPES };
 
 const char* get_socket_name_string(SocketType socket);
 
-enum class PinKind { Output, Input };
+enum class PinKind { Output, Input, Storage };
 
 enum class NodeType {
     Blueprint,

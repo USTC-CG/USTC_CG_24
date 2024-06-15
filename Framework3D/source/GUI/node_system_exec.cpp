@@ -164,7 +164,7 @@ Node* NodeSystemExecution::default_node_menu(
 GeoNodeSystemExecution::GeoNodeSystemExecution()
 {
     NodeSystemExecution();
-    executor = CreateEagerNodeTreeExecutorSimulation();
+    executor = CreateEagerNodeTreeExecutor();
 }
 
 float GeoNodeSystemExecution::cached_last_frame() const

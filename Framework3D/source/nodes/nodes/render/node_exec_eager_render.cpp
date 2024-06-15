@@ -13,9 +13,11 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
 {
     if (EagerNodeTreeExecutor::execute_node(tree, node)) {
         for (auto&& input : node->get_inputs()) {
-            if (!node->typeinfo->ALWAYS_REQUIRED && input_states[index_cache[input]].is_last_used) {
+            if (!node->typeinfo->ALWAYS_REQUIRED &&
+                input_states[index_cache[input]].is_last_used) {
                 if (input_states[index_cache[input]].value)
-                    resource_allocator.destroy(input_states[index_cache[input]].value);
+                    resource_allocator.destroy(
+                        input_states[index_cache[input]].value);
                 input_states[index_cache[input]].is_last_used = false;
             }
         }
@@ -25,7 +27,8 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
         for (auto&& output : node->get_outputs()) {
             {
                 if (output_states[index_cache[output]].value)
-                    resource_allocator.destroy(output_states[index_cache[output]].value);
+                    resource_allocator.destroy(
+                        output_states[index_cache[output]].value);
             }
         }
     }
@@ -57,11 +60,21 @@ void EagerNodeTreeExecutorRender::set_device(nvrhi::IDevice* device)
 void EagerNodeTreeExecutorRender::reset_allocator()
 {
     resource_allocator.terminate();
+    storage.clear();
+}
+
+EagerNodeTreeExecutorRender::~EagerNodeTreeExecutorRender()
+{
 }
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender()
 {
     return std::make_unique<EagerNodeTreeExecutorRender>();
+}
+
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor()
+{
+    return std::make_unique<EagerNodeTreeExecutor>();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -37,8 +37,11 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     void execute_tree(NodeTree* tree) override;
 
     entt::meta_any* FindPtr(NodeSocket* socket);
-    void sync_node_from_external_storage(NodeSocket* socket, const entt::meta_any& data) override;
-    void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data) override;
+    void sync_node_from_external_storage(
+        NodeSocket* socket,
+        const entt::meta_any& data) override;
+    void sync_node_to_external_storage(NodeSocket* socket, entt::meta_any& data)
+        override;
 
    protected:
     virtual ExeParams prepare_params(NodeTree* tree, Node* node);
@@ -53,12 +56,23 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     std::vector<NodeSocket*> input_of_nodes_to_execute;
     std::vector<NodeSocket*> output_of_nodes_to_execute;
     ptrdiff_t nodes_to_execute_count = 0;
+
+    // Storage related
+    virtual void refresh_storage();
+    virtual void try_storage();
+
+    // Return value stands for this node can be filled. If it wants to be filled
+    // but connected to wrong storage_in, then successfully_filled_data is set
+    // to false.
+    virtual bool try_fill_storage_to_node(Node* node, bool& successfully_filled_data);
+
+public:
+    ~EagerNodeTreeExecutor() override;
+
+protected:
+    std::map<std::string, entt::meta_any> storage;
 };
 
-inline std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor()
-{
-    return std::make_unique<EagerNodeTreeExecutor>();
-}
 class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
    protected:
     bool execute_node(NodeTree* tree, Node* node) override;
@@ -67,13 +81,15 @@ class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
     void finalize(NodeTree* tree) override;
     virtual void set_device(
         nvrhi::IDevice*
-            device);  // Make this virtual to send it to vtable. A better practice should definitely
-                      // be better solving the 'resource allocator' setting issue.
+            device);  // Make this virtual to send it to vtable. A better
+                      // practice should definitely be better solving the
+                      // 'resource allocator' setting issue.
 
     virtual void reset_allocator();
+    ~EagerNodeTreeExecutorRender() override;
 };
 
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
-std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorSimulation();
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor();
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

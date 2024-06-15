@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <optional>
 #include <vector>
 
 #include "USTC_CG.h"
