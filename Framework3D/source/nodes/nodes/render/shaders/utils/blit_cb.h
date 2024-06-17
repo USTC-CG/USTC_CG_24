@@ -20,38 +20,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef VIEW_CB_H
-#define VIEW_CB_H
-
-#ifdef __cplusplus
-#include "pxr/base/gf/matrix4f.h"
-#include "utils/cpp_shader_macro.h"
-#endif
-
-struct PlanarViewConstants {
+#ifndef BLIT_CB_H
+#define BLIT_CB_H
+#include "cpp_shader_macro.h"
+struct BlitConstants {
 #ifdef __cplusplus
     USING_PXR_MATH_TYPES
 #endif
-    float4x4 matWorldToView;
-    float4x4 matViewToClip;
-    float4x4 matWorldToClip;
-    float4x4 matClipToView;
-    float4x4 matViewToWorld;
-    float4x4 matClipToWorld;
+    float2 sourceOrigin;
+    float2 sourceSize;
 
-    float2 viewportOrigin;
-    float2 viewportSize;
+    float2 targetOrigin;
+    float2 targetSize;
 
-    float2 viewportSizeInv;
-    float2 pixelOffset;
-
-    float2 clipToWindowScale;
-    float2 clipToWindowBias;
-
-    float2 windowToClipScale;
-    float2 windowToClipBias;
-
-    float4 cameraDirectionOrPosition;
+    float sharpenFactor;
 };
 
-#endif  // VIEW_CB_H
+#endif  // BLIT_CB_H

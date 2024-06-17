@@ -7,6 +7,7 @@
 
 #include "USTC_CG.h"
 #include "entt/meta/meta.hpp"
+#include "node.hpp"
 // #include "Utils/Functions/GenericPointer.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -54,6 +55,32 @@ struct ExeParams {
         else {
             *outputs_[index] = std::forward<T>(value);
         }
+    }
+
+    template<typename T>
+    T get_storage()
+    {
+        if (!node_.storage) {
+            node_.storage = entt::resolve<T>().construct();
+            if (node_.storage_info) {
+                node_.storage.cast<T&>().deserialize(node_.storage_info);
+            }
+        }
+
+        return node_.storage.cast<T>();
+    }
+
+    template<typename T>
+    T get_runtime_storage(bool& first_attempt)
+    {
+        first_attempt = false;
+
+        if (!node_.runtime_storage) {
+            first_attempt = true;
+            node_.runtime_storage = entt::resolve<T>().construct();
+        }
+
+        return node_.runtime_storage.cast<T>();
     }
 
    private:

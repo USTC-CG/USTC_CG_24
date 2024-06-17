@@ -5,6 +5,8 @@
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+struct NodeTreeExecutor;
+
 class NodeSystemExecution {
    public:
     virtual ~NodeSystemExecution() = default;

@@ -12,6 +12,8 @@
 
 namespace nvrhi {
 using CommandListDesc = nvrhi::CommandListParameters;
+typedef static_vector<BindingLayoutDesc, c_MaxBindingLayouts>
+    BindingLayoutDescVector;
 
 struct StagingTextureDesc : public nvrhi::TextureDesc { };
 
@@ -43,31 +45,58 @@ struct ShaderCompileDesc;
     using nvrhi::rt::RESOURCE##Handle;
 
 #define NVRHI_RESOURCE_LIST                                          \
-    Texture, Shader, Buffer, BindingLayout, BindingSet, CommandList, \
-        StagingTexture
+    Texture, Framebuffer, Shader, Buffer, BindingLayout, BindingSet, \
+        CommandList, StagingTexture, ComputePipeline, GraphicsPipeline
 #define NVRHI_RT_RESOURCE_LIST Pipeline, AccelStruct
 #define RESOURCE_LIST          NVRHI_RESOURCE_LIST, NVRHI_RT_RESOURCE_LIST, ShaderCompile
 
 MACRO_MAP(USING_NVRHI_SYMBOL, NVRHI_RESOURCE_LIST);
 MACRO_MAP(USING_NVRHI_RT_SYMBOL, NVRHI_RT_RESOURCE_LIST);
 
-using ShaderCompileHandle = std::shared_ptr<ShaderCompileResult>;
+using ShaderCompileHandle = nvrhi::RefCountPtr<ShaderCompileResult>;
 
-struct ShaderCompileResult {
-    void const* getBufferPointer() const;
-    size_t getBufferSize() const;
+class IShaderCompileResult : public nvrhi::IResource {
+   public:
+    virtual void const* getBufferPointer() const = 0;
+    virtual size_t getBufferSize() const = 0;
+    virtual [[nodiscard]] const std::string& get_error_string() const = 0;
+    virtual [[nodiscard]] const nvrhi::BindingLayoutDescVector&
+    get_binding_layout() const = 0;
+};
 
-    [[nodiscard]] const std::string& get_error_string() const
+struct ShaderCompileResult : nvrhi::RefCounter<IShaderCompileResult> {
+    void const* getBufferPointer() const override;
+    size_t getBufferSize() const override;
+
+    [[nodiscard]] const std::string& get_error_string() const override
     {
         return error_string;
+    }
+
+    [[nodiscard]] const nvrhi::BindingLayoutDescVector& get_binding_layout()
+        const override
+    {
+        return binding_layout_;
     }
 
    private:
     friend ShaderCompileHandle createShaderCompile(
         const ShaderCompileDesc& desc);
 
+    nvrhi::BindingLayoutDescVector binding_layout_;
     Slang::ComPtr<ISlangBlob> blob;
     std::string error_string;
+};
+
+struct ShaderMacro {
+    std::string name;
+    std::string definition;
+
+    ShaderMacro(const std::string& _name, const std::string& _definition)
+        : name(_name),
+          definition(_definition)
+    {
+    }
 };
 
 struct ShaderCompileDesc {
@@ -86,6 +115,10 @@ struct ShaderCompileDesc {
         return !(lhs == rhs);
     }
 
+    void define(std::string macro, std::string value)
+    {
+        macros.push_back(ShaderMacro(macro, value));
+    }
     void set_path(const std::filesystem::path& path);
     void set_shader_type(nvrhi::ShaderType shaderType);
     void set_entry_name(const std::string& entry_name);
@@ -94,7 +127,7 @@ struct ShaderCompileDesc {
 
    private:
     void update_last_write_time(const std::filesystem::path& path);
-
+    std::vector<ShaderMacro> macros;
     std::string get_profile() const;
     friend ShaderCompileHandle createShaderCompile(
         const ShaderCompileDesc& desc);

@@ -2,10 +2,10 @@
 
 #include "Utils/json.hpp"
 #include "node_declare.hpp"
-#include "node_exec.hpp"
 #include "node_socket.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
+struct ExeParams;
 class Operator;
 
 struct NodeLink {
@@ -86,6 +86,10 @@ struct Node {
 
     bool has_available_linked_inputs = false;
     bool has_available_linked_outputs = false;
+
+    nlohmann::json storage_info;
+    mutable entt::meta_any storage;
+    mutable entt::meta_any runtime_storage;
 
     explicit Node(NodeTree* node_tree, int id, const char* idname);
 

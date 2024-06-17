@@ -1,7 +1,7 @@
 #pragma once
 #include "Nodes/socket_types/stage_socket_types.hpp"
 #include "Nodes/node.hpp"
-
+#include "Nodes/node_exec.hpp"
 USTC_CG_NAMESPACE_OPEN_SCOPE
 inline void comp_node_type_base(NodeTypeInfo* ntype)
 {

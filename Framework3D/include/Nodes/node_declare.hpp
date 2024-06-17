@@ -1,6 +1,7 @@
 #pragma once
 
 #include "USTC_CG.h"
+#include "entt/meta/factory.hpp"
 #include "node_socket.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -64,8 +65,8 @@ class NodeDeclaration {
 class NodeDeclarationBuilder {
    private:
     NodeDeclaration& declaration_;
+    std::vector<std::unique_ptr<BaseSocketDeclarationBuilder>> socket_builders_;
     const NodeTree* ntree_ = nullptr;
-    const Node* node_ = nullptr;
 
    public:
     NodeDeclarationBuilder(
@@ -83,10 +84,11 @@ class NodeDeclarationBuilder {
         const char* name,
         const char* identifier = "");
 
-    template<typename DeclType>
-    typename DeclType::Builder& add_storage(
-        const char* name,
-        const char* identifier = "");
+    template<typename Data>
+    void add_storage();
+
+    template<typename Data>
+    void add_runtime_storage();
 
     void finalize();
 
@@ -99,9 +101,6 @@ class NodeDeclarationBuilder {
         const char* identifier_in,
         const char* identifier_out,
         PinKind in_out);
-
-   private:
-    std::vector<std::unique_ptr<BaseSocketDeclarationBuilder>> socket_builders_;
 };
 
 template<typename DeclType>
@@ -120,12 +119,16 @@ typename DeclType::Builder& NodeDeclarationBuilder::add_output(
     return add_socket<DeclType>(name, "", identifier, PinKind::Output);
 }
 
-template<typename DeclType>
-typename DeclType::Builder& NodeDeclarationBuilder::add_storage(
-    const char* name,
-    const char* identifier)
+template<typename Data>
+void NodeDeclarationBuilder::add_storage()
 {
-    return add_socket<DeclType>(name, "", identifier, PinKind::Storage);
+    entt::meta<Data>().type(entt::hashed_string{ typeid(Data).name() });
+}
+
+template<typename Data>
+void NodeDeclarationBuilder::add_runtime_storage()
+{
+    entt::meta<Data>().type(entt::hashed_string{ typeid(Data).name() });
 }
 
 template<typename DeclType>

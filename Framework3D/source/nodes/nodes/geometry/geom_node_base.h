@@ -1,4 +1,5 @@
 #pragma once
+#include "Nodes/node_exec.hpp"
 #include "Nodes/socket_types/geo_socket_types.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE

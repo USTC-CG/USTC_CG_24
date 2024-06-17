@@ -63,24 +63,26 @@ std::string ShaderCompileDesc::get_profile() const
 {
     switch (shaderType) {
         case nvrhi::ShaderType::None: break;
-        case nvrhi::ShaderType::Compute: break;
-        case nvrhi::ShaderType::Vertex: break;
-        case nvrhi::ShaderType::Hull: break;
-        case nvrhi::ShaderType::Domain: break;
-        case nvrhi::ShaderType::Geometry: break;
-        case nvrhi::ShaderType::Pixel: break;
-        case nvrhi::ShaderType::Amplification: break;
-        case nvrhi::ShaderType::Mesh: break;
-        case nvrhi::ShaderType::AllGraphics: break;
-        case nvrhi::ShaderType::RayGeneration:
-        case nvrhi::ShaderType::AnyHit:
-        case nvrhi::ShaderType::ClosestHit:
-        case nvrhi::ShaderType::Miss:
-        case nvrhi::ShaderType::Intersection:
-        case nvrhi::ShaderType::Callable:
-        case nvrhi::ShaderType::AllRayTracing:
+        case nvrhi::ShaderType::Compute: return "cs_6_5";
+        case nvrhi::ShaderType::Vertex: return "vs_6_5";
+        case nvrhi::ShaderType::Hull: return "hs_6_5";
+        case nvrhi::ShaderType::Domain: return "ds_6_5";
+        case nvrhi::ShaderType::Geometry: return "gs_6_5";
+        case nvrhi::ShaderType::Pixel: return "ps_6_5";
+        case nvrhi::ShaderType::Amplification: return "as_6_5";
+        case nvrhi::ShaderType::Mesh: return "ms_6_5";
+        case nvrhi::ShaderType::AllGraphics: return "lib_6_5";
+        case nvrhi::ShaderType::RayGeneration: return "rg_6_5";
+        case nvrhi::ShaderType::AnyHit: return "ah_6_5";
+        case nvrhi::ShaderType::ClosestHit: return "ch_6_5";
+        case nvrhi::ShaderType::Miss: return "ms_6_5";
+        case nvrhi::ShaderType::Intersection: return "is_6_5";
+        case nvrhi::ShaderType::Callable: return "cs_6_5";
+        case nvrhi::ShaderType::AllRayTracing: return "lib_6_5";
         case nvrhi::ShaderType::All: return "lib_6_5";
     }
+
+    // Default return value for cases not handled explicitly
     return "lib_6_5";
 }
 
@@ -178,62 +180,215 @@ Slang::ComPtr<slang::IGlobalSession> createGlobal()
     slang::createGlobalSession(globalSession.writeRef());
     return globalSession;
 }
+
+// Conversion function
+nvrhi::ResourceType convertSlangParameterCategoryToResourceType(
+    SlangParameterCategory category)
+{
+    using namespace nvrhi;
+    switch (category) {
+        case SLANG_PARAMETER_CATEGORY_NONE: return ResourceType::None;
+        case SLANG_PARAMETER_CATEGORY_CONSTANT_BUFFER:
+            return ResourceType::ConstantBuffer;
+        case SLANG_PARAMETER_CATEGORY_SHADER_RESOURCE:
+            return ResourceType::Texture_SRV;  // Assuming shader resource means
+                                               // texture
+        case SLANG_PARAMETER_CATEGORY_UNORDERED_ACCESS:
+            return ResourceType::Texture_UAV;  // Assuming unordered access
+                                               // means texture UAV
+        case SLANG_PARAMETER_CATEGORY_VARYING_INPUT:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_VARYING_OUTPUT:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_SAMPLER_STATE:
+            return ResourceType::Sampler;
+        case SLANG_PARAMETER_CATEGORY_UNIFORM:
+            return ResourceType::ConstantBuffer;  // Assuming uniform means
+                                                  // constant buffer
+        case SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_SPECIALIZATION_CONSTANT:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_PUSH_CONSTANT_BUFFER:
+            return ResourceType::PushConstants;
+        case SLANG_PARAMETER_CATEGORY_REGISTER_SPACE:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_GENERIC:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_RAY_PAYLOAD:
+            return ResourceType::RayTracingAccelStruct;  // Assuming ray payload
+                                                         // means acceleration
+                                                         // structure
+        case SLANG_PARAMETER_CATEGORY_HIT_ATTRIBUTES:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_CALLABLE_PAYLOAD:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_SHADER_RECORD:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_EXISTENTIAL_TYPE_PARAM:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_EXISTENTIAL_OBJECT_PARAM:
+            return ResourceType::None;  // No direct mapping, assuming None
+        case SLANG_PARAMETER_CATEGORY_SUB_ELEMENT_REGISTER_SPACE:
+            return ResourceType::None;  // No direct mapping, assuming None
+        default:
+            throw std::invalid_argument("Unknown SlangParameterCategory value");
+    }
+}
+
+nvrhi::BindingLayoutDescVector shader_reflect(
+    SlangCompileRequest* request,
+    nvrhi::ShaderType shader_type)
+{
+    slang::ShaderReflection* programReflection =
+        slang::ShaderReflection::get(request);
+    // slang::EntryPointReflection* entryPoint =
+    //     programReflection->findEntryPointByName(entryPointName);
+    auto parameterCount = programReflection->getParameterCount();
+    // auto parameterCount = entryPoint->getParameterCount();
+    nvrhi::BindingLayoutDescVector ret;
+
+    for (int pp = 0; pp < parameterCount; ++pp) {
+        auto var = programReflection->getParameterByIndex(pp);
+
+        auto typeLayout = var->getTypeLayout();
+        auto categoryCount = var->getCategoryCount();
+        auto name = var->getName();
+
+        for (uint32_t cc = 0; cc < categoryCount; ++cc) {
+            auto category = SlangParameterCategory(var->getCategoryByIndex(cc));
+            auto index = var->getOffset(category);
+            auto space = var->getBindingSpace(category);
+            auto count = typeLayout->getSize(category);
+
+            nvrhi::BindingLayoutItem item;
+
+            item.type = convertSlangParameterCategoryToResourceType(category);
+            item.slot = index;
+
+            if (ret.size() < space + 1) {
+                ret.resize(space + 1);
+            }
+
+            ret[space].addItem(item);
+            ret[space].visibility = shader_type;
+        }
+    }
+
+    return ret;
+}
+
+// Function to convert ShaderType to SlangStage
+SlangStage ConvertShaderTypeToSlangStage(nvrhi::ShaderType shaderType)
+{
+    using namespace nvrhi;
+    switch (shaderType) {
+        case ShaderType::Vertex: return SLANG_STAGE_VERTEX;
+        case ShaderType::Hull: return SLANG_STAGE_HULL;
+        case ShaderType::Domain: return SLANG_STAGE_DOMAIN;
+        case ShaderType::Geometry: return SLANG_STAGE_GEOMETRY;
+        case ShaderType::Pixel:
+            return SLANG_STAGE_FRAGMENT;  // alias for SLANG_STAGE_PIXEL
+        case ShaderType::Amplification: return SLANG_STAGE_AMPLIFICATION;
+        case ShaderType::Mesh: return SLANG_STAGE_MESH;
+        case ShaderType::Compute: return SLANG_STAGE_COMPUTE;
+        case ShaderType::RayGeneration: return SLANG_STAGE_RAY_GENERATION;
+        case ShaderType::AnyHit: return SLANG_STAGE_ANY_HIT;
+        case ShaderType::ClosestHit: return SLANG_STAGE_CLOSEST_HIT;
+        case ShaderType::Miss: return SLANG_STAGE_MISS;
+        case ShaderType::Intersection: return SLANG_STAGE_INTERSECTION;
+        case ShaderType::Callable: return SLANG_STAGE_CALLABLE;
+        default: return SLANG_STAGE_NONE;
+    }
+}
+
 void SlangCompileHLSLToDXIL(
     const char* filename,
     const char* entryPoint,
+    nvrhi::ShaderType shaderType,
     const char* profile,
+    const std::vector<ShaderMacro>& defines,  // List of macro defines
+    nvrhi::BindingLayoutDescVector& shader_reflection,
     Slang::ComPtr<ISlangBlob>& ppResultBlob,
     std::string& error_string)
 {
+    auto stage = ConvertShaderTypeToSlangStage(shaderType);
+    // Ensure global session is created
     if (!globalSession) {
         globalSession = createGlobal();
     }
 
+    // Create a compile request
     SlangCompileRequest* slangRequest = spCreateCompileRequest(globalSession);
-    int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
 
+    // Set the code generation target to DXIL
+    int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
     spSetTargetFlags(
         slangRequest, targetIndex, SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM);
+
+    // Add a translation unit to the compile request
     int translationUnitIndex = spAddTranslationUnit(
         slangRequest, SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
 
+    // Set the profile ID
     auto profile_id = globalSession->findProfile(profile);
+    slangRequest->setTargetProfile(targetIndex, profile_id);
 
-    auto shaderPath = SlangShaderCompiler::find_root(".") /
-                      "usd/hd_USTC_CG_GL/resources/shaders/shader.slang";
+    // Add the source file to the translation unit
     spAddTranslationUnitSourceFile(
         slangRequest, translationUnitIndex, filename);
 
-    slangRequest->setTargetProfile(targetIndex, profile_id);
+    // Add macro defines to the compile request
+    for (const auto& define : defines) {
+        spAddPreprocessorDefine(
+            slangRequest, define.name.c_str(), define.definition.c_str());
+    }
 
+    int entry_point_index;
+
+    // If an entry point is provided, set it
+    if (entryPoint && *entryPoint) {
+        entry_point_index = slangRequest->addEntryPoint(
+            translationUnitIndex, entryPoint, stage);
+    }
+
+    // Compile the request
     const SlangResult compileRes = slangRequest->compile();
 
+    // Handle compile errors
     if (SLANG_FAILED(compileRes)) {
         if (auto diagnostics = spGetDiagnosticOutput(slangRequest)) {
             error_string = diagnostics;
         }
+        // Cleanup and return early if compilation failed
+        spDestroyCompileRequest(slangRequest);
+        return;
     }
 
-    auto Result =
-        slangRequest->getTargetCodeBlob(targetIndex, ppResultBlob.writeRef());
+    shader_reflection = shader_reflect(slangRequest, shaderType);
 
+    // Retrieve the compiled code blob
+    slangRequest->getTargetCodeBlob(targetIndex, ppResultBlob.writeRef());
+
+    // Destroy the compile request to clean up
     spDestroyCompileRequest(slangRequest);
 }
 
 ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc)
 {
     Slang::ComPtr<ISlangBlob> blob;
+    ShaderCompileHandle ret =
+        ShaderCompileHandle::Create(new ShaderCompileResult);
 
-    std::string error_string;
     SlangCompileHLSLToDXIL(
         desc.path.generic_string().c_str(),
         desc.entry_name.c_str(),
+        desc.shaderType,
         desc.get_profile().c_str(),
-        blob,
-        error_string);
-    ShaderCompileHandle ret = std::make_shared<ShaderCompileResult>();
-    ret->blob = blob;
-    ret->error_string = error_string;
+        desc.macros,
+        ret->binding_layout_,
+        ret->blob,
+        ret->error_string);
     return ret;
 }
 

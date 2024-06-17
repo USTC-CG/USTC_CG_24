@@ -3,6 +3,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "camera.h"
+#include "Nodes/node_exec.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 inline void render_node_type_base(NodeTypeInfo* ntype)

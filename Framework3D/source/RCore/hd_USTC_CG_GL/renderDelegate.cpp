@@ -368,6 +368,9 @@ HdAovDescriptor Hd_USTC_CG_RenderDelegate::GetDefaultAovDescriptor(
 Hd_USTC_CG_RenderDelegate::~Hd_USTC_CG_RenderDelegate()
 {
     _renderParam->executor->prepare_tree(_renderParam->node_tree);
+    for (auto&& node : _renderParam->node_tree->nodes) {
+        node->runtime_storage.reset();
+    }
     _resourceRegistry.reset();
     _renderer.reset();
     std::cout << "Destroying Tiny RenderDelegate" << std::endl;

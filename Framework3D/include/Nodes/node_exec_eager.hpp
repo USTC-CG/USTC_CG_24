@@ -61,15 +61,17 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     virtual void refresh_storage();
     virtual void try_storage();
 
-    // Return value stands for this node can be filled. If it wants to be filled
-    // but connected to wrong storage_in, then successfully_filled_data is set
-    // to false.
-    virtual bool try_fill_storage_to_node(Node* node, bool& successfully_filled_data);
+    // Return value stands for 'this node needs be filled'. If it wants to be
+    // filled but connected to wrong storage_in, then successfully_filled_data
+    // is set to false.
+    virtual bool try_fill_storage_to_node(
+        Node* node,
+        bool& successfully_filled_data);
 
-public:
+   public:
     ~EagerNodeTreeExecutor() override;
 
-protected:
+   protected:
     std::map<std::string, entt::meta_any> storage;
 };
 

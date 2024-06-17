@@ -63,8 +63,7 @@ NodeDeclarationBuilder::NodeDeclarationBuilder(
     const NodeTree* ntree,
     const Node* node)
     : declaration_(declaration),
-      ntree_(ntree),
-      node_(node)
+      ntree_(ntree)
 {
 }
 
