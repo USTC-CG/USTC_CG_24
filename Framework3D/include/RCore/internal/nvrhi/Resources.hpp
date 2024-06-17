@@ -138,6 +138,11 @@ struct ShaderCompileDesc {
 
 ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc);
 
+// Function to merge two BindingLayoutDescVector objects
+nvrhi::BindingLayoutDescVector mergeBindingLayoutDescVectors(
+    const nvrhi::BindingLayoutDescVector& vec1,
+    const nvrhi::BindingLayoutDescVector& vec2);
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE
 
 #include "nvrhi_equality.hpp"

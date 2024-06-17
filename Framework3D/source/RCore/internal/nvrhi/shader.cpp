@@ -371,4 +371,35 @@ ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc)
     return ret;
 }
 
+nvrhi::BindingLayoutDescVector mergeBindingLayoutDescVectors(
+    const nvrhi::BindingLayoutDescVector& vec1,
+    const nvrhi::BindingLayoutDescVector& vec2)
+{
+    nvrhi::BindingLayoutDescVector result;
+    size_t maxSize = std::max(vec1.size(), vec2.size());
+
+    for (size_t i = 0; i < maxSize; ++i) {
+        BindingLayoutDesc mergedDesc;
+
+        if (i < vec1.size()) {
+            mergedDesc = vec1[i];
+        }
+        else {
+            mergedDesc = BindingLayoutDesc();
+        }
+
+        if (i < vec2.size()) {
+            const BindingLayoutDesc& desc2 = vec2[i];
+            mergedDesc.visibility = mergedDesc.visibility | desc2.visibility;
+            for (int j = 0; j < desc2.bindings.size(); ++j) {
+                mergedDesc.bindings.push_back(desc2.bindings[j]);
+            }
+        }
+
+        result.push_back(mergedDesc);
+    }
+
+    return result;
+}
+
 USTC_CG_NAMESPACE_CLOSE_SCOPE

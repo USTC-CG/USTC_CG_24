@@ -50,65 +50,7 @@ static bool IsTextureArray(nvrhi::TextureDimension dimension)
            dimension == nvrhi::TextureDimension::TextureCubeArray;
 }
 
-// Function to merge two BindingLayoutDescVector objects
-nvrhi::BindingLayoutDescVector mergeBindingLayoutDescVectors(
-    const nvrhi::BindingLayoutDescVector& vec1,
-    const nvrhi::BindingLayoutDescVector& vec2)
-{
-    nvrhi::BindingLayoutDescVector result;
-    size_t maxSize = std::max(vec1.size(), vec2.size());
 
-    for (size_t i = 0; i < maxSize; ++i) {
-        BindingLayoutDesc mergedDesc;
-
-        if (i < vec1.size()) {
-            mergedDesc = vec1[i];
-        }
-        else {
-            mergedDesc = BindingLayoutDesc();
-        }
-
-        if (i < vec2.size()) {
-            const BindingLayoutDesc& desc2 = vec2[i];
-            mergedDesc.visibility = mergedDesc.visibility | desc2.visibility;
-            for (int j = 0; j < desc2.bindings.size(); ++j) {
-                mergedDesc.bindings.push_back(desc2.bindings[j]);
-            }
-        }
-
-        result.push_back(mergedDesc);
-    }
-
-    return result;
-}
-
-template<typename T>
-class RAII_resource_cleaner {
-   public:
-    RAII_resource_cleaner(ResourceAllocator& allocator) : allocator_(allocator)
-    {
-    }
-
-    T set_data(T handle)
-    {
-        data = handle;
-        return data;
-    }
-
-    ~RAII_resource_cleaner()
-    {
-        allocator_.destroy(data);
-    }
-
-   private:
-    ResourceAllocator& allocator_;
-    T data;
-};
-
-#define MARK_DESTROY(resource)                                    \
-    RAII_resource_cleaner<decltype(resource)> resource##_cleaner( \
-        resource_allocator);                                      \
-    resource##_cleaner.set_data(resource)
 
 static void node_exec(ExeParams params)
 {
@@ -117,12 +59,12 @@ static void node_exec(ExeParams params)
     output_desc.format = nvrhi::Format::RGBA32_FLOAT;
     output_desc.isRenderTarget = true;
     auto output = resource_allocator.create(output_desc);
-    MARK_DESTROY(output);
+    MARK_DESTROY_NVRHI_RESOURCE(output);
 
     auto& blit_parameters = params.get_storage<BlitParameters&>();
 
     auto commandList = resource_allocator.create(CommandListDesc{});
-    MARK_DESTROY(commandList);
+    MARK_DESTROY_NVRHI_RESOURCE(commandList);
 
     assert(commandList);
 
@@ -132,7 +74,7 @@ static void node_exec(ExeParams params)
         nvrhi::FramebufferAttachment{ output.Get() });
 
     auto targetFramebuffer = resource_allocator.create(framebuffer_desc);
-    MARK_DESTROY(targetFramebuffer);
+    MARK_DESTROY_NVRHI_RESOURCE(targetFramebuffer);
 
     const nvrhi::FramebufferDesc& targetFramebufferDesc =
         targetFramebuffer->getDesc();
@@ -171,7 +113,7 @@ static void node_exec(ExeParams params)
         vs_binding_layout_descs,
         error_string,
         macro_defines);
-    MARK_DESTROY(vertex_shader);
+    MARK_DESTROY_NVRHI_RESOURCE(vertex_shader);
 
     nvrhi::BindingLayoutDescVector ps_binding_layout_descs;
 
@@ -182,7 +124,7 @@ static void node_exec(ExeParams params)
         ps_binding_layout_descs,
         error_string,
         macro_defines);
-    MARK_DESTROY(pixel_shader);
+    MARK_DESTROY_NVRHI_RESOURCE(pixel_shader);
 
     nvrhi::BindingLayoutDescVector binding_layout_descs =
         mergeBindingLayoutDescVectors(
@@ -192,14 +134,14 @@ static void node_exec(ExeParams params)
         nvrhi::SamplerDesc().setAllFilters(false).setAllAddressModes(
             nvrhi::SamplerAddressMode::Clamp);
     auto m_PointClampSampler = resource_allocator.create(samplerDesc);
-    MARK_DESTROY(m_PointClampSampler);
+    MARK_DESTROY_NVRHI_RESOURCE(m_PointClampSampler);
 
     samplerDesc.setAllFilters(true);
     auto m_LinearClampSampler = resource_allocator.create(samplerDesc);
-    MARK_DESTROY(m_LinearClampSampler);
+    MARK_DESTROY_NVRHI_RESOURCE(m_LinearClampSampler);
 
     auto binding_layout = resource_allocator.create(binding_layout_descs[0]);
-    MARK_DESTROY(binding_layout);
+    MARK_DESTROY_NVRHI_RESOURCE(binding_layout);
 
     nvrhi::GraphicsPipelineDesc psoDesc;
     psoDesc.bindingLayouts = { binding_layout };
@@ -217,10 +159,10 @@ static void node_exec(ExeParams params)
                     .isConstantBuffer = true,
                     .initialState = nvrhi::ResourceStates::ConstantBuffer,
                     .cpuAccess = nvrhi::CpuAccessMode::Write });
-    MARK_DESTROY(constant_buffer);
+    MARK_DESTROY_NVRHI_RESOURCE(constant_buffer);
 
     auto pso = resource_allocator.create(psoDesc, targetFramebuffer);
-    MARK_DESTROY(pso);
+    MARK_DESTROY_NVRHI_RESOURCE(pso);
 
     BindingSetDesc binding_set_desc;
     {
@@ -250,7 +192,7 @@ static void node_exec(ExeParams params)
 
     auto sourceBindingSet =
         resource_allocator.create(binding_set_desc, binding_layout.Get());
-    MARK_DESTROY(sourceBindingSet);
+    MARK_DESTROY_NVRHI_RESOURCE(sourceBindingSet);
 
     nvrhi::GraphicsState state;
     state.pipeline = pso;
