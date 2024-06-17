@@ -13,6 +13,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::AccelStruct>("Accel Struct");
     b.add_input<decl::Camera>("Camera");
+    b.add_input<decl::Texture>("random seeds");
     b.add_output<decl::Texture>("Barycentric");
 }
 
@@ -77,7 +78,8 @@ static void node_exec(ExeParams params)
         globalBindingLayoutDesc.bindings = {
             { 0, nvrhi::ResourceType::ConstantBuffer },
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
-            { 0, nvrhi::ResourceType::Texture_UAV }
+            { 0, nvrhi::ResourceType::Texture_UAV },
+            { 1, nvrhi::ResourceType::Texture_UAV }
         };
         auto globalBindingLayout =
             resource_allocator.create(globalBindingLayoutDesc);
@@ -107,10 +109,13 @@ static void node_exec(ExeParams params)
                         .initialState = nvrhi::ResourceStates::ConstantBuffer,
                         .cpuAccess = nvrhi::CpuAccessMode::Write });
 
+        auto random_seeds = params.get_input<TextureHandle>("random seeds");
+
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
             nvrhi::BindingSetItem::ConstantBuffer(0, constant_buffer.Get()),
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(0, result_texture.Get())
+            nvrhi::BindingSetItem::Texture_UAV(0, result_texture.Get()),
+            nvrhi::BindingSetItem::Texture_UAV(1, random_seeds)
         };
         auto binding_set = resource_allocator.create(
             binding_set_desc, globalBindingLayout.Get());

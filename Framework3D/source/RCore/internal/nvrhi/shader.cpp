@@ -47,14 +47,13 @@ namespace fs = std::filesystem;
 void ShaderCompileDesc::update_last_write_time(
     const std::filesystem::path& path)
 {
-    try {
+    if (fs::exists(path)) {
         auto possibly_newer_lastWriteTime = fs::last_write_time(path);
         if (possibly_newer_lastWriteTime > lastWriteTime) {
             lastWriteTime = possibly_newer_lastWriteTime;
         }
     }
-    catch (const fs::filesystem_error& e) {
-        (void)e;
+    else {
         lastWriteTime = {};
     }
 }
@@ -181,58 +180,36 @@ Slang::ComPtr<slang::IGlobalSession> createGlobal()
     return globalSession;
 }
 
-// Conversion function
-nvrhi::ResourceType convertSlangParameterCategoryToResourceType(
-    SlangParameterCategory category)
+static nvrhi::ResourceType convertBindingTypeToResourceType(
+    slang::BindingType bindingType)
 {
     using namespace nvrhi;
-    switch (category) {
-        case SLANG_PARAMETER_CATEGORY_NONE: return ResourceType::None;
-        case SLANG_PARAMETER_CATEGORY_CONSTANT_BUFFER:
-            return ResourceType::ConstantBuffer;
-        case SLANG_PARAMETER_CATEGORY_SHADER_RESOURCE:
-            return ResourceType::Texture_SRV;  // Assuming shader resource means
-                                               // texture
-        case SLANG_PARAMETER_CATEGORY_UNORDERED_ACCESS:
-            return ResourceType::Texture_UAV;  // Assuming unordered access
-                                               // means texture UAV
-        case SLANG_PARAMETER_CATEGORY_VARYING_INPUT:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_VARYING_OUTPUT:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_SAMPLER_STATE:
-            return ResourceType::Sampler;
-        case SLANG_PARAMETER_CATEGORY_UNIFORM:
-            return ResourceType::ConstantBuffer;  // Assuming uniform means
-                                                  // constant buffer
-        case SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_SPECIALIZATION_CONSTANT:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_PUSH_CONSTANT_BUFFER:
-            return ResourceType::PushConstants;
-        case SLANG_PARAMETER_CATEGORY_REGISTER_SPACE:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_GENERIC:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_RAY_PAYLOAD:
-            return ResourceType::RayTracingAccelStruct;  // Assuming ray payload
-                                                         // means acceleration
-                                                         // structure
-        case SLANG_PARAMETER_CATEGORY_HIT_ATTRIBUTES:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_CALLABLE_PAYLOAD:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_SHADER_RECORD:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_EXISTENTIAL_TYPE_PARAM:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_EXISTENTIAL_OBJECT_PARAM:
-            return ResourceType::None;  // No direct mapping, assuming None
-        case SLANG_PARAMETER_CATEGORY_SUB_ELEMENT_REGISTER_SPACE:
-            return ResourceType::None;  // No direct mapping, assuming None
-        default:
-            throw std::invalid_argument("Unknown SlangParameterCategory value");
+    using namespace slang;
+    switch (bindingType) {
+        case BindingType::Sampler: return ResourceType::Sampler;
+        case BindingType::Texture:
+        case BindingType::CombinedTextureSampler:
+        case BindingType::InputRenderTarget: return ResourceType::Texture_SRV;
+        case BindingType::MutableTexture: return ResourceType::Texture_UAV;
+        case BindingType::TypedBuffer:
+        case BindingType::MutableTypedBuffer:
+            return ResourceType::TypedBuffer_SRV;
+        case BindingType::RawBuffer: return ResourceType::RawBuffer_SRV;
+        case BindingType::MutableRawBuffer: return ResourceType::RawBuffer_UAV;
+        case BindingType::ConstantBuffer:
+        case BindingType::ParameterBlock: return ResourceType::ConstantBuffer;
+        case BindingType::RayTracingAccelerationStructure:
+            return ResourceType::RayTracingAccelStruct;
+        case BindingType::PushConstant: return ResourceType::PushConstants;
+        case BindingType::InlineUniformData:
+        case BindingType::VaryingInput:
+        case BindingType::VaryingOutput:
+        case BindingType::ExistentialValue:
+        case BindingType::MutableFlag:
+        case BindingType::BaseMask:
+        case BindingType::ExtMask:
+        case BindingType::Unknown:
+        default: return ResourceType::None;
     }
 }
 
@@ -250,29 +227,31 @@ nvrhi::BindingLayoutDescVector shader_reflect(
 
     for (int pp = 0; pp < parameterCount; ++pp) {
         auto var = programReflection->getParameterByIndex(pp);
+        auto cat = var->getCategory();
 
-        auto typeLayout = var->getTypeLayout();
+        slang::TypeLayoutReflection* typeLayout = var->getTypeLayout();
         auto categoryCount = var->getCategoryCount();
-        auto name = var->getName();
+        assert(categoryCount == 1);
 
-        for (uint32_t cc = 0; cc < categoryCount; ++cc) {
-            auto category = SlangParameterCategory(var->getCategoryByIndex(cc));
-            auto index = var->getOffset(category);
-            auto space = var->getBindingSpace(category);
-            auto count = typeLayout->getSize(category);
+        auto category = SlangParameterCategory(var->getCategoryByIndex(0));
+        auto index = var->getOffset(category);
+        auto space = var->getBindingSpace(category);
 
-            nvrhi::BindingLayoutItem item;
+        auto bindingRangeCount = typeLayout->getBindingRangeCount();
+        assert(bindingRangeCount == 1);
+        auto type = typeLayout->getBindingRangeType(0);
 
-            item.type = convertSlangParameterCategoryToResourceType(category);
-            item.slot = index;
+        nvrhi::BindingLayoutItem item;
 
-            if (ret.size() < space + 1) {
-                ret.resize(space + 1);
-            }
+        item.type = convertBindingTypeToResourceType(type);
+        item.slot = index;
 
-            ret[space].addItem(item);
-            ret[space].visibility = shader_type;
+        if (ret.size() < space + 1) {
+            ret.resize(space + 1);
         }
+
+        ret[space].addItem(item);
+        ret[space].visibility = shader_type;
     }
 
     return ret;

@@ -23,7 +23,9 @@
 // ---[ Structures ]---
 
 #include "matrix_op.h"
+#include "utils/random.slangh"
 #include "view_cb.h"
+
 
 struct HitInfo {
     float4 ShadedColorAndHitT : SHADED_COLOR_AND_HIT_T;
@@ -39,11 +41,18 @@ ConstantBuffer<PlanarViewConstants> viewConstant : register(b0);
 // ---[ Resources ]---
 
 RWTexture2D<float4> RTOutput : register(u0);
+RWTexture2D<uint> random_seeds : register(u1);
+
 RaytracingAccelerationStructure SceneBVH : register(t0);
 
-RayDesc setupPrimaryRay(uint2 pixelPosition, PlanarViewConstants view)
+RayDesc
+setupPrimaryRay(uint2 pixelPosition, PlanarViewConstants view, inout uint seed)
 {
-    float2 uv = (float2(pixelPosition) + 0.5) * view.viewportSizeInv;
+    float2 pixelPositionF = float2(pixelPosition);
+    pixelPositionF.x += random_float(seed);
+    pixelPositionF.y += random_float(seed);
+
+    float2 uv = pixelPositionF * view.viewportSizeInv;
     float4 clipPos = float4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1, 1.0, 1);
     float4 worldPos = mul(clipPos, view.matClipToWorld);
     worldPos.xyz /= worldPos.w;
@@ -63,8 +72,10 @@ void RayGen()
 {
     uint2 LaunchIndex = DispatchRaysIndex().xy;
     uint2 LaunchDimensions = DispatchRaysDimensions().xy;
+
+    var seed = random_seeds[LaunchIndex];
     // Setup the ray
-    RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant);
+    RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant, seed);
 
     // Trace the ray
     HitInfo payload;
@@ -73,6 +84,8 @@ void RayGen()
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     var color = payload.ShadedColorAndHitT.rgb;
     RTOutput[LaunchIndex.xy] = float4(color, 1.f);
+
+    random_seeds[LaunchIndex] = seed;
 }
 
 // ---[ Closest Hit Shader ]---

@@ -192,6 +192,114 @@ inline bool operator!=(const FramebufferDesc& lhs, const FramebufferDesc& rhs)
     return !(lhs == rhs);
 }
 
+inline bool operator==(const SamplerDesc& lhs, const SamplerDesc& rhs)
+{
+    return lhs.borderColor == rhs.borderColor &&
+           lhs.maxAnisotropy == rhs.maxAnisotropy &&
+           lhs.mipBias == rhs.mipBias && lhs.minFilter == rhs.minFilter &&
+           lhs.magFilter == rhs.magFilter && lhs.mipFilter == rhs.mipFilter &&
+           lhs.addressU == rhs.addressU && lhs.addressV == rhs.addressV &&
+           lhs.addressW == rhs.addressW &&
+           lhs.reductionType == rhs.reductionType;
+}
+
+inline bool operator!=(const SamplerDesc& lhs, const SamplerDesc& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline bool operator==(
+    const DepthStencilState::StencilOpDesc& lhs,
+    const DepthStencilState::StencilOpDesc& rhs)
+{
+    return lhs.failOp == rhs.failOp && lhs.depthFailOp == rhs.depthFailOp &&
+           lhs.passOp == rhs.passOp && lhs.stencilFunc == rhs.stencilFunc;
+}
+
+inline bool operator!=(
+    const DepthStencilState::StencilOpDesc& lhs,
+    const DepthStencilState::StencilOpDesc& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline bool operator==(
+    const DepthStencilState& lhs,
+    const DepthStencilState& rhs)
+{
+    return lhs.depthTestEnable == rhs.depthTestEnable &&
+           lhs.depthWriteEnable == rhs.depthWriteEnable &&
+           lhs.depthFunc == rhs.depthFunc &&
+           lhs.stencilEnable == rhs.stencilEnable &&
+           lhs.stencilReadMask == rhs.stencilReadMask &&
+           lhs.stencilWriteMask == rhs.stencilWriteMask &&
+           lhs.stencilRefValue == rhs.stencilRefValue &&
+           lhs.dynamicStencilRef == rhs.dynamicStencilRef &&
+           lhs.frontFaceStencil == rhs.frontFaceStencil &&
+           lhs.backFaceStencil == rhs.backFaceStencil;
+}
+inline bool operator==(const RasterState& lhs, const RasterState& rhs)
+{
+    return lhs.fillMode == rhs.fillMode && lhs.cullMode == rhs.cullMode &&
+           lhs.frontCounterClockwise == rhs.frontCounterClockwise &&
+           lhs.depthClipEnable == rhs.depthClipEnable &&
+           lhs.scissorEnable == rhs.scissorEnable &&
+           lhs.multisampleEnable == rhs.multisampleEnable &&
+           lhs.antialiasedLineEnable == rhs.antialiasedLineEnable &&
+           lhs.depthBias == rhs.depthBias &&
+           lhs.depthBiasClamp == rhs.depthBiasClamp &&
+           lhs.slopeScaledDepthBias == rhs.slopeScaledDepthBias &&
+           lhs.forcedSampleCount == rhs.forcedSampleCount &&
+           lhs.programmableSamplePositionsEnable ==
+               rhs.programmableSamplePositionsEnable &&
+           lhs.conservativeRasterEnable == rhs.conservativeRasterEnable &&
+           lhs.quadFillEnable == rhs.quadFillEnable;
+}
+
+inline bool operator!=(const RasterState& lhs, const RasterState& rhs)
+{
+    return !(lhs == rhs);
+}
+inline bool operator!=(
+    const DepthStencilState& lhs,
+    const DepthStencilState& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline bool operator==(const RenderState& lhs, const RenderState& rhs)
+{
+    return lhs.blendState == rhs.blendState &&
+           lhs.depthStencilState == rhs.depthStencilState &&
+           lhs.rasterState == rhs.rasterState &&
+           lhs.singlePassStereo == rhs.singlePassStereo;
+}
+
+inline bool operator!=(const RenderState& lhs, const RenderState& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline bool operator==(
+    const GraphicsPipelineDesc& lhs,
+    const GraphicsPipelineDesc& rhs)
+{
+    return lhs.primType == rhs.primType &&
+           lhs.patchControlPoints == rhs.patchControlPoints &&
+           lhs.inputLayout == rhs.inputLayout && lhs.VS == rhs.VS &&
+           lhs.HS == rhs.HS && lhs.DS == rhs.DS && lhs.GS == rhs.GS &&
+           lhs.PS == rhs.PS && lhs.renderState == rhs.renderState &&
+           lhs.shadingRateState == rhs.shadingRateState &&
+           lhs.bindingLayouts == rhs.bindingLayouts;
+}
+
+inline bool operator!=(
+    const GraphicsPipelineDesc& lhs,
+    const GraphicsPipelineDesc& rhs)
+{
+    return !(lhs == rhs);
+}
+
 namespace rt {
     inline bool operator==(
         const PipelineHitGroupDesc& lhs,

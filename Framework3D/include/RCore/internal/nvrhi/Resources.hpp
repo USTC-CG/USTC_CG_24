@@ -44,8 +44,8 @@ struct ShaderCompileDesc;
     using nvrhi::rt::RESOURCE##Desc;    \
     using nvrhi::rt::RESOURCE##Handle;
 
-#define NVRHI_RESOURCE_LIST                                          \
-    Texture, Framebuffer, Shader, Buffer, BindingLayout, BindingSet, \
+#define NVRHI_RESOURCE_LIST                                                   \
+    Texture, Sampler, Framebuffer, Shader, Buffer, BindingLayout, BindingSet, \
         CommandList, StagingTexture, ComputePipeline, GraphicsPipeline
 #define NVRHI_RT_RESOURCE_LIST Pipeline, AccelStruct
 #define RESOURCE_LIST          NVRHI_RESOURCE_LIST, NVRHI_RT_RESOURCE_LIST, ShaderCompile

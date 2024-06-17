@@ -1,0 +1,16 @@
+#pragma once
+
+uint random_unsigned(inout uint seed)
+{
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+}
+
+float random_float(inout uint seed)
+{
+    var randomValue = random_unsigned(seed);
+    float randomFloat = randomValue / 4294967296.0f;
+    return randomFloat;
+}

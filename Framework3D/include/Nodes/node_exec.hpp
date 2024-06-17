@@ -62,7 +62,7 @@ struct ExeParams {
     {
         if (!node_.storage) {
             node_.storage = entt::resolve<T>().construct();
-            if (node_.storage_info) {
+            if (!node_.storage_info.empty()) {
                 node_.storage.cast<T&>().deserialize(node_.storage_info);
             }
         }
@@ -71,12 +71,9 @@ struct ExeParams {
     }
 
     template<typename T>
-    T get_runtime_storage(bool& first_attempt)
+    T get_runtime_storage()
     {
-        first_attempt = false;
-
         if (!node_.runtime_storage) {
-            first_attempt = true;
             node_.runtime_storage = entt::resolve<T>().construct();
         }
 

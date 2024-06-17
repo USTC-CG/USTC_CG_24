@@ -29,30 +29,45 @@ static void node_exec(ExeParams params)
     output_desc.debugName = "Random Number Texture";
     output_desc.width = size[0];
     output_desc.height = size[1];
-    output_desc.format = nvrhi::Format::RGBA32_UINT;
+    output_desc.format = nvrhi::Format::R32_UINT;
     output_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
     output_desc.keepInitialState = true;
     output_desc.isUAV = true;
 
     auto random = resource_allocator.create(output_desc);
 
-    bool first_attempt;
-    auto& stored_rng = params.get_runtime_storage<RNGStorage&>(first_attempt);
-    if (stored_rng.random_number != random.Get())
+    auto& stored_rng = params.get_runtime_storage<RNGStorage&>();
+    bool first_attempt = false;
+    if (stored_rng.random_number != random.Get()) {
         stored_rng.random_number = random.Get();
+        first_attempt = true;
+    }
 
-    auto device = resource_allocator.device;
-    std::string entryName = "main";
+    if (first_attempt) {
+    }
 
     nvrhi::BindingLayoutDescVector binding_layout_descs;
     std::string error_string;
 
-    auto compute_shader = compile_shader(
-        entryName,
-        nvrhi::ShaderType::Compute,
-        "shaders/random_init.slang",
-        binding_layout_descs,
-        error_string);
+    ShaderHandle compute_shader;
+
+    if (first_attempt) {
+        compute_shader = compile_shader(
+            "main",
+            nvrhi::ShaderType::Compute,
+            "shaders/utils/random_init.slang",
+            binding_layout_descs,
+            error_string);
+    }
+    else {
+        compute_shader = compile_shader(
+            "main",
+            nvrhi::ShaderType::Compute,
+            "shaders/utils/random_step.slang",
+            binding_layout_descs,
+            error_string);
+    }
+
     if (!compute_shader) {
         throw std::runtime_error(error_string);
     }

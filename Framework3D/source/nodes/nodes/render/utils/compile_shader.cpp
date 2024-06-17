@@ -23,7 +23,7 @@ ShaderHandle compile_shader(
     shader_compile_desc.set_entry_name(entryName);
     shader_compile_desc.set_path(shader_path);
     for (auto&& macro_define : macro_defines) {
-        shader_compile_desc.define(macro_define.first, macro_define.second);
+        shader_compile_desc.define(macro_define.name, macro_define.definition);
     }
     shader_compile_desc.shaderType = shader_type;
     auto shader_compiled = resource_allocator.create(shader_compile_desc);
