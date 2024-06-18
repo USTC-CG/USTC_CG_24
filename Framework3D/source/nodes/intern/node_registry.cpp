@@ -23,7 +23,6 @@ void build_node_declaration(
     reset_declaration(r_declaration);
     NodeDeclarationBuilder node_decl_builder{ r_declaration, ntree, node };
     typeinfo.declare(node_decl_builder);
-    node_decl_builder.finalize();
 }
 
 static std::map<std::string, NodeTypeInfo*> geo_node_registry;

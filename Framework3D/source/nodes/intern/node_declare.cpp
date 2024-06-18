@@ -67,8 +67,4 @@ NodeDeclarationBuilder::NodeDeclarationBuilder(
 {
 }
 
-void NodeDeclarationBuilder::finalize()
-{
-}
-
 USTC_CG_NAMESPACE_CLOSE_SCOPE

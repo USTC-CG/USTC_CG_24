@@ -1,39 +1,40 @@
-// Define the resources
-Texture2D<float4> currentFrame : register(t0);
-Texture2D<float4> previousFrame : register(t1);
-Texture2D<float4> motionVectors : register(t2); // Contains motion vectors for each pixel
-RWTexture2D<float4> outputTexture : register(u0); // Output texture
+// TAAComputeShader.hlsl
+#pragma once
+#include "utils/taa_cb.h"
+// Texture inputs
+Texture2D<float4> CurrentFrame : register(t0);    // Current frame color
+Texture2D<float4> PreviousFrame : register(t1);   // Previous frame color
+Texture2D<float2> VelocityBuffer : register(t2);  // Screen-space motion vectors
 
-// Temporal blending factor
-cbuffer BlendFactorBuffer : register(b0)
-{
-    float blendFactor; // Example blend factor, should be tuned
-};
+// UAV output
+RWTexture2D<float4> OutputFrame : register(u0);  // Output TAA frame
 
-// Define the compute shader
-[numthreads(8, 8, 1)] // Number of threads in a group
-void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
+// Sampler
+SamplerState PointSampler : register(s0);
+
+ConstantBuffer<FrameConstants> frameConstants : register(b0);
+
+[numthreads(8, 8, 1)]
+void main(uint3 DTid: SV_DispatchThreadID)
 {
-    uint2 coord = dispatchThreadID.xy;
-    
-    // Normalize coordinates
-    float2 texCoord = coord / float2(outputTexture.GetDimensions());
-    
-    // Fetch the current frame color
-    float4 currentColor = currentFrame.Load(int3(coord, 0));
-    
-    // Fetch the motion vector
-    float2 motionVector = motionVectors.Load(int3(coord, 0)).xy;
-    
-    // Reproject the texture coordinates to the previous frame
-    float2 prevTexCoord = texCoord + motionVector;
-    
-    // Fetch the previous frame color
-    float4 prevColor = previousFrame.SampleLevel(samLinear, prevTexCoord, 0);
-    
-    // Blend the current and previous frame colors
-    float4 blendedColor = lerp(currentColor, prevColor, blendFactor);
-    
-    // Write the result to the output texture
-    outputTexture[coord] = blendedColor;
+    uint2 pixelCoord = DTid.xy;
+    float2 uv = pixelCoord / frameConstants.Resolution;
+
+    // Read velocity buffer
+    float2 velocity = VelocityBuffer.Load(int3(pixelCoord, 0)).xy;
+
+    // Calculate previous frame UV using velocity and jitter
+    float2 prevUV = uv + velocity;
+
+    // Sample colors
+    float4 currentColor = CurrentFrame.Load(int3(pixelCoord, 0));
+    float4 prevColor = PreviousFrame.SampleLevel(PointSampler, prevUV, 0);
+
+    // Simple blending for TAA
+    float blendFactor = 0.1;  // Adjust blend factor as needed
+    float4 resultColor = lerp(currentColor, prevColor, blendFactor);
+
+    //resultColor = float4(uv.x, uv.y, 1, 1);
+    // Output the result
+    OutputFrame[pixelCoord] = resultColor;
 }

@@ -20,7 +20,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 static void node_exec(ExeParams params)
 {
     Hd_USTC_CG_Camera* free_camera = get_free_camera(params);
-    auto size = free_camera->_dataWindow.GetSize();
+    auto size = free_camera->dataWindow.GetSize();
 
     // 0. Prepare the output texture
     nvrhi::TextureDesc output_desc;
@@ -30,9 +30,7 @@ static void node_exec(ExeParams params)
     output_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
     output_desc.keepInitialState = true;
     output_desc.isUAV = true;
-
     auto result_texture = resource_allocator.create(output_desc);
-
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
 
     // 2. Prepare the shader

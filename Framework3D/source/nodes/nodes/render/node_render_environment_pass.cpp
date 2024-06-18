@@ -105,8 +105,8 @@ static void node_exec(ExeParams params)
     glActiveTexture(GL_TEXTURE0 + id);
     glBindTexture(GL_TEXTURE_2D, depth->texture_id);
     id++;
-    shader_handle->shader.setMat4("view", GfMatrix4f(free_camera->_viewMatrix));
-    shader_handle->shader.setMat4("projection", GfMatrix4f(free_camera->_projMatrix));
+    shader_handle->shader.setMat4("view", GfMatrix4f(free_camera->viewMatrix));
+    shader_handle->shader.setMat4("projection", GfMatrix4f(free_camera->projMatrix));
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

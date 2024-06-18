@@ -9,8 +9,8 @@ inline PlanarViewConstants camera_to_view_constants(Hd_USTC_CG_Camera* camera)
     PlanarViewConstants constants;
 
     // Extract matrices and other data from Hd_USTC_CG_Camera
-    constants.matWorldToView = GfMatrix4f(camera->_viewMatrix);
-    constants.matViewToClip = GfMatrix4f(camera->_projMatrix);
+    constants.matWorldToView = GfMatrix4f(camera->viewMatrix);
+    constants.matViewToClip = GfMatrix4f(camera->projMatrix);
     constants.matWorldToClip =
         constants.matWorldToView * constants.matViewToClip;
     constants.matClipToView = constants.matViewToClip.GetInverse();
@@ -20,7 +20,7 @@ inline PlanarViewConstants camera_to_view_constants(Hd_USTC_CG_Camera* camera)
     // Extract viewport data
     constants.viewportOrigin =
         GfVec2f(0.0f, 0.0f);  // Assuming origin at (0, 0)
-    constants.viewportSize = GfVec2f(camera->_dataWindow.GetSize());
+    constants.viewportSize = GfVec2f(camera->dataWindow.GetSize());
 
     // Calculate inverse of viewport size for efficient computations
     constants.viewportSizeInv = GfVec2f(
@@ -40,7 +40,7 @@ inline PlanarViewConstants camera_to_view_constants(Hd_USTC_CG_Camera* camera)
 
     // For camera direction or position, we may need to decide based on the
     // camera implementation
-    auto position = camera->_inverseViewMatrix.ExtractTranslation();
+    auto position = camera->inverseViewMatrix.ExtractTranslation();
 
     constants.cameraDirectionOrPosition =
         GfVec4f(position[0], position[1], position[2], 1.0f);

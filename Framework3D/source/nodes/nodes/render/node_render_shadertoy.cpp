@@ -26,7 +26,7 @@ static void node_exec(ExeParams params)
     auto cameras = params.get_input<CameraArray>("Camera");
 
     auto free_camera = cameras.back();
-    auto size = free_camera->_dataWindow.GetSize();
+    auto size = free_camera->dataWindow.GetSize();
 
     unsigned int VBO, VAO;
 

@@ -300,10 +300,10 @@ void SamplingIntegrator::_RenderTiles(
     size_t tileStart,
     size_t tileEnd)
 {
-    const unsigned int minX = camera_->_dataWindow.GetMinX();
-    unsigned int minY = camera_->_dataWindow.GetMinY();
-    const unsigned int maxX = camera_->_dataWindow.GetMaxX() + 1;
-    unsigned int maxY = camera_->_dataWindow.GetMaxY() + 1;
+    const unsigned int minX = camera_->dataWindow.GetMinX();
+    unsigned int minY = camera_->dataWindow.GetMinY();
+    const unsigned int maxX = camera_->dataWindow.GetMaxX() + 1;
+    unsigned int maxY = camera_->dataWindow.GetMaxY() + 1;
 
     std::swap(minY, maxY);
     auto height = camera_->film->GetHeight();
@@ -311,7 +311,7 @@ void SamplingIntegrator::_RenderTiles(
     maxY = height - maxY;
 
     const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
-    const unsigned int numTilesX = (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
+    const unsigned int numTilesX = (camera_->dataWindow.GetWidth() + tileSize - 1) / tileSize;
 
     // Initialize the RNG for this tile (each tile creates one as
     // a lazy way to do thread-local RNGs).
@@ -366,8 +366,8 @@ void SamplingIntegrator::Render()
     camera_->film->Map();
     const unsigned int tileSize = Hd_USTC_CG_Config::GetInstance().tileSize;
 
-    const unsigned int numTilesX = (camera_->_dataWindow.GetWidth() + tileSize - 1) / tileSize;
-    const unsigned int numTilesY = (camera_->_dataWindow.GetHeight() + tileSize - 1) / tileSize;
+    const unsigned int numTilesX = (camera_->dataWindow.GetWidth() + tileSize - 1) / tileSize;
+    const unsigned int numTilesY = (camera_->dataWindow.GetHeight() + tileSize - 1) / tileSize;
 
     WorkParallelForN(
         numTilesX * numTilesY,

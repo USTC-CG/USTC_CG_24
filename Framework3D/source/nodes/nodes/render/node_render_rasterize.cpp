@@ -39,7 +39,7 @@ static void node_exec(ExeParams params)
 
     Hd_USTC_CG_Camera* free_camera = get_free_camera(params);
 
-    auto size = free_camera->_dataWindow.GetSize();
+    auto size = free_camera->dataWindow.GetSize();
 
     TextureDesc texture_desc;
     texture_desc.size = size;
@@ -107,8 +107,8 @@ static void node_exec(ExeParams params)
     glViewport(0, 0, size[0], size[1]);
 
     shader_handle->shader.use();
-    shader_handle->shader.setMat4("view", GfMatrix4f(free_camera->_viewMatrix));
-    shader_handle->shader.setMat4("projection", GfMatrix4f(free_camera->_projMatrix));
+    shader_handle->shader.setMat4("view", GfMatrix4f(free_camera->viewMatrix));
+    shader_handle->shader.setMat4("projection", GfMatrix4f(free_camera->projMatrix));
 
     for (int i = 0; i < meshes.size(); ++i) {
         auto mesh = meshes[i];

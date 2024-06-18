@@ -23,7 +23,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 static void node_exec(ExeParams params)
 {
     Hd_USTC_CG_Camera* free_camera = get_free_camera(params);
-    auto size = free_camera->_dataWindow.GetSize();
+    auto size = free_camera->dataWindow.GetSize();
 
     TextureDesc output_desc;
     output_desc.debugName = "Random Number Texture";

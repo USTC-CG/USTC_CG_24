@@ -30,12 +30,12 @@ public:
     void attachFilm(Hd_USTC_CG_RenderBuffer* new_film) const;
 
     mutable Hd_USTC_CG_RenderBuffer* film;
-    mutable GfRect2i _dataWindow;
+    mutable GfRect2i dataWindow;
 private:
-    mutable GfMatrix4d _inverseProjMatrix;
-    mutable GfMatrix4d _projMatrix;
-    mutable GfMatrix4d _inverseViewMatrix;
-    mutable GfMatrix4d _viewMatrix;
+    mutable GfMatrix4d inverseProjMatrix;
+    mutable GfMatrix4d projMatrix;
+    mutable GfMatrix4d inverseViewMatrix;
+    mutable GfMatrix4d viewMatrix;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

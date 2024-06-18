@@ -1,9 +1,9 @@
 #pragma once
-#include "rich_type_buffer.hpp"
 #include "Nodes/node.hpp"
+#include "Nodes/node_exec.hpp"
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "camera.h"
-#include "Nodes/node_exec.hpp"
+#include "rich_type_buffer.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 inline void render_node_type_base(NodeTypeInfo* ntype)
@@ -16,11 +16,13 @@ inline void render_node_type_base(NodeTypeInfo* ntype)
     ntype->node_type_of_grpah = NodeTypeOfGrpah::Render;
 }
 
-inline Hd_USTC_CG_Camera* get_free_camera(ExeParams& params)
+inline Hd_USTC_CG_Camera* get_free_camera(
+    ExeParams& params,
+    const std::string& camera_name = "Camera")
 {
-    auto cameras = params.get_input<CameraArray>("Camera");
+    CameraArray cameras = params.get_input<CameraArray>(camera_name.c_str());
 
-    Hd_USTC_CG_Camera* free_camera;
+    Hd_USTC_CG_Camera* free_camera = nullptr;
     for (auto camera : cameras) {
         if (camera->GetId() != SdfPath::EmptyPath()) {
             free_camera = camera;

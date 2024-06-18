@@ -30,6 +30,7 @@ ShaderHandle compile_shader(
 
     if (!shader_compiled->get_error_string().empty()) {
         error_string = shader_compiled->get_error_string();
+        resource_allocator.destroy(shader_compiled);
         return nullptr;
     }
 
