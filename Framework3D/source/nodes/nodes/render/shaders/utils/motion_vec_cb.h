@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cpp_shader_macro.h"
-
 struct FrameConstants {
 #ifdef __cplusplus
     USING_PXR_MATH_TYPES
