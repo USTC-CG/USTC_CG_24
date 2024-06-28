@@ -192,6 +192,14 @@ static SocketTypeInfo* make_socket_type_Texture()
     return socket_type;
 }
 
+static SocketTypeInfo* make_socket_type_Buffer()
+{
+    SocketTypeInfo* socket_type =
+        make_standard_socket_type(SocketType::Buffer);
+    socket_type->cpp_type = entt::resolve<BufferHandle>();
+    return socket_type;
+}
+
 static SocketTypeInfo* make_socket_type_Materials()
 {
     SocketTypeInfo* socket_type =

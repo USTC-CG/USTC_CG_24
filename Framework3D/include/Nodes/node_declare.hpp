@@ -84,6 +84,8 @@ class NodeDeclarationBuilder {
         const char* name,
         const char* identifier = "");
 
+    // The difference between storage and runtime storage is that storaged types
+    // are expected to have the method of serialize() and deserialize().
     template<typename Data>
     void add_storage();
 

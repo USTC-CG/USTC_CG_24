@@ -7,7 +7,10 @@
     using float4x4 = pxr::GfMatrix4f; \
     using float2 = pxr::GfVec2f;      \
     using float3 = pxr::GfVec3f;      \
-    using float4 = pxr::GfVec4f;
+    using float4 = pxr::GfVec4f;      \
+    using int2 = pxr::GfVec2i;        \
+    using int3 = pxr::GfVec3i;        \
+    using int4 = pxr::GfVec4i;
 #endif
 
 // #ifdef __cplusplus

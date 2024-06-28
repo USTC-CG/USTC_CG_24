@@ -6,6 +6,7 @@
 
 #include "Backend.hpp"
 #include "USTC_CG.h"
+#include "Utils/Logging/Logging.h"
 #include "Utils/Macro/map.h"
 #include "entt/meta/meta.hpp"
 #include "entt/meta/resolve.hpp"

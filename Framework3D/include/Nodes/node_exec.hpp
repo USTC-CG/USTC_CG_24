@@ -80,11 +80,19 @@ struct ExeParams {
         return node_.runtime_storage.cast<T>();
     }
 
+    template<typename T>
+    T get_global_params()
+    {
+        assert(global_param);
+        return entt::any_cast<std::decay_t<T>>(global_param);
+    }
+
    private:
     int get_input_index(const char* identifier) const;
     int get_output_index(const char* identifier);
 
     friend class EagerNodeTreeExecutor;
+    friend class EagerNodeTreeExecutorRender;
 
     template<typename T>
     friend T& force_get_output_to_execute(
@@ -92,6 +100,7 @@ struct ExeParams {
         const char* identifier);
 
    private:
+    entt::any global_param;
     std::vector<entt::meta_any*> inputs_;
     std::vector<entt::meta_any*> outputs_;
 };

@@ -49,6 +49,8 @@ struct PlanarViewConstants {
     float2 windowToClipBias;
 
     float4 cameraDirectionOrPosition;
+
+    int2 resolution;
 };
 
 #endif  // VIEW_CB_H

@@ -23,55 +23,47 @@
 // ---[ Structures ]---
 
 #include "matrix_op.h"
+#include "utils/random.slangh"
 #include "view_cb.h"
 
-RaytracingAccelerationStructure SceneBVH : register(t0);
 RWStructuredBuffer<RayDesc> rays : register(u0);
-RWTexture2D<float4> RTOutput : register(u1);
+RWTexture2D<uint> random_seeds : register(u1);
 
-struct HitInfo {
-    float4 ShadedColorAndHitT : SHADED_COLOR_AND_HIT_T;
-};
+// ---[ Constant Buffers ]---
+ConstantBuffer<PlanarViewConstants> viewConstant : register(b0);
 
-struct Attributes {
-    float2 uv;
-};
+// ---[ Resources ]---
 
-// ---[ Ray Generation Shader ]---
-
-[shader("raygeneration")]
-void RayGen()
+RayDesc
+setupPrimaryRay(uint2 pixelPosition, PlanarViewConstants view, inout uint seed)
 {
-    uint2 LaunchIndex = DispatchRaysIndex().xy;
-    uint2 LaunchDimensions = DispatchRaysDimensions().xy;
+    float2 pixelPositionF = float2(pixelPosition);
+    pixelPositionF.x += random_float(seed);
+    pixelPositionF.y += random_float(seed);
+
+    float2 uv = pixelPositionF * view.viewportSizeInv;
+    float4 clipPos = float4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1, 1.0, 1);
+    float4 worldPos = mul(clipPos, view.matClipToWorld);
+    worldPos.xyz /= worldPos.w;
+
+    RayDesc ray;
+    ray.Origin = view.cameraDirectionOrPosition.xyz;
+    ray.Direction = normalize(worldPos.xyz - ray.Origin);
+    ray.TMin = 0;
+    ray.TMax = 1000;
+    return ray;
+}
+
+[numthreads(8, 8, 1)]
+void main(uint3 DTid: SV_DispatchThreadID)
+{
+    uint2 LaunchIndex = DTid.xy;
+    uint2 LaunchDimensions = viewConstant.resolution;
+
+    var seed = random_seeds[LaunchIndex];
     // Setup the ray
-    RayDesc ray = rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x];
+    RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant, seed);
 
-    // Trace the ray
-    HitInfo payload;
-    payload.ShadedColorAndHitT = float4(0, 0, 0, 0);
-
-    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-    var color = payload.ShadedColorAndHitT.rgb;
-    RTOutput[LaunchIndex.xy] = float4(color, 1.f);
-}
-
-// ---[ Closest Hit Shader ]---
-
-[shader("closesthit")]
-void ClosestHit(
-    inout HitInfo payload: SV_RayPayload,
-    Attributes attrib: SV_IntersectionAttributes)
-{
-    float3 barycentrics =
-        float3((1.0f - attrib.uv.x - attrib.uv.y), attrib.uv.x, attrib.uv.y);
-    payload.ShadedColorAndHitT = float4(barycentrics, RayTCurrent());
-}
-
-// ---[ Miss Shader ]---
-
-[shader("miss")]
-void Miss(inout HitInfo payload: SV_RayPayload)
-{
-    payload.ShadedColorAndHitT = float4(0.1f, 0.2f, 0.3f, 1.f);
+    rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x] = ray;
+    random_seeds[LaunchIndex] = seed;
 }

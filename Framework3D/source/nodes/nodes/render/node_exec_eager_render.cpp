@@ -4,8 +4,8 @@
 #include "resource_allocator_instance.hpp"
 // #include "Utils/Functions/GenericPointer_.hpp"
 //  #include "graph/node_exec_graph.h"
-
 #include "entt/meta/context.hpp"
+#include "node_global_params.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -33,6 +33,21 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
         }
     }
     return false;
+}
+
+ExeParams EagerNodeTreeExecutorRender::prepare_params(
+    NodeTree* tree,
+    Node* node)
+{
+    auto result = EagerNodeTreeExecutor::prepare_params(tree, node);
+    result.global_param = *global_param;
+
+    return result;
+}
+
+void EagerNodeTreeExecutorRender::set_global_param(RenderGlobalParams* param)
+{
+    this->global_param = param;
 }
 
 void EagerNodeTreeExecutorRender::finalize(NodeTree* tree)

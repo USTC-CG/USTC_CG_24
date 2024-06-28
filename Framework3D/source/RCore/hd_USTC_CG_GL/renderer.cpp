@@ -2,6 +2,8 @@
 
 #include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_tree.hpp"
+#include "camera.h"
+#include "node_global_params.h"
 #include "nvrhi/d3d12.h"
 #include "pxr/imaging/hd/renderBuffer.h"
 #include "pxr/imaging/hd/tokens.h"
@@ -19,7 +21,8 @@ Hd_USTC_CG_Renderer::Hd_USTC_CG_Renderer(Hd_USTC_CG_RenderParam* render_param)
 
 Hd_USTC_CG_Renderer::~Hd_USTC_CG_Renderer()
 {
-    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
+    auto executor =
+        dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
     executor->reset_allocator();
 }
 
@@ -33,7 +36,8 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
 
     if (!_ValidateAovBindings()) {
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
-            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(
+                _aovBindings[i].renderBuffer);
             rb->SetConverged(true);
         }
         // XXX:validation
@@ -42,17 +46,17 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     }
 
     // Fill the nodes that requires value from the scene.
-    auto executor = dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
+    auto executor =
+        dynamic_cast<EagerNodeTreeExecutorRender*>(render_param->executor);
     auto& node_tree = render_param->node_tree;
 
     executor->prepare_tree(node_tree);
 
     executor->set_device(render_param->nvrhi_device);
 
-
-    
     for (auto&& node : node_tree->nodes) {
-        auto try_fill_info = [&node, &executor, this]<typename T>(const char* id_name, const T& obj) {
+        auto try_fill_info = [&node, &executor, this]<typename T>(
+                                 const char* id_name, const T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
                 assert(node->get_outputs().size() == 1);
                 auto output_socket = node->get_outputs()[0];
@@ -66,11 +70,23 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
         try_fill_info("render_scene_materials", *render_param->materials);
         try_fill_info("node_accel_struct", render_param->TLAS->get_tlas());
     }
+    RenderGlobalParams params;
+    Hd_USTC_CG_Camera* free_camera = nullptr;
+    for (Hd_USTC_CG_Camera* camera : *render_param->cameras) {
+        if (camera->GetId() != SdfPath::EmptyPath()) {
+            free_camera = camera;
+            break;
+        }
+    }
+    assert(free_camera);
+    params.camera = free_camera;
+    executor->set_global_param(&params);
     executor->execute_tree(node_tree);
 
     TextureHandle texture = nullptr;
     for (auto&& node : node_tree->nodes) {
-        auto try_fetch_info = [&node, &executor]<typename T>(const char* id_name, T& obj) {
+        auto try_fetch_info = [&node, &executor]<typename T>(
+                                  const char* id_name, T& obj) {
             if (std::string(node->typeinfo->id_name) == id_name) {
                 assert(node->get_inputs().size() == 1);
                 auto output_socket = node->get_inputs()[0];
@@ -87,7 +103,8 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
 
     if (texture) {
         for (size_t i = 0; i < _aovBindings.size(); ++i) {
-            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+            auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(
+                _aovBindings[i].renderBuffer);
             rb->Present(texture);
 
             rb->SetConverged(true);
@@ -113,7 +130,8 @@ void Hd_USTC_CG_Renderer::Clear()
         }
         assert(glGetError() == GL_NO_ERROR);
 
-        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(
+            _aovBindings[i].renderBuffer);
         assert(glGetError() == GL_NO_ERROR);
 
         rb->Map();
@@ -124,19 +142,16 @@ void Hd_USTC_CG_Renderer::Clear()
 
             rb->Clear(clearColor.data());
             assert(glGetError() == GL_NO_ERROR);
-
         }
         else if (rb->GetFormat() == HdFormatInt32) {
             int32_t clearValue = _aovBindings[i].clearValue.Get<int32_t>();
             rb->Clear(&clearValue);
             assert(glGetError() == GL_NO_ERROR);
-
         }
         else if (rb->GetFormat() == HdFormatFloat32) {
             float clearValue = _aovBindings[i].clearValue.Get<float>();
             rb->Clear(&clearValue);
             assert(glGetError() == GL_NO_ERROR);
-
         }
         else if (rb->GetFormat() == HdFormatFloat32Vec3) {
             auto clearValue = _aovBindings[i].clearValue.Get<GfVec3f>();
@@ -148,7 +163,6 @@ void Hd_USTC_CG_Renderer::Clear()
         rb->Unmap();
         rb->SetConverged(false);
         assert(glGetError() == GL_NO_ERROR);
-
     }
 }
 
@@ -162,26 +176,31 @@ GfVec4f Hd_USTC_CG_Renderer::_GetClearColor(const VtValue& clearValue)
 
     switch (type.type) {
         case HdTypeFloatVec3: {
-            GfVec3f f = *(static_cast<const GfVec3f*>(HdGetValueData(clearValue)));
+            GfVec3f f =
+                *(static_cast<const GfVec3f*>(HdGetValueData(clearValue)));
             return GfVec4f(f[0], f[1], f[2], 1.0f);
         }
         case HdTypeFloatVec4: {
-            GfVec4f f = *(static_cast<const GfVec4f*>(HdGetValueData(clearValue)));
+            GfVec4f f =
+                *(static_cast<const GfVec4f*>(HdGetValueData(clearValue)));
             return f;
         }
         case HdTypeDoubleVec3: {
-            GfVec3d f = *(static_cast<const GfVec3d*>(HdGetValueData(clearValue)));
+            GfVec3d f =
+                *(static_cast<const GfVec3d*>(HdGetValueData(clearValue)));
             return GfVec4f(f[0], f[1], f[2], 1.0f);
         }
         case HdTypeDoubleVec4: {
-            GfVec4d f = *(static_cast<const GfVec4d*>(HdGetValueData(clearValue)));
+            GfVec4d f =
+                *(static_cast<const GfVec4d*>(HdGetValueData(clearValue)));
             return GfVec4f(f);
         }
         default: return GfVec4f(0.0f, 0.0f, 0.0f, 1.0f);
     }
 }
 
-void Hd_USTC_CG_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aovBindings)
+void Hd_USTC_CG_Renderer::SetAovBindings(
+    const HdRenderPassAovBindingVector& aovBindings)
 {
     _aovBindings = aovBindings;
     _aovNames.resize(_aovBindings.size());
@@ -196,14 +215,17 @@ void Hd_USTC_CG_Renderer::SetAovBindings(const HdRenderPassAovBindingVector& aov
 void Hd_USTC_CG_Renderer::MarkAovBuffersUnconverged()
 {
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(_aovBindings[i].renderBuffer);
+        auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(
+            _aovBindings[i].renderBuffer);
         rb->SetConverged(false);
     }
 }
 
-void Hd_USTC_CG_Renderer::renderTimeUpdateCamera(const HdRenderPassStateSharedPtr& renderPassState)
+void Hd_USTC_CG_Renderer::renderTimeUpdateCamera(
+    const HdRenderPassStateSharedPtr& renderPassState)
 {
-    camera_ = static_cast<const Hd_USTC_CG_Camera*>(renderPassState->GetCamera());
+    camera_ =
+        static_cast<const Hd_USTC_CG_Camera*>(renderPassState->GetCamera());
     camera_->update(renderPassState);
 }
 
@@ -232,17 +254,22 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
         // By the time the attachment gets here, there should be a bound
         // output buffer.
         if (_aovBindings[i].renderBuffer == nullptr) {
-            TF_WARN("Aov '%s' doesn't have any renderbuffer bound", _aovNames[i].name.GetText());
+            TF_WARN(
+                "Aov '%s' doesn't have any renderbuffer bound",
+                _aovNames[i].name.GetText());
             _aovBindingsValid = false;
             continue;
         }
 
         if (_aovNames[i].name != HdAovTokens->color &&
             _aovNames[i].name != HdAovTokens->cameraDepth &&
-            _aovNames[i].name != HdAovTokens->depth && _aovNames[i].name != HdAovTokens->primId &&
+            _aovNames[i].name != HdAovTokens->depth &&
+            _aovNames[i].name != HdAovTokens->primId &&
             _aovNames[i].name != HdAovTokens->instanceId &&
-            _aovNames[i].name != HdAovTokens->elementId && _aovNames[i].name != HdAovTokens->Neye &&
-            _aovNames[i].name != HdAovTokens->normal && !_aovNames[i].isPrimvar) {
+            _aovNames[i].name != HdAovTokens->elementId &&
+            _aovNames[i].name != HdAovTokens->Neye &&
+            _aovNames[i].name != HdAovTokens->normal &&
+            !_aovNames[i].isPrimvar) {
             TF_WARN(
                 "Unsupported attachment with Aov '%s' won't be rendered to",
                 _aovNames[i].name.GetText());
@@ -274,7 +301,8 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
         }
 
         // Normal is only supported for vec3 attachments of float.
-        if ((_aovNames[i].name == HdAovTokens->Neye || _aovNames[i].name == HdAovTokens->normal) &&
+        if ((_aovNames[i].name == HdAovTokens->Neye ||
+             _aovNames[i].name == HdAovTokens->normal) &&
             format != HdFormatFloat32Vec3) {
             TF_WARN(
                 "Aov '%s' has unsupported format '%s'",
@@ -316,7 +344,8 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
         // make sure the clear value is reasonable for the format of the
         // attached buffer.
         if (!_aovBindings[i].clearValue.IsEmpty()) {
-            HdTupleType clearType = HdGetValueTupleType(_aovBindings[i].clearValue);
+            HdTupleType clearType =
+                HdGetValueTupleType(_aovBindings[i].clearValue);
 
             // array-valued clear types aren't supported.
             if (clearType.count != 1) {
@@ -328,8 +357,10 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
             }
 
             // color only supports float/double vec3/4
-            if (_aovNames[i].name == HdAovTokens->color && clearType.type != HdTypeFloatVec3 &&
-                clearType.type != HdTypeFloatVec4 && clearType.type != HdTypeDoubleVec3 &&
+            if (_aovNames[i].name == HdAovTokens->color &&
+                clearType.type != HdTypeFloatVec3 &&
+                clearType.type != HdTypeFloatVec4 &&
+                clearType.type != HdTypeDoubleVec3 &&
                 clearType.type != HdTypeDoubleVec4) {
                 TF_WARN(
                     "Aov '%s' clear value type '%s' isn't compatible",
@@ -342,7 +373,8 @@ bool Hd_USTC_CG_Renderer::_ValidateAovBindings()
             // with float3.
             if ((format == HdFormatFloat32 && clearType.type != HdTypeFloat) ||
                 (format == HdFormatInt32 && clearType.type != HdTypeInt32) ||
-                (format == HdFormatFloat32Vec3 && clearType.type != HdTypeFloatVec3)) {
+                (format == HdFormatFloat32Vec3 &&
+                 clearType.type != HdTypeFloatVec3)) {
                 TF_WARN(
                     "Aov '%s' clear value type '%s' isn't compatible with"
                     " format %s",

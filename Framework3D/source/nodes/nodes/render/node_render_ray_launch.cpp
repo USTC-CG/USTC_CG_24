@@ -6,20 +6,19 @@
 #include "nvrhi/utils.h"
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
-#include "utils/cam_to_view_contants.h"
 
 namespace USTC_CG::node_scene_ray_launch {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::Buffer>("Rays");
     b.add_input<decl::AccelStruct>("Accel Struct");
-    b.add_input<decl::Camera>("Camera");
-    b.add_input<decl::Texture>("random seeds");
     b.add_output<decl::Texture>("Barycentric");
 }
 
 static void node_exec(ExeParams params)
 {
-    Hd_USTC_CG_Camera* free_camera = get_free_camera(params);
+    Hd_USTC_CG_Camera* free_camera =
+        params.get_global_params<RenderGlobalParams>().camera;
     auto size = free_camera->dataWindow.GetSize();
 
     // 0. Prepare the output texture
@@ -40,7 +39,6 @@ static void node_exec(ExeParams params)
         std::filesystem::path(RENDER_NODES_FILES_DIR) /
         std::filesystem::path("shaders/ray_launch.slang"));
     shader_compile_desc.shaderType = nvrhi::ShaderType::AllRayTracing;
-    // shader_compile_desc.set_entry_name("ClosestHit");
 
     auto raytrace_compiled = resource_allocator.create(shader_compile_desc);
 
@@ -74,9 +72,8 @@ static void node_exec(ExeParams params)
         nvrhi::BindingLayoutDesc globalBindingLayoutDesc;
         globalBindingLayoutDesc.visibility = nvrhi::ShaderType::All;
         globalBindingLayoutDesc.bindings = {
-            { 0, nvrhi::ResourceType::ConstantBuffer },
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
-            { 0, nvrhi::ResourceType::Texture_UAV },
+            { 0, nvrhi::ResourceType::StructuredBuffer_UAV },
             { 1, nvrhi::ResourceType::Texture_UAV }
         };
         auto globalBindingLayout =
@@ -98,22 +95,13 @@ static void node_exec(ExeParams params)
         } };
         auto m_TopLevelAS = params.get_input<AccelStructHandle>("Accel Struct");
         auto raytracing_pipeline = resource_allocator.create(pipeline_desc);
+
+        auto rays = params.get_input<BufferHandle>("Rays");
         BindingSetDesc binding_set_desc;
-
-        auto constant_buffer = resource_allocator.create(
-            BufferDesc{ .byteSize = sizeof(PlanarViewConstants),
-                        .debugName = "constantBuffer",
-                        .isConstantBuffer = true,
-                        .initialState = nvrhi::ResourceStates::ConstantBuffer,
-                        .cpuAccess = nvrhi::CpuAccessMode::Write });
-
-        auto random_seeds = params.get_input<TextureHandle>("random seeds");
-
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
-            nvrhi::BindingSetItem::ConstantBuffer(0, constant_buffer.Get()),
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(0, result_texture.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(1, random_seeds)
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(0, rays.Get()),
+            nvrhi::BindingSetItem::Texture_UAV(1, result_texture.Get())
         };
         auto binding_set = resource_allocator.create(
             binding_set_desc, globalBindingLayout.Get());
@@ -127,10 +115,6 @@ static void node_exec(ExeParams params)
         state.setShaderTable(sbt).addBindingSet(binding_set);
 
         m_CommandList->open();
-        PlanarViewConstants view_constant =
-            camera_to_view_constants(free_camera);
-        m_CommandList->writeBuffer(
-            constant_buffer.Get(), &view_constant, sizeof(PlanarViewConstants));
 
         m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
@@ -142,7 +126,6 @@ static void node_exec(ExeParams params)
         resource_allocator.device
             ->waitForIdle();  // This is not fully efficient.
 
-        resource_allocator.destroy(constant_buffer);
         resource_allocator.destroy(raytracing_pipeline);
         resource_allocator.destroy(globalBindingLayout);
         resource_allocator.destroy(binding_set);

@@ -45,6 +45,7 @@ inline PlanarViewConstants camera_to_view_constants(Hd_USTC_CG_Camera* camera)
     constants.cameraDirectionOrPosition =
         GfVec4f(position[0], position[1], position[2], 1.0f);
 
+    constants.resolution = camera->dataWindow.GetSize();
     return constants;
 }
 

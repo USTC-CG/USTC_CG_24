@@ -6,6 +6,7 @@
 #include "nvrhi/utils.h"
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
+#include "shaders/utils/motion_vec_cb.h"
 
 namespace USTC_CG::node_render_motion_vec {
 static void node_declare(NodeDeclarationBuilder& b)

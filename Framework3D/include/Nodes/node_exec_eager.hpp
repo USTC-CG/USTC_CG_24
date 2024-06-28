@@ -75,11 +75,16 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
     std::map<std::string, entt::meta_any> storage;
 };
 
+struct RenderGlobalParams;
+
 class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
    protected:
     bool execute_node(NodeTree* tree, Node* node) override;
+    RenderGlobalParams* global_param = nullptr;
+    ExeParams prepare_params(NodeTree* tree, Node* node) override;
 
    public:
+    void set_global_param(RenderGlobalParams* param);
     void finalize(NodeTree* tree) override;
     virtual void set_device(
         nvrhi::IDevice*

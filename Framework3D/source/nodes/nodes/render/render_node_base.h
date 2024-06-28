@@ -4,6 +4,7 @@
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "camera.h"
 #include "rich_type_buffer.hpp"
+#include "node_global_params.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 inline void render_node_type_base(NodeTypeInfo* ntype)
