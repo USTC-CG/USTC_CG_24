@@ -60,10 +60,12 @@ void main(uint3 DTid: SV_DispatchThreadID)
     uint2 LaunchIndex = DTid.xy;
     uint2 LaunchDimensions = viewConstant.resolution;
 
-    var seed = random_seeds[LaunchIndex];
-    // Setup the ray
-    RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant, seed);
+    if (all(LaunchIndex.xy <= LaunchDimensions.xy)) {
+        var seed = random_seeds[LaunchIndex];
+        // Setup the ray
+        RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant, seed);
 
-    rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x] = ray;
-    random_seeds[LaunchIndex] = seed;
+        rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x] = ray;
+        random_seeds[LaunchIndex] = seed;
+    }
 }

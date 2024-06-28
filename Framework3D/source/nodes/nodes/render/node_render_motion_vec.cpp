@@ -11,27 +11,27 @@
 #include "utils/compile_shader.h"
 
 namespace USTC_CG::node_render_motion_vec {
+
+struct PrevCamStatus {
+    pxr::GfMatrix4f PrevProjViewMatrix;
+};
+
 static void node_declare(NodeDeclarationBuilder& b)
 {
-    b.add_input<decl::Texture>("Depth");
-    b.add_input<decl::Camera>("Prev Camera");
-    b.add_input<decl::Camera>("Current Camera");
-
+    b.add_input<decl::Texture>("World Position");
+    b.add_input<decl::Camera>("Camera");
     b.add_output<decl::Texture>("Motion Vector");
+
+    b.add_runtime_storage<PrevCamStatus>();
 }
 
 static void node_exec(ExeParams params)
 {
-    auto depth = params.get_input<TextureHandle>("Depth");
-    auto texture_info = depth->getDesc();
-    Hd_USTC_CG_Camera* current_camera =
-        get_free_camera(params, "Current Camera");
+    auto world_position = params.get_input<TextureHandle>("World Position");
+    auto texture_info = world_position->getDesc();
+    Hd_USTC_CG_Camera* current_camera = get_free_camera(params, "Camera");
 
-    Hd_USTC_CG_Camera* prev_camera = get_free_camera(params, "Prev Camera");
-
-    if (!prev_camera) {
-        prev_camera = current_camera;
-    }
+    auto& prev_camera = params.get_runtime_storage<PrevCamStatus&>();
 
     texture_info.isUAV = true;
     texture_info.format = nvrhi::Format::RGBA32_FLOAT;
@@ -80,7 +80,7 @@ static void node_exec(ExeParams params)
 
     BindingSetDesc binding_set_desc;
     binding_set_desc.bindings = {
-        nvrhi::BindingSetItem::Texture_SRV(0, depth),
+        nvrhi::BindingSetItem::Texture_SRV(0, world_position),
         nvrhi::BindingSetItem::Texture_UAV(0, output),
         nvrhi::BindingSetItem::Sampler(0, point_sampler),
         nvrhi::BindingSetItem::ConstantBuffer(0, frame_constants)
@@ -90,12 +90,7 @@ static void node_exec(ExeParams params)
     MARK_DESTROY_NVRHI_RESOURCE(binding_set);
 
     FrameConstants cpu_frame_constants;
-    cpu_frame_constants.PrevViewProjMatrix =
-        prev_camera->viewMatrix * prev_camera->projMatrix;
-    cpu_frame_constants.CurrentViewProjMatrix =
-        current_camera->viewMatrix * current_camera->projMatrix;
-    cpu_frame_constants.InvCurrentViewProjMatrix =
-        current_camera->inverseProjMatrix * current_camera->inverseViewMatrix;
+    cpu_frame_constants.PrevProjViewMatrix = prev_camera.PrevProjViewMatrix;
     cpu_frame_constants.Resolution[0] = texture_info.width;
     cpu_frame_constants.Resolution[1] = texture_info.height;
 
@@ -112,14 +107,16 @@ static void node_exec(ExeParams params)
 
     resource_allocator.device->executeCommandList(command_list);
 
-    params.set_output("Output Frame", output);
+    params.set_output("Motion Vector", output);
+    prev_camera.PrevProjViewMatrix =
+        current_camera->viewMatrix * current_camera->projMatrix;
 }
 
 static void node_register()
 {
     static NodeTypeInfo ntype;
 
-    strcpy(ntype.ui_name, "render_motion_vec");
+    strcpy(ntype.ui_name, "Motion Vector");
     strcpy(ntype.id_name, "node_render_motion_vec");
 
     render_node_type_base(&ntype);

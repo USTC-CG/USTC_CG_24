@@ -19,6 +19,7 @@ struct RuntimeInputState {
     entt::meta_any value;
     bool is_forwarded = false;
     bool is_last_used = false;
+    bool keep_alive = false;
 };
 
 struct RuntimeOutputState {

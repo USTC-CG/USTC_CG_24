@@ -27,9 +27,12 @@
 
 RaytracingAccelerationStructure SceneBVH : register(t0);
 RWStructuredBuffer<RayDesc> rays : register(u0);
-RWTexture2D<float4> RTOutput : register(u1);
+RWTexture2D<float4> BaryCentric : register(u1);
+RWTexture2D<float4> WorldPosition : register(u2);
 
 struct HitInfo {
+    float2 barycentric;
+    float3 position;
     float4 ShadedColorAndHitT : SHADED_COLOR_AND_HIT_T;
 };
 
@@ -53,7 +56,8 @@ void RayGen()
 
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     var color = payload.ShadedColorAndHitT.rgb;
-    RTOutput[LaunchIndex.xy] = float4(color, 1.f);
+    BaryCentric[LaunchIndex.xy] = float4(payload.barycentric, 0, 1);
+    WorldPosition[LaunchIndex.xy] = float4(payload.position, 1);
 }
 
 // ---[ Closest Hit Shader ]---
@@ -63,9 +67,8 @@ void ClosestHit(
     inout HitInfo payload: SV_RayPayload,
     Attributes attrib: SV_IntersectionAttributes)
 {
-    float3 barycentrics =
-        float3((1.0f - attrib.uv.x - attrib.uv.y), attrib.uv.x, attrib.uv.y);
-    payload.ShadedColorAndHitT = float4(barycentrics, RayTCurrent());
+    payload.barycentric = attrib.uv;
+    payload.position = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 }
 
 // ---[ Miss Shader ]---
@@ -73,5 +76,6 @@ void ClosestHit(
 [shader("miss")]
 void Miss(inout HitInfo payload: SV_RayPayload)
 {
-    payload.ShadedColorAndHitT = float4(0.1f, 0.2f, 0.3f, 1.f);
+    payload.barycentric = 0;
+    payload.position = 1.0/0.0f;
 }

@@ -265,6 +265,7 @@ void EagerNodeTreeExecutor::try_storage()
         if (socket->type_info->type == SocketType::Any) {
             if (std::string(socket->Node->typeinfo->id_name) ==
                 "func_storage_in") {
+                input_states[index_cache[socket]].keep_alive = true;
                 auto node = socket->Node;
                 entt::meta_any data;
                 sync_node_to_external_storage(

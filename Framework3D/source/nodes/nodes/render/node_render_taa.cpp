@@ -11,32 +11,41 @@
 #include "utils/compile_shader.h"
 
 namespace USTC_CG::node_render_taa {
+struct CameraState {
+    pxr::GfMatrix4f camera_status;
+};
+
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Texture>("Previous Frame");
     b.add_input<decl::Texture>("Current Frame");
-    b.add_input<decl::Texture>("Velocity");
-    b.add_input<decl::Camera>("Prev Camera");
-    b.add_input<decl::Camera>("Current Camera");
+    b.add_input<decl::Texture>("Motion Vector");
 
     b.add_output<decl::Texture>("Output Frame");
+
+    b.add_runtime_storage<CameraState>();
 }
 
 static void node_exec(ExeParams params)
 {
     auto previous = params.get_input<TextureHandle>("Previous Frame");
     auto current = params.get_input<TextureHandle>("Current Frame");
-    auto motion_vector = params.get_input<TextureHandle>("Velocity");
-    auto texture_info = current->getDesc();
-
-    Hd_USTC_CG_Camera* current_camera =
-        get_free_camera(params, "Current Camera");
-
-    Hd_USTC_CG_Camera* prev_camera = get_free_camera(params, "Prev Camera");
-
-    if (!prev_camera) {
-        prev_camera = current_camera;
+    if (!previous) {
+        previous = current;
     }
+
+    auto& cam_status = params.get_runtime_storage<CameraState&>();
+
+    auto cam = params.get_global_params<RenderGlobalParams>().camera;
+
+    //auto cam_mat = cam->projMatrix * cam->viewMatrix;
+    //if (cam_status.camera_status != cam_mat) {
+    //    previous = current;
+    //    cam_status.camera_status = cam_mat;
+    //}
+
+    auto motion_vector = params.get_input<TextureHandle>("Motion Vector");
+    auto texture_info = current->getDesc();
 
     texture_info.isUAV = true;
     auto output = resource_allocator.create(texture_info);
@@ -96,10 +105,6 @@ static void node_exec(ExeParams params)
     MARK_DESTROY_NVRHI_RESOURCE(binding_set);
 
     FrameConstants cpu_frame_constants;
-    cpu_frame_constants.PrevViewProjMatrix =
-        prev_camera->viewMatrix * prev_camera->projMatrix;
-    cpu_frame_constants.InvViewProjMatrix =
-        current_camera->inverseProjMatrix * current_camera->inverseViewMatrix;
     cpu_frame_constants.Resolution[0] = texture_info.width;
     cpu_frame_constants.Resolution[1] = texture_info.height;
 

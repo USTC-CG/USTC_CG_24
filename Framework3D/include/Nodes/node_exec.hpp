@@ -74,7 +74,7 @@ struct ExeParams {
     T get_runtime_storage()
     {
         if (!node_.runtime_storage) {
-            node_.runtime_storage = entt::resolve<T>().construct();
+            node_.runtime_storage = entt::resolve<std::decay_t<T>>().construct();
         }
 
         return node_.runtime_storage.cast<T>();
