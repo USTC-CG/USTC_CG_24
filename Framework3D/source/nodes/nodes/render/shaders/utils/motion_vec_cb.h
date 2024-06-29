@@ -6,6 +6,6 @@ struct FrameConstants {
     USING_PXR_MATH_TYPES
 #endif
     float4x4 PrevProjViewMatrix;  // Previous frame's view-projection matrix
-                                        // view-projection matrix
-    float2 Resolution;                  // Resolution of the render target
+                                  // view-projection matrix
+    float2 Resolution;            // Resolution of the render target
 };

@@ -30,7 +30,7 @@ void main(uint3 DTid: SV_DispatchThreadID)
     float4 currentColor = CurrentFrame.Load(int3(pixelCoord, 0));
     float4 prevColor = PreviousFrame.SampleLevel(PointSampler, prevUV, 0);
 
-    float spp = 16;
+    float spp = 4;
     // Simple blending for TAA
     float blendFactor = (spp - 1) / spp;  // Adjust blend factor as needed
     float4 resultColor = lerp(currentColor, prevColor, blendFactor);
