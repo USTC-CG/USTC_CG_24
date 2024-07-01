@@ -23,12 +23,14 @@
 // ---[ Structures ]---
 
 #include "matrix_op.h"
+#include "utils/HitObject.h"
 #include "view_cb.h"
 
 RaytracingAccelerationStructure SceneBVH : register(t0);
 RWStructuredBuffer<RayDesc> rays : register(u0);
 RWTexture2D<float4> BaryCentric : register(u1);
 RWTexture2D<float4> WorldPosition : register(u2);
+RWStructuredBuffer<HitObjectInfo> hitObjectInfo : register(u0);
 
 struct HitInfo {
     float2 barycentric;
@@ -77,5 +79,5 @@ void ClosestHit(
 void Miss(inout HitInfo payload: SV_RayPayload)
 {
     payload.barycentric = 0;
-    payload.position = 1.0/0.0f;
+    payload.position = 1.0 / 0.0f;
 }
