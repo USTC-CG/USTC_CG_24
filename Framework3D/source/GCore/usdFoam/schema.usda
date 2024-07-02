@@ -30,7 +30,7 @@ over "GLOBAL" (
 
 
 class FoamRoot "FoamRoot" (
-    inherits = </Boundable>
+    inherits = </Xformable>
     doc = """Root type used to identify a scope beneath which
     foam system primitives are defined.
 
@@ -48,7 +48,7 @@ class FoamRoot "FoamRoot" (
 
 
 class PolygonFilm "PolygonFilm" (
-    inherits = </Boundable>
+    inherits = </Mesh>
     doc = """Describes a film represented by polygons intersected by spheres."""
     customData = {
         dictionary extraPlugInfo = {
@@ -56,14 +56,6 @@ class PolygonFilm "PolygonFilm" (
         }
     }
 ) {
-    point3f[] points (
-        doc = """An array of points defining the vertices of the polygons."""
-    )
-    
-    int[] polygonIndices (
-        doc = """An array of indices defining the connectivity of the polygons."""
-    )
-    
     float[] sphereRadii (
         doc = """An array of radii for the spheres intersecting the polygons."""
     )
@@ -75,7 +67,7 @@ class PolygonFilm "PolygonFilm" (
 
 
 class SphereFilm "SphereFilm" (
-    inherits = </Boundable>
+    inherits = </PointBased>
     doc = """Describes a film represented by spheres intersected by polygons."""
     customData = {
         dictionary extraPlugInfo = {
@@ -102,7 +94,7 @@ class SphereFilm "SphereFilm" (
 
 
 class PlateauBorder "PlateauBorder" (
-    inherits = </Boundable>
+    inherits = </PointBased>
     doc = """Describes a special structure named Plateau Border in the foam system."""
     customData = {
         dictionary extraPlugInfo = {

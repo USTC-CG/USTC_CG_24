@@ -34,7 +34,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 TF_REGISTRY_FUNCTION(TfType)
 {
     TfType::Define<UsdFoamSphereFilm,
-        TfType::Bases< UsdGeomBoundable > >();
+        TfType::Bases< UsdGeomPointBased > >();
     
     // Register the usd prim typename as an alias under UsdSchemaBase. This
     // enables one to call
@@ -195,7 +195,7 @@ UsdFoamSphereFilm::GetSchemaAttributeNames(bool includeInherited)
     };
     static TfTokenVector allNames =
         _ConcatenateAttributeNames(
-            UsdGeomBoundable::GetSchemaAttributeNames(true),
+            UsdGeomPointBased::GetSchemaAttributeNames(true),
             localNames);
 
     if (includeInherited)

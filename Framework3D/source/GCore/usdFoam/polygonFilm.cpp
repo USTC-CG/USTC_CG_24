@@ -34,7 +34,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 TF_REGISTRY_FUNCTION(TfType)
 {
     TfType::Define<UsdFoamPolygonFilm,
-        TfType::Bases< UsdGeomBoundable > >();
+        TfType::Bases< UsdGeomMesh > >();
     
     // Register the usd prim typename as an alias under UsdSchemaBase. This
     // enables one to call
@@ -104,40 +104,6 @@ UsdFoamPolygonFilm::_GetTfType() const
 }
 
 UsdAttribute
-UsdFoamPolygonFilm::GetPointsAttr() const
-{
-    return GetPrim().GetAttribute(UsdFoamTokens->points);
-}
-
-UsdAttribute
-UsdFoamPolygonFilm::CreatePointsAttr(VtValue const &defaultValue, bool writeSparsely) const
-{
-    return UsdSchemaBase::_CreateAttr(UsdFoamTokens->points,
-                       SdfValueTypeNames->Point3fArray,
-                       /* custom = */ false,
-                       SdfVariabilityVarying,
-                       defaultValue,
-                       writeSparsely);
-}
-
-UsdAttribute
-UsdFoamPolygonFilm::GetPolygonIndicesAttr() const
-{
-    return GetPrim().GetAttribute(UsdFoamTokens->polygonIndices);
-}
-
-UsdAttribute
-UsdFoamPolygonFilm::CreatePolygonIndicesAttr(VtValue const &defaultValue, bool writeSparsely) const
-{
-    return UsdSchemaBase::_CreateAttr(UsdFoamTokens->polygonIndices,
-                       SdfValueTypeNames->IntArray,
-                       /* custom = */ false,
-                       SdfVariabilityVarying,
-                       defaultValue,
-                       writeSparsely);
-}
-
-UsdAttribute
 UsdFoamPolygonFilm::GetSphereRadiiAttr() const
 {
     return GetPrim().GetAttribute(UsdFoamTokens->sphereRadii);
@@ -188,14 +154,12 @@ const TfTokenVector&
 UsdFoamPolygonFilm::GetSchemaAttributeNames(bool includeInherited)
 {
     static TfTokenVector localNames = {
-        UsdFoamTokens->points,
-        UsdFoamTokens->polygonIndices,
         UsdFoamTokens->sphereRadii,
         UsdFoamTokens->sphereCenters,
     };
     static TfTokenVector allNames =
         _ConcatenateAttributeNames(
-            UsdGeomBoundable::GetSchemaAttributeNames(true),
+            UsdGeomMesh::GetSchemaAttributeNames(true),
             localNames);
 
     if (includeInherited)

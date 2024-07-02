@@ -92,7 +92,7 @@ void wrapUsdFoamSphereFilm()
 {
     typedef UsdFoamSphereFilm This;
 
-    class_<This, bases<UsdGeomBoundable> >
+    class_<This, bases<UsdGeomPointBased> >
         cls("SphereFilm");
 
     cls

@@ -28,7 +28,7 @@
 
 #include "pxr/pxr.h"
 #include "pxr/usd/usdFoam/api.h"
-#include "pxr/usd/usdGeom/boundable.h"
+#include "pxr/usd/usdGeom/pointBased.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/stage.h"
 #include "pxr/usd/usdFoam/tokens.h"
@@ -54,7 +54,7 @@ class SdfAssetPath;
 ///
 /// Describes a film represented by spheres intersected by polygons.
 ///
-class UsdFoamSphereFilm : public UsdGeomBoundable
+class UsdFoamSphereFilm : public UsdGeomPointBased
 {
 public:
     /// Compile time constant representing what kind of schema this class is.
@@ -67,7 +67,7 @@ public:
     /// for a \em valid \p prim, but will not immediately throw an error for
     /// an invalid \p prim
     explicit UsdFoamSphereFilm(const UsdPrim& prim=UsdPrim())
-        : UsdGeomBoundable(prim)
+        : UsdGeomPointBased(prim)
     {
     }
 
@@ -75,7 +75,7 @@ public:
     /// Should be preferred over UsdFoamSphereFilm(schemaObj.GetPrim()),
     /// as it preserves SchemaBase state.
     explicit UsdFoamSphereFilm(const UsdSchemaBase& schemaObj)
-        : UsdGeomBoundable(schemaObj)
+        : UsdGeomPointBased(schemaObj)
     {
     }
 

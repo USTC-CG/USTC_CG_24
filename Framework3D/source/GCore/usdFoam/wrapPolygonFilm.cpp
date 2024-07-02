@@ -50,20 +50,6 @@ WRAP_CUSTOM;
 
         
 static UsdAttribute
-_CreatePointsAttr(UsdFoamPolygonFilm &self,
-                                      object defaultVal, bool writeSparsely) {
-    return self.CreatePointsAttr(
-        UsdPythonToSdfType(defaultVal, SdfValueTypeNames->Point3fArray), writeSparsely);
-}
-        
-static UsdAttribute
-_CreatePolygonIndicesAttr(UsdFoamPolygonFilm &self,
-                                      object defaultVal, bool writeSparsely) {
-    return self.CreatePolygonIndicesAttr(
-        UsdPythonToSdfType(defaultVal, SdfValueTypeNames->IntArray), writeSparsely);
-}
-        
-static UsdAttribute
 _CreateSphereRadiiAttr(UsdFoamPolygonFilm &self,
                                       object defaultVal, bool writeSparsely) {
     return self.CreateSphereRadiiAttr(
@@ -92,7 +78,7 @@ void wrapUsdFoamPolygonFilm()
 {
     typedef UsdFoamPolygonFilm This;
 
-    class_<This, bases<UsdGeomBoundable> >
+    class_<This, bases<UsdGeomMesh> >
         cls("PolygonFilm");
 
     cls
@@ -118,20 +104,6 @@ void wrapUsdFoamPolygonFilm()
 
         .def(!self)
 
-        
-        .def("GetPointsAttr",
-             &This::GetPointsAttr)
-        .def("CreatePointsAttr",
-             &_CreatePointsAttr,
-             (arg("defaultValue")=object(),
-              arg("writeSparsely")=false))
-        
-        .def("GetPolygonIndicesAttr",
-             &This::GetPolygonIndicesAttr)
-        .def("CreatePolygonIndicesAttr",
-             &_CreatePolygonIndicesAttr,
-             (arg("defaultValue")=object(),
-              arg("writeSparsely")=false))
         
         .def("GetSphereRadiiAttr",
              &This::GetSphereRadiiAttr)

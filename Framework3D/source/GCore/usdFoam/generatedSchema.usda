@@ -11,24 +11,6 @@ class FoamRoot "FoamRoot" (
     """
 )
 {
-    float3[] extent (
-        doc = """Extent is a three dimensional range measuring the geometric
-        extent of the authored gprim in its own local space (i.e. its own
-        transform not applied), without accounting for any shader-induced
-        displacement. If __any__ extent value has been authored for a given 
-        Boundable, then it should be authored at every timeSample at which 
-        geometry-affecting properties are authored, to ensure correct 
-        evaluation via ComputeExtent(). If __no__ extent value has been 
-        authored, then ComputeExtent() will call the Boundable's registered 
-        ComputeExtentFunction(), which may be expensive, which is why we 
-        strongly encourage proper authoring of extent.
-        \\sa ComputeExtent()
-        \\sa \\ref UsdGeom_Boundable_Extent.
-        
-        An authored extent on a prim which has children is expected to include
-        the extent of all children, as they will be pruned from BBox computation
-        during traversal."""
-    )
     rel proxyPrim (
         doc = '''The proxyPrim relationship allows us to link a
         prim whose purpose is "render" to its (single target)
@@ -86,6 +68,68 @@ class PolygonFilm "PolygonFilm" (
     doc = "Describes a film represented by polygons intersected by spheres."
 )
 {
+    vector3f[] accelerations (
+        doc = """If provided, 'accelerations' should be used with
+        velocities to compute positions between samples for the 'points'
+        attribute rather than interpolating between neighboring 'points'
+        samples. Acceleration is measured in position units per second-squared.
+        To convert to position units per squared UsdTimeCode, divide by the
+        square of UsdStage::GetTimeCodesPerSecond()."""
+    )
+    int[] cornerIndices = [] (
+        doc = """The indices of points for which a corresponding sharpness
+        value is specified in _cornerSharpnesses_ (so the size of this array
+        must match that of _cornerSharpnesses_)."""
+    )
+    float[] cornerSharpnesses = [] (
+        doc = """The sharpness values associated with a corresponding set of
+        points specified in _cornerIndices_ (so the size of this array must
+        match that of _cornerIndices_). Use the constant `SHARPNESS_INFINITE`
+        for a perfectly sharp corner."""
+    )
+    int[] creaseIndices = [] (
+        doc = """The indices of points grouped into sets of successive pairs
+        that identify edges to be creased. The size of this array must be
+        equal to the sum of all elements of the _creaseLengths_ attribute."""
+    )
+    int[] creaseLengths = [] (
+        doc = """The length of this array specifies the number of creases
+        (sets of adjacent sharpened edges) on the mesh. Each element gives
+        the number of points of each crease, whose indices are successively
+        laid out in the _creaseIndices_ attribute. Since each crease must
+        be at least one edge long, each element of this array must be at
+        least two."""
+    )
+    float[] creaseSharpnesses = [] (
+        doc = """The per-crease or per-edge sharpness values for all creases.
+        Since _creaseLengths_ encodes the number of points in each crease,
+        the number of elements in this array will be either len(creaseLengths)
+        or the sum over all X of (creaseLengths[X] - 1). Note that while
+        the RI spec allows each crease to have either a single sharpness
+        or a value per-edge, USD will encode either a single sharpness
+        per crease on a mesh, or sharpnesses for all edges making up
+        the creases on a mesh.  Use the constant `SHARPNESS_INFINITE` for a
+        perfectly sharp crease."""
+    )
+    uniform bool doubleSided = 0 (
+        doc = """Although some renderers treat all parametric or polygonal
+        surfaces as if they were effectively laminae with outward-facing
+        normals on both sides, some renderers derive significant optimizations
+        by considering these surfaces to have only a single outward side,
+        typically determined by control-point winding order and/or 
+        orientation.  By doing so they can perform \"backface culling\" to
+        avoid drawing the many polygons of most closed surfaces that face away
+        from the viewer.
+        
+        However, it is often advantageous to model thin objects such as paper
+        and cloth as single, open surfaces that must be viewable from both
+        sides, always.  Setting a gprim's doubleSided attribute to 
+        \\c true instructs all renderers to disable optimizations such as
+        backface culling for the gprim, and attempt (not all renderers are able
+        to do so, but the USD reference GL renderer always will) to provide
+        forward-facing normals on each side of the surface for lighting
+        calculations."""
+    )
     float3[] extent (
         doc = """Extent is a three dimensional range measuring the geometric
         extent of the authored gprim in its own local space (i.e. its own
@@ -104,11 +148,99 @@ class PolygonFilm "PolygonFilm" (
         the extent of all children, as they will be pruned from BBox computation
         during traversal."""
     )
-    point3f[] points (
-        doc = "An array of points defining the vertices of the polygons."
+    token faceVaryingLinearInterpolation = "cornersPlus1" (
+        allowedTokens = ["none", "cornersOnly", "cornersPlus1", "cornersPlus2", "boundaries", "all"]
+        doc = '''Specifies how elements of a primvar of interpolation type
+        "faceVarying" are interpolated for subdivision surfaces. Interpolation
+        can be as smooth as a "vertex" primvar or constrained to be linear at
+        features specified by several options.  Valid values correspond to
+        choices available in OpenSubdiv:
+
+        - __none__: No linear constraints or sharpening, smooth everywhere
+        - __cornersOnly__: Sharpen corners of discontinuous boundaries only,
+          smooth everywhere else
+        - __cornersPlus1__: The default, same as "cornersOnly" plus additional
+          sharpening at points where three or more distinct face-varying
+          values occur
+        - __cornersPlus2__: Same as "cornersPlus1" plus additional sharpening
+          at points with at least one discontinuous boundary corner or
+          only one discontinuous boundary edge (a dart)
+        - __boundaries__: Piecewise linear along discontinuous boundaries,
+          smooth interior
+        - __all__: Piecewise linear everywhere
+
+        These are illustrated and described in more detail in the OpenSubdiv
+        documentation:
+        https://graphics.pixar.com/opensubdiv/docs/subdivision_surfaces.html#face-varying-interpolation-rules'''
     )
-    int[] polygonIndices (
-        doc = "An array of indices defining the connectivity of the polygons."
+    int[] faceVertexCounts (
+        doc = """Provides the number of vertices in each face of the mesh, 
+        which is also the number of consecutive indices in _faceVertexIndices_
+        that define the face.  The length of this attribute is the number of
+        faces in the mesh.  If this attribute has more than
+        one timeSample, the mesh is considered to be topologically varying."""
+    )
+    int[] faceVertexIndices (
+        doc = """Flat list of the index (into the _points_ attribute) of each
+        vertex of each face in the mesh.  If this attribute has more than
+        one timeSample, the mesh is considered to be topologically varying."""
+    )
+    int[] holeIndices = [] (
+        doc = """The indices of all faces that should be treated as holes,
+        i.e. made invisible. This is traditionally a feature of subdivision
+        surfaces and not generally applied to polygonal meshes."""
+    )
+    token interpolateBoundary = "edgeAndCorner" (
+        allowedTokens = ["none", "edgeOnly", "edgeAndCorner"]
+        doc = '''Specifies how subdivision is applied for faces adjacent to
+        boundary edges and boundary points. Valid values correspond to choices
+        available in OpenSubdiv:
+
+        - __none__: No boundary interpolation is applied and boundary faces are
+          effectively treated as holes
+        - __edgeOnly__: A sequence of boundary edges defines a smooth curve to
+          which the edges of subdivided boundary faces converge
+        - __edgeAndCorner__: The default, similar to "edgeOnly" but the smooth
+          boundary curve is made sharp at corner points
+
+        These are illustrated and described in more detail in the OpenSubdiv
+        documentation:
+        https://graphics.pixar.com/opensubdiv/docs/subdivision_surfaces.html#boundary-interpolation-rules'''
+    )
+    normal3f[] normals (
+        doc = """Provide an object-space orientation for individual points, 
+        which, depending on subclass, may define a surface, curve, or free 
+        points.  Note that 'normals' should not be authored on any Mesh that
+        is subdivided, since the subdivision algorithm will define its own
+        normals. 'normals' is not a generic primvar, but the number of elements
+        in this attribute will be determined by its 'interpolation'.  See
+        . If 'normals' and 'primvars:normals'
+        are both specified, the latter has precedence."""
+    )
+    uniform token orientation = "rightHanded" (
+        allowedTokens = ["rightHanded", "leftHanded"]
+        doc = """Orientation specifies whether the gprim's surface normal 
+        should be computed using the right hand rule, or the left hand rule.
+        Please see for a deeper explanation and
+        generalization of orientation to composed scenes with transformation
+        hierarchies."""
+    )
+    point3f[] points (
+        doc = """The primary geometry attribute for all PointBased
+        primitives, describes points in (local) space."""
+    )
+    color3f[] primvars:displayColor (
+        doc = '''It is useful to have an "official" colorSet that can be used
+        as a display or modeling color, even in the absence of any specified
+        shader for a gprim.  DisplayColor serves this role; because it is a
+        UsdGeomPrimvar, it can also be used as a gprim override for any shader
+        that consumes a displayColor parameter.'''
+    )
+    float[] primvars:displayOpacity (
+        doc = """Companion to displayColor that specifies opacity, broken
+        out as an independent attribute rather than an rgba color, both so that
+        each can be independently overridden, and because shaders rarely consume
+        rgba parameters."""
     )
     rel proxyPrim (
         doc = '''The proxyPrim relationship allows us to link a
@@ -147,6 +279,50 @@ class PolygonFilm "PolygonFilm" (
     float[] sphereRadii (
         doc = "An array of radii for the spheres intersecting the polygons."
     )
+    uniform token subdivisionScheme = "catmullClark" (
+        allowedTokens = ["catmullClark", "loop", "bilinear", "none"]
+        doc = '''The subdivision scheme to be applied to the surface.
+        Valid values are:
+
+        - __catmullClark__: The default, Catmull-Clark subdivision; preferred
+          for quad-dominant meshes (generalizes B-splines); interpolation
+          of point data is smooth (non-linear)
+        - __loop__: Loop subdivision; preferred for purely triangular meshes;
+          interpolation of point data is smooth (non-linear)
+        - __bilinear__: Subdivision reduces all faces to quads (topologically
+          similar to "catmullClark"); interpolation of point data is bilinear
+        - __none__: No subdivision, i.e. a simple polygonal mesh; interpolation
+          of point data is linear
+
+        Polygonal meshes are typically lighter weight and faster to render,
+        depending on renderer and render mode.  Use of "bilinear" will produce
+        a similar shape to a polygonal mesh and may offer additional guarantees
+        of watertightness and additional subdivision features (e.g. holes) but
+        may also not respect authored normals.'''
+    )
+    token triangleSubdivisionRule = "catmullClark" (
+        allowedTokens = ["catmullClark", "smooth"]
+        doc = '''Specifies an option to the subdivision rules for the
+        Catmull-Clark scheme to try and improve undesirable artifacts when
+        subdividing triangles.  Valid values are "catmullClark" for the
+        standard rules (the default) and "smooth" for the improvement.
+
+        See https://graphics.pixar.com/opensubdiv/docs/subdivision_surfaces.html#triangle-subdivision-rule'''
+    )
+    vector3f[] velocities (
+        doc = """If provided, 'velocities' should be used by renderers to 
+
+        compute positions between samples for the 'points' attribute, rather
+        than interpolating between neighboring 'points' samples.  This is the
+        only reasonable means of computing motion blur for topologically
+        varying PointBased primitives.  It follows that the length of each
+        'velocities' sample must match the length of the corresponding
+        'points' sample.  Velocity is measured in position units per second,
+        as per most simulation software. To convert to position units per
+        UsdTimeCode, divide by UsdStage::GetTimeCodesPerSecond().
+        
+        See also ."""
+    )
     token visibility = "inherited" (
         allowedTokens = ["inherited", "invisible"]
         doc = '''Visibility is meant to be the simplest form of "pruning" 
@@ -173,6 +349,33 @@ class SphereFilm "SphereFilm" (
     doc = "Describes a film represented by spheres intersected by polygons."
 )
 {
+    vector3f[] accelerations (
+        doc = """If provided, 'accelerations' should be used with
+        velocities to compute positions between samples for the 'points'
+        attribute rather than interpolating between neighboring 'points'
+        samples. Acceleration is measured in position units per second-squared.
+        To convert to position units per squared UsdTimeCode, divide by the
+        square of UsdStage::GetTimeCodesPerSecond()."""
+    )
+    uniform bool doubleSided = 0 (
+        doc = """Although some renderers treat all parametric or polygonal
+        surfaces as if they were effectively laminae with outward-facing
+        normals on both sides, some renderers derive significant optimizations
+        by considering these surfaces to have only a single outward side,
+        typically determined by control-point winding order and/or 
+        orientation.  By doing so they can perform \"backface culling\" to
+        avoid drawing the many polygons of most closed surfaces that face away
+        from the viewer.
+        
+        However, it is often advantageous to model thin objects such as paper
+        and cloth as single, open surfaces that must be viewable from both
+        sides, always.  Setting a gprim's doubleSided attribute to 
+        \\c true instructs all renderers to disable optimizations such as
+        backface culling for the gprim, and attempt (not all renderers are able
+        to do so, but the USD reference GL renderer always will) to provide
+        forward-facing normals on each side of the surface for lighting
+        calculations."""
+    )
     float3[] extent (
         doc = """Extent is a three dimensional range measuring the geometric
         extent of the authored gprim in its own local space (i.e. its own
@@ -191,11 +394,46 @@ class SphereFilm "SphereFilm" (
         the extent of all children, as they will be pruned from BBox computation
         during traversal."""
     )
+    normal3f[] normals (
+        doc = """Provide an object-space orientation for individual points, 
+        which, depending on subclass, may define a surface, curve, or free 
+        points.  Note that 'normals' should not be authored on any Mesh that
+        is subdivided, since the subdivision algorithm will define its own
+        normals. 'normals' is not a generic primvar, but the number of elements
+        in this attribute will be determined by its 'interpolation'.  See
+        . If 'normals' and 'primvars:normals'
+        are both specified, the latter has precedence."""
+    )
+    uniform token orientation = "rightHanded" (
+        allowedTokens = ["rightHanded", "leftHanded"]
+        doc = """Orientation specifies whether the gprim's surface normal 
+        should be computed using the right hand rule, or the left hand rule.
+        Please see for a deeper explanation and
+        generalization of orientation to composed scenes with transformation
+        hierarchies."""
+    )
+    point3f[] points (
+        doc = """The primary geometry attribute for all PointBased
+        primitives, describes points in (local) space."""
+    )
     int[] polygonIndices (
         doc = "An array of indices defining the connectivity of the polygons intersecting the spheres."
     )
     point3f[] polygonPoints (
         doc = "An array of points defining the vertices of the polygons intersecting the spheres."
+    )
+    color3f[] primvars:displayColor (
+        doc = '''It is useful to have an "official" colorSet that can be used
+        as a display or modeling color, even in the absence of any specified
+        shader for a gprim.  DisplayColor serves this role; because it is a
+        UsdGeomPrimvar, it can also be used as a gprim override for any shader
+        that consumes a displayColor parameter.'''
+    )
+    float[] primvars:displayOpacity (
+        doc = """Companion to displayColor that specifies opacity, broken
+        out as an independent attribute rather than an rgba color, both so that
+        each can be independently overridden, and because shaders rarely consume
+        rgba parameters."""
     )
     rel proxyPrim (
         doc = '''The proxyPrim relationship allows us to link a
@@ -234,6 +472,20 @@ class SphereFilm "SphereFilm" (
     float[] sphereRadii (
         doc = "An array of radii for the spheres."
     )
+    vector3f[] velocities (
+        doc = """If provided, 'velocities' should be used by renderers to 
+
+        compute positions between samples for the 'points' attribute, rather
+        than interpolating between neighboring 'points' samples.  This is the
+        only reasonable means of computing motion blur for topologically
+        varying PointBased primitives.  It follows that the length of each
+        'velocities' sample must match the length of the corresponding
+        'points' sample.  Velocity is measured in position units per second,
+        as per most simulation software. To convert to position units per
+        UsdTimeCode, divide by UsdStage::GetTimeCodesPerSecond().
+        
+        See also ."""
+    )
     token visibility = "inherited" (
         allowedTokens = ["inherited", "invisible"]
         doc = '''Visibility is meant to be the simplest form of "pruning" 
@@ -260,6 +512,33 @@ class PlateauBorder "PlateauBorder" (
     doc = "Describes a special structure named Plateau Border in the foam system."
 )
 {
+    vector3f[] accelerations (
+        doc = """If provided, 'accelerations' should be used with
+        velocities to compute positions between samples for the 'points'
+        attribute rather than interpolating between neighboring 'points'
+        samples. Acceleration is measured in position units per second-squared.
+        To convert to position units per squared UsdTimeCode, divide by the
+        square of UsdStage::GetTimeCodesPerSecond()."""
+    )
+    uniform bool doubleSided = 0 (
+        doc = """Although some renderers treat all parametric or polygonal
+        surfaces as if they were effectively laminae with outward-facing
+        normals on both sides, some renderers derive significant optimizations
+        by considering these surfaces to have only a single outward side,
+        typically determined by control-point winding order and/or 
+        orientation.  By doing so they can perform \"backface culling\" to
+        avoid drawing the many polygons of most closed surfaces that face away
+        from the viewer.
+        
+        However, it is often advantageous to model thin objects such as paper
+        and cloth as single, open surfaces that must be viewable from both
+        sides, always.  Setting a gprim's doubleSided attribute to 
+        \\c true instructs all renderers to disable optimizations such as
+        backface culling for the gprim, and attempt (not all renderers are able
+        to do so, but the USD reference GL renderer always will) to provide
+        forward-facing normals on each side of the surface for lighting
+        calculations."""
+    )
     int[] edgeIndices (
         doc = "An array of indices defining the connectivity of the edges in the Plateau Border."
     )
@@ -281,8 +560,39 @@ class PlateauBorder "PlateauBorder" (
         the extent of all children, as they will be pruned from BBox computation
         during traversal."""
     )
+    normal3f[] normals (
+        doc = """Provide an object-space orientation for individual points, 
+        which, depending on subclass, may define a surface, curve, or free 
+        points.  Note that 'normals' should not be authored on any Mesh that
+        is subdivided, since the subdivision algorithm will define its own
+        normals. 'normals' is not a generic primvar, but the number of elements
+        in this attribute will be determined by its 'interpolation'.  See
+        . If 'normals' and 'primvars:normals'
+        are both specified, the latter has precedence."""
+    )
+    uniform token orientation = "rightHanded" (
+        allowedTokens = ["rightHanded", "leftHanded"]
+        doc = """Orientation specifies whether the gprim's surface normal 
+        should be computed using the right hand rule, or the left hand rule.
+        Please see for a deeper explanation and
+        generalization of orientation to composed scenes with transformation
+        hierarchies."""
+    )
     point3f[] points (
         doc = "An array of points defining the vertices of the Plateau Border."
+    )
+    color3f[] primvars:displayColor (
+        doc = '''It is useful to have an "official" colorSet that can be used
+        as a display or modeling color, even in the absence of any specified
+        shader for a gprim.  DisplayColor serves this role; because it is a
+        UsdGeomPrimvar, it can also be used as a gprim override for any shader
+        that consumes a displayColor parameter.'''
+    )
+    float[] primvars:displayOpacity (
+        doc = """Companion to displayColor that specifies opacity, broken
+        out as an independent attribute rather than an rgba color, both so that
+        each can be independently overridden, and because shaders rarely consume
+        rgba parameters."""
     )
     rel proxyPrim (
         doc = '''The proxyPrim relationship allows us to link a
@@ -317,6 +627,20 @@ class PlateauBorder "PlateauBorder" (
     )
     float[] radii (
         doc = "An array of radii for the edges in the Plateau Border."
+    )
+    vector3f[] velocities (
+        doc = """If provided, 'velocities' should be used by renderers to 
+
+        compute positions between samples for the 'points' attribute, rather
+        than interpolating between neighboring 'points' samples.  This is the
+        only reasonable means of computing motion blur for topologically
+        varying PointBased primitives.  It follows that the length of each
+        'velocities' sample must match the length of the corresponding
+        'points' sample.  Velocity is measured in position units per second,
+        as per most simulation software. To convert to position units per
+        UsdTimeCode, divide by UsdStage::GetTimeCodesPerSecond().
+        
+        See also ."""
     )
     token visibility = "inherited" (
         allowedTokens = ["inherited", "invisible"]

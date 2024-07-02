@@ -85,7 +85,7 @@ void wrapUsdFoamPlateauBorder()
 {
     typedef UsdFoamPlateauBorder This;
 
-    class_<This, bases<UsdGeomBoundable> >
+    class_<This, bases<UsdGeomPointBased> >
         cls("PlateauBorder");
 
     cls

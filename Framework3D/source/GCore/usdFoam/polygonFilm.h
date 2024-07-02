@@ -28,7 +28,7 @@
 
 #include "pxr/pxr.h"
 #include "pxr/usd/usdFoam/api.h"
-#include "pxr/usd/usdGeom/boundable.h"
+#include "pxr/usd/usdGeom/mesh.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/stage.h"
 #include "pxr/usd/usdFoam/tokens.h"
@@ -54,7 +54,7 @@ class SdfAssetPath;
 ///
 /// Describes a film represented by polygons intersected by spheres.
 ///
-class UsdFoamPolygonFilm : public UsdGeomBoundable
+class UsdFoamPolygonFilm : public UsdGeomMesh
 {
 public:
     /// Compile time constant representing what kind of schema this class is.
@@ -67,7 +67,7 @@ public:
     /// for a \em valid \p prim, but will not immediately throw an error for
     /// an invalid \p prim
     explicit UsdFoamPolygonFilm(const UsdPrim& prim=UsdPrim())
-        : UsdGeomBoundable(prim)
+        : UsdGeomMesh(prim)
     {
     }
 
@@ -75,7 +75,7 @@ public:
     /// Should be preferred over UsdFoamPolygonFilm(schemaObj.GetPrim()),
     /// as it preserves SchemaBase state.
     explicit UsdFoamPolygonFilm(const UsdSchemaBase& schemaObj)
-        : UsdGeomBoundable(schemaObj)
+        : UsdGeomMesh(schemaObj)
     {
     }
 
@@ -147,50 +147,6 @@ private:
     // override SchemaBase virtuals.
     USDFOAM_API
     const TfType &_GetTfType() const override;
-
-public:
-    // --------------------------------------------------------------------- //
-    // POINTS 
-    // --------------------------------------------------------------------- //
-    /// An array of points defining the vertices of the polygons.
-    ///
-    /// | ||
-    /// | -- | -- |
-    /// | Declaration | `point3f[] points` |
-    /// | C++ Type | VtArray<GfVec3f> |
-    /// | \ref Usd_Datatypes "Usd Type" | SdfValueTypeNames->Point3fArray |
-    USDFOAM_API
-    UsdAttribute GetPointsAttr() const;
-
-    /// See GetPointsAttr(), and also 
-    /// \ref Usd_Create_Or_Get_Property for when to use Get vs Create.
-    /// If specified, author \p defaultValue as the attribute's default,
-    /// sparsely (when it makes sense to do so) if \p writeSparsely is \c true -
-    /// the default for \p writeSparsely is \c false.
-    USDFOAM_API
-    UsdAttribute CreatePointsAttr(VtValue const &defaultValue = VtValue(), bool writeSparsely=false) const;
-
-public:
-    // --------------------------------------------------------------------- //
-    // POLYGONINDICES 
-    // --------------------------------------------------------------------- //
-    /// An array of indices defining the connectivity of the polygons.
-    ///
-    /// | ||
-    /// | -- | -- |
-    /// | Declaration | `int[] polygonIndices` |
-    /// | C++ Type | VtArray<int> |
-    /// | \ref Usd_Datatypes "Usd Type" | SdfValueTypeNames->IntArray |
-    USDFOAM_API
-    UsdAttribute GetPolygonIndicesAttr() const;
-
-    /// See GetPolygonIndicesAttr(), and also 
-    /// \ref Usd_Create_Or_Get_Property for when to use Get vs Create.
-    /// If specified, author \p defaultValue as the attribute's default,
-    /// sparsely (when it makes sense to do so) if \p writeSparsely is \c true -
-    /// the default for \p writeSparsely is \c false.
-    USDFOAM_API
-    UsdAttribute CreatePolygonIndicesAttr(VtValue const &defaultValue = VtValue(), bool writeSparsely=false) const;
 
 public:
     // --------------------------------------------------------------------- //

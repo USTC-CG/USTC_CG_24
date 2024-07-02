@@ -28,7 +28,7 @@
 
 #include "pxr/pxr.h"
 #include "pxr/usd/usdFoam/api.h"
-#include "pxr/usd/usdGeom/boundable.h"
+#include "pxr/usd/usdGeom/xformable.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/stage.h"
 
@@ -57,7 +57,7 @@ class SdfAssetPath;
 /// A FoamRoot must be defined at or above any foam-related primitives.
 /// 
 ///
-class UsdFoamRoot : public UsdGeomBoundable
+class UsdFoamRoot : public UsdGeomXformable
 {
 public:
     /// Compile time constant representing what kind of schema this class is.
@@ -70,7 +70,7 @@ public:
     /// for a \em valid \p prim, but will not immediately throw an error for
     /// an invalid \p prim
     explicit UsdFoamRoot(const UsdPrim& prim=UsdPrim())
-        : UsdGeomBoundable(prim)
+        : UsdGeomXformable(prim)
     {
     }
 
@@ -78,7 +78,7 @@ public:
     /// Should be preferred over UsdFoamRoot(schemaObj.GetPrim()),
     /// as it preserves SchemaBase state.
     explicit UsdFoamRoot(const UsdSchemaBase& schemaObj)
-        : UsdGeomBoundable(schemaObj)
+        : UsdGeomXformable(schemaObj)
     {
     }
 

@@ -64,7 +64,7 @@ void wrapUsdFoamRoot()
 {
     typedef UsdFoamRoot This;
 
-    class_<This, bases<UsdGeomBoundable> >
+    class_<This, bases<UsdGeomXformable> >
         cls("Root");
 
     cls

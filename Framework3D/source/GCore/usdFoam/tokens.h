@@ -72,7 +72,7 @@ struct UsdFoamTokensType {
     const TfToken plateauBorder;
     /// \brief "points"
     /// 
-    /// UsdFoamPolygonFilm, UsdFoamPlateauBorder
+    /// UsdFoamPlateauBorder
     const TfToken points;
     /// \brief "polygonFilm"
     /// 
@@ -80,7 +80,7 @@ struct UsdFoamTokensType {
     const TfToken polygonFilm;
     /// \brief "polygonIndices"
     /// 
-    /// UsdFoamPolygonFilm, UsdFoamSphereFilm
+    /// UsdFoamSphereFilm
     const TfToken polygonIndices;
     /// \brief "polygonPoints"
     /// 
