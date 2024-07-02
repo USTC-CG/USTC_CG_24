@@ -28,3 +28,6 @@
 [submodule "Framework3D/external/nvrhi"]
 	path = Framework3D/external/nvrhi
 	url = https://github.com/NVIDIAGameWorks/nvrhi.git
+[submodule "Framework3D/external/nvapi"]
+	path = Framework3D/external/nvapi
+	url = https://github.com/NVIDIA/nvapi.git

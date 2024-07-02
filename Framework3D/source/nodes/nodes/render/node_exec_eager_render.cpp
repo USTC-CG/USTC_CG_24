@@ -13,23 +13,20 @@ bool EagerNodeTreeExecutorRender::execute_node(NodeTree* tree, Node* node)
 {
     if (EagerNodeTreeExecutor::execute_node(tree, node)) {
         for (auto&& input : node->get_inputs()) {
-            if (!node->typeinfo->ALWAYS_REQUIRED &&
-                input_states[index_cache[input]].is_last_used) {
-                if (input_states[index_cache[input]].value)
-                    resource_allocator.destroy(
-                        input_states[index_cache[input]].value);
-                input_states[index_cache[input]].is_last_used = false;
+            auto& input_state = input_states[index_cache[input]];
+            if (!node->typeinfo->ALWAYS_REQUIRED && input_state.is_last_used) {
+                if (input_state.value && !input_state.keep_alive)
+                    resource_allocator.destroy(input_state.value);
+                input_state.is_last_used = false;
             }
         }
         return true;
     }
-    else {
-        for (auto&& output : node->get_outputs()) {
-            {
-                if (output_states[index_cache[output]].value)
-                    resource_allocator.destroy(
-                        output_states[index_cache[output]].value);
-            }
+    for (auto&& output : node->get_outputs()) {
+        {
+            if (output_states[index_cache[output]].value)
+                resource_allocator.destroy(
+                    output_states[index_cache[output]].value);
         }
     }
     return false;
@@ -53,7 +50,7 @@ void EagerNodeTreeExecutorRender::set_global_param(RenderGlobalParams* param)
 void EagerNodeTreeExecutorRender::finalize(NodeTree* tree)
 {
     for (int i = 0; i < input_states.size(); ++i) {
-        if (input_states[i].is_last_used) {
+        if (input_states[i].is_last_used && !input_states[i].keep_alive) {
             resource_allocator.destroy(input_states[i].value);
             input_states[i].is_last_used = false;
         }
@@ -74,6 +71,9 @@ void EagerNodeTreeExecutorRender::set_device(nvrhi::IDevice* device)
 
 void EagerNodeTreeExecutorRender::reset_allocator()
 {
+    for (auto&& value : storage) {
+        resource_allocator.destroy(value.second);
+    }
     resource_allocator.terminate();
     storage.clear();
 }

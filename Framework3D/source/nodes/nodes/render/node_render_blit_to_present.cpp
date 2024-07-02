@@ -55,6 +55,9 @@ static bool IsTextureArray(nvrhi::TextureDimension dimension)
 static void node_exec(ExeParams params)
 {
     auto sourceTexture = params.get_input<TextureHandle>("Tex");
+    if (!sourceTexture) {
+        throw std::runtime_error("No texture to blit");
+    }
     auto output_desc = sourceTexture->getDesc();
     output_desc.format = nvrhi::Format::RGBA32_FLOAT;
     output_desc.isRenderTarget = true;

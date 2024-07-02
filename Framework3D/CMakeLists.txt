@@ -71,6 +71,8 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	set_target_properties(TBB::tbb PROPERTIES INTERFACE_COMPILE_DEFINITIONS "TBB_USE_DEBUG=1")
 endif()
 
+find_package(NVAPI REQUIRED)
+
 add_subdirectory(external)
 
 

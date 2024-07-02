@@ -6,6 +6,10 @@
 #include "nvrhi/utils.h"
 #include "render_node_base.h"
 #include "resource_allocator_instance.hpp"
+#include "shaders/utils/HitObject.h"
+#include "shaders/utils/ray.h"
+
+#define WITH_NVAPI 1
 
 namespace USTC_CG::node_scene_ray_launch {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -13,6 +17,8 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Buffer>("Rays");
     b.add_input<decl::AccelStruct>("Accel Struct");
     b.add_output<decl::Texture>("Barycentric");
+    b.add_output<decl::Texture>("World Position");
+    b.add_output<decl::Buffer>("Hit Objects");
 }
 
 static void node_exec(ExeParams params)
@@ -29,8 +35,22 @@ static void node_exec(ExeParams params)
     output_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
     output_desc.keepInitialState = true;
     output_desc.isUAV = true;
-    auto result_texture = resource_allocator.create(output_desc);
+    auto barycentric_texture = resource_allocator.create(output_desc);
+    auto position_texture = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
+
+    auto rays = params.get_input<BufferHandle>("Rays");
+
+    BufferDesc hit_objects_desc;
+    hit_objects_desc
+        .setByteSize(
+            rays->getDesc().byteSize / sizeof(RayDesc) * sizeof(HitObjectInfo))
+        .setCanHaveUAVs(true)
+        .setInitialState(nvrhi::ResourceStates::UnorderedAccess)
+        .setKeepInitialState(true)
+        .setStructStride(sizeof(HitObjectInfo));
+
+    auto hit_objects = resource_allocator.create(hit_objects_desc);
 
     // 2. Prepare the shader
 
@@ -74,13 +94,15 @@ static void node_exec(ExeParams params)
         globalBindingLayoutDesc.bindings = {
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
             { 0, nvrhi::ResourceType::StructuredBuffer_UAV },
-            { 1, nvrhi::ResourceType::Texture_UAV }
+            { 1, nvrhi::ResourceType::Texture_UAV },
+            { 2, nvrhi::ResourceType::Texture_UAV },
+            { 3, nvrhi::ResourceType::StructuredBuffer_UAV }
         };
         auto globalBindingLayout =
             resource_allocator.create(globalBindingLayoutDesc);
 
         nvrhi::rt::PipelineDesc pipeline_desc;
-        pipeline_desc.maxPayloadSize = 4 * sizeof(float);
+        pipeline_desc.maxPayloadSize = 16 * sizeof(float);
         pipeline_desc.globalBindingLayouts = { globalBindingLayout };
         pipeline_desc.shaders = { { "", raygen_shader, nullptr },
                                   { "", miss_shader, nullptr } };
@@ -96,12 +118,13 @@ static void node_exec(ExeParams params)
         auto m_TopLevelAS = params.get_input<AccelStructHandle>("Accel Struct");
         auto raytracing_pipeline = resource_allocator.create(pipeline_desc);
 
-        auto rays = params.get_input<BufferHandle>("Rays");
         BindingSetDesc binding_set_desc;
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(0, rays.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(1, result_texture.Get())
+            nvrhi::BindingSetItem::Texture_UAV(1, barycentric_texture.Get()),
+            nvrhi::BindingSetItem::Texture_UAV(2, position_texture.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(3, hit_objects.Get()),
         };
         auto binding_set = resource_allocator.create(
             binding_set_desc, globalBindingLayout.Get());
@@ -138,7 +161,9 @@ static void node_exec(ExeParams params)
     auto error = raytrace_compiled->get_error_string();
     resource_allocator.destroy(raytrace_compiled);
 
-    params.set_output("Barycentric", result_texture);
+    params.set_output("Barycentric", barycentric_texture);
+    params.set_output("World Position", position_texture);
+    params.set_output("Hit Objects", hit_objects);
     if (error.size()) {
         throw std::runtime_error(error);
     }
