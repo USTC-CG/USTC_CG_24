@@ -11,10 +11,13 @@ target_link_libraries(GUI PUBLIC
 	usdImaging
 	usdImagingGL
 	Python3::Python
+	usdFoam
 )
 target_compile_options(GUI PRIVATE -DUSTC_CG_BUILD_MODULE=0  -DNOMINMAX)
 
 target_include_directories(GUI PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(GUI PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui-node-editor)
+target_include_directories(GUI PRIVATE ${CMAKE_BINARY_DIR}/include)
+
 
 set_target_properties(GUI PROPERTIES ${OUTPUT_DIR})

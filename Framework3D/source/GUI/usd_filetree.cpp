@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "Nodes/GlobalUsdStage.h"
+#include "Utils/Logging/Logging.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "pxr/base/gf/matrix4f.h"
@@ -26,6 +28,7 @@ class UsdFileViewerImpl {
    private:
     pxr::SdfPath selected;
 
+    void show_right_click_menu() const;
     void DrawChild(const pxr::UsdPrim& prim);
     pxr::UsdStageRefPtr stage;
 };
@@ -33,12 +36,14 @@ class UsdFileViewerImpl {
 void UsdFileViewerImpl::BuildUI()
 {
     auto root = stage->GetPseudoRoot();
-    ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg |
-                            ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+    ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit |
+                            ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
+                            ImGuiTableFlags_Resizable;
     if (ImGui::BeginTable("stage_table", 2, flags)) {
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
         DrawChild(root);
+
         ImGui::EndTable();
     }
 }
@@ -51,11 +56,13 @@ void UsdFileViewerImpl::set_stage(const pxr::UsdStageRefPtr& ref)
 void UsdFileViewerImpl::ShowPrimInfo()
 {
     using namespace pxr;
-    ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg |
-                            ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+    ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit |
+                            ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
+                            ImGuiTableFlags_Resizable;
     if (ImGui::BeginTable("table", 3, flags)) {
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Property Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn(
+            "Property Name", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
         ImGui::TableHeadersRow();
@@ -74,17 +81,46 @@ void UsdFileViewerImpl::ShowPrimInfo()
                 ImGui::TableSetColumnIndex(2);
                 VtValue v;
                 attr.Get(&v);
-                auto s = VtVisitValue(v, [](auto&& v) { return TfStringify(v); });
+                auto s =
+                    VtVisitValue(v, [](auto&& v) { return TfStringify(v); });
                 ImGui::TextUnformatted(s.c_str());
             }
         }
         ImGui::EndTable();
     }
 }
+void UsdFileViewerImpl::show_right_click_menu() const
+{
+    if (ImGui::BeginPopupContextWindow("Prim Operation")) {
+        if (ImGui::BeginMenu("Create")) {
+            if (ImGui::MenuItem("Mesh")) {
+                GlobalUsdStage::CreateObject(selected, ObjectType::Mesh);
+            }
+            if (ImGui::MenuItem("Cylinder")) {
+                GlobalUsdStage::CreateObject(selected, ObjectType::Cylinder);
+            }
+            if (ImGui::MenuItem("Sphere")) {
+                GlobalUsdStage::CreateObject(selected, ObjectType::Sphere);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::MenuItem("Edit")) {
+            GlobalUsdStage::EditObject(selected);
+        }
+
+        if (ImGui::MenuItem("Delete")) {
+            GlobalUsdStage::DeleteObject(selected);
+        }
+        ImGui::EndPopup();
+    }
+}
 
 void UsdFileViewerImpl::DrawChild(const pxr::UsdPrim& prim)
 {
-    auto flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth |
+    auto flags = ImGuiTreeNodeFlags_DefaultOpen |
+                 ImGuiTreeNodeFlags_SpanAvailWidth |
                  ImGuiTreeNodeFlags_OpenOnArrow;
 
     bool is_leaf = prim.GetChildren().empty();
@@ -105,6 +141,10 @@ void UsdFileViewerImpl::DrawChild(const pxr::UsdPrim& prim)
     if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
         selected = prim.GetPath();
     }
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+        selected = prim.GetPath();
+        ImGui::OpenPopup("Prim Operation");
+    }
 
     ImGui::TableNextColumn();
     ImGui::TextUnformatted(prim.GetTypeName().GetText());
@@ -115,13 +155,16 @@ void UsdFileViewerImpl::DrawChild(const pxr::UsdPrim& prim)
 
     if (!is_leaf) {
         if (open) {
-
-
             for (const pxr::UsdPrim& child : prim.GetChildren()) {
                 DrawChild(child);
             }
+
             ImGui::TreePop();
         }
+    }
+
+    if (prim.GetPath() == selected) {
+        show_right_click_menu();
     }
 }
 

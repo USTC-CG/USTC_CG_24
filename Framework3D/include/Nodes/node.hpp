@@ -56,6 +56,7 @@ struct NodeTypeInfo {
     float color[4];
     NodeDeclareFunction declare;
     ExecFunction node_execute;
+
     bool ALWAYS_REQUIRED = false;
     bool INVISIBLE = false;
 

@@ -2,6 +2,7 @@
 #include "GUI/usdview_engine.h"
 
 #include "Nodes/GlobalUsdStage.h"
+#include "Utils/Logging/Logging.h"
 #include "free_camera.h"
 #include "imgui.h"
 #include "pxr/base/gf/camera.h"
@@ -15,11 +16,14 @@ USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeTree;
 using namespace pxr;
 
+struct GUIEvent { };
+
 class UsdviewEngineImpl {
    public:
     enum class CamType { First, Third };
     struct Status {
-        CamType cam_type = CamType::First;  // 0 for 1st personal, 1 for 3rd personal
+        CamType cam_type =
+            CamType::First;  // 0 for 1st personal, 1 for 3rd personal
         unsigned renderer_id = 1;
     } engine_status;
 
@@ -45,7 +49,8 @@ class UsdviewEngineImpl {
 
     void DrawMenuBar();
     void OnFrame(float delta_time, NodeTree* node_tree);
-    void OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor);
+    void
+    OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor);
     void refresh_platform_texture();
     void refresh_viewport(int x, int y);
     void OnResize(int x, int y);
@@ -70,14 +75,18 @@ void UsdviewEngineImpl::DrawMenuBar()
     if (ImGui::BeginMenu("Free Camera")) {
         if (ImGui::BeginMenu("Camera Type")) {
             if (ImGui::MenuItem(
-                    "First Personal", 0, this->engine_status.cam_type == CamType::First)) {
+                    "First Personal",
+                    0,
+                    this->engine_status.cam_type == CamType::First)) {
                 if (engine_status.cam_type != CamType::First) {
                     free_camera_ = std::make_unique<FirstPersonCamera>();
                     engine_status.cam_type = CamType::First;
                 }
             }
             if (ImGui::MenuItem(
-                    "Third Personal", 0, this->engine_status.cam_type == CamType::Third)) {
+                    "Third Personal",
+                    0,
+                    this->engine_status.cam_type == CamType::Third)) {
                 if (engine_status.cam_type != CamType::Third) {
                     free_camera_ = std::make_unique<ThirdPersonCamera>();
                     engine_status.cam_type = CamType::Third;
@@ -99,7 +108,8 @@ void UsdviewEngineImpl::DrawMenuBar()
                         renderer_->SetRendererPlugin(available_renderers[i]);
 
                         // Perform a fake resize event
-                        refresh_viewport(renderBufferSize_[0], renderBufferSize_[1]);
+                        refresh_viewport(
+                            renderBufferSize_[0], renderBufferSize_[1]);
                         this->engine_status.renderer_id = i;
                     }
                 }
@@ -112,7 +122,10 @@ void UsdviewEngineImpl::DrawMenuBar()
     ImGui::EndMenuBar();
 }
 
-void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor)
+void UsdviewEngineImpl::OnFrame(
+    float delta_time,
+    NodeTree* node_tree,
+    NodeTreeExecutor* executor)
 {
     DrawMenuBar();
     // Update the camera when mouse is in the subwindow
@@ -125,8 +138,10 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
 
     renderer_->SetCameraState(viewMatrix, projectionMatrix);
     renderer_->SetRendererAov(HdAovTokens->color);
-    renderer_->SetRendererSetting(TfToken("RenderNodeTree"), VtValue((void*)node_tree));
-    renderer_->SetRendererSetting(TfToken("RenderNodeTreeExecutor"), VtValue((void*)executor));
+    renderer_->SetRendererSetting(
+        TfToken("RenderNodeTree"), VtValue((void*)node_tree));
+    renderer_->SetRendererSetting(
+        TfToken("RenderNodeTreeExecutor"), VtValue((void*)executor));
 
     _renderParams.enableLighting = true;
     _renderParams.enableSceneMaterials = true;
@@ -144,7 +159,8 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
 
     GlfSimpleLightVector lights(1);
     auto cam_pos = frustum.GetPosition();
-    lights[0].SetPosition(GfVec4f{ float(cam_pos[0]), float(cam_pos[1]), float(cam_pos[2]), 1.0f });
+    lights[0].SetPosition(GfVec4f{
+        float(cam_pos[0]), float(cam_pos[1]), float(cam_pos[2]), 1.0f });
     lights[0].SetAmbient(GfVec4f(0, 0, 0, 0));
     lights[0].SetDiffuse(GfVec4f(1.0f) * 1.9);
     GlfSimpleMaterial material;
@@ -158,15 +174,37 @@ void UsdviewEngineImpl::OnFrame(float delta_time, NodeTree* node_tree, NodeTreeE
     renderer_->SetLightingState(lights, material, sceneAmbient);
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
+
+    //GfVec3d point;
+    //GfVec3d normal;
+    //SdfPath path;
+    //SdfPath instancer;
+    //if (renderer_->TestIntersection(
+    //        viewMatrix,
+    //        projectionMatrix,
+    //        root,
+    //        _renderParams,
+    //        &point,
+    //        &normal,
+    //        &path,
+    //        &instancer)) {
+    //    logging("Picked prim " + path.GetAsString(), Info);
+    //}
+
     renderer_->Render(root, _renderParams);
 
     renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"), pxr::VtValue(fbo));
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     auto imgui_frame_size = ImVec2(renderBufferSize_[0], renderBufferSize_[1]);
 
     ImGui::BeginChild("ViewPort", imgui_frame_size, 0, ImGuiWindowFlags_NoMove);
-    ImGui::Image(ImTextureID(tex), imgui_frame_size, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+    ImGui::Image(
+        ImTextureID(tex),
+        imgui_frame_size,
+        ImVec2(0.0f, 1.0f),
+        ImVec2(1.0f, 0.0f));
     is_active_ = ImGui::IsWindowFocused();
     is_hovered_ = ImGui::IsItemHovered();
     ImGui::EndChild();
@@ -195,7 +233,8 @@ void UsdviewEngineImpl::refresh_platform_texture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -206,8 +245,8 @@ void UsdviewEngineImpl::refresh_viewport(int x, int y)
     renderBufferSize_[1] = y;
 
     renderer_->SetRenderBufferSize(renderBufferSize_);
-    renderer_->SetRenderViewport(
-        GfVec4d{ 0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
+    renderer_->SetRenderViewport(GfVec4d{
+        0.0, 0.0, double(renderBufferSize_[0]), double(renderBufferSize_[1]) });
     free_camera_->m_ViewportSize = renderBufferSize_;
 
     refresh_platform_texture();
@@ -281,7 +320,9 @@ UsdviewEngine::~UsdviewEngine()
 {
 }
 
-void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_executor)
+void UsdviewEngine::render(
+    NodeTree* render_node_tree,
+    NodeTreeExecutor* get_executor)
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
 
@@ -289,7 +330,9 @@ void UsdviewEngine::render(NodeTree* render_node_tree, NodeTreeExecutor* get_exe
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
     if (ImGui::Begin(
-            "UsdView Engine", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse)) {
+            "UsdView Engine",
+            nullptr,
+            ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse)) {
         ImGui::PopStyleVar(1);
 
         auto size = ImGui::GetContentRegionAvail();

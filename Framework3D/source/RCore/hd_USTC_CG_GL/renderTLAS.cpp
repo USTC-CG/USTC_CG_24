@@ -25,6 +25,7 @@ void USTC_CG::Hd_USTC_CG_GL_RenderTLAS::removeInstance(HdRprim* rPrim)
 {
     std::lock_guard lock(edit_instances_mutex);
     instances.erase(rPrim);
+    require_rebuild_tlas = true;
 }
 
 std::vector<nvrhi::rt::InstanceDesc>&
