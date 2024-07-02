@@ -1,5 +1,4 @@
-file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
-file(GLOB NODE_FILES ${CMAKE_CURRENT_LIST_DIR}/Nodes/GNodes/*.cpp)
+file(GLOB CPP_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
 
 add_library(GCore ${CPP_FILES})
 
@@ -19,3 +18,5 @@ target_link_libraries(GCore
 	${TBB_tbb_LIBRARY}
 )
 target_compile_features(GCore PUBLIC cxx_std_20)
+
+add_subdirectory(usdFoam)

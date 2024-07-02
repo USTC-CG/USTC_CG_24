@@ -51,7 +51,7 @@ function(pxr_library NAME)
     else()
         set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
-    _pxr_library(${NAME}
+    __pxr_library(${NAME}
         TYPE "${args_TYPE}"
         PREFIX "${prefix}"
         SUFFIX "${suffix}"

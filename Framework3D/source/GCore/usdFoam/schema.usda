@@ -1,0 +1,124 @@
+#usda 1.0
+(
+    """ This file contains a schema for representing a foam system,
+    including geometry of two kinds of films and a special structure named Plateau Border.
+    """
+    subLayers = [
+        @usdGeom/schema.usda@
+    ]
+)
+
+over "GLOBAL" (
+    customData = {
+        string libraryName       = "usdFoam"
+        string libraryPath       = "pxr/usd/usdFoam"
+
+        dictionary libraryTokens = {
+            dictionary polygonFilm = {
+                string doc = """A film represented by polygons intersected by spheres."""
+            }
+            dictionary sphereFilm = {
+                string doc = """A film represented by spheres intersected by polygons."""
+            }
+            dictionary plateauBorder = {
+                string doc = """A special structure in the foam system."""
+            }
+        }
+    }
+) {
+}
+
+
+class FoamRoot "FoamRoot" (
+    inherits = </Boundable>
+    doc = """Root type used to identify a scope beneath which
+    foam system primitives are defined.
+
+    A FoamRoot must be defined at or above any foam-related primitives.
+    """
+    customData = {
+        string className = "Root"
+        
+        dictionary extraPlugInfo = {
+            bool implementsComputeExtent = true
+        }
+    }
+) {
+}
+
+
+class PolygonFilm "PolygonFilm" (
+    inherits = </Boundable>
+    doc = """Describes a film represented by polygons intersected by spheres."""
+    customData = {
+        dictionary extraPlugInfo = {
+            bool implementsComputeExtent = true
+        }
+    }
+) {
+    point3f[] points (
+        doc = """An array of points defining the vertices of the polygons."""
+    )
+    
+    int[] polygonIndices (
+        doc = """An array of indices defining the connectivity of the polygons."""
+    )
+    
+    float[] sphereRadii (
+        doc = """An array of radii for the spheres intersecting the polygons."""
+    )
+    
+    point3f[] sphereCenters (
+        doc = """An array of centers for the spheres intersecting the polygons."""
+    )
+}
+
+
+class SphereFilm "SphereFilm" (
+    inherits = </Boundable>
+    doc = """Describes a film represented by spheres intersected by polygons."""
+    customData = {
+        dictionary extraPlugInfo = {
+            bool implementsComputeExtent = true
+        }
+    }
+) {
+    point3f[] sphereCenters (
+        doc = """An array of centers for the spheres."""
+    )
+    
+    float[] sphereRadii (
+        doc = """An array of radii for the spheres."""
+    )
+    
+    int[] polygonIndices (
+        doc = """An array of indices defining the connectivity of the polygons intersecting the spheres."""
+    )
+    
+    point3f[] polygonPoints (
+        doc = """An array of points defining the vertices of the polygons intersecting the spheres."""
+    )
+}
+
+
+class PlateauBorder "PlateauBorder" (
+    inherits = </Boundable>
+    doc = """Describes a special structure named Plateau Border in the foam system."""
+    customData = {
+        dictionary extraPlugInfo = {
+            bool implementsComputeExtent = true
+        }
+    }
+) {
+    point3f[] points (
+        doc = """An array of points defining the vertices of the Plateau Border."""
+    )
+    
+    int[] edgeIndices (
+        doc = """An array of indices defining the connectivity of the edges in the Plateau Border."""
+    )
+    
+    float[] radii (
+        doc = """An array of radii for the edges in the Plateau Border."""
+    )
+}

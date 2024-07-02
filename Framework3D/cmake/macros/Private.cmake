@@ -7,6 +7,7 @@ function(_classes LIBRARY_NAME)
         "${multiValueArgs}"
         ${ARGN}
     )
+
     # If both get set, fall back to public.
     if(${classes_PUBLIC})
         set(VISIBILITY "PUBLIC")
@@ -57,7 +58,7 @@ function(_copy_headers LIBRARY_NAME)
             add_custom_command(
                 OUTPUT ${outfile}
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${dir_to_create}
-                COMMAND ${CMAKE_COMMAND} -Dinfile=${infile} -Doutfile=${outfile} -P "${CMAKE_CURRENT_LIST_DIR}/../cmake/macros/copyHeaderForBuild.cmake"
+                COMMAND ${CMAKE_COMMAND} -Dinfile=${infile} -Doutfile=${outfile} -P "${PROJECT_SOURCE_DIR}/cmake/macros/copyHeaderForBuild.cmake"
                 MAIN_DEPENDENCY ${infile}
                 COMMENT "Copying ${f} ..."
                 VERBATIM
@@ -185,7 +186,7 @@ function(_copy_resource_files NAME pluginInstallPrefix pluginToLibraryPath)
 endfunction() # _copy_resource_files
 
 # Add a library target named NAME.
-function(_pxr_library NAME)
+function(__pxr_library NAME)
     # Argument parsing.
     message("New pxr libraray: ${NAME}")
     set(options

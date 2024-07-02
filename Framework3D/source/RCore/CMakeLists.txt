@@ -21,7 +21,7 @@ set_target_properties(RCore PROPERTIES ${OUTPUT_DIR})
 target_link_libraries(RCore PUBLIC usdGeom nodes SLANG::slang)
 target_compile_features(RCore PUBLIC cxx_std_20)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/macros)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/macros)
 include(pxrPlugin)
 
 add_subdirectory(hd_USTC_CG)
