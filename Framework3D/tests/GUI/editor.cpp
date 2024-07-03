@@ -1,5 +1,6 @@
 #include <pxr/usd/usdGeom/cube.h>
 
+#include <filesystem>
 #include <memory>
 
 #include "GUI/node_system.h"
@@ -7,11 +8,16 @@
 #include "GUI/usdview_engine.h"
 #include "GUI/window/window.h"
 #include "Nodes/GlobalUsdStage.h"
+#include "imgui.h"
 
 class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
     {
+        if (std::filesystem::exists("stage.usda")) {
+            USTC_CG::GlobalUsdStage::global_usd_stage =
+                pxr::UsdStage::Open("stage.usda");
+        }
         render_graph_system = std::make_shared<USTC_CG::NodeSystem>(
             USTC_CG::NodeSystemType::Render,
             "RenderGraph.json",
@@ -26,6 +32,11 @@ class NodeWindow final : public USTC_CG::Window {
 
         renderer = std::make_shared<USTC_CG::UsdviewEngine>(
             USTC_CG::GlobalUsdStage::global_usd_stage);
+    }
+
+    ~NodeWindow()
+    {
+        USTC_CG::GlobalUsdStage::global_usd_stage->Export("stage.usda");
     }
 
    protected:
@@ -49,8 +60,15 @@ void NodeWindow::BuildUI()
 {
     composition_graph->draw_imgui();
 
+    int removed_editor = -1;
     for (int i = 0; i < geonode_systems.size(); ++i) {
-        geonode_systems[i]->draw_imgui();
+        if (!geonode_systems[i]->draw_imgui()) {
+            removed_editor = i;
+        }
+    }
+    if (removed_editor >= 0) {
+        assert(removed_editor < geonode_systems.size());
+        geonode_systems.erase(geonode_systems.begin() + removed_editor);
     }
 
     float time_code_to_render = renderer->current_time_code();
@@ -72,6 +90,16 @@ void NodeWindow::BuildUI()
             new_json_path.GetAsString());
         geonode_systems.push_back(new_geonode_system_ui);
     }
+
+    ImGui::BeginMenuBar();
+    if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Save", "Ctrl+S")) {
+            USTC_CG::GlobalUsdStage::global_usd_stage->Export("stage.usda");
+        }
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMenuBar();
 }
 
 int main()

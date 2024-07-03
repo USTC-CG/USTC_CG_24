@@ -20,7 +20,8 @@ Window::Window(const std::string& window_name) : name_(window_name)
         throw std::runtime_error("Failed to initialize GLFW!");
     }
 
-    window_ = glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
+    window_ =
+        glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
     if (window_ == nullptr) {
         glfwTerminate();  // Ensure GLFW is cleaned up before throwing
         throw std::runtime_error("Failed to create GLFW window!");
@@ -72,8 +73,9 @@ void Window::BuildUI()
 
 bool Window::init_glfw()
 {
-    glfwSetErrorCallback(
-        [](int error, const char* desc) { fprintf(stderr, "GLFW Error %d: %s\n", error, desc); });
+    glfwSetErrorCallback([](int error, const char* desc) {
+        fprintf(stderr, "GLFW Error %d: %s\n", error, desc);
+    });
 
     if (!glfwInit()) {
         return false;
@@ -135,7 +137,8 @@ void Window::render()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+    window_flags |= ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNavFocus |
+                    ImGuiWindowFlags_NoBackground;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
@@ -143,7 +146,10 @@ void Window::render()
     ImGui::PopStyleVar(3);
     ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 
-    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(
+        dockspace_id,
+        ImVec2(0.0f, 0.0f),
+        ImGuiDockNodeFlags_PassthruCentralNode);
 
     Render();
     BuildUI();

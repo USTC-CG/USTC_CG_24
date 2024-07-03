@@ -954,15 +954,18 @@ NodeSystem::~NodeSystem()
     impl_->OnStop();
 }
 
-void NodeSystem::draw_imgui()
+bool NodeSystem::draw_imgui()
 {
     auto delta_time = ImGui::GetIO().DeltaTime;
+    bool popen = true;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.0f, 3.0f));
-    ImGui::Begin(window_name.c_str(), nullptr, GetWindowFlags());
+    ImGui::Begin(window_name.c_str(), &popen, GetWindowFlags());
     ImGui::PopStyleVar(1);
     impl_->OnFrame(delta_time);
     ImGui::End();
+
+    return popen;
 }
 
 NodeTree* NodeSystem::get_tree()

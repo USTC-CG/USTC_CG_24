@@ -27,7 +27,7 @@ class NodeSystem {
         const std::string& window_name);
 
     ~NodeSystem();
-    void draw_imgui();
+    bool draw_imgui();
     NodeTree* get_tree();
     NodeTreeExecutor* get_executor() const;
 

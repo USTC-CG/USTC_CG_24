@@ -47,8 +47,7 @@ void GlobalUsdStage::CreateObject(pxr::SdfPath path, ObjectType type)
     }
 }
 
-pxr::SdfPath GlobalUsdStage::EditObject(
-    pxr::SdfPath path)
+pxr::SdfPath GlobalUsdStage::EditObject(pxr::SdfPath path)
 {
     auto prim = global_usd_stage->GetPrimAtPath(path);
     assert(prim);
@@ -61,17 +60,16 @@ pxr::SdfPath GlobalUsdStage::EditObject(
         if (!attr) {
             attr =
                 prim.CreateAttribute(attrName, pxr::SdfValueTypeNames->String);
+
+            // Set the value of the attribute
+            std::string value = "";
+            attr.Set(pxr::VtValue(value));
         }
-        
-        // Set the value of the attribute
-        std::string value = "";
-        attr.Set(pxr::VtValue(value));
+
         return attr.GetPath();
     }
 
-
     return pxr::SdfPath::EmptyPath();
-
 }
 
 void GlobalUsdStage::DeleteObject(pxr::SdfPath path)
@@ -82,6 +80,5 @@ void GlobalUsdStage::DeleteObject(pxr::SdfPath path)
         }
     }
 }
-
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE
