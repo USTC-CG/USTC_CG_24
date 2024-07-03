@@ -1,10 +1,10 @@
 #pragma once
-#include <complex.h>
 
 #include <memory>
 #include <string>
 
 #include "USTC_CG.h"
+#include "pxr/usd/sdf/path.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct NodeTreeExecutor;
@@ -20,6 +20,12 @@ class NodeSystem {
         NodeSystemType type,
         const std::string& file_name,
         const std::string& window_name);
+
+    explicit NodeSystem(
+        NodeSystemType type,
+        const pxr::SdfPath& json_location,
+        const std::string& window_name);
+
     ~NodeSystem();
     void draw_imgui();
     NodeTree* get_tree();
@@ -28,7 +34,7 @@ class NodeSystem {
     float cached_last_time_code();
     void set_required_time_code(float time_code_to_render);
 
-protected:
+   protected:
     std::string window_name;
     NodeSystemType node_system_type;
     std::unique_ptr<NodeSystemImpl> impl_;

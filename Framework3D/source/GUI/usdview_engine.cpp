@@ -175,21 +175,21 @@ void UsdviewEngineImpl::OnFrame(
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
 
-    GfVec3d point;
-    GfVec3d normal;
-    SdfPath path;
-    SdfPath instancer;
-    if (renderer_->TestIntersection(
-            viewMatrix,
-            projectionMatrix,
-            root,
-            _renderParams,
-            &point,
-            &normal,
-            &path,
-            &instancer)) {
-        logging("Picked prim " + path.GetAsString(), Info);
-    }
+    //GfVec3d point;
+    //GfVec3d normal;
+    //SdfPath path;
+    //SdfPath instancer;
+    //if (renderer_->TestIntersection(
+    //        viewMatrix,
+    //        projectionMatrix,
+    //        root,
+    //        _renderParams,
+    //        &point,
+    //        &normal,
+    //        &path,
+    //        &instancer)) {
+    //    logging("Picked prim " + path.GetAsString(), Info);
+    //}
 
     renderer_->Render(root, _renderParams);
 

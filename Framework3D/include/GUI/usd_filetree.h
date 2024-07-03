@@ -16,6 +16,7 @@ class UsdFileViewer {
 
     ~UsdFileViewer();
     void render();
+    pxr::SdfPath emit_editor_info_path();
     void ShowPrimInfo();
 
    protected:

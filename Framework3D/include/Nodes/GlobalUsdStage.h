@@ -20,14 +20,9 @@ struct GlobalUsdStage {
 
     // Function to handle the creation of different objects
     static void CreateObject(pxr::SdfPath path, ObjectType type);
-    static void EditObject(pxr::SdfPath path);
+    static pxr::SdfPath EditObject(pxr::SdfPath path);
 
     static void DeleteObject(pxr::SdfPath path);
-
-    static pxr::SdfPath EditingPath();
-
-   private:
-    static pxr::SdfPath editing_path;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

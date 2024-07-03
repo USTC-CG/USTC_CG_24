@@ -24,11 +24,13 @@ class UsdFileViewerImpl {
     void BuildUI();
     void set_stage(const pxr::UsdStageRefPtr& ref);
     void ShowPrimInfo();
+    pxr::SdfPath emit_editor_info_path();
 
    private:
     pxr::SdfPath selected;
+    pxr::SdfPath editor_info_path;
 
-    void show_right_click_menu() const;
+    void show_right_click_menu();
     void DrawChild(const pxr::UsdPrim& prim);
     pxr::UsdStageRefPtr stage;
 };
@@ -89,7 +91,15 @@ void UsdFileViewerImpl::ShowPrimInfo()
         ImGui::EndTable();
     }
 }
-void UsdFileViewerImpl::show_right_click_menu() const
+
+pxr::SdfPath UsdFileViewerImpl::emit_editor_info_path()
+{
+    auto temp = editor_info_path;
+    editor_info_path = pxr::SdfPath::EmptyPath();
+    return temp;
+}
+
+void UsdFileViewerImpl::show_right_click_menu()
 {
     if (ImGui::BeginPopupContextWindow("Prim Operation")) {
         if (ImGui::BeginMenu("Create")) {
@@ -107,7 +117,7 @@ void UsdFileViewerImpl::show_right_click_menu() const
         }
 
         if (ImGui::MenuItem("Edit")) {
-            GlobalUsdStage::EditObject(selected);
+            editor_info_path = GlobalUsdStage::EditObject(selected);
         }
 
         if (ImGui::MenuItem("Delete")) {
@@ -187,6 +197,11 @@ void UsdFileViewer::ShowFileTree()
 
 UsdFileViewer::~UsdFileViewer()
 {
+}
+
+pxr::SdfPath UsdFileViewer::emit_editor_info_path()
+{
+    return impl_->emit_editor_info_path();
 }
 
 void UsdFileViewer::ShowPrimInfo()

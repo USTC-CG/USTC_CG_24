@@ -1,5 +1,5 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
-
+#include "pxr/usd/sdf/path.h"
 #include <imgui_internal.h>
 
 #include <map>
@@ -27,6 +27,8 @@
 #include "Utils/json.hpp"
 #include "imgui_impl_opengl3_loader.h"
 #include "node_system_ui.h"
+#include "pxr/usd/usd/attribute.h"
+
 #include "stb_image.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -100,6 +102,13 @@ struct NodeSystemImpl {
     {
     }
 
+    explicit NodeSystemImpl(NodeSystemType type, const pxr::SdfPath& json_location)
+        : node_system_type(type),
+          json_storage(json_location),
+          filename()
+    {
+    }
+
     Node* SpawnComment();
 
     void OnStart();
@@ -135,6 +144,7 @@ struct NodeSystemImpl {
    private:
     ed::EditorContext* m_Editor = nullptr;
     const NodeSystemType node_system_type;
+    pxr::SdfPath json_storage;
 
     ImTextureID LoadTexture(const unsigned char* data, size_t buffer_size);
 
@@ -166,14 +176,14 @@ struct NodeSystemImpl {
 Node* NodeSystemImpl::SpawnComment()
 {
     return nullptr;
-    //auto& m_Nodes = node_system_execution_->get_nodes();
-    //m_Nodes.emplace_back(
-    //    new Node(node_system_execution_->GetNextId(), "Test Comment"));
-    //m_Nodes.back()->Type = NodeType::Comment;
-    //m_Nodes.back()->Size[0] = 300;
-    //m_Nodes.back()->Size[1] = 200;
+    // auto& m_Nodes = node_system_execution_->get_nodes();
+    // m_Nodes.emplace_back(
+    //     new Node(node_system_execution_->GetNextId(), "Test Comment"));
+    // m_Nodes.back()->Type = NodeType::Comment;
+    // m_Nodes.back()->Size[0] = 300;
+    // m_Nodes.back()->Size[1] = 200;
 
-    //return m_Nodes.back().get();
+    // return m_Nodes.back().get();
 }
 
 void NodeSystemImpl::OnStart()
@@ -193,55 +203,111 @@ void NodeSystemImpl::OnStart()
 
     config.UserPointer = this;
 
-    config.SaveSettings = [](const char* data,
-                             size_t size,
-                             NodeEditor::SaveReasonFlags reason,
-                             void* userPointer) -> bool {
-        auto ptr = static_cast<NodeSystemImpl*>(userPointer);
+    if (!json_storage.IsEmpty()) {
+        config.SaveSettings = [](const char* data,
+                                 size_t size,
+                                 NodeEditor::SaveReasonFlags reason,
+                                 void* userPointer) -> bool {
+            auto ptr = static_cast<NodeSystemImpl*>(userPointer);
 
-        std::ofstream file(ptr->filename);
-        auto node_serialize = ptr->node_system_execution_->Serialize();
+            std::ofstream file(ptr->filename);
+            auto node_serialize = ptr->node_system_execution_->Serialize();
 
-        node_serialize.erase(node_serialize.end() - 1);
+            node_serialize.erase(node_serialize.end() - 1);
 
-        auto ui_json = std::string(data + 1);
-        ui_json.erase(ui_json.end() - 1);
+            auto ui_json = std::string(data + 1);
+            ui_json.erase(ui_json.end() - 1);
 
-        node_serialize += "," + ui_json + '}';
+            node_serialize += "," + ui_json + '}';
 
-        file << node_serialize;
-        return true;
-    };
+            auto attr = GlobalUsdStage::global_usd_stage->GetAttributeAtPath(
+                ptr->json_storage);
 
-    config.LoadSettings = [](char* d, void* userPointer) -> size_t {
-        auto ptr = static_cast<NodeSystemImpl*>(userPointer);
-        std::ifstream file(ptr->filename);
-        if (!file) {
+            attr.Set(pxr::VtValue(node_serialize));
+
+            return true;
+        };
+
+        config.LoadSettings = [](char* d, void* userPointer) -> size_t {
+            auto ptr = static_cast<NodeSystemImpl*>(userPointer);
+            if (ptr->json_storage.IsEmpty()) {
+                assert(false);
+                return 0;
+            }
+            if (!d) {
+                std::string data;
+                GlobalUsdStage::global_usd_stage
+                    ->GetAttributeAtPath(ptr->json_storage)
+                    .Get(&data);
+                return data.size();
+            }
+
+            std::string data;
+            GlobalUsdStage::global_usd_stage
+                ->GetAttributeAtPath(ptr->json_storage)
+                .Get(&data);
+
+            if (data.size() > 0) {
+                ptr->node_system_execution_->Deserialize(data);
+            }
+
+            memcpy(d, data.data(), data.size());
+
             return 0;
-        }
-        if (!d) {
+        };
+    }
+
+    else {
+        config.SaveSettings = [](const char* data,
+                                 size_t size,
+                                 NodeEditor::SaveReasonFlags reason,
+                                 void* userPointer) -> bool {
+            auto ptr = static_cast<NodeSystemImpl*>(userPointer);
+
+            std::ofstream file(ptr->filename);
+            auto node_serialize = ptr->node_system_execution_->Serialize();
+
+            node_serialize.erase(node_serialize.end() - 1);
+
+            auto ui_json = std::string(data + 1);
+            ui_json.erase(ui_json.end() - 1);
+
+            node_serialize += "," + ui_json + '}';
+
+            file << node_serialize;
+            return true;
+        };
+
+        config.LoadSettings = [](char* d, void* userPointer) -> size_t {
+            auto ptr = static_cast<NodeSystemImpl*>(userPointer);
+            std::ifstream file(ptr->filename);
+            if (!file) {
+                return 0;
+            }
+            if (!d) {
+                file.seekg(0, std::ios_base::end);
+                return file.tellg();
+            }
+
+            std::string data;
             file.seekg(0, std::ios_base::end);
-            return file.tellg();
-        }
+            auto size = static_cast<size_t>(file.tellg());
+            file.seekg(0, std::ios_base::beg);
 
-        std::string data;
-        file.seekg(0, std::ios_base::end);
-        auto size = static_cast<size_t>(file.tellg());
-        file.seekg(0, std::ios_base::beg);
+            data.reserve(size);
+            data.assign(
+                std::istreambuf_iterator<char>(file),
+                std::istreambuf_iterator<char>());
 
-        data.reserve(size);
-        data.assign(
-            std::istreambuf_iterator<char>(file),
-            std::istreambuf_iterator<char>());
+            if (data.size() > 0) {
+                ptr->node_system_execution_->Deserialize(data);
+            }
 
-        if (data.size() > 0) {
-            ptr->node_system_execution_->Deserialize(data);
-        }
+            memcpy(d, data.data(), data.size());
 
-        memcpy(d, data.data(), data.size());
-
-        return 0;
-    };
+            return 0;
+        };
+    }
 
     m_Editor = ed::CreateEditor(&config);
 
@@ -869,6 +935,17 @@ NodeSystem::NodeSystem(
       window_name(window_name)
 {
     impl_ = std::make_unique<NodeSystemImpl>(type, file_name);
+    impl_->OnStart();
+}
+
+NodeSystem::NodeSystem(
+    NodeSystemType type,
+    const pxr::SdfPath& json_location,
+    const std::string& window_name)
+    : node_system_type(type),
+      window_name(window_name)
+{
+    impl_ = std::make_unique<NodeSystemImpl>(type, json_location);
     impl_->OnStart();
 }
 
