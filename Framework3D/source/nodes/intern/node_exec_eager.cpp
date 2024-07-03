@@ -154,8 +154,9 @@ void EagerNodeTreeExecutor::compile(NodeTree* tree)
     }
 
     nodes_to_execute = tree->get_toposort_left_to_right();
-    for (int i = nodes_to_execute.size() - 1; i >= 0; i--) {
-        nodes_to_execute[i]->REQUIRED = false;
+
+    for (auto node : nodes_to_execute) {
+        node->REQUIRED = false;
     }
 
     for (int i = nodes_to_execute.size() - 1; i >= 0; i--) {

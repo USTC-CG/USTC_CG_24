@@ -83,34 +83,38 @@ void Hd_USTC_CG_Renderer::Render(HdRenderThread* renderThread)
     executor->set_global_param(&params);
     executor->execute_tree(node_tree);
 
-    TextureHandle texture = nullptr;
-    for (auto&& node : node_tree->nodes) {
-        auto try_fetch_info = [&node, &executor]<typename T>(
-                                  const char* id_name, T& obj) {
-            if (std::string(node->typeinfo->id_name) == id_name) {
-                assert(node->get_inputs().size() == 1);
-                auto output_socket = node->get_inputs()[0];
-                entt::meta_any data;
-                executor->sync_node_to_external_storage(output_socket, data);
-                obj = data.cast<T>();
-            }
-        };
-        try_fetch_info("render_present", texture);
-        if (texture) {
-            break;
-        }
-    }
+    for (size_t i = 0; i < _aovBindings.size(); ++i) {
+        std::string present_name = "render_present";
+        TextureHandle texture = nullptr;
 
-    if (texture) {
-        for (size_t i = 0; i < _aovBindings.size(); ++i) {
+        if (_aovBindings[i].aovName == HdAovTokens->depth) {
+            present_name = "render_present_depth";
+        }
+
+        for (auto&& node : node_tree->nodes) {
+            auto try_fetch_info = [&node, &executor]<typename T>(
+                                      const char* id_name, T& obj) {
+                if (std::string(node->typeinfo->id_name) == id_name) {
+                    assert(node->get_inputs().size() == 1);
+                    auto output_socket = node->get_inputs()[0];
+                    entt::meta_any data;
+                    executor->sync_node_to_external_storage(
+                        output_socket, data);
+                    obj = data.cast<T>();
+                }
+            };
+            try_fetch_info(present_name.c_str(), texture);
+            if (texture) {
+                break;
+            }
+        }
+        if (texture) {
             auto rb = static_cast<Hd_USTC_CG_RenderBufferGL*>(
                 _aovBindings[i].renderBuffer);
             rb->Present(texture);
-
             rb->SetConverged(true);
         }
     }
-    assert(glGetError() == GL_NO_ERROR);
 
     render_param->nvrhi_device->runGarbageCollection();
 
