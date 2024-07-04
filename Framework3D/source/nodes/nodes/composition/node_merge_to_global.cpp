@@ -29,7 +29,7 @@ static void node_exec(ExeParams params)
 
     UsdPrim assemblyRoot =
         global_stage->DefinePrim(SdfPath("/Reference").AppendPath(sdf_path));
-
+    
     assemblyRoot.GetPayloads().AddPayload(
         layer->GetRootLayer()->GetIdentifier());
 }

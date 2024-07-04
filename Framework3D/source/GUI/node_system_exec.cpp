@@ -7,6 +7,8 @@
 #include "Nodes/node_register.h"
 #include "Nodes/node_tree.hpp"
 #include "imgui/imgui-node-editor/imgui_node_editor.h"
+#include "pxr/usd/usd/prim.h"
+#include "pxr/usd/usdGeom/imageable.h"
 #include "pxr/usd/usdGeom/metrics.h"
 #include "pxr/usd/usdGeom/tokens.h"
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -202,6 +204,11 @@ void GeoNodeSystemExecution::try_execution()
 {
     if (required_execution) {
         auto& stage = GlobalUsdStage::global_usd_stage;
+        if (!params_.prim_path.IsEmpty()) {
+            pxr::UsdGeomImageable(stage->GetPrimAtPath(params_.prim_path))
+                .MakeInvisible();
+        }
+
         stage->RemovePrim(pxr::SdfPath("/geom"));
         stage->RemovePrim(pxr::SdfPath("/TexModel"));
     }

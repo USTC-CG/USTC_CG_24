@@ -205,43 +205,40 @@ void Hd_USTC_CG_Mesh::updateTLAS(
     HdInstancer::_SyncInstancerAndParents(
         sceneDelegate->GetRenderIndex(), GetInstancerId());
 
-    if (HdChangeTracker::IsInstancerDirty(*dirtyBits, id) ||
-        HdChangeTracker::IsTransformDirty(*dirtyBits, id)) {
-        VtMatrix4dArray transforms;
-        if (!GetInstancerId().IsEmpty()) {
-            // Retrieve instance transforms from the instancer.
-            HdRenderIndex& renderIndex = sceneDelegate->GetRenderIndex();
-            HdInstancer* instancer = renderIndex.GetInstancer(GetInstancerId());
-            transforms = static_cast<Hd_USTC_CG_GL_Instancer*>(instancer)
-                             ->ComputeInstanceTransforms(GetId());
-        }
-        else {
-            // If there's no instancer, add a single instance with transform
-            // I.
-            transforms.push_back(GfMatrix4d(1.0));
-        }
+    VtMatrix4dArray transforms;
+    if (!GetInstancerId().IsEmpty()) {
+        // Retrieve instance transforms from the instancer.
+        HdRenderIndex& renderIndex = sceneDelegate->GetRenderIndex();
+        HdInstancer* instancer = renderIndex.GetInstancer(GetInstancerId());
+        transforms = static_cast<Hd_USTC_CG_GL_Instancer*>(instancer)
+            ->ComputeInstanceTransforms(GetId());
+    }
+    else {
+        // If there's no instancer, add a single instance with transform
+        // I.
+        transforms.push_back(GfMatrix4d(1.0));
+    }
 
-        auto& instances = render_param->TLAS->acquire_instances_to_edit(this);
-        instances.clear();
-        instances.resize(transforms.size());
+    auto& instances = render_param->TLAS->acquire_instances_to_edit(this);
+    instances.clear();
+    instances.resize(transforms.size());
 
-        for (int i = 0; i < transforms.size(); ++i) {
-            // Combine the local transform and the instance transform.
-            GfMatrix4f matf =
-                (transform * GfMatrix4f(transforms[i])).GetTranspose();
+    for (int i = 0; i < transforms.size(); ++i) {
+        // Combine the local transform and the instance transform.
+        GfMatrix4f matf =
+            (transform * GfMatrix4f(transforms[i])).GetTranspose();
 
-            nvrhi::rt::InstanceDesc instanceDesc;
-            instanceDesc.bottomLevelAS = BLAS;
-            instanceDesc.instanceMask = 1;
-            instanceDesc.flags =
-                nvrhi::rt::InstanceFlags::TriangleFrontCounterclockwise;
+        nvrhi::rt::InstanceDesc instanceDesc;
+        instanceDesc.bottomLevelAS = BLAS;
+        instanceDesc.instanceMask = 1;
+        instanceDesc.flags =
+            nvrhi::rt::InstanceFlags::TriangleFrontCounterclockwise;
 
-            memcpy(
-                instanceDesc.transform,
-                matf.data(),
-                sizeof(nvrhi::rt::AffineTransform));
-            instances[i] = instanceDesc;
-        }
+        memcpy(
+            instanceDesc.transform,
+            matf.data(),
+            sizeof(nvrhi::rt::AffineTransform));
+        instances[i] = instanceDesc;
     }
 }
 

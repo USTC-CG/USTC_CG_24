@@ -149,7 +149,7 @@ void UsdviewEngineImpl::OnFrame(
     _renderParams.frame = UsdTimeCode::Default();
     _renderParams.drawMode = UsdImagingGLDrawMode::DRAW_WIREFRAME_ON_SURFACE;
     _renderParams.colorCorrectionMode = TfToken("sRGB");
-
+    
     _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
     _renderParams.frame = UsdTimeCode(timecode);
 
@@ -175,21 +175,21 @@ void UsdviewEngineImpl::OnFrame(
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
 
-    GfVec3d point;
-    GfVec3d normal;
-    SdfPath path;
-    SdfPath instancer;
-    if (renderer_->TestIntersection(
-            viewMatrix,
-            projectionMatrix,
-            root,
-            _renderParams,
-            &point,
-            &normal,
-            &path,
-            &instancer)) {
-        logging("Picked prim " + path.GetAsString(), Info);
-    }
+    //GfVec3d point;
+    //GfVec3d normal;
+    //SdfPath path;
+    //SdfPath instancer;
+    //if (renderer_->TestIntersection(
+    //        viewMatrix,
+    //        projectionMatrix,
+    //        root,
+    //        _renderParams,
+    //        &point,
+    //        &normal,
+    //        &path,
+    //        &instancer)) {
+    //    logging("Picked prim " + path.GetAsString(), Info);
+    //}
 
     renderer_->Render(root, _renderParams);
 

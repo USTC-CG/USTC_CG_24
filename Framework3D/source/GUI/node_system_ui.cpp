@@ -228,7 +228,9 @@ void NodeSystemImpl::OnStart()
             auto attr = GlobalUsdStage::global_usd_stage->GetAttributeAtPath(
                 ptr->json_storage);
 
-            attr.Set(pxr::VtValue(node_serialize));
+            if (attr) {
+                attr.Set(pxr::VtValue(node_serialize));
+            }
 
             return true;
         };

@@ -6,26 +6,24 @@
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 
+#include "GCore/Components/CurveComponent.h"
 #include "GCore/Components/MaterialComponent.h"
 #include "GCore/Components/MeshOperand.h"
 #include "GCore/Components/PointsComponent.h"
 #include "GCore/Components/XformComponent.h"
+#include "GCore/geom_node_global_params.h"
 #include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "geom_node_base.h"
-#include "GCore/Components/CurveComponent.h"
 #include "pxr/base/gf/rotation.h"
-
-#include "GCore/geom_node_global_params.h"
+#include "pxr/usd/usd/payloads.h"
 
 namespace USTC_CG::node_write_usd {
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Geometry>("Geometry");
-    b.add_input<decl::String>("File Name").default_val("Default");
-    b.add_input<decl::String>("Prim Path").default_val("geometry");
     b.add_input<decl::Float>("Time Code").default_val(0).min(0).max(240);
 }
 
@@ -47,9 +45,6 @@ static void node_exec(ExeParams params)
     auto global_params = params.get_global_params<GeomNodeGlobalParams>();
     std::cout << global_params.prim_path.GetAsString();
 
-    auto file_name = params.get_input<std::string>("File Name");
-    auto prim_path = params.get_input<std::string>("Prim Path");
-
     auto geometry = params.get_input<GOperandBase>("Geometry");
 
     auto mesh = geometry.get_component<MeshComponent>();
@@ -67,24 +62,17 @@ static void node_exec(ExeParams params)
     }
 
     auto& stage = GlobalUsdStage::global_usd_stage;
-    if (!legal(prim_path.c_str())) {
-        return;
-    }
-    // Here 'c_str' call is necessary since prim_path
-    auto sdf_path = pxr::SdfPath(prim_path.c_str());
-
-    if (stage->GetPrimAtPath(sdf_path)) {
-        stage->RemovePrim(sdf_path);
-    }
+    auto sdf_path = global_params.prim_path;
 
     if (mesh) {
-        pxr::UsdGeomMesh usdgeom =
-            pxr::UsdGeomMesh::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+        pxr::UsdGeomMesh usdgeom = pxr::UsdGeomMesh::Define(stage, sdf_path);
         if (usdgeom) {
             // Fill in the vertices and faces here
             usdgeom.CreatePointsAttr().Set(mesh->vertices, time);
-            usdgeom.CreateFaceVertexCountsAttr().Set(mesh->faceVertexCounts, time);
-            usdgeom.CreateFaceVertexIndicesAttr().Set(mesh->faceVertexIndices, time);
+            usdgeom.CreateFaceVertexCountsAttr().Set(
+                mesh->faceVertexCounts, time);
+            usdgeom.CreateFaceVertexIndicesAttr().Set(
+                mesh->faceVertexIndices, time);
 
             usdgeom.CreateDoubleSidedAttr(pxr::VtValue(true));
 
@@ -96,7 +84,8 @@ static void node_exec(ExeParams params)
 
             if (mesh->texcoordsArray.size() > 0) {
                 pxr::UsdGeomPrimvar primvar = PrimVarAPI.CreatePrimvar(
-                    pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->TexCoord2fArray);
+                    pxr::TfToken("UVMap"),
+                    pxr::SdfValueTypeNames->TexCoord2fArray);
                 primvar.Set(mesh->texcoordsArray, time);
 
                 // Here only consider two modes
@@ -110,7 +99,8 @@ static void node_exec(ExeParams params)
 
             if (mesh->displayColor.size()) {
                 pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
-                    pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+                    pxr::TfToken("displayColor"),
+                    pxr::SdfValueTypeNames->Color3fArray);
                 colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
                 colorPrimvar.Set(mesh->displayColor);
             }
@@ -118,7 +108,7 @@ static void node_exec(ExeParams params)
     }
     else if (points) {
         pxr::UsdGeomPoints usdpoints =
-            pxr::UsdGeomPoints::Define(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+            pxr::UsdGeomPoints::Define(stage, sdf_path);
 
         usdpoints.CreatePointsAttr().Set(points->vertices, time);
 
@@ -129,65 +119,92 @@ static void node_exec(ExeParams params)
         auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdpoints);
         if (points->displayColor.size() > 0) {
             pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
-                pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+                pxr::TfToken("displayColor"),
+                pxr::SdfValueTypeNames->Color3fArray);
             colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
             colorPrimvar.Set(points->displayColor, time);
         }
     }
     else if (curve) {
-
-        
     }
 
     // Material and Texture
     auto material_component = geometry.get_component<MaterialComponent>();
     if (material_component) {
-        auto usdgeom =
-            pxr::UsdGeomXformable ::Get(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+        auto usdgeom = pxr::UsdGeomXformable ::Get(stage, sdf_path);
         if (legal(std::string(material_component->textures[0].c_str()))) {
-            auto texture_name = std::string(material_component->textures[0].c_str());
-            std::filesystem::path p = std::filesystem::path(texture_name).replace_extension();
+            auto texture_name =
+                std::string(material_component->textures[0].c_str());
+            std::filesystem::path p =
+                std::filesystem::path(texture_name).replace_extension();
             auto file_name = "texture" + p.filename().string();
 
             auto material_path_root = pxr::SdfPath("/TexModel");
-            auto material_path = material_path_root.AppendPath(pxr::SdfPath(file_name + "Mat"));
-            auto material_shader_path = material_path.AppendPath(pxr::SdfPath("PBRShader"));
-            auto material_stReader_path = material_path.AppendPath(pxr::SdfPath("stReader"));
-            auto material_texture_path = material_path.AppendPath(pxr::SdfPath("diffuseTexture"));
+            auto material_path =
+                material_path_root.AppendPath(pxr::SdfPath(file_name + "Mat"));
+            auto material_shader_path =
+                material_path.AppendPath(pxr::SdfPath("PBRShader"));
+            auto material_stReader_path =
+                material_path.AppendPath(pxr::SdfPath("stReader"));
+            auto material_texture_path =
+                material_path.AppendPath(pxr::SdfPath("diffuseTexture"));
 
             auto material = pxr::UsdShadeMaterial::Define(stage, material_path);
-            auto pbrShader = pxr::UsdShadeShader::Define(stage, material_shader_path);
+            auto pbrShader =
+                pxr::UsdShadeShader::Define(stage, material_shader_path);
 
-            pbrShader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
+            pbrShader.CreateIdAttr(
+                pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
             material.CreateSurfaceOutput().ConnectToSource(
                 pbrShader.ConnectableAPI(), pxr::TfToken("surface"));
 
-            auto stReader = pxr::UsdShadeShader::Define(stage, material_stReader_path);
-            stReader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPrimvarReader_float2")));
+            auto stReader =
+                pxr::UsdShadeShader::Define(stage, material_stReader_path);
+            stReader.CreateIdAttr(
+                pxr::VtValue(pxr::TfToken("UsdPrimvarReader_float2")));
 
-            auto diffuseTextureSampler = pxr::UsdShadeShader::Define(stage, material_texture_path);
+            auto diffuseTextureSampler =
+                pxr::UsdShadeShader::Define(stage, material_texture_path);
 
-            diffuseTextureSampler.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdUVTexture")));
-            diffuseTextureSampler.CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
+            diffuseTextureSampler.CreateIdAttr(
+                pxr::VtValue(pxr::TfToken("UsdUVTexture")));
+            diffuseTextureSampler
+                .CreateInput(
+                    pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset)
                 .Set(pxr::SdfAssetPath(texture_name));
-            diffuseTextureSampler.CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
-                .ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
-            diffuseTextureSampler.CreateOutput(pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
+            diffuseTextureSampler
+                .CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2)
+                .ConnectToSource(
+                    stReader.ConnectableAPI(), pxr::TfToken("result"));
+            diffuseTextureSampler.CreateOutput(
+                pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
 
-            diffuseTextureSampler.CreateInput(pxr::TfToken("wrapS"), pxr::SdfValueTypeNames->Token)
+            diffuseTextureSampler
+                .CreateInput(
+                    pxr::TfToken("wrapS"), pxr::SdfValueTypeNames->Token)
                 .Set(pxr::TfToken("mirror"));
 
-            diffuseTextureSampler.CreateInput(pxr::TfToken("wrapT"), pxr::SdfValueTypeNames->Token)
+            diffuseTextureSampler
+                .CreateInput(
+                    pxr::TfToken("wrapT"), pxr::SdfValueTypeNames->Token)
                 .Set(pxr::TfToken("mirror"));
 
-            pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f)
-                .ConnectToSource(diffuseTextureSampler.ConnectableAPI(), pxr::TfToken("rgb"));
+            pbrShader
+                .CreateInput(
+                    pxr::TfToken("diffuseColor"),
+                    pxr::SdfValueTypeNames->Color3f)
+                .ConnectToSource(
+                    diffuseTextureSampler.ConnectableAPI(),
+                    pxr::TfToken("rgb"));
 
             auto stInput = material.CreateInput(
-                pxr::TfToken("frame:stPrimvarName"), pxr::SdfValueTypeNames->Token);
+                pxr::TfToken("frame:stPrimvarName"),
+                pxr::SdfValueTypeNames->Token);
             stInput.Set(pxr::TfToken("UVMap"));
 
-            stReader.CreateInput(pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token)
+            stReader
+                .CreateInput(
+                    pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token)
                 .ConnectToSource(stInput);
 
             usdgeom.GetPrim().ApplyAPI(pxr::UsdShadeTokens->MaterialBindingAPI);
@@ -200,10 +217,11 @@ static void node_exec(ExeParams params)
 
     auto xform_component = geometry.get_component<XformComponent>();
     if (xform_component) {
-        auto usdgeom =
-            pxr::UsdGeomXformable ::Get(stage, pxr::SdfPath("/geom").AppendPath(sdf_path));
+        auto usdgeom = pxr::UsdGeomXformable ::Get(stage, sdf_path);
         // Transform
-        assert(xform_component->translation.size() == xform_component->rotation.size());
+        assert(
+            xform_component->translation.size() ==
+            xform_component->rotation.size());
 
         pxr::GfMatrix4d final_transform;
         final_transform.SetIdentity();
@@ -215,11 +233,14 @@ static void node_exec(ExeParams params)
             s.SetScale(xform_component->scale[i]);
 
             pxr::GfMatrix4d r_x;
-            r_x.SetRotate(pxr::GfRotation{ { 1, 0, 0 }, xform_component->rotation[i][0] });
+            r_x.SetRotate(pxr::GfRotation{ { 1, 0, 0 },
+                                           xform_component->rotation[i][0] });
             pxr::GfMatrix4d r_y;
-            r_y.SetRotate(pxr::GfRotation{ { 0, 1, 0 }, xform_component->rotation[i][1] });
+            r_y.SetRotate(pxr::GfRotation{ { 0, 1, 0 },
+                                           xform_component->rotation[i][1] });
             pxr::GfMatrix4d r_z;
-            r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 }, xform_component->rotation[i][2] });
+            r_z.SetRotate(pxr::GfRotation{ { 0, 0, 1 },
+                                           xform_component->rotation[i][2] });
 
             auto transform = r_x * r_y * r_z * s * t;
             final_transform = final_transform * transform;
@@ -231,6 +252,8 @@ static void node_exec(ExeParams params)
         }
         xform_op.Set(final_transform, time);
     }
+
+    pxr::UsdGeomImageable(stage->GetPrimAtPath(sdf_path)).MakeVisible();
 }
 
 static void node_register()

@@ -83,9 +83,11 @@ void UsdFileViewerImpl::ShowPrimInfo()
                 ImGui::TableSetColumnIndex(2);
                 VtValue v;
                 attr.Get(&v);
-                auto s =
-                    VtVisitValue(v, [](auto&& v) { return TfStringify(v); });
-                ImGui::TextUnformatted(s.c_str());
+                if (!v.IsArrayValued()) {
+                    auto s = VtVisitValue(
+                        v, [](auto&& v) { return TfStringify(v); });
+                    ImGui::TextUnformatted(s.c_str());
+                }
             }
         }
         ImGui::EndTable();
