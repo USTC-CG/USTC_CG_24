@@ -176,6 +176,11 @@ void GeoNodeSystemExecution::set_edited_prim_path(const pxr::SdfPath& sdf_path)
     params_.prim_path = sdf_path;
 }
 
+void GeoNodeSystemExecution::consume_pickevent(PickEvent* pick)
+{
+    params_.pick = pick;
+}
+
 float GeoNodeSystemExecution::cached_last_frame() const
 {
     return cached_last_frame_;

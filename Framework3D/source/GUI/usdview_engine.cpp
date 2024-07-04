@@ -1,10 +1,18 @@
 // My resharper is not working well with the _MSC_VER_ macro.
+
+//#define __GNUC__
+
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 #include "GUI/usdview_engine.h"
 
+#include "GUI/ui_event.h"
 #include "Nodes/GlobalUsdStage.h"
 #include "Utils/Logging/Logging.h"
 #include "free_camera.h"
 #include "imgui.h"
+#
 #include "pxr/base/gf/camera.h"
 #include "pxr/imaging/glf/drawTarget.h"
 #include "pxr/pxr.h"
@@ -15,8 +23,6 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 class NodeTree;
 using namespace pxr;
-
-struct GUIEvent { };
 
 class UsdviewEngineImpl {
    public:
@@ -56,8 +62,11 @@ class UsdviewEngineImpl {
     void OnResize(int x, int y);
     void time_controller(float delta_time);
     void set_current_time_code(float time_code);
+    std::unique_ptr<USTC_CG::PickEvent> get_pick_event();
 
    private:
+    std::unique_ptr<PickEvent> pick_event = nullptr;
+
     unsigned fbo = 0;
     unsigned tex = 0;
     std::unique_ptr<FreeCamera> free_camera_;
@@ -149,7 +158,7 @@ void UsdviewEngineImpl::OnFrame(
     _renderParams.frame = UsdTimeCode::Default();
     _renderParams.drawMode = UsdImagingGLDrawMode::DRAW_WIREFRAME_ON_SURFACE;
     _renderParams.colorCorrectionMode = TfToken("sRGB");
-    
+
     _renderParams.clearColor = GfVec4f(0.4f, 0.4f, 0.4f, 1.f);
     _renderParams.frame = UsdTimeCode(timecode);
 
@@ -175,22 +184,6 @@ void UsdviewEngineImpl::OnFrame(
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
 
-    //GfVec3d point;
-    //GfVec3d normal;
-    //SdfPath path;
-    //SdfPath instancer;
-    //if (renderer_->TestIntersection(
-    //        viewMatrix,
-    //        projectionMatrix,
-    //        root,
-    //        _renderParams,
-    //        &point,
-    //        &normal,
-    //        &path,
-    //        &instancer)) {
-    //    logging("Picked prim " + path.GetAsString(), Info);
-    //}
-
     renderer_->Render(root, _renderParams);
 
     renderer_->SetPresentationOutput(pxr::TfToken("OpenGL"), pxr::VtValue(fbo));
@@ -207,6 +200,51 @@ void UsdviewEngineImpl::OnFrame(
         ImVec2(1.0f, 0.0f));
     is_active_ = ImGui::IsWindowFocused();
     is_hovered_ = ImGui::IsItemHovered();
+
+    if (is_hovered_ && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+        auto mouse_pos_rel = ImGui::GetMousePos() - ImGui::GetItemRectMin();
+        // Normalize the mouse position to be in the range [0, 1]
+        ImVec2 mousePosNorm = ImVec2(
+            mouse_pos_rel.x / renderBufferSize_[0],
+            mouse_pos_rel.y / renderBufferSize_[1]);
+
+        // Convert to NDC coordinates
+        ImVec2 mousePosNDC =
+            ImVec2(mousePosNorm.x * 2.0f - 1.0f, 1.0f - mousePosNorm.y * 2.0f);
+
+        GfVec3d point;
+        GfVec3d normal;
+        SdfPath path;
+        SdfPath instancer;
+        HdInstancerContext outInstancerContext;
+        int outHitInstanceIndex;
+        auto narrowed = frustum.ComputeNarrowedFrustum(
+            { mousePosNDC[0], mousePosNDC[1] },
+            { 1.0 / renderBufferSize_[0], 1.0 / renderBufferSize_[1] });
+
+        if (renderer_->TestIntersection(
+                narrowed.ComputeViewMatrix(),
+                narrowed.ComputeProjectionMatrix(),
+                root,
+                _renderParams,
+                &point,
+                &normal,
+                &path,
+                &instancer,
+                &outHitInstanceIndex,
+                &outInstancerContext)) {
+            pick_event = std::make_unique<PickEvent>(
+                point,
+                normal,
+                path,
+                instancer,
+                outInstancerContext,
+                outHitInstanceIndex,
+                narrowed.ComputePickRay({ mousePosNDC[0], mousePosNDC[1] }));
+            logging("Picked prim " + path.GetAsString(), Info);
+        }
+    }
+
     ImGui::EndChild();
 }
 
@@ -279,6 +317,11 @@ void UsdviewEngineImpl::time_controller(float delta_time)
 void UsdviewEngineImpl::set_current_time_code(float time_code)
 {
     timecode = time_code;
+}
+
+std::unique_ptr<USTC_CG::PickEvent> UsdviewEngineImpl::get_pick_event()
+{
+    return std::move(pick_event);
 }
 
 bool UsdviewEngineImpl::CameraCallback(float delta_time)
@@ -359,6 +402,11 @@ float UsdviewEngine::current_time_code()
 void UsdviewEngine::set_current_time_code(float time_code)
 {
     impl_->set_current_time_code(time_code);
+}
+
+std::unique_ptr<PickEvent> UsdviewEngine::get_pick_event()
+{
+    return impl_->get_pick_event();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

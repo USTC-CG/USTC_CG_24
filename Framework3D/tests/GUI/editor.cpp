@@ -10,6 +10,8 @@
 #include "Nodes/GlobalUsdStage.h"
 #include "imgui.h"
 
+#include "GUI/ui_event.h"
+
 class NodeWindow final : public USTC_CG::Window {
    public:
     explicit NodeWindow(const std::string& window_name) : Window(window_name)
@@ -59,10 +61,16 @@ class NodeWindow final : public USTC_CG::Window {
 
 void NodeWindow::BuildUI()
 {
+    std::unique_ptr<USTC_CG::PickEvent> pick_event = renderer->get_pick_event();
+    if (pick_event) {
+        USTC_CG::logging("Pick!");
+    }
+
     composition_graph->draw_imgui();
 
     int removed_editor = -1;
     for (int i = 0; i < geonode_systems.size(); ++i) {
+        geonode_systems[i]->consume_pickevent(pick_event.get());
         if (!geonode_systems[i]->draw_imgui()) {
             removed_editor = i;
         }
@@ -73,6 +81,7 @@ void NodeWindow::BuildUI()
     }
 
     float time_code_to_render = renderer->current_time_code();
+
     // if (time_code_to_render > geonode_system->cached_last_time_code()) {
     //     auto cached_time = geonode_system->cached_last_time_code();
     //     renderer->set_current_time_code(cached_time);
@@ -102,6 +111,7 @@ void NodeWindow::BuildUI()
     }
 
     ImGui::EndMenuBar();
+
 }
 
 int main()

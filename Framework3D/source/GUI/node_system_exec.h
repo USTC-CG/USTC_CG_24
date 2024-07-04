@@ -4,6 +4,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
+#include "GUI/ui_event.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct NodeTreeExecutor;
@@ -15,6 +16,7 @@ class NodeSystemExecution {
     virtual void set_required_time_code(float time_code_to_render)
     {
     }
+
 
     NodeSystemExecution();
 
@@ -81,6 +83,7 @@ struct GeoNodeSystemExecution : public NodeSystemExecution {
     GeoNodeSystemExecution();
 
     void set_edited_prim_path(const pxr::SdfPath& sdf_path);
+    void consume_pickevent(PickEvent* pick);
 
     float cached_last_frame() const override;
 

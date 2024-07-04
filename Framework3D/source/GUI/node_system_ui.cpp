@@ -114,6 +114,7 @@ struct NodeSystemImpl {
 
     void OnStart();
     void OnStop();
+    void consume_pickevent(PickEvent* pick);
     static bool draw_socket_controllers(NodeSocket* input);
     void OnFrame(float deltaTime);
 
@@ -336,6 +337,14 @@ void NodeSystemImpl::OnStop()
     if (m_Editor) {
         ed::DestroyEditor(m_Editor);
         m_Editor = nullptr;
+    }
+}
+
+void NodeSystemImpl::consume_pickevent(PickEvent* pick)
+{
+    if (node_system_type == NodeSystemType::Geometry) {
+        static_cast<GeoNodeSystemExecution*>(node_system_execution_.get())
+            ->consume_pickevent(pick);
     }
 }
 
@@ -993,6 +1002,11 @@ float NodeSystem::cached_last_time_code()
 void NodeSystem::set_required_time_code(float time_code_to_render)
 {
     impl_->node_system_execution_->set_required_time_code(time_code_to_render);
+}
+
+void NodeSystem::consume_pickevent(PickEvent* pick)
+{
+    impl_->consume_pickevent(pick);
 }
 
 void NodeSystemImpl::ShowLeftPane(float paneWidth)
