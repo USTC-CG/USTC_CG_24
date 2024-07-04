@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GCore/geom_node_global_params.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
@@ -14,6 +15,7 @@ class NodeSystemExecution {
     virtual void set_required_time_code(float time_code_to_render)
     {
     }
+
     NodeSystemExecution();
 
     virtual Node* create_node_menu();
@@ -69,13 +71,16 @@ class NodeSystemExecution {
 
    protected:
     bool required_execution = false;
-    Node* default_node_menu(const std::map<std::string, NodeTypeInfo*>& registry);
+    Node* default_node_menu(
+        const std::map<std::string, NodeTypeInfo*>& registry);
 
     unsigned m_NextId = 1;
 };
 
 struct GeoNodeSystemExecution : public NodeSystemExecution {
     GeoNodeSystemExecution();
+
+    void set_edited_prim_path(const pxr::SdfPath& sdf_path);
 
     float cached_last_frame() const override;
 
@@ -87,6 +92,7 @@ struct GeoNodeSystemExecution : public NodeSystemExecution {
     Node* create_node_menu() override;
 
    private:
+    GeomNodeGlobalParams params_;
     float cached_last_frame_ = 0;
     float time_code_to_render_ = 0;
     bool just_renewed = true;

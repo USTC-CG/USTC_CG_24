@@ -1,5 +1,4 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "pxr/usd/sdf/path.h"
 #include <imgui_internal.h>
 
 #include <map>
@@ -12,6 +11,7 @@
 #include "imgui/blueprint-utilities/widgets.h"
 #include "imgui/imgui-node-editor/imgui_node_editor.h"
 #include "node_system_exec.h"
+#include "pxr/usd/sdf/path.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <Utils/Math/string_hash.h>
@@ -28,7 +28,6 @@
 #include "imgui_impl_opengl3_loader.h"
 #include "node_system_ui.h"
 #include "pxr/usd/usd/attribute.h"
-
 #include "stb_image.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -102,7 +101,9 @@ struct NodeSystemImpl {
     {
     }
 
-    explicit NodeSystemImpl(NodeSystemType type, const pxr::SdfPath& json_location)
+    explicit NodeSystemImpl(
+        NodeSystemType type,
+        const pxr::SdfPath& json_location)
         : node_system_type(type),
           json_storage(json_location),
           filename()
@@ -190,6 +191,10 @@ void NodeSystemImpl::OnStart()
 {
     if (node_system_type == NodeSystemType::Geometry) {
         node_system_execution_ = std::make_unique<GeoNodeSystemExecution>();
+        if (!json_storage.IsEmpty()) {
+            static_cast<GeoNodeSystemExecution*>(node_system_execution_.get())
+                ->set_edited_prim_path(json_storage.GetParentPath());
+        }
     }
     else if (node_system_type == NodeSystemType::Render) {
         node_system_execution_ = std::make_unique<RenderNodeSystemExecution>();

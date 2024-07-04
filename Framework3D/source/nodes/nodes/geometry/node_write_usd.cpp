@@ -18,6 +18,8 @@
 #include "GCore/Components/CurveComponent.h"
 #include "pxr/base/gf/rotation.h"
 
+#include "GCore/geom_node_global_params.h"
+
 namespace USTC_CG::node_write_usd {
 static void node_declare(NodeDeclarationBuilder& b)
 {
@@ -42,6 +44,9 @@ bool legal(const std::string& string)
 
 static void node_exec(ExeParams params)
 {
+    auto global_params = params.get_global_params<GeomNodeGlobalParams>();
+    std::cout << global_params.prim_path.GetAsString();
+
     auto file_name = params.get_input<std::string>("File Name");
     auto prim_path = params.get_input<std::string>("Prim Path");
 

@@ -7,6 +7,10 @@
 #include "node_exec.hpp"
 #include "node_tree.hpp"
 
+namespace USTC_CG {
+struct GeomNodeGlobalParams;
+}
+
 namespace nvrhi {
 class IDevice;
 }
@@ -97,7 +101,17 @@ class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
     ~EagerNodeTreeExecutorRender() override;
 };
 
+class EagerNodeTreeExecutorGeom : public EagerNodeTreeExecutor {
+   protected:
+    GeomNodeGlobalParams* global_param = nullptr;
+    ExeParams prepare_params(NodeTree* tree, Node* node) override;
+
+   public:
+    void set_global_param(GeomNodeGlobalParams* param);
+};
+
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender();
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor();
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorGeom();
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

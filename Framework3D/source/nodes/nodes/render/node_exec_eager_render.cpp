@@ -1,11 +1,9 @@
 #include "Nodes/node_exec_eager.hpp"
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
-#include "resource_allocator_instance.hpp"
-// #include "Utils/Functions/GenericPointer_.hpp"
-//  #include "graph/node_exec_graph.h"
 #include "entt/meta/context.hpp"
 #include "node_global_params.h"
+#include "resource_allocator_instance.hpp"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -90,6 +88,11 @@ std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorRender()
 std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutor()
 {
     return std::make_unique<EagerNodeTreeExecutor>();
+}
+
+std::unique_ptr<EagerNodeTreeExecutor> CreateEagerNodeTreeExecutorGeom()
+{
+    return std::make_unique<EagerNodeTreeExecutorGeom>();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

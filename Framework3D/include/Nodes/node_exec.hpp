@@ -92,6 +92,7 @@ struct ExeParams {
     int get_output_index(const char* identifier);
 
     friend class EagerNodeTreeExecutor;
+    friend class EagerNodeTreeExecutorGeom;
     friend class EagerNodeTreeExecutorRender;
 
     template<typename T>

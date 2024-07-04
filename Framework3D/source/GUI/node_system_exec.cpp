@@ -164,7 +164,14 @@ Node* NodeSystemExecution::default_node_menu(
 GeoNodeSystemExecution::GeoNodeSystemExecution()
 {
     NodeSystemExecution();
-    executor = CreateEagerNodeTreeExecutor();
+    executor = CreateEagerNodeTreeExecutorGeom();
+    static_cast<EagerNodeTreeExecutorGeom*>(executor.get())
+        ->set_global_param(&params_);
+}
+
+void GeoNodeSystemExecution::set_edited_prim_path(const pxr::SdfPath& sdf_path)
+{
+    params_.prim_path = sdf_path;
 }
 
 float GeoNodeSystemExecution::cached_last_frame() const

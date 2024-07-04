@@ -3,8 +3,10 @@
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
 #include "entt/meta/resolve.hpp"
+#include "entt/core/any.hpp"
 // #include "Utils/Functions/GenericPointer_.hpp"
 //  #include "graph/node_exec_graph.h"
+#include "GCore/geom_node_global_params.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 
@@ -328,6 +330,19 @@ bool EagerNodeTreeExecutor::try_fill_storage_to_node(
 EagerNodeTreeExecutor::~EagerNodeTreeExecutor()
 {
     storage.clear();
+}
+
+ExeParams EagerNodeTreeExecutorGeom::prepare_params(NodeTree* tree, Node* node)
+{
+    auto result = EagerNodeTreeExecutor::prepare_params(tree, node);
+    result.global_param = *global_param;
+
+    return result;
+}
+
+void EagerNodeTreeExecutorGeom::set_global_param(GeomNodeGlobalParams* param)
+{
+    this->global_param = param;
 }
 
 void EagerNodeTreeExecutor::prepare_tree(NodeTree* tree)
