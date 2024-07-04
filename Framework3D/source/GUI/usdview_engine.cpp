@@ -24,7 +24,7 @@ class UsdviewEngineImpl {
     struct Status {
         CamType cam_type =
             CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 1;
+        unsigned renderer_id = 0;
     } engine_status;
 
     float timecode = 0;
@@ -175,21 +175,21 @@ void UsdviewEngineImpl::OnFrame(
 
     UsdPrim root = GlobalUsdStage::global_usd_stage->GetPseudoRoot();
 
-    //GfVec3d point;
-    //GfVec3d normal;
-    //SdfPath path;
-    //SdfPath instancer;
-    //if (renderer_->TestIntersection(
-    //        viewMatrix,
-    //        projectionMatrix,
-    //        root,
-    //        _renderParams,
-    //        &point,
-    //        &normal,
-    //        &path,
-    //        &instancer)) {
-    //    logging("Picked prim " + path.GetAsString(), Info);
-    //}
+    GfVec3d point;
+    GfVec3d normal;
+    SdfPath path;
+    SdfPath instancer;
+    if (renderer_->TestIntersection(
+            viewMatrix,
+            projectionMatrix,
+            root,
+            _renderParams,
+            &point,
+            &normal,
+            &path,
+            &instancer)) {
+        logging("Picked prim " + path.GetAsString(), Info);
+    }
 
     renderer_->Render(root, _renderParams);
 

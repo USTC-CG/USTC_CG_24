@@ -3,6 +3,7 @@
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "comp_node_base.h"
+#include "pxr/usd/usd/payloads.h"
 #include "pxr/usd/usd/prim.h"
 #include "pxr/usd/usd/references.h"
 #include "pxr/usd/usdGeom/tokens.h"
@@ -18,17 +19,19 @@ static void node_exec(ExeParams params)
 {
     using namespace pxr;
     auto layer = params.get_input<pxr::UsdStageRefPtr>("Layer");
-    layer->SetMetadata(pxr::UsdGeomTokens->upAxis, pxr::VtValue(pxr::UsdGeomTokens->z));
-    ;
+    layer->SetMetadata(
+        pxr::UsdGeomTokens->upAxis, pxr::VtValue(pxr::UsdGeomTokens->z));
 
     auto path = params.get_input<std::string>("Path");
     auto sdf_path = SdfPath(path.c_str());
 
     auto global_stage = GlobalUsdStage::global_usd_stage;
 
-    UsdPrim assemblyRoot = global_stage->DefinePrim(SdfPath("/Reference").AppendPath(sdf_path));
+    UsdPrim assemblyRoot =
+        global_stage->DefinePrim(SdfPath("/Reference").AppendPath(sdf_path));
 
-    assemblyRoot.GetReferences().SetReferences({ layer->GetRootLayer()->GetIdentifier() });
+    assemblyRoot.GetPayloads().AddPayload(
+        layer->GetRootLayer()->GetIdentifier());
 }
 
 static void node_register()

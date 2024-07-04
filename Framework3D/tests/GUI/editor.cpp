@@ -36,7 +36,8 @@ class NodeWindow final : public USTC_CG::Window {
 
     ~NodeWindow()
     {
-        USTC_CG::GlobalUsdStage::global_usd_stage->Export("stage.usda", false);
+        USTC_CG::GlobalUsdStage::global_usd_stage->GetRootLayer()->Export(
+            "stage.usda");
     }
 
    protected:
@@ -94,8 +95,8 @@ void NodeWindow::BuildUI()
     ImGui::BeginMenuBar();
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Save", "Ctrl+S")) {
-            USTC_CG::GlobalUsdStage::global_usd_stage->Export(
-                "stage.usda", false);
+            USTC_CG::GlobalUsdStage::global_usd_stage->GetRootLayer()->Export(
+                "stage.usda");
         }
         ImGui::EndMenu();
     }
