@@ -3,12 +3,26 @@
 #include "Nodes/node_register.h"
 #include "RCore/Backend.hpp"
 #include "geom_node_base.h"
+#include "GCore/geom_node_global_params.h"
 #include "nvrhi/utils.h"
-
+#include "pxr/base/tf/ostreamMethods.h"
+#include "pxr/base/vt/typeHeaders.h"
 namespace USTC_CG::node_geom_add_point {
 
 struct AddedPoints {
     pxr::VtArray<pxr::GfVec3f> points;
+
+    nlohmann::json serialize()
+    {
+        auto val = pxr::TfStringify(points);
+        nlohmann::json ret;
+        ret["points"] = val;
+        return ret;
+    }
+
+    void deserialize(const nlohmann::json& json)
+    {
+    }
 };
 
 static void node_declare(NodeDeclarationBuilder& b)
@@ -22,6 +36,7 @@ static void node_exec(ExeParams params)
 {
     auto& storage = params.get_storage<AddedPoints&>();
 
+    params.set_storage(storage);
 }
 
 static void node_register()

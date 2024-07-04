@@ -71,10 +71,18 @@ struct ExeParams {
     }
 
     template<typename T>
+    void set_storage(T&& value)
+    {
+        node_.storage.cast<T&>() = value;
+        node_.storage_info = value.serialize();
+    }
+
+    template<typename T>
     T get_runtime_storage()
     {
         if (!node_.runtime_storage) {
-            node_.runtime_storage = entt::resolve<std::decay_t<T>>().construct();
+            node_.runtime_storage =
+                entt::resolve<std::decay_t<T>>().construct();
         }
 
         return node_.runtime_storage.cast<T>();

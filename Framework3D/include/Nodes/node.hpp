@@ -88,7 +88,7 @@ struct Node {
     bool has_available_linked_inputs = false;
     bool has_available_linked_outputs = false;
 
-    nlohmann::json storage_info;
+    mutable nlohmann::json storage_info;
     mutable entt::meta_any storage;
     mutable entt::meta_any runtime_storage;
 
