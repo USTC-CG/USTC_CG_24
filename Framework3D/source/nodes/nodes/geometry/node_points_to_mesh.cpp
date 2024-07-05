@@ -67,7 +67,7 @@ static void node_exec(ExeParams params)
 
     auto points = points_geometry.get_component<PointsComponent>();
 
-    if (!points) {
+    if (!points||points->vertices.empty()) {
         throw std::runtime_error("Input does not contain points");
     }
 

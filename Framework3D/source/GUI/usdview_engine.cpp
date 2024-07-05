@@ -1,6 +1,6 @@
 // My resharper is not working well with the _MSC_VER_ macro.
 
-//#define __GNUC__
+// #define __GNUC__
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -37,6 +37,7 @@ class UsdviewEngineImpl {
     float frame_per_second;
     const float time_code_max = 250;
     bool playing = false;
+    bool is_editing = false;
 
     UsdviewEngineImpl(pxr::UsdStageRefPtr stage)
     {
@@ -54,7 +55,6 @@ class UsdviewEngineImpl {
     }
 
     void DrawMenuBar();
-    void OnFrame(float delta_time, NodeTree* node_tree);
     void
     OnFrame(float delta_time, NodeTree* node_tree, NodeTreeExecutor* executor);
     void refresh_platform_texture();
@@ -64,7 +64,12 @@ class UsdviewEngineImpl {
     void set_current_time_code(float time_code);
     std::unique_ptr<USTC_CG::PickEvent> get_pick_event();
 
-   private:
+    void set_edit_mode(bool editing)
+    {
+        is_editing = editing;
+    }
+
+private:
     std::unique_ptr<PickEvent> pick_event = nullptr;
 
     unsigned fbo = 0;
@@ -201,7 +206,8 @@ void UsdviewEngineImpl::OnFrame(
     is_active_ = ImGui::IsWindowFocused();
     is_hovered_ = ImGui::IsItemHovered();
 
-    if (is_hovered_ && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+    if (is_hovered_ && is_editing &&
+        ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
         auto mouse_pos_rel = ImGui::GetMousePos() - ImGui::GetItemRectMin();
         // Normalize the mouse position to be in the range [0, 1]
         ImVec2 mousePosNorm = ImVec2(
@@ -407,6 +413,11 @@ void UsdviewEngine::set_current_time_code(float time_code)
 std::unique_ptr<PickEvent> UsdviewEngine::get_pick_event()
 {
     return impl_->get_pick_event();
+}
+
+void UsdviewEngine::set_edit_mode(bool editing)
+{
+    impl_->set_edit_mode(editing);
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

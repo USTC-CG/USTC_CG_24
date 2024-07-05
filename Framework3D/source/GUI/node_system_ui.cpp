@@ -345,6 +345,9 @@ void NodeSystemImpl::consume_pickevent(PickEvent* pick)
     if (node_system_type == NodeSystemType::Geometry) {
         static_cast<GeoNodeSystemExecution*>(node_system_execution_.get())
             ->consume_pickevent(pick);
+        if (pick) {
+            node_system_execution_->MarkDirty();
+        }
     }
 }
 

@@ -4,13 +4,12 @@
 #include <memory>
 
 #include "GUI/node_system.h"
+#include "GUI/ui_event.h"
 #include "GUI/usd_filetree.h"
 #include "GUI/usdview_engine.h"
 #include "GUI/window/window.h"
 #include "Nodes/GlobalUsdStage.h"
 #include "imgui.h"
-
-#include "GUI/ui_event.h"
 
 class NodeWindow final : public USTC_CG::Window {
    public:
@@ -110,8 +109,17 @@ void NodeWindow::BuildUI()
         ImGui::EndMenu();
     }
 
-    ImGui::EndMenuBar();
+    if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("View Mode")) {
+            renderer->set_edit_mode(false);
+        }
+        if (ImGui::MenuItem("Edit Mode")) {
+            renderer->set_edit_mode(true);
+        }
+        ImGui::EndMenu();
+    }
 
+    ImGui::EndMenuBar();
 }
 
 int main()

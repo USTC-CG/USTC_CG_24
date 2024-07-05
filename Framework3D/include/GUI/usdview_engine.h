@@ -21,6 +21,7 @@ public:
     float current_time_code();
     void set_current_time_code(float time_code);
     std::unique_ptr<USTC_CG::PickEvent> get_pick_event();
+    void set_edit_mode(bool editing);
 
 protected:
     std::unique_ptr<UsdviewEngineImpl> impl_;
