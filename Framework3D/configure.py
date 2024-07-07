@@ -149,6 +149,8 @@ def process_SDK(target):
     for folder in folders_list:
         copytree_to_binaries(folder, target=target)
     copytree_to_binaries("OpenUSD/plugin/usd", "usd", target=target)
+    copytree_to_binaries("MaterialX/libraries", "libraries", target=target)
+    copytree_to_binaries("MaterialX/resources", "resources", target=target)
 
     copytree_common_to_binaries("embree/bin", target=target)
     copytree_common_to_binaries("dxc/bin/x64", target=target)
