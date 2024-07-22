@@ -33,6 +33,6 @@ struct GeometryComponent {
     pxr::SdfPath scratch_buffer_path;
 };
 
-void copy_prim(const pxr::UsdPrim& from, const pxr::UsdPrim& to);
+void USTC_CG_API copy_prim(const pxr::UsdPrim& from, const pxr::UsdPrim& to);
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

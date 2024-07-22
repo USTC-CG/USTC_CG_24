@@ -1,4 +1,3 @@
-// #define __GNUC__
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/points.h>
@@ -67,43 +66,8 @@ static void node_exec(ExeParams params)
     if (mesh) {
         pxr::UsdGeomMesh usdgeom = pxr::UsdGeomMesh::Define(stage, sdf_path);
         if (usdgeom) {
-            // Fill in the vertices and faces here
-            usdgeom.CreatePointsAttr().Set(mesh->get_vertices(), time);
-            usdgeom.CreateFaceVertexCountsAttr().Set(
-                mesh->get_face_vertex_counts(), time);
-            usdgeom.CreateFaceVertexIndicesAttr().Set(
-                mesh->get_face_vertex_indices(), time);
-
-            usdgeom.CreateDoubleSidedAttr(pxr::VtValue(true));
-
-            if (mesh->get_normals().size() > 0) {
-                usdgeom.CreateNormalsAttr().Set(mesh->get_normals(), time);
-            }
-
-            auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
-
-            if (mesh->get_texcoords_array().size() > 0) {
-                pxr::UsdGeomPrimvar primvar = PrimVarAPI.CreatePrimvar(
-                    pxr::TfToken("UVMap"),
-                    pxr::SdfValueTypeNames->TexCoord2fArray);
-                primvar.Set(mesh->get_texcoords_array(), time);
-
-                // Here only consider two modes
-                if (mesh->get_texcoords_array().size() == mesh->get_vertices().size()) {
-                    primvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-                }
-                else {
-                    primvar.SetInterpolation(pxr::UsdGeomTokens->faceVarying);
-                }
-            }
-
-            if (mesh->get_display_color().size()) {
-                pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
-                    pxr::TfToken("displayColor"),
-                    pxr::SdfValueTypeNames->Color3fArray);
-                colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-                colorPrimvar.Set(mesh->get_display_color());
-            }
+            copy_prim(mesh->get_usd_mesh().GetPrim(), usdgeom.GetPrim());
+            usdgeom.CreateDoubleSidedAttr().Set(true);
         }
     }
     else if (points) {

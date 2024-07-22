@@ -102,14 +102,27 @@ struct USTC_CG_API MeshComponent : public GeometryComponent {
         auto primvar = PrimVarAPI.CreatePrimvar(
             pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->TexCoord2fArray);
         primvar.Set(texcoords_array);
+
+        // Here only consider two modes
+        if (get_texcoords_array().size() == get_vertices().size()) {
+            primvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+        }
+        else {
+            primvar.SetInterpolation(pxr::UsdGeomTokens->faceVarying);
+        }
     }
 
     void set_display_color(const pxr::VtArray<pxr::GfVec3f>& display_color)
     {
-        mesh.CreateDisplayColorAttr().Set(display_color);
+        auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(mesh);
+        pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
+            pxr::TfToken("displayColor"), pxr::SdfValueTypeNames->Color3fArray);
+        colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
+        colorPrimvar.Set(display_color);
     }
 
     void set_mesh_geom(const pxr::UsdGeomMesh& usdgeom);
+    pxr::UsdGeomMesh get_usd_mesh() const;
 
    private:
     pxr::UsdGeomMesh mesh;
