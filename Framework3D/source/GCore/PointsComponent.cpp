@@ -20,6 +20,7 @@ GeometryComponentHandle PointsComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<PointsComponent>(operand);
     copy_prim(points.GetPrim(), ret->points.GetPrim());
+    pxr::UsdGeomImageable(points).MakeInvisible();
     return ret;
 }
 
