@@ -68,28 +68,28 @@ static void node_exec(ExeParams params)
         pxr::UsdGeomMesh usdgeom = pxr::UsdGeomMesh::Define(stage, sdf_path);
         if (usdgeom) {
             // Fill in the vertices and faces here
-            usdgeom.CreatePointsAttr().Set(mesh->vertices, time);
+            usdgeom.CreatePointsAttr().Set(mesh->get_vertices(), time);
             usdgeom.CreateFaceVertexCountsAttr().Set(
-                mesh->faceVertexCounts, time);
+                mesh->get_face_vertex_counts(), time);
             usdgeom.CreateFaceVertexIndicesAttr().Set(
-                mesh->faceVertexIndices, time);
+                mesh->get_face_vertex_indices(), time);
 
             usdgeom.CreateDoubleSidedAttr(pxr::VtValue(true));
 
-            if (mesh->normals.size() > 0) {
-                usdgeom.CreateNormalsAttr().Set(mesh->normals, time);
+            if (mesh->get_normals().size() > 0) {
+                usdgeom.CreateNormalsAttr().Set(mesh->get_normals(), time);
             }
 
             auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
 
-            if (mesh->texcoordsArray.size() > 0) {
+            if (mesh->get_texcoords_array().size() > 0) {
                 pxr::UsdGeomPrimvar primvar = PrimVarAPI.CreatePrimvar(
                     pxr::TfToken("UVMap"),
                     pxr::SdfValueTypeNames->TexCoord2fArray);
-                primvar.Set(mesh->texcoordsArray, time);
+                primvar.Set(mesh->get_texcoords_array(), time);
 
                 // Here only consider two modes
-                if (mesh->texcoordsArray.size() == mesh->vertices.size()) {
+                if (mesh->get_texcoords_array().size() == mesh->get_vertices().size()) {
                     primvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
                 }
                 else {
@@ -97,12 +97,12 @@ static void node_exec(ExeParams params)
                 }
             }
 
-            if (mesh->displayColor.size()) {
+            if (mesh->get_display_color().size()) {
                 pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
                     pxr::TfToken("displayColor"),
                     pxr::SdfValueTypeNames->Color3fArray);
                 colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-                colorPrimvar.Set(mesh->displayColor);
+                colorPrimvar.Set(mesh->get_display_color());
             }
         }
     }
@@ -110,19 +110,19 @@ static void node_exec(ExeParams params)
         pxr::UsdGeomPoints usdpoints =
             pxr::UsdGeomPoints::Define(stage, sdf_path);
 
-        usdpoints.CreatePointsAttr().Set(points->vertices, time);
+        usdpoints.CreatePointsAttr().Set(points->get_vertices(), time);
 
-        if (points->width.size() > 0) {
-            usdpoints.CreateWidthsAttr().Set(points->width, time);
+        if (points->get_width().size() > 0) {
+            usdpoints.CreateWidthsAttr().Set(points->get_width(), time);
         }
 
         auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdpoints);
-        if (points->displayColor.size() > 0) {
+        if (points->get_display_color().size() > 0) {
             pxr::UsdGeomPrimvar colorPrimvar = PrimVarAPI.CreatePrimvar(
                 pxr::TfToken("displayColor"),
                 pxr::SdfValueTypeNames->Color3fArray);
             colorPrimvar.SetInterpolation(pxr::UsdGeomTokens->vertex);
-            colorPrimvar.Set(points->displayColor, time);
+            colorPrimvar.Set(points->get_display_color(), time);
         }
     }
     else if (curve) {

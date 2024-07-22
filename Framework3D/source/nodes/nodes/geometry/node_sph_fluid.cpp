@@ -166,9 +166,9 @@ static void node_sph_fluid_exec(ExeParams params)
     geometry.attach_component(points_component);
 
 	auto vertices = sph_base->getX();
-    points_component->vertices = eigen_to_usd_vertices(vertices);
+    points_component->get_vertices() = eigen_to_usd_vertices(vertices);
     float point_width = 0.05; 
-    points_component->width = pxr::VtArray<float>(vertices.rows(), point_width);
+    points_component->get_width() = pxr::VtArray<float>(vertices.rows(), point_width);
 
     auto color = eigen_to_usd_vertices(sph_base->get_vel_color_jet());
 

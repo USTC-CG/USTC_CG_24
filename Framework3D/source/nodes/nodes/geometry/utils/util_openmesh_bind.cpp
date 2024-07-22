@@ -8,7 +8,7 @@ std::shared_ptr<PolyMesh> operand_to_openmesh(GOperandBase* mesh_oeprand)
     auto openmesh = std::make_shared<PolyMesh>();
     auto topology = mesh_oeprand->get_component<MeshComponent>();
 
-    for (const auto& vv : topology->vertices) {
+    for (const auto& vv : topology->get_vertices()) {
         OpenMesh::Vec3f v;
         v[0] = vv[0];
         v[1] = vv[1];
@@ -16,8 +16,8 @@ std::shared_ptr<PolyMesh> operand_to_openmesh(GOperandBase* mesh_oeprand)
         openmesh->add_vertex(v);
     }
 
-    auto faceVertexIndices = topology->faceVertexIndices;
-    auto faceVertexCounts = topology->faceVertexCounts;
+    auto faceVertexIndices = topology->get_face_vertex_indices();
+    auto faceVertexCounts = topology->get_face_vertex_counts();
 
     int vertexIndex = 0;
     for (int i = 0; i < faceVertexCounts.size(); i++) {
@@ -45,9 +45,9 @@ std::shared_ptr<GOperandBase> openmesh_to_operand(PolyMesh* openmesh)
         std::make_shared<MeshComponent>(operand_base.get());
     operand_base->attach_component(mesh);
 
-    auto& points = mesh->vertices;
-    auto& faceVertexIndices = mesh->faceVertexIndices;
-    auto& faceVertexCounts = mesh->faceVertexCounts;
+    auto& points = mesh->get_vertices();
+    auto& faceVertexIndices = mesh->get_face_vertex_indices();
+    auto& faceVertexCounts = mesh->get_face_vertex_counts();
 
     // Set the points
     for (const auto& v : openmesh->vertices()) {

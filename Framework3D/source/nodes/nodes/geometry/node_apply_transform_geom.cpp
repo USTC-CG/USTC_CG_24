@@ -64,8 +64,8 @@ static void node_exec(ExeParams params)
     final_transform = final_transform * transform;
 
     auto mesh = geometry.get_component<MeshComponent>();
-    for (int i = 0; i < mesh->vertices.size(); i++) {
-        mesh->vertices[i] = final_transform.TransformAffine(mesh->vertices[i]);
+    for (int i = 0; i < mesh->get_vertices().size(); i++) {
+        mesh->get_vertices()[i] = final_transform.TransformAffine(mesh->get_vertices()[i]);
     }
 
     params.set_output("Geometry", std::move(geometry));

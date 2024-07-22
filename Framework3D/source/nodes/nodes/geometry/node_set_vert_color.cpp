@@ -26,11 +26,11 @@ static void node_exec(ExeParams params)
     auto points = geometry.get_component<PointsComponent>();
     if (mesh) {
 
-		mesh->displayColor = color;
+		mesh->get_display_color() = color;
     }
     else if (points)
     {
-		points->displayColor = color;
+		points->get_display_color() = color;
     }
     else
     {

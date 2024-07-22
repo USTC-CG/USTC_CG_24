@@ -58,15 +58,15 @@ static void node_mass_spring_exec(ExeParams params)
 
     auto controller_geom = params.get_input<GOperandBase>("Controller");
     auto controller_mesh = controller_geom.get_component<MeshComponent>();
-    auto control_points = controller_mesh->controlPoints;
+    auto control_points = controller_mesh->get_control_points();
 
     auto geometry = params.get_input<GOperandBase>("Simulated Mesh");
     auto mesh = geometry.get_component<MeshComponent>();
-    auto fixed_points = mesh->controlPoints;
+    auto fixed_points = mesh->get_control_points();
 
-    if (mesh->faceVertexCounts.size() == 0)
+    if (mesh->get_face_vertex_counts().size() == 0)
         throw std::runtime_error("Read simulated mesh USD error.");
-    if (controller_mesh->faceVertexCounts.size() == 0)
+    if (controller_mesh->get_face_vertex_counts().size() == 0)
 		throw std::runtime_error("Read controller mesh USD error.");
 
 
@@ -76,8 +76,8 @@ static void node_mass_spring_exec(ExeParams params)
 				mass_spring.reset();
 
             auto edges =
-                get_edges(usd_faces_to_eigen(mesh->faceVertexCounts, mesh->faceVertexIndices));
-            auto vertices = usd_vertices_to_eigen(mesh->vertices);
+                get_edges(usd_faces_to_eigen(mesh->get_face_vertex_counts(), mesh->get_face_vertex_indices()));
+            auto vertices = usd_vertices_to_eigen(mesh->get_vertices());
             const float k = params.get_input<float>("stiffness");
             const float h = params.get_input<float>("h");
 
@@ -91,7 +91,7 @@ static void node_mass_spring_exec(ExeParams params)
             if (!mass_spring->set_dirichlet_bc_mask(VtIntArray_to_vector_bool(fixed_points)))
                 throw std::runtime_error("Mass Spring: set fixed points error.");
             if (!mass_spring->init_dirichlet_bc_vertices_control_pair(
-                    usd_vertices_to_eigen(controller_mesh->vertices),
+                    usd_vertices_to_eigen(controller_mesh->get_vertices()),
                     VtIntArray_to_vector_bool(control_points)))
                                 throw std::runtime_error(
                                     "Mass Spring: init control points error.");
@@ -115,11 +115,11 @@ static void node_mass_spring_exec(ExeParams params)
     }
     else  // otherwise, step forward the simulation
     {
-        mass_spring->update_dirichlet_bc_vertices(usd_vertices_to_eigen(controller_mesh->vertices));
+        mass_spring->update_dirichlet_bc_vertices(usd_vertices_to_eigen(controller_mesh->get_vertices()));
         mass_spring->step(); 
     }
 
-    mesh->vertices = eigen_to_usd_vertices(mass_spring->getX());
+    mesh->get_vertices() = eigen_to_usd_vertices(mass_spring->getX());
 
     params.set_output("Mass Spring Class", mass_spring);
     params.set_output("Output Mesh", geometry);

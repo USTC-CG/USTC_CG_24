@@ -67,7 +67,7 @@ static void node_exec(ExeParams params)
 
     auto points = points_geometry.get_component<PointsComponent>();
 
-    if (!points||points->vertices.empty()) {
+    if (!points||points->get_vertices().empty()) {
         throw std::runtime_error("Input does not contain points");
     }
 
@@ -75,15 +75,15 @@ static void node_exec(ExeParams params)
     auto mesh_component = std::make_shared<MeshComponent>(&mesh_geometry);
     mesh_geometry.attach_component(mesh_component);
 
-    pxr::VtArray<pxr::GfVec3f> points_vertices = points->vertices;
-    pxr::VtArray<float> points_widths = points->width;
+    pxr::VtArray<pxr::GfVec3f> points_vertices = points->get_vertices();
+    pxr::VtArray<float> points_widths = points->get_width();
     if (points_widths.empty()) {
         points_widths.resize(points_vertices.size(), 0.1f);
     }
 
-    pxr::VtArray<pxr::GfVec3f>& mesh_vertices = mesh_component->vertices;
-    pxr::VtArray<int>& mesh_faceVertexCounts = mesh_component->faceVertexCounts;
-    pxr::VtArray<int>& mesh_faceVertexIndices = mesh_component->faceVertexIndices;
+    pxr::VtArray<pxr::GfVec3f>& mesh_vertices = mesh_component->get_vertices();
+    pxr::VtArray<int>& mesh_faceVertexCounts = mesh_component->get_face_vertex_counts();
+    pxr::VtArray<int>& mesh_faceVertexIndices = mesh_component->get_face_vertex_indices();
 
     auto pa = WrappingParticleList(points_vertices, points_widths);
 

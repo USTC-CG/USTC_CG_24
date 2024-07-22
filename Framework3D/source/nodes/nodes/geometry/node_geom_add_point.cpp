@@ -53,8 +53,8 @@ static void node_exec(ExeParams params)
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 
-    pxr::VtArray<pxr::GfVec3f>& points = points_component->vertices;
-    pxr::VtArray<float>& widths = points_component->width;
+    pxr::VtArray<pxr::GfVec3f>& points = points_component->get_vertices();
+    pxr::VtArray<float>& widths = points_component->get_width();
     for (int i = 0; i < storage.points.size(); ++i) {
         widths.push_back(width);
     }

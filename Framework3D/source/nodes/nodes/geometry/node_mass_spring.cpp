@@ -65,7 +65,7 @@ static void node_mass_spring_exec(ExeParams params)
 
     auto geometry = params.get_input<GOperandBase>("Mesh");
     auto mesh = geometry.get_component<MeshComponent>();
-    if (mesh->faceVertexCounts.size() == 0)
+    if (mesh->get_face_vertex_counts().size() == 0)
     {
         throw std::runtime_error("Read USD error.");
     }
@@ -77,8 +77,8 @@ static void node_mass_spring_exec(ExeParams params)
 				mass_spring.reset();
 
             auto edges =
-                get_edges(usd_faces_to_eigen(mesh->faceVertexCounts, mesh->faceVertexIndices));
-            auto vertices = usd_vertices_to_eigen(mesh->vertices);
+                get_edges(usd_faces_to_eigen(mesh->get_face_vertex_counts(), mesh->get_face_vertex_indices()));
+            auto vertices = usd_vertices_to_eigen(mesh->get_vertices());
             const float k = params.get_input<float>("stiffness");
             const float h = params.get_input<float>("h");
 
@@ -121,7 +121,7 @@ static void node_mass_spring_exec(ExeParams params)
         mass_spring->step(); 
     }
 
-    mesh->vertices = eigen_to_usd_vertices(mass_spring->getX());
+    mesh->get_vertices() = eigen_to_usd_vertices(mass_spring->getX());
 
     params.set_output("Mass Spring Class", mass_spring);
     params.set_output("Output Mesh", geometry);

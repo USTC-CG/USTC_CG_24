@@ -1,5 +1,5 @@
-#include "Nodes/GlobalUsdStage.h"
 #include "GCore/Components/MeshOperand.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -23,11 +23,11 @@ static void node_exec(ExeParams params)
     auto mesh_component = geometry.get_component<MeshComponent>();
 
     if (mesh_component) {
-        auto vertices = mesh_component->vertices;
-        auto faceVertexCounts = mesh_component->faceVertexCounts;
-        auto faceVertexIndices = mesh_component->faceVertexIndices;
-        auto normals = mesh_component->normals;
-        auto texcoordsArray = mesh_component->texcoordsArray;
+        auto vertices = mesh_component->get_vertices();
+        auto faceVertexCounts = mesh_component->get_face_vertex_counts();
+        auto faceVertexIndices = mesh_component->get_face_vertex_indices();
+        auto normals = mesh_component->get_normals();
+        auto texcoordsArray = mesh_component->get_texcoords_array();
 
         params.set_output("Vertices", vertices);
         params.set_output("FaceVertexCounts", faceVertexCounts);

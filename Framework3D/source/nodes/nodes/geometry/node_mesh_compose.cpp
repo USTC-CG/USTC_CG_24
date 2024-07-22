@@ -29,11 +29,11 @@ static void node_exec(ExeParams params)
     auto texcoordsArray = params.get_input<pxr::VtArray<pxr::GfVec2f>>("Texcoords");
 
     if (vertices.size() > 0 && faceVertexCounts.size() > 0 && faceVertexIndices.size() > 0) {
-        mesh_component->vertices = vertices;
-        mesh_component->faceVertexCounts = faceVertexCounts;
-        mesh_component->faceVertexIndices = faceVertexIndices;
-        mesh_component->normals = normals;
-        mesh_component->texcoordsArray = texcoordsArray;
+        mesh_component->get_vertices() = vertices;
+        mesh_component->get_face_vertex_counts() = faceVertexCounts;
+        mesh_component->get_face_vertex_indices() = faceVertexIndices;
+        mesh_component->get_normals() = normals;
+        mesh_component->get_texcoords_array() = texcoordsArray;
         geometry.attach_component(mesh_component);
     }
     else {

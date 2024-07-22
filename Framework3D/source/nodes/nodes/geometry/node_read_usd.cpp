@@ -62,19 +62,19 @@ static void node_exec(ExeParams params)
 
         if (usdgeom) {
             // Fill in the vertices and faces here
-            usdgeom.CreatePointsAttr().Get(&mesh->vertices, time);
-            usdgeom.CreateFaceVertexCountsAttr().Get(&mesh->faceVertexCounts, time);
-            usdgeom.CreateFaceVertexIndicesAttr().Get(&mesh->faceVertexIndices, time);
+            usdgeom.CreatePointsAttr().Get(&mesh->get_vertices(), time);
+            usdgeom.CreateFaceVertexCountsAttr().Get(&mesh->get_face_vertex_counts(), time);
+            usdgeom.CreateFaceVertexIndicesAttr().Get(&mesh->get_face_vertex_indices(), time);
 
-            usdgeom.CreateNormalsAttr().Get(&mesh->normals, time);
+            usdgeom.CreateNormalsAttr().Get(&mesh->get_normals(), time);
 
             auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
             pxr::UsdGeomPrimvar primvar = PrimVarAPI.GetPrimvar(pxr::TfToken("UVMap"));
-            primvar.Get(&mesh->texcoordsArray, time);
+            primvar.Get(&mesh->get_texcoords_array(), time);
 
 
             pxr::UsdGeomPrimvar primvar_control_points = PrimVarAPI.GetPrimvar(pxr::TfToken("ControlPoints"));
-			primvar_control_points.Get(&mesh->controlPoints, time); // right way to check?
+			primvar_control_points.Get(&mesh->get_control_points(), time); // right way to check?
 
             pxr::GfMatrix4d final_transform = usdgeom.ComputeLocalToWorldTransform(time);
 

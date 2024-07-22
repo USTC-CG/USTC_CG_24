@@ -22,10 +22,10 @@ static void node_create_grid_exec(ExeParams params)
     std::shared_ptr<MeshComponent> mesh = std::make_shared<MeshComponent>(&operand_base);
     operand_base.attach_component(mesh);
 
-    auto &points = mesh->vertices;
-    auto &texcoord = mesh->texcoordsArray;
-    auto &faceVertexIndices = mesh->faceVertexIndices;
-    auto &faceVertexCounts = mesh->faceVertexCounts;
+    auto &points = mesh->get_vertices();
+    auto &texcoord = mesh->get_texcoords_array();
+    auto &faceVertexIndices = mesh->get_face_vertex_indices();
+    auto &faceVertexCounts = mesh->get_face_vertex_counts();
 
     for (int i = 0; i < resolution; ++i) {
         for (int j = 0; j < resolution; ++j) {
