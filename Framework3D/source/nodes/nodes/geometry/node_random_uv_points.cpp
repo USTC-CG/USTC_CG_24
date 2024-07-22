@@ -28,11 +28,13 @@ static void node_exec(ExeParams params)
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 
-    pxr::VtArray<pxr::GfVec3f>& points = points_component->get_vertices();
-    pxr::VtArray<float>& widths = points_component->get_width();
+    pxr::VtArray<pxr::GfVec3f> points;
+    pxr::VtArray<float> widths;
 
-    std::uniform_real_distribution<float> distX(0.f, 1.0f - std::numeric_limits<float>::epsilon());
-    std::uniform_real_distribution<float> distY(0.f, 1.0f - std::numeric_limits<float>::epsilon());
+    std::uniform_real_distribution<float> distX(
+        0.f, 1.0f - std::numeric_limits<float>::epsilon());
+    std::uniform_real_distribution<float> distY(
+        0.f, 1.0f - std::numeric_limits<float>::epsilon());
 
     for (int i = 0; i < count; ++i) {
         float x = distX(engine);
@@ -40,6 +42,9 @@ static void node_exec(ExeParams params)
         points.push_back(GfVec3f(x, y, 0.0f));
         widths.push_back(width);
     }
+
+    points_component->set_vertices(points);
+    points_component->set_width(widths);
 
     params.set_output("Points", geometry);
 }

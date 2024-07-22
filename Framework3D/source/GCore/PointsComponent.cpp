@@ -10,7 +10,8 @@ std::string PointsComponent::to_string() const
     std::ostringstream out;
     // Loop over the vertices and print the data
     out << "Points component. "
-        << "Vertices count " << vertices.size() << ". Face vertices count "
+        << "Vertices count " << get_vertices().size()
+        << ". Face vertices count "
         << ".";
     return out.str();
 }
@@ -18,11 +19,7 @@ std::string PointsComponent::to_string() const
 GeometryComponentHandle PointsComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<PointsComponent>(operand);
-
-    // This is fast because the VtArray has the copy on write mechanism
-    ret->vertices = this->vertices;
-    ret->width = this->width;
-    ret->displayColor = this->displayColor;
+    copy_prim(points.GetPrim(), ret->points.GetPrim());
     return ret;
 }
 

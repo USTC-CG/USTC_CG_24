@@ -18,6 +18,8 @@ class NodeWindow final : public USTC_CG::Window {
         if (std::filesystem::exists("stage.usda")) {
             USTC_CG::GlobalUsdStage::global_usd_stage =
                 pxr::UsdStage::Open("stage.usda");
+            USTC_CG::GlobalUsdStage::global_usd_stage->RemovePrim(
+                pxr::SdfPath("/scratch_buffer"));
         }
         render_graph_system = std::make_shared<USTC_CG::NodeSystem>(
             USTC_CG::NodeSystemType::Render,

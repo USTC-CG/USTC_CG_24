@@ -14,9 +14,12 @@ struct USTC_CG_API MeshComponent : public GeometryComponent {
     explicit MeshComponent(Geometry* attached_operand)
         : GeometryComponent(attached_operand)
     {
-
+        scratch_buffer_path = pxr::SdfPath(
+            "/scratch_buffer/mesh_component_" +
+            std::to_string(reinterpret_cast<long long>(this)));
         mesh = pxr::UsdGeomMesh::Define(
             GlobalUsdStage::global_usd_stage, scratch_buffer_path);
+        pxr::UsdGeomImageable(mesh).MakeInvisible();
     }
 
     ~MeshComponent() override;
@@ -27,46 +30,51 @@ struct USTC_CG_API MeshComponent : public GeometryComponent {
     [[nodiscard]] pxr::VtArray<pxr::GfVec3f> get_vertices() const
     {
         pxr::VtArray<pxr::GfVec3f> vertices;
-        mesh.GetPointsAttr().Get(&vertices);
+        if (mesh.GetPointsAttr())
+            mesh.GetPointsAttr().Get(&vertices);
         return vertices;
     }
 
     [[nodiscard]] pxr::VtArray<int> get_face_vertex_counts() const
     {
         pxr::VtArray<int> faceVertexCounts;
-        mesh.GetFaceVertexCountsAttr().Get(&faceVertexCounts);
+        if (mesh.GetFaceVertexCountsAttr())
+            mesh.GetFaceVertexCountsAttr().Get(&faceVertexCounts);
         return faceVertexCounts;
     }
 
     [[nodiscard]] pxr::VtArray<int> get_face_vertex_indices() const
     {
         pxr::VtArray<int> faceVertexIndices;
-        mesh.GetFaceVertexIndicesAttr().Get(&faceVertexIndices);
+        if (mesh.GetFaceVertexIndicesAttr())
+            mesh.GetFaceVertexIndicesAttr().Get(&faceVertexIndices);
         return faceVertexIndices;
     }
 
     [[nodiscard]] pxr::VtArray<pxr::GfVec3f> get_normals() const
     {
         pxr::VtArray<pxr::GfVec3f> normals;
-        mesh.GetNormalsAttr().Get(&normals);
+        if (mesh.GetNormalsAttr())
+            mesh.GetNormalsAttr().Get(&normals);
         return normals;
-    }
-
-    [[nodiscard]] pxr::VtArray<pxr::GfVec2f> get_texcoords_array() const
-    {
-        auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(mesh);
-        auto primvar = PrimVarAPI.CreatePrimvar(
-            pxr::TfToken("UVMap"), pxr::SdfValueTypeNames->TexCoord2fArray);
-        pxr::VtArray<pxr::GfVec2f> texcoordsArray;
-        primvar.Get(&texcoordsArray);
-        return texcoordsArray;
     }
 
     [[nodiscard]] pxr::VtArray<pxr::GfVec3f> get_display_color() const
     {
         pxr::VtArray<pxr::GfVec3f> displayColor;
-        mesh.GetDisplayColorAttr().Get(&displayColor);
+        if (mesh.GetDisplayColorAttr())
+            mesh.GetDisplayColorAttr().Get(&displayColor);
         return displayColor;
+    }
+
+    [[nodiscard]] pxr::VtArray<pxr::GfVec2f> get_texcoords_array() const
+    {
+        pxr::VtArray<pxr::GfVec2f> texcoordsArray;
+        auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(mesh);
+        auto primvar = PrimVarAPI.GetPrimvar(pxr::TfToken("UVMap"));
+        if (primvar)
+            primvar.Get(&texcoordsArray);
+        return texcoordsArray;
     }
 
     void set_vertices(const pxr::VtArray<pxr::GfVec3f>& vertices)
@@ -105,7 +113,6 @@ struct USTC_CG_API MeshComponent : public GeometryComponent {
 
    private:
     pxr::UsdGeomMesh mesh;
-
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -7,7 +7,6 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 MeshComponent::~MeshComponent()
 {
-    GlobalUsdStage::global_usd_stage->RemovePrim(scratch_buffer_path);
 }
 
 std::string MeshComponent::to_string() const
@@ -21,26 +20,31 @@ std::string MeshComponent::to_string() const
     return out.str();
 }
 
+void copy_prim(const pxr::UsdPrim& from, const pxr::UsdPrim& to)
+{
+    for (pxr::UsdAttribute attr : from.GetPrim().GetAttributes()) {
+        // Copy attribute value
+        pxr::VtValue value;
+        if (attr.Get(&value)) {
+            to.GetPrim()
+                .CreateAttribute(attr.GetName(), attr.GetTypeName())
+                .Set(value);
+        }
+    }
+}
+
 GeometryComponentHandle MeshComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<MeshComponent>(operand);
-
-    // This is fast because the VtArray has the copy on write mechanism
-    ret->mesh = this->mesh;
+    copy_prim(this->mesh.GetPrim(), ret->mesh.GetPrim());
     return ret;
 }
 
 void MeshComponent::set_mesh_geom(const pxr::UsdGeomMesh& usdgeom)
 {
-    for (pxr::UsdAttribute attr : usdgeom.GetPrim().GetAttributes()) {
-        // Copy attribute value
-        pxr::VtValue value;
-        if (attr.Get(&value)) {
-            mesh.GetPrim()
-                .CreateAttribute(attr.GetName(), attr.GetTypeName())
-                .Set(value);
-        }
-    }
+    copy_prim(usdgeom.GetPrim(), mesh.GetPrim());
+
+    pxr::UsdGeomImageable(mesh).MakeInvisible();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

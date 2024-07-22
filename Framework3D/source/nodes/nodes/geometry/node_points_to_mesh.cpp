@@ -132,7 +132,7 @@ static void node_exec(ExeParams params)
     mesh_component->set_face_vertex_counts(mesh_faceVertexCounts);
     mesh_component->set_face_vertex_indices(mesh_faceVertexIndices);
 
-    params.set_output("Mesh", mesh_geometry);
+    params.set_output("Mesh", std::move(mesh_geometry));
 }
 
 static void node_register()

@@ -99,7 +99,7 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                     auto is_last_target =
                         i == output->directly_linked_sockets.size() - 1;
 
-                    auto value_to_forward = output_state.value;
+                    auto& value_to_forward = output_state.value;
 
                     if (!value_to_forward.type()) {
                         input_state.is_forwarded = true;

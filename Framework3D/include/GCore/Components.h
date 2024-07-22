@@ -1,12 +1,16 @@
 #pragma once
 
 #include "GOP.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "USTC_CG.h"
 #include "Utils/Logging/Logging.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct GeometryComponent {
-    virtual ~GeometryComponent() = default;
+    virtual ~GeometryComponent()
+    {
+        GlobalUsdStage::global_usd_stage->RemovePrim(scratch_buffer_path);
+    }
 
     explicit GeometryComponent(Geometry* attached_operand)
         : attached_operand(attached_operand)
@@ -29,6 +33,6 @@ struct GeometryComponent {
     pxr::SdfPath scratch_buffer_path;
 };
 
-// DeclareComponent(OpenMeshComponent);
+void copy_prim(const pxr::UsdPrim& from, const pxr::UsdPrim& to);
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

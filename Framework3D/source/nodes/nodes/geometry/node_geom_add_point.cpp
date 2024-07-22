@@ -1,11 +1,11 @@
 ﻿#include "GCore/Components/PointsComponent.h"
 #include "GCore/geom_node_global_params.h"
+#include "GUI/ui_event.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
 #include "RCore/Backend.hpp"
 #include "geom_node_base.h"
-#include "GUI/ui_event.h"
 #include "nvrhi/utils.h"
 #include "pxr/base/tf/ostreamMethods.h"
 #include "pxr/base/vt/typeHeaders.h"
@@ -53,12 +53,10 @@ static void node_exec(ExeParams params)
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 
-    pxr::VtArray<pxr::GfVec3f>& points = points_component->get_vertices();
-    pxr::VtArray<float>& widths = points_component->get_width();
-    for (int i = 0; i < storage.points.size(); ++i) {
-        widths.push_back(width);
-    }
-    points = storage.points;
+    pxr::VtArray widths(storage.points.size(), width);
+
+    points_component->set_vertices(storage.points);
+    points_component->set_width(widths);
 
     params.set_output("Points", geometry);
 }
