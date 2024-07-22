@@ -83,7 +83,7 @@ static void node_mass_spring_exec(ExeParams params)
     auto mass_spring =
         params.get_input<std::shared_ptr<MassSpring>>("Mass Spring");
 
-    auto geometry = params.get_input<GOperandBase>("Mesh");
+    auto geometry = params.get_input<Geometry>("Mesh");
     auto mesh = geometry.get_component<MeshComponent>();
     if (mesh->get_face_vertex_counts().size() == 0) {
         throw std::runtime_error("Read USD error.");

@@ -19,7 +19,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    GOperandBase geometry = params.get_input<GOperandBase>("Mesh");
+    Geometry geometry = params.get_input<Geometry>("Mesh");
     auto mesh_component = geometry.get_component<MeshComponent>();
 
     if (mesh_component) {

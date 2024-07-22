@@ -7,7 +7,7 @@ std::string SequencedComponent::to_string() const
     return "Sequenced Component";
 }
 
-GOperandComponentHandle SequencedComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle SequencedComponent::copy(Geometry* operand) const
 {
     return {};
 }

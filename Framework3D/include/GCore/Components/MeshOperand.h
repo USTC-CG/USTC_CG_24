@@ -10,13 +10,11 @@
 #include "pxr/usd/usdGeom/xform.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct USTC_CG_API MeshComponent : public GOperandComponent {
-    explicit MeshComponent(GOperandBase* attached_operand)
-        : GOperandComponent(attached_operand)
+struct USTC_CG_API MeshComponent : public GeometryComponent {
+    explicit MeshComponent(Geometry* attached_operand)
+        : GeometryComponent(attached_operand)
     {
-        scratch_buffer_path = pxr::SdfPath(
-            "/scratch_buffer/mesh_operand" +
-            std::to_string(reinterpret_cast<long long>(this)));
+
         mesh = pxr::UsdGeomMesh::Define(
             GlobalUsdStage::global_usd_stage, scratch_buffer_path);
     }
@@ -25,7 +23,7 @@ struct USTC_CG_API MeshComponent : public GOperandComponent {
 
     std::string to_string() const override;
 
-    GOperandComponentHandle copy(GOperandBase* operand) const override;
+    GeometryComponentHandle copy(Geometry* operand) const override;
     [[nodiscard]] pxr::VtArray<pxr::GfVec3f> get_vertices() const
     {
         pxr::VtArray<pxr::GfVec3f> vertices;
@@ -108,7 +106,6 @@ struct USTC_CG_API MeshComponent : public GOperandComponent {
    private:
     pxr::UsdGeomMesh mesh;
 
-    pxr::SdfPath scratch_buffer_path;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

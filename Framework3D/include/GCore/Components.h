@@ -5,29 +5,28 @@
 #include "Utils/Logging/Logging.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct GOperandComponent {
-    virtual ~GOperandComponent() = default;
+struct GeometryComponent {
+    virtual ~GeometryComponent() = default;
 
-    explicit GOperandComponent(GOperandBase* attached_operand) : attached_operand(attached_operand)
+    explicit GeometryComponent(Geometry* attached_operand)
+        : attached_operand(attached_operand)
     {
+        scratch_buffer_path = pxr::SdfPath(
+            "/scratch_buffer/component_" +
+            std::to_string(reinterpret_cast<long long>(this)));
     }
 
-    virtual GOperandComponentHandle copy(GOperandBase* operand) const = 0;
+    virtual GeometryComponentHandle copy(Geometry* operand) const = 0;
     virtual std::string to_string() const = 0;
 
-    virtual std::string name() const
-    {
-        return { "Base GOperandComponent" };
-    }
-
-
-    [[nodiscard]] GOperandBase* get_attached_operand() const
+    [[nodiscard]] Geometry* get_attached_operand() const
     {
         return attached_operand;
     }
 
    protected:
-    GOperandBase* attached_operand;
+    Geometry* attached_operand;
+    pxr::SdfPath scratch_buffer_path;
 };
 
 // DeclareComponent(OpenMeshComponent);

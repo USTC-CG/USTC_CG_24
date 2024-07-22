@@ -29,7 +29,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    auto geom = params.get_input<GOperandBase>("Geometry"); 
+    auto geom = params.get_input<Geometry>("Geometry"); 
 
     auto mesh = geom.get_component<MeshComponent>();
     auto skel = geom.get_component<SkelComponent>();

@@ -40,7 +40,7 @@ void register_cpp_types()
     BLI_CPP_TYPE_REGISTER(entt::any);
     BLI_CPP_TYPE_REGISTER(boost::python::object);
     BLI_CPP_TYPE_REGISTER(boost::python::numpy::ndarray);
-    BLI_CPP_TYPE_REGISTER(GOperandBase);
+    BLI_CPP_TYPE_REGISTER(Geometry);
     BLI_CPP_TYPE_REGISTER(LightArray);
     BLI_CPP_TYPE_REGISTER(pxr::UsdStageRefPtr);
     BLI_CPP_TYPE_REGISTER(MeshArray);

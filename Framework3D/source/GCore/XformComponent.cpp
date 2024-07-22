@@ -1,7 +1,7 @@
 #include "GCore/Components/XformComponent.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-GOperandComponentHandle XformComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle XformComponent::copy(Geometry* operand) const
 {
     using namespace pxr;
     auto ret = std::make_shared<XformComponent>(attached_operand);

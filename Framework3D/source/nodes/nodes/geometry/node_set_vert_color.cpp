@@ -20,7 +20,7 @@ static void node_exec(ExeParams params)
 {
     // Left empty.
     auto color = params.get_input<pxr::VtArray<pxr::GfVec3f>>("Color");
-    auto geometry = params.get_input<GOperandBase>("Geometry");
+    auto geometry = params.get_input<Geometry>("Geometry");
 
     auto mesh = geometry.get_component<MeshComponent>();
     auto points = geometry.get_component<PointsComponent>();

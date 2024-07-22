@@ -16,7 +16,7 @@ static void node_exec(ExeParams params)
 {
     auto texture = params.get_input<std::string>("Texture Name");
 
-    auto geometry = params.get_input<GOperandBase>("Geometry");
+    auto geometry = params.get_input<Geometry>("Geometry");
     auto material = geometry.get_component<MaterialComponent>();
     if (!material) {
         material = std::make_shared<MaterialComponent>(&geometry);

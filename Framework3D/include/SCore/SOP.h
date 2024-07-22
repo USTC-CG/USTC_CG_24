@@ -5,7 +5,7 @@
 
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class USTC_CG_API SOperandBase : public GOperandBase
+class USTC_CG_API SOperandBase : public Geometry
 {
 public:
     virtual void Run() = 0;

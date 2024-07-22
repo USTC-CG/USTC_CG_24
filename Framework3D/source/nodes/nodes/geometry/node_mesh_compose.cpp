@@ -19,7 +19,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    GOperandBase geometry;
+    Geometry geometry;
     auto mesh_component = std::make_shared<MeshComponent>(&geometry);
 
     auto vertices = params.get_input<pxr::VtVec3fArray>("Vertices");

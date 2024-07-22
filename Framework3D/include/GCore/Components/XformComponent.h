@@ -7,12 +7,12 @@
 USTC_CG_NAMESPACE_OPEN_SCOPE
 // Stores the chain of transformation
 
-class USTC_CG_API XformComponent : public GOperandComponent {
+class USTC_CG_API XformComponent : public GeometryComponent {
    public:
-    GOperandComponentHandle copy(GOperandBase* operand) const override;
+    GeometryComponentHandle copy(Geometry* operand) const override;
     std::string to_string() const override;
 
-    explicit XformComponent(GOperandBase* attached_operand) : GOperandComponent(attached_operand)
+    explicit XformComponent(Geometry* attached_operand) : GeometryComponent(attached_operand)
     {
     }
 

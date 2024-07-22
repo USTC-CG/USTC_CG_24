@@ -15,7 +15,7 @@ std::string SkelComponent::to_string() const
     return out.str();
 }
 
-GOperandComponentHandle SkelComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle SkelComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<SkelComponent>(operand);
 

@@ -1,7 +1,7 @@
 #include "GCore/Components/VolumeComponent.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-GOperandComponentHandle VolumeComponet::copy(GOperandBase* operand) const
+GeometryComponentHandle VolumeComponet::copy(Geometry* operand) const
 {
     (void)(operand);
     return {};

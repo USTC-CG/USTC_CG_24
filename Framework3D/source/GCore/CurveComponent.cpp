@@ -12,7 +12,7 @@ std::string CurveComponent::to_string() const
     return out.str();
 }
 
-GOperandComponentHandle CurveComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle CurveComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<CurveComponent>(operand);
 
@@ -23,7 +23,7 @@ GOperandComponentHandle CurveComponent::copy(GOperandBase* operand) const
     return ret;
 }
 
-CurveComponent::CurveComponent(GOperandBase* attached_operand) : GOperandComponent(attached_operand)
+CurveComponent::CurveComponent(Geometry* attached_operand) : GeometryComponent(attached_operand)
 {
 }
 

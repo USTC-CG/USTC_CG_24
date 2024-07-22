@@ -9,8 +9,8 @@
 #include "pxr/usd/usdSkel/skeleton.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct USTC_CG_API SkelComponent : public GOperandComponent {
-    explicit SkelComponent(GOperandBase* attached_operand) : GOperandComponent(attached_operand)
+struct USTC_CG_API SkelComponent : public GeometryComponent {
+    explicit SkelComponent(Geometry* attached_operand) : GeometryComponent(attached_operand)
     {
     }
 
@@ -23,7 +23,7 @@ struct USTC_CG_API SkelComponent : public GOperandComponent {
     pxr::VtArray<float> jointWeight;
     pxr::VtArray<int> jointIndices;
 
-    GOperandComponentHandle copy(GOperandBase* operand) const override;
+    GeometryComponentHandle copy(Geometry* operand) const override;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

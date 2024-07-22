@@ -152,7 +152,7 @@ static SocketTypeInfo* make_socket_type_Geometry()
 {
     SocketTypeInfo* socket_type =
         make_standard_socket_type(SocketType::Geometry);
-    socket_type->cpp_type = entt::resolve<GOperandBase>();
+    socket_type->cpp_type = entt::resolve<Geometry>();
     return socket_type;
 }
 

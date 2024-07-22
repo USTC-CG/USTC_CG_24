@@ -24,7 +24,7 @@ static void node_exec(ExeParams params)
 
     std::default_random_engine engine(seed);
 
-    auto geometry = GOperandBase();
+    auto geometry = Geometry();
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 

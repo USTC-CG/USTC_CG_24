@@ -6,8 +6,8 @@
 #include "pxr/usd/usdGeom/xform.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct USTC_CG_API CurveComponent : public GOperandComponent {
-    explicit CurveComponent(GOperandBase* attached_operand);
+struct USTC_CG_API CurveComponent : public GeometryComponent {
+    explicit CurveComponent(Geometry* attached_operand);
 
     std::string to_string() const override;
 
@@ -15,7 +15,7 @@ struct USTC_CG_API CurveComponent : public GOperandComponent {
     pxr::VtArray<float> width;
     pxr::VtArray<pxr::GfVec3f> displayColor;
 
-    GOperandComponentHandle copy(GOperandBase* operand) const override;
+    GeometryComponentHandle copy(Geometry* operand) const override;
 };
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

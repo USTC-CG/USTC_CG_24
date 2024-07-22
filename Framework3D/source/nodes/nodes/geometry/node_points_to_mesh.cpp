@@ -64,7 +64,7 @@ struct WrappingParticleList {
 
 static void node_exec(ExeParams params)
 {
-    auto points_geometry = params.get_input<GOperandBase>("Points");
+    auto points_geometry = params.get_input<Geometry>("Points");
 
     auto points = points_geometry.get_component<PointsComponent>();
 
@@ -72,7 +72,7 @@ static void node_exec(ExeParams params)
         throw std::runtime_error("Input does not contain points");
     }
 
-    auto mesh_geometry = GOperandBase();
+    auto mesh_geometry = Geometry();
     auto mesh_component = std::make_shared<MeshComponent>(&mesh_geometry);
     mesh_geometry.attach_component(mesh_component);
 

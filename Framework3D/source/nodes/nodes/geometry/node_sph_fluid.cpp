@@ -161,7 +161,7 @@ static void node_sph_fluid_exec(ExeParams params)
     // ------------------------- construct necessary output ---------------
     params.set_output("SPH Class", sph_base);
 
-    auto geometry = GOperandBase();
+    auto geometry = Geometry();
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 

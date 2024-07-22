@@ -29,7 +29,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 
 static void node_exec(ExeParams params)
 {
-    auto geometry = params.get_input<GOperandBase>("Geometry");
+    auto geometry = params.get_input<Geometry>("Geometry");
 
     auto t_x = params.get_input<float>("Translate X");
     auto t_y = params.get_input<float>("Translate Y");

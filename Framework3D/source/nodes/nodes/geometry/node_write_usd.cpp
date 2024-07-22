@@ -45,7 +45,7 @@ static void node_exec(ExeParams params)
     auto global_params = params.get_global_params<GeomNodeGlobalParams>();
     std::cout << global_params.prim_path.GetAsString();
 
-    auto geometry = params.get_input<GOperandBase>("Geometry");
+    auto geometry = params.get_input<Geometry>("Geometry");
 
     auto mesh = geometry.get_component<MeshComponent>();
 

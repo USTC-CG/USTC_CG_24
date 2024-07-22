@@ -6,12 +6,12 @@
 #include "GCore/GOP.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct USTC_CG_API MaterialComponent : public GOperandComponent {
-    explicit MaterialComponent(GOperandBase* attached_operand) : GOperandComponent(attached_operand)
+struct USTC_CG_API MaterialComponent : public GeometryComponent {
+    explicit MaterialComponent(Geometry* attached_operand) : GeometryComponent(attached_operand)
     {
     }
 
-    GOperandComponentHandle copy(GOperandBase* operand) const override
+    GeometryComponentHandle copy(Geometry* operand) const override
     {
         auto ret = std::make_shared<MaterialComponent>(operand);
 

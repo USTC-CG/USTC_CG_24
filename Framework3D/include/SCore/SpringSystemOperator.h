@@ -10,8 +10,8 @@ DeclareGOperator(SpringSystemOperator);
 class USTC_CG_API SpringSystemOperator : public GOperator
 {
 protected:
-    void process(GOperandHandle in, GOperandHandle out) override;
-    void preprocess(GOperandHandle in, GOperandHandle& out) override;
+    void process(GeometryHandle in, GeometryHandle out) override;
+    void preprocess(GeometryHandle in, GeometryHandle& out) override;
 };
 
 

@@ -4,25 +4,25 @@
 #include "pxr/usd/usdGeom/xform.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-GOperandBase::GOperandBase()
+Geometry::Geometry()
 {
 }
 
-GOperandBase::~GOperandBase()
+Geometry::~Geometry()
 {
 }
 
-GOperandBase::GOperandBase(const GOperandBase& operand)
+Geometry::Geometry(const Geometry& operand)
 {
     *(this) = operand;
 }
 
-GOperandBase::GOperandBase(GOperandBase&& operand) noexcept
+Geometry::Geometry(Geometry&& operand) noexcept
 {
     *(this) = std::move(operand);
 }
 
-GOperandBase& GOperandBase::operator=(const GOperandBase& operand)
+Geometry& Geometry::operator=(const Geometry& operand)
 {
     for (auto&& operand_component : operand.components_) {
         this->components_.push_back(operand_component->copy(this));
@@ -31,26 +31,13 @@ GOperandBase& GOperandBase::operator=(const GOperandBase& operand)
     return *this;
 }
 
-GOperandBase& GOperandBase::operator=(GOperandBase&& operand) noexcept
+Geometry& Geometry::operator=(Geometry&& operand) noexcept
 {
     this->components_ = std::move(operand.components_);
-    //this->stage = operand.stage;
-    //operand.stage.Reset();
-
     return *this;
 }
 
-void GOperandBase::copy_to(GOperandBaseHandle handle)
-{
-    for (auto&& component : components_) {
-        auto cp_component = component->copy(handle.get());
-        handle->attach_component(cp_component);
-    }
-
-    //handle->stage = stage;
-}
-
-std::string GOperandBase::to_string() const
+std::string Geometry::to_string() const
 {
     std::ostringstream out;
     out << "Contains components:\n";
@@ -62,7 +49,7 @@ std::string GOperandBase::to_string() const
     return out.str();
 }
 
-void GOperandBase::attach_component(const GOperandComponentHandle& component)
+void Geometry::attach_component(const GeometryComponentHandle& component)
 {
     if (component->get_attached_operand() != this) {
         logging(
@@ -73,7 +60,7 @@ void GOperandBase::attach_component(const GOperandComponentHandle& component)
     components_.push_back(component);
 }
 
-void GOperandBase::detach_component(const GOperandComponentHandle& component)
+void Geometry::detach_component(const GeometryComponentHandle& component)
 {
     auto iter = std::find(components_.begin(), components_.end(), component);
     components_.erase(iter);

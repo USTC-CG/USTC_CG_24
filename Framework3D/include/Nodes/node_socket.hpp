@@ -28,7 +28,7 @@ enum class NodeType {
 struct Node;
 struct NodeLink;
 
-struct GOperandComponent;
+struct GeometryComponent;
 
 struct SocketTypeInfo {
     char type_name[64];

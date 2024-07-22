@@ -15,7 +15,7 @@ std::string PointsComponent::to_string() const
     return out.str();
 }
 
-GOperandComponentHandle PointsComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle PointsComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<PointsComponent>(operand);
 

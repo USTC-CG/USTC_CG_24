@@ -3,7 +3,7 @@
 #include "GCore/Components/MeshOperand.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-std::shared_ptr<PolyMesh> operand_to_openmesh(GOperandBase* mesh_oeprand)
+std::shared_ptr<PolyMesh> operand_to_openmesh(Geometry* mesh_oeprand)
 {
     auto openmesh = std::make_shared<PolyMesh>();
     auto topology = mesh_oeprand->get_component<MeshComponent>();
@@ -37,13 +37,13 @@ std::shared_ptr<PolyMesh> operand_to_openmesh(GOperandBase* mesh_oeprand)
     return openmesh;
 }
 
-std::shared_ptr<GOperandBase> openmesh_to_operand(PolyMesh* openmesh)
+std::shared_ptr<Geometry> openmesh_to_operand(PolyMesh* openmesh)
 {
     // TODO: test
-    auto operand_base = std::make_shared<GOperandBase>();
+    auto geometry = std::make_shared<Geometry>();
     std::shared_ptr<MeshComponent> mesh =
-        std::make_shared<MeshComponent>(operand_base.get());
-    operand_base->attach_component(mesh);
+        std::make_shared<MeshComponent>(geometry.get());
+    geometry->attach_component(mesh);
 
     pxr::VtArray<pxr::GfVec3f> points;
     pxr::VtArray<int> faceVertexIndices;
@@ -67,7 +67,7 @@ std::shared_ptr<GOperandBase> openmesh_to_operand(PolyMesh* openmesh)
     mesh->set_vertices(points);
     mesh->set_face_vertex_indices(faceVertexIndices);
     mesh->set_face_vertex_counts(faceVertexCounts);
-    return operand_base;
+    return geometry;
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

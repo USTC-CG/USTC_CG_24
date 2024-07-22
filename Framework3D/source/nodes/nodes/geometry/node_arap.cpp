@@ -54,7 +54,7 @@ static void node_arap_declare(NodeDeclarationBuilder& b)
 static void node_arap_exec(ExeParams params)
 {
     // Get the input from params
-    auto input = params.get_input<GOperandBase>("Input");
+    auto input = params.get_input<Geometry>("Input");
 
     // Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {

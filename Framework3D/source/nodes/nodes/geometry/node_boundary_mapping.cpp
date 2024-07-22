@@ -49,7 +49,7 @@ static void node_map_boundary_to_circle_declare(NodeDeclarationBuilder& b)
 static void node_map_boundary_to_circle_exec(ExeParams params)
 {
     // Get the input from params
-    auto input = params.get_input<GOperandBase>("Input");
+    auto input = params.get_input<Geometry>("Input");
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
@@ -97,15 +97,15 @@ static void node_map_boundary_to_circle_exec(ExeParams params)
     */
 
     /* ----------------------------- Postprocess ------------------------------
-    ** Convert the result mesh from the halfedge structure back to GOperandBase
+    ** Convert the result mesh from the halfedge structure back to Geometry
     *format as the node's
     ** output.
     */
-    auto operand_base = openmesh_to_operand(halfedge_mesh.get());
+    auto geometry = openmesh_to_operand(halfedge_mesh.get());
 
     auto& output = input;
     output.get_component<MeshComponent>()->set_vertices(
-        operand_base->get_component<MeshComponent>()->get_vertices());
+        geometry->get_component<MeshComponent>()->get_vertices());
 
     // Set the output of the nodes
     params.set_output("Output", std::move(output));
@@ -128,7 +128,7 @@ static void node_map_boundary_to_square_declare(NodeDeclarationBuilder& b)
 static void node_map_boundary_to_square_exec(ExeParams params)
 {
     // Get the input from params
-    auto input = params.get_input<GOperandBase>("Input");
+    auto input = params.get_input<Geometry>("Input");
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
@@ -160,14 +160,14 @@ static void node_map_boundary_to_square_exec(ExeParams params)
     */
 
     /* ----------------------------- Postprocess ------------------------------
-    ** Convert the result mesh from the halfedge structure back to GOperandBase
+    ** Convert the result mesh from the halfedge structure back to Geometry
     *format as the node's
     ** output.
     */
-    auto operand_base = openmesh_to_operand(halfedge_mesh.get());
+    auto geometry = openmesh_to_operand(halfedge_mesh.get());
 
     // Set the output of the nodes
-    params.set_output("Output", std::move(*operand_base));
+    params.set_output("Output", std::move(*geometry));
 }
 
 static void node_register()

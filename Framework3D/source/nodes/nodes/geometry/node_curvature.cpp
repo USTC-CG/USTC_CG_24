@@ -28,7 +28,7 @@ static void node_curvature_exec(ExeParams params)
     //   - .outgoing_halfedges(), voh_range(), ...
 
     // Get the input from params
-    auto input = params.get_input<GOperandBase>("Input");
+    auto input = params.get_input<Geometry>("Input");
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
@@ -84,7 +84,7 @@ static void node_curvature_exec(ExeParams params)
         // Use vertex_handle.idx() to get the index of the vertex
         rst[vertex_handle.idx()] = K;
     }
-    auto operand_base = openmesh_to_operand(halfedge_mesh.get());
+    auto geometry = openmesh_to_operand(halfedge_mesh.get());
 
     // Set the output of the nodes
     params.set_output("Output", rst);

@@ -5,13 +5,13 @@
 #include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-class USTC_CG_API VolumeComponet : public GOperandComponent {
+class USTC_CG_API VolumeComponet : public GeometryComponent {
    public:
-    explicit VolumeComponet(GOperandBase* attached_operand) : GOperandComponent(attached_operand)
+    explicit VolumeComponet(Geometry* attached_operand) : GeometryComponent(attached_operand)
     {
     }
 
-    GOperandComponentHandle copy(GOperandBase* operand) const override;
+    GeometryComponentHandle copy(Geometry* operand) const override;
     std::string to_string() const override;
 };
 USTC_CG_NAMESPACE_CLOSE_SCOPE

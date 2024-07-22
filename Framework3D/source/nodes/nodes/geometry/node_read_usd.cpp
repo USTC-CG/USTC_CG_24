@@ -42,7 +42,7 @@ static void node_exec(ExeParams params)
     auto file_name = params.get_input<std::string>("File Name");
     auto prim_path = params.get_input<std::string>("Prim Path");
 
-    GOperandBase geometry;
+    Geometry geometry;
     std::shared_ptr<MeshComponent> mesh =
         std::make_shared<MeshComponent>(&geometry);
     geometry.attach_component(mesh);

@@ -49,7 +49,7 @@ static void node_exec(ExeParams params)
 
     auto width = params.get_input<float>("Width");
 
-    auto geometry = GOperandBase();
+    auto geometry = Geometry();
     auto points_component = std::make_shared<PointsComponent>(&geometry);
     geometry.attach_component(points_component);
 

@@ -49,7 +49,7 @@ static void node_min_surf_declare(NodeDeclarationBuilder& b)
 static void node_min_surf_exec(ExeParams params)
 {
     // Get the input from params
-    auto input = params.get_input<GOperandBase>("Input");
+    auto input = params.get_input<Geometry>("Input");
 
     // (TO BE UPDATED) Avoid processing the node when there is no input
     if (!input.get_component<MeshComponent>()) {
@@ -106,12 +106,12 @@ static void node_min_surf_exec(ExeParams params)
 
     /* ----------------------------- Postprocess ------------------------------
     ** Convert the minimal surface mesh from the halfedge structure back to
-    ** GOperandBase format as the node's output.
+    ** Geometry format as the node's output.
     */
-    auto operand_base = openmesh_to_operand(halfedge_mesh.get());
+    auto geometry = openmesh_to_operand(halfedge_mesh.get());
 
     // Set the output of the nodes
-    params.set_output("Output", std::move(*operand_base));
+    params.set_output("Output", std::move(*geometry));
 }
 
 static void node_register()

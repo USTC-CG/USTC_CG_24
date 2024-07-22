@@ -21,7 +21,7 @@ std::string MeshComponent::to_string() const
     return out.str();
 }
 
-GOperandComponentHandle MeshComponent::copy(GOperandBase* operand) const
+GeometryComponentHandle MeshComponent::copy(Geometry* operand) const
 {
     auto ret = std::make_shared<MeshComponent>(operand);
 

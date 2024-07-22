@@ -18,10 +18,10 @@ static void node_create_grid_exec(ExeParams params)
 {
     int resolution = params.get_input<int>("resolution") + 1;
     float size = params.get_input<float>("size");
-    GOperandBase operand_base;
+    Geometry geometry;
     std::shared_ptr<MeshComponent> mesh =
-        std::make_shared<MeshComponent>(&operand_base);
-    operand_base.attach_component(mesh);
+        std::make_shared<MeshComponent>(&geometry);
+    geometry.attach_component(mesh);
 
     pxr::VtArray<pxr::GfVec3f> points;
     pxr::VtArray<pxr::GfVec2f> texcoord;
@@ -55,7 +55,7 @@ static void node_create_grid_exec(ExeParams params)
     mesh->set_face_vertex_counts(faceVertexCounts);
     mesh->set_texcoords_array(texcoord);
 
-    params.set_output("Geometry", std::move(operand_base));
+    params.set_output("Geometry", std::move(geometry));
 }
 
 void node_create_circle_declare(NodeDeclarationBuilder &b)

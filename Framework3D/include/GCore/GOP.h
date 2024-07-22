@@ -8,60 +8,58 @@
 #include <pxr/usd/usd/stage.h>
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
-struct GOperandComponent;
-class GOperandBase;
-using GOperandHandle = std::shared_ptr<GOperandBase>;
-using GOperandComponentHandle = std::shared_ptr<GOperandComponent>;
+struct GeometryComponent;
+class Geometry;
+using GeometryHandle = std::shared_ptr<Geometry>;
+using GeometryComponentHandle = std::shared_ptr<GeometryComponent>;
 
-using GOperandBaseHandle = std::shared_ptr<GOperandBase>;
+using GeometryBaseHandle = std::shared_ptr<Geometry>;
 
-class USTC_CG_API GOperandBase
+class USTC_CG_API Geometry
 {
 public:
-    GOperandBase();
+    Geometry();
 
-    virtual ~GOperandBase();
+    virtual ~Geometry();
 
-    GOperandBase(const GOperandBase& operand);
-    GOperandBase(GOperandBase&& operand) noexcept;
+    Geometry(const Geometry& operand);
+    Geometry(Geometry&& operand) noexcept;
 
-    GOperandBase& operator=(const GOperandBase& operand);
-    GOperandBase& operator=(GOperandBase&& operand) noexcept;
+    Geometry& operator=(const Geometry& operand);
+    Geometry& operator=(Geometry&& operand) noexcept;
 
 
-    friend bool operator==(const GOperandBase& lhs, const GOperandBase& rhs)
+    friend bool operator==(const Geometry& lhs, const Geometry& rhs)
     {
         return lhs.components_ == rhs.components_;
                //&& lhs.stage == rhs.stage;
     }
 
-    friend bool operator!=(const GOperandBase& lhs, const GOperandBase& rhs)
+    friend bool operator!=(const Geometry& lhs, const Geometry& rhs)
     {
         return !(lhs == rhs);
     }
-
-    virtual void copy_to(GOperandBaseHandle handle);
 
     virtual std::string to_string() const;
 
 
     template<typename OperandType>
     std::shared_ptr<OperandType> get_component(size_t idx = 0) const;
-    void attach_component(const GOperandComponentHandle& component);
-    void detach_component(const GOperandComponentHandle& component);
+    void attach_component(const GeometryComponentHandle& component);
+    void detach_component(const GeometryComponentHandle& component);
 
-    [[nodiscard]] const std::vector<GOperandComponentHandle>&
+    [[nodiscard]] const std::vector<GeometryComponentHandle>&
     get_components() const
     {
         return components_;
     }
 
 protected:
-    std::vector<GOperandComponentHandle> components_;
+    std::vector<GeometryComponentHandle> components_;
 };
 
 template<typename OperandType>
-std::shared_ptr<OperandType> GOperandBase::get_component(size_t idx) const
+std::shared_ptr<OperandType> Geometry::get_component(size_t idx) const
 {
     size_t counter = 0;
     for (int i = 0; i < components_.size(); ++i)
