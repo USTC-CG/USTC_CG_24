@@ -1,5 +1,5 @@
-#include "Nodes/GlobalUsdStage.h"
 #include "GCore/Components/MeshOperand.h"
+#include "Nodes/GlobalUsdStage.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
 #include "Nodes/node_register.h"
@@ -23,17 +23,21 @@ static void node_exec(ExeParams params)
     auto mesh_component = std::make_shared<MeshComponent>(&geometry);
 
     auto vertices = params.get_input<pxr::VtVec3fArray>("Vertices");
-    auto faceVertexCounts = params.get_input<pxr::VtArray<int>>("FaceVertexCounts");
-    auto faceVertexIndices = params.get_input<pxr::VtArray<int>>("FaceVertexIndices");
+    auto faceVertexCounts =
+        params.get_input<pxr::VtArray<int>>("FaceVertexCounts");
+    auto faceVertexIndices =
+        params.get_input<pxr::VtArray<int>>("FaceVertexIndices");
     auto normals = params.get_input<pxr::VtArray<pxr::GfVec3f>>("Normals");
-    auto texcoordsArray = params.get_input<pxr::VtArray<pxr::GfVec2f>>("Texcoords");
+    auto texcoordsArray =
+        params.get_input<pxr::VtArray<pxr::GfVec2f>>("Texcoords");
 
-    if (vertices.size() > 0 && faceVertexCounts.size() > 0 && faceVertexIndices.size() > 0) {
-        mesh_component->get_vertices() = vertices;
-        mesh_component->get_face_vertex_counts() = faceVertexCounts;
-        mesh_component->get_face_vertex_indices() = faceVertexIndices;
-        mesh_component->get_normals() = normals;
-        mesh_component->get_texcoords_array() = texcoordsArray;
+    if (vertices.size() > 0 && faceVertexCounts.size() > 0 &&
+        faceVertexIndices.size() > 0) {
+        mesh_component->set_vertices(vertices);
+        mesh_component->set_face_vertex_counts(faceVertexCounts);
+        mesh_component->set_face_vertex_indices(faceVertexIndices);
+        mesh_component->set_normals(normals);
+        mesh_component->set_texcoords_array(texcoordsArray);
         geometry.attach_component(mesh_component);
     }
     else {

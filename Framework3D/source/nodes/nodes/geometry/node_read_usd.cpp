@@ -43,7 +43,8 @@ static void node_exec(ExeParams params)
     auto prim_path = params.get_input<std::string>("Prim Path");
 
     GOperandBase geometry;
-    std::shared_ptr<MeshComponent> mesh = std::make_shared<MeshComponent>(&geometry);
+    std::shared_ptr<MeshComponent> mesh =
+        std::make_shared<MeshComponent>(&geometry);
     geometry.attach_component(mesh);
 
     auto t = params.get_input<float>("Time Code");
@@ -61,32 +62,22 @@ static void node_exec(ExeParams params)
         pxr::UsdGeomMesh usdgeom(prim);
 
         if (usdgeom) {
-            // Fill in the vertices and faces here
-            usdgeom.CreatePointsAttr().Get(&mesh->get_vertices(), time);
-            usdgeom.CreateFaceVertexCountsAttr().Get(&mesh->get_face_vertex_counts(), time);
-            usdgeom.CreateFaceVertexIndicesAttr().Get(&mesh->get_face_vertex_indices(), time);
+            mesh->set_mesh_geom(usdgeom); 
 
-            usdgeom.CreateNormalsAttr().Get(&mesh->get_normals(), time);
-
-            auto PrimVarAPI = pxr::UsdGeomPrimvarsAPI(usdgeom);
-            pxr::UsdGeomPrimvar primvar = PrimVarAPI.GetPrimvar(pxr::TfToken("UVMap"));
-            primvar.Get(&mesh->get_texcoords_array(), time);
-
-
-            pxr::UsdGeomPrimvar primvar_control_points = PrimVarAPI.GetPrimvar(pxr::TfToken("ControlPoints"));
-			primvar_control_points.Get(&mesh->get_control_points(), time); // right way to check?
-
-            pxr::GfMatrix4d final_transform = usdgeom.ComputeLocalToWorldTransform(time);
+            pxr::GfMatrix4d final_transform =
+                usdgeom.ComputeLocalToWorldTransform(time);
 
             if (final_transform != pxr::GfMatrix4d().SetIdentity()) {
-                auto xform_component = std::make_shared<XformComponent>(&geometry);
+                auto xform_component =
+                    std::make_shared<XformComponent>(&geometry);
                 geometry.attach_component(xform_component);
 
                 auto rotation = final_transform.ExtractRotation();
                 auto translation = final_transform.ExtractTranslation();
                 // TODO: rotation not read.
 
-                xform_component->translation.push_back(pxr::GfVec3f(translation));
+                xform_component->translation.push_back(
+                    pxr::GfVec3f(translation));
                 xform_component->rotation.push_back(pxr::GfVec3f(0.0f));
                 xform_component->scale.push_back(pxr::GfVec3f(1.0f));
             }
@@ -101,9 +92,11 @@ static void node_exec(ExeParams params)
                 if (skeleton) {
                     using namespace pxr;
                     UsdSkelCache skelCache;
-                    UsdSkelSkeletonQuery skelQuery = skelCache.GetSkelQuery(skeleton);
+                    UsdSkelSkeletonQuery skelQuery =
+                        skelCache.GetSkelQuery(skeleton);
 
-                    auto skel_component = std::make_shared<SkelComponent>(&geometry);
+                    auto skel_component =
+                        std::make_shared<SkelComponent>(&geometry);
                     geometry.attach_component(skel_component);
 
                     VtArray<GfMatrix4f> xforms;
@@ -118,7 +111,7 @@ static void node_exec(ExeParams params)
 
                     VtArray<GfMatrix4d> bindTransforms;
                     skeleton.GetBindTransformsAttr().Get(&bindTransforms, time);
-			        skel_component->bindTransforms = bindTransforms;
+                    skel_component->bindTransforms = bindTransforms;
 
                     VtArray<int> jointIndices;
                     binding.GetJointIndicesAttr().Get(&jointIndices, time);

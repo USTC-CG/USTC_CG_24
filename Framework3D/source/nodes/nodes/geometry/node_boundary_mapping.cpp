@@ -8,19 +8,26 @@
 /*
 ** @brief HW4_TutteParameterization
 **
-** This file contains two nodes whose primary function is to map the boundary of a mesh to a plain
-** convex closed curve (circle of square), setting the stage for subsequent Laplacian equation
+** This file contains two nodes whose primary function is to map the boundary of
+*a mesh to a plain
+** convex closed curve (circle of square), setting the stage for subsequent
+*Laplacian equation
 ** solution and mesh parameterization tasks.
 **
-** Key to this node's implementation is the adept manipulation of half-edge data structures
+** Key to this node's implementation is the adept manipulation of half-edge data
+*structures
 ** to identify and modify the boundary of the mesh.
 **
 ** Task Overview:
 ** - The two execution functions (node_map_boundary_to_square_exec,
-** node_map_boundary_to_circle_exec) require an update to accurately map the mesh boundary to a and
-** circles. This entails identifying the boundary edges, evenly distributing boundary vertices along
-** the square's perimeter, and ensuring the internal vertices' positions remain unchanged.
-** - A focus on half-edge data structures to efficiently traverse and modify mesh boundaries.
+** node_map_boundary_to_circle_exec) require an update to accurately map the
+*mesh boundary to a and
+** circles. This entails identifying the boundary edges, evenly distributing
+*boundary vertices along
+** the square's perimeter, and ensuring the internal vertices' positions remain
+*unchanged.
+** - A focus on half-edge data structures to efficiently traverse and modify
+*mesh boundaries.
 */
 
 namespace USTC_CG::node_boundary_mapping {
@@ -34,8 +41,8 @@ static void node_map_boundary_to_circle_declare(NodeDeclarationBuilder& b)
     // Input-1: Original 3D mesh with boundary
     b.add_input<decl::Geometry>("Input");
 
-    // Output-1: Processed 3D mesh whose boundary is mapped to a square and the interior vertices
-    // remains the same
+    // Output-1: Processed 3D mesh whose boundary is mapped to a square and the
+    // interior vertices remains the same
     b.add_output<decl::Geometry>("Output");
 }
 
@@ -58,38 +65,47 @@ static void node_map_boundary_to_circle_exec(ExeParams params)
     */
     auto halfedge_mesh = operand_to_openmesh(&input);
 
-    /* ----------- [HW4_TODO] TASK 2.1: Boundary Mapping (to circle) ------------
-    ** In this task, you are required to map the boundary of the mesh to a circle
-    ** shape while ensuring the internal vertices remain unaffected. This step is
+    /* ----------- [HW4_TODO] TASK 2.1: Boundary Mapping (to circle)
+    *------------
+    ** In this task, you are required to map the boundary of the mesh to a
+    *circle
+    ** shape while ensuring the internal vertices remain unaffected. This step
+    *is
     ** crucial for setting up the mesh for subsequent parameterization tasks.
     **
     ** Algorithm Pseudocode for Boundary Mapping to Circle
     ** ------------------------------------------------------------------------
-    ** 1. Identify the boundary loop(s) of the mesh using the half-edge structure.
+    ** 1. Identify the boundary loop(s) of the mesh using the half-edge
+    *structure.
     **
-    ** 2. Calculate the total length of the boundary loop to determine the spacing
+    ** 2. Calculate the total length of the boundary loop to determine the
+    *spacing
     **    between vertices when mapped to a square.
     **
-    ** 3. Sequentially assign each boundary vertex a new position along the square's
-    **    perimeter, maintaining the calculated spacing to ensure proper distribution.
+    ** 3. Sequentially assign each boundary vertex a new position along the
+    *square's
+    **    perimeter, maintaining the calculated spacing to ensure proper
+    *distribution.
     **
     ** 4. Keep the interior vertices' positions unchanged during this process.
     **
     ** Note: How to distribute the points on the circle?
     **
-    ** Note: It would be better to normalize the boundary to a unit circle in [0,1]x[0,1] for
+    ** Note: It would be better to normalize the boundary to a unit circle in
+    *[0,1]x[0,1] for
     ** texture mapping.
     */
 
     /* ----------------------------- Postprocess ------------------------------
-    ** Convert the result mesh from the halfedge structure back to GOperandBase format as the node's
+    ** Convert the result mesh from the halfedge structure back to GOperandBase
+    *format as the node's
     ** output.
     */
     auto operand_base = openmesh_to_operand(halfedge_mesh.get());
 
     auto& output = input;
-    output.get_component<MeshComponent>()->get_vertices() =
-        operand_base->get_component<MeshComponent>()->get_vertices();
+    output.get_component<MeshComponent>()->set_vertices(
+        operand_base->get_component<MeshComponent>()->get_vertices());
 
     // Set the output of the nodes
     params.set_output("Output", std::move(output));
@@ -104,8 +120,8 @@ static void node_map_boundary_to_square_declare(NodeDeclarationBuilder& b)
     // Input-1: Original 3D mesh with boundary
     b.add_input<decl::Geometry>("Input");
 
-    // Output-1: Processed 3D mesh whose boundary is mapped to a square and the interior vertices
-    // remains the same
+    // Output-1: Processed 3D mesh whose boundary is mapped to a square and the
+    // interior vertices remains the same
     b.add_output<decl::Geometry>("Output");
 }
 
@@ -125,22 +141,27 @@ static void node_map_boundary_to_square_exec(ExeParams params)
     */
     auto halfedge_mesh = operand_to_openmesh(&input);
 
-    /* ----------- [HW4_TODO] TASK 2.2: Boundary Mapping (to square) ------------
-    ** In this task, you are required to map the boundary of the mesh to a circle
+    /* ----------- [HW4_TODO] TASK 2.2: Boundary Mapping (to square)
+    *------------
+    ** In this task, you are required to map the boundary of the mesh to a
+    *circle
     ** shape while ensuring the internal vertices remain unaffected.
     **
     ** Algorithm Pseudocode for Boundary Mapping to Square
     ** ------------------------------------------------------------------------
     ** (omitted)
     **
-    ** Note: Can you perserve the 4 corners of the square after boundary mapping?
+    ** Note: Can you perserve the 4 corners of the square after boundary
+    *mapping?
     **
-    ** Note: It would be better to normalize the boundary to a unit circle in [0,1]x[0,1] for
+    ** Note: It would be better to normalize the boundary to a unit circle in
+    *[0,1]x[0,1] for
     ** texture mapping.
     */
 
     /* ----------------------------- Postprocess ------------------------------
-    ** Convert the result mesh from the halfedge structure back to GOperandBase format as the node's
+    ** Convert the result mesh from the halfedge structure back to GOperandBase
+    *format as the node's
     ** output.
     */
     auto operand_base = openmesh_to_operand(halfedge_mesh.get());

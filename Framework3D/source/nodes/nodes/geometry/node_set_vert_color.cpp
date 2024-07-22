@@ -25,19 +25,16 @@ static void node_exec(ExeParams params)
     auto mesh = geometry.get_component<MeshComponent>();
     auto points = geometry.get_component<PointsComponent>();
     if (mesh) {
-
-		mesh->get_display_color() = color;
+        mesh->set_display_color(color);
     }
-    else if (points)
-    {
-		points->get_display_color() = color;
+    else if (points) {
+        points->get_display_color() = color;
     }
-    else
-    {
-		throw std::runtime_error("The input is not a mesh or points");
-	}
+    else {
+        throw std::runtime_error("The input is not a mesh or points");
+    }
 
-	params.set_output("Geometry", std::move(geometry));
+    params.set_output("Geometry", std::move(geometry));
 }
 
 static void node_register()

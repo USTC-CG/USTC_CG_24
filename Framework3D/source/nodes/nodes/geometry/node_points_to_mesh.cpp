@@ -55,7 +55,8 @@ struct WrappingParticleList {
 
     // Get the world-space position, radius and velocity of the nth particle.
     // Required by rasterizeTrails().
-    void getPosRadVel(size_t n, Vec3R& xyz, Real& radius, Vec3R& velocity) const;
+    void getPosRadVel(size_t n, Vec3R& xyz, Real& radius, Vec3R& velocity)
+        const;
 
     const pxr::VtArray<pxr::GfVec3f>& points_vertices;
     const pxr::VtArray<float>& points_widths;
@@ -67,7 +68,7 @@ static void node_exec(ExeParams params)
 
     auto points = points_geometry.get_component<PointsComponent>();
 
-    if (!points||points->get_vertices().empty()) {
+    if (!points || points->get_vertices().empty()) {
         throw std::runtime_error("Input does not contain points");
     }
 
@@ -81,9 +82,9 @@ static void node_exec(ExeParams params)
         points_widths.resize(points_vertices.size(), 0.1f);
     }
 
-    pxr::VtArray<pxr::GfVec3f>& mesh_vertices = mesh_component->get_vertices();
-    pxr::VtArray<int>& mesh_faceVertexCounts = mesh_component->get_face_vertex_counts();
-    pxr::VtArray<int>& mesh_faceVertexIndices = mesh_component->get_face_vertex_indices();
+    pxr::VtArray<pxr::GfVec3f> mesh_vertices;
+    pxr::VtArray<int> mesh_faceVertexCounts;
+    pxr::VtArray<int> mesh_faceVertexIndices;
 
     auto pa = WrappingParticleList(points_vertices, points_widths);
 
@@ -101,10 +102,16 @@ static void node_exec(ExeParams params)
     std::vector<openvdb::Vec3I> converted_triangles;
 
     openvdb::tools::volumeToMesh(
-        *grid, converted_points, converted_triangles, converted_quads, 0.f, 0.0f);
+        *grid,
+        converted_points,
+        converted_triangles,
+        converted_quads,
+        0.f,
+        0.0f);
 
     for (auto&& converted_point : converted_points) {
-        mesh_vertices.emplace_back(converted_point[0], converted_point[1], converted_point[2]);
+        mesh_vertices.emplace_back(
+            converted_point[0], converted_point[1], converted_point[2]);
     }
 
     for (int i = 0; i < converted_quads.size(); ++i) {
@@ -120,6 +127,10 @@ static void node_exec(ExeParams params)
             mesh_faceVertexIndices.emplace_back(converted_triangles[i][j]);
         }
     }
+
+    mesh_component->set_vertices(mesh_vertices);
+    mesh_component->set_face_vertex_counts(mesh_faceVertexCounts);
+    mesh_component->set_face_vertex_indices(mesh_faceVertexIndices);
 
     params.set_output("Mesh", mesh_geometry);
 }

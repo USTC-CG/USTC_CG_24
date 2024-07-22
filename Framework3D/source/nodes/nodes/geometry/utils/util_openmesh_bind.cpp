@@ -45,9 +45,9 @@ std::shared_ptr<GOperandBase> openmesh_to_operand(PolyMesh* openmesh)
         std::make_shared<MeshComponent>(operand_base.get());
     operand_base->attach_component(mesh);
 
-    auto& points = mesh->get_vertices();
-    auto& faceVertexIndices = mesh->get_face_vertex_indices();
-    auto& faceVertexCounts = mesh->get_face_vertex_counts();
+    pxr::VtArray<pxr::GfVec3f> points;
+    pxr::VtArray<int> faceVertexIndices;
+    pxr::VtArray<int> faceVertexCounts;
 
     // Set the points
     for (const auto& v : openmesh->vertices()) {
@@ -63,6 +63,10 @@ std::shared_ptr<GOperandBase> openmesh_to_operand(PolyMesh* openmesh)
         }
         faceVertexCounts.push_back(count);
     }
+
+    mesh->set_vertices(points);
+    mesh->set_face_vertex_indices(faceVertexIndices);
+    mesh->set_face_vertex_counts(faceVertexCounts);
     return operand_base;
 }
 

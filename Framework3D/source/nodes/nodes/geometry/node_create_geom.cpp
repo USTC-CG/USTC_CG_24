@@ -16,16 +16,17 @@ static void node_create_grid_declare(NodeDeclarationBuilder &b)
 
 static void node_create_grid_exec(ExeParams params)
 {
-    int resolution = params.get_input<int>("resolution")+1;
+    int resolution = params.get_input<int>("resolution") + 1;
     float size = params.get_input<float>("size");
     GOperandBase operand_base;
-    std::shared_ptr<MeshComponent> mesh = std::make_shared<MeshComponent>(&operand_base);
+    std::shared_ptr<MeshComponent> mesh =
+        std::make_shared<MeshComponent>(&operand_base);
     operand_base.attach_component(mesh);
 
-    auto &points = mesh->get_vertices();
-    auto &texcoord = mesh->get_texcoords_array();
-    auto &faceVertexIndices = mesh->get_face_vertex_indices();
-    auto &faceVertexCounts = mesh->get_face_vertex_counts();
+    pxr::VtArray<pxr::GfVec3f> points;
+    pxr::VtArray<pxr::GfVec2f> texcoord;
+    pxr::VtArray<int> faceVertexIndices;
+    pxr::VtArray<int> faceVertexCounts;
 
     for (int i = 0; i < resolution; ++i) {
         for (int j = 0; j < resolution; ++j) {
@@ -49,9 +50,13 @@ static void node_create_grid_exec(ExeParams params)
         }
     }
 
+    mesh->set_vertices(points);
+    mesh->set_face_vertex_indices(faceVertexIndices);
+    mesh->set_face_vertex_counts(faceVertexCounts);
+    mesh->set_texcoords_array(texcoord);
+
     params.set_output("Geometry", std::move(operand_base));
 }
-
 
 void node_create_circle_declare(NodeDeclarationBuilder &b)
 {
@@ -61,16 +66,14 @@ void node_create_circle_declare(NodeDeclarationBuilder &b)
 
 void node_create_circle_exec(ExeParams exe_params)
 {
-    
 }
-
 
 static void node_register()
 {
 #define CreateGeom(lower, Upper)                             \
     static NodeTypeInfo lower##_ntype;                       \
-    strcpy(lower##_ntype.ui_name, "Create " #Upper);       \
-    strcpy(lower##_ntype.id_name, "geom_create_" #lower);  \
+    strcpy(lower##_ntype.ui_name, "Create " #Upper);         \
+    strcpy(lower##_ntype.id_name, "geom_create_" #lower);    \
     geo_node_type_base(&lower##_ntype);                      \
     lower##_ntype.node_execute = node_create_##lower##_exec; \
     lower##_ntype.declare = node_create_##lower##_declare;   \
@@ -78,7 +81,7 @@ static void node_register()
 
     CreateGeom(grid, Grid);
     CreateGeom(circle, Circle);
-    //CreateGeom(ico_sphere, Ico Sphere);
+    // CreateGeom(ico_sphere, Ico Sphere);
 }
 
 NOD_REGISTER_NODE(node_register)
