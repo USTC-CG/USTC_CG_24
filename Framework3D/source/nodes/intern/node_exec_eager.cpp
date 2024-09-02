@@ -2,8 +2,8 @@
 
 #include "Nodes/node_tree.hpp"
 #include "USTC_CG.h"
-#include "entt/meta/resolve.hpp"
 #include "entt/core/any.hpp"
+#include "entt/meta/resolve.hpp"
 // #include "Utils/Functions/GenericPointer_.hpp"
 //  #include "graph/node_exec_graph.h"
 #include "GCore/geom_node_global_params.h"
@@ -81,9 +81,16 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
         else {
             int last_used_id = -1;
 
+            bool need_to_keep_alive = false;
+
             for (int i = 0; i < output->directly_linked_sockets.size(); ++i) {
                 auto directly_linked_input_socket =
                     output->directly_linked_sockets[i];
+
+                if (std::string(directly_linked_input_socket->Node->typeinfo
+                                    ->id_name) == "func_storage_in") {
+                    need_to_keep_alive = true;
+                }
 
                 if (index_cache.find(directly_linked_input_socket) !=
                     index_cache.end()) {
@@ -126,6 +133,18 @@ void EagerNodeTreeExecutor::forward_output_to_input(Node* node)
                     }
                 }
             }
+
+            if (need_to_keep_alive) {
+                for (int i = 0; i < output->directly_linked_sockets.size();
+                     ++i) {
+                    auto directly_linked_input_socket =
+                        output->directly_linked_sockets[i];
+
+                    input_states[index_cache[directly_linked_input_socket]]
+                        .keep_alive = true;
+                }
+            }
+
             if (last_used_id == -1) {
                 output_states[index_cache[output]].is_last_used = true;
             }
@@ -221,6 +240,11 @@ void EagerNodeTreeExecutor::prepare_memory()
     }
 }
 
+void EagerNodeTreeExecutor::remove_storage(const std::set<std::string>::value_type& key)
+{
+    storage.erase(key);
+}
+
 void EagerNodeTreeExecutor::refresh_storage()
 {
     std::set<std::string> refreshed;
@@ -255,7 +279,7 @@ void EagerNodeTreeExecutor::refresh_storage()
         }
     }
     for (auto& key : keysToDelete) {
-        storage.erase(key);
+        remove_storage(key);
     }
     refreshed.clear();
 }
@@ -268,7 +292,6 @@ void EagerNodeTreeExecutor::try_storage()
         if (socket->type_info->type == SocketType::Any) {
             if (std::string(socket->Node->typeinfo->id_name) ==
                 "func_storage_in") {
-                input_states[index_cache[socket]].keep_alive = true;
                 auto node = socket->Node;
                 entt::meta_any data;
                 sync_node_to_external_storage(
