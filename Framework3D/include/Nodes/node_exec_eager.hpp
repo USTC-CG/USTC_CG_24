@@ -51,6 +51,7 @@ class EagerNodeTreeExecutor : public NodeTreeExecutor {
    protected:
     virtual ExeParams prepare_params(NodeTree* tree, Node* node);
     virtual bool execute_node(NodeTree* tree, Node* node);
+    virtual void remove_storage(const std::set<std::string>::value_type& key);
     void forward_output_to_input(Node* node);
     void clear();
 
@@ -88,7 +89,10 @@ class EagerNodeTreeExecutorRender : public EagerNodeTreeExecutor {
     RenderGlobalParams* global_param = nullptr;
     ExeParams prepare_params(NodeTree* tree, Node* node) override;
 
-   public:
+    void try_storage() override;
+    void remove_storage(const std::set<std::string>::value_type& key) override;
+
+public:
     void set_global_param(RenderGlobalParams* param);
     void finalize(NodeTree* tree) override;
     virtual void set_device(

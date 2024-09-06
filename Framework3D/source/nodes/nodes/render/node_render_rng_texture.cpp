@@ -34,16 +34,12 @@ static void node_exec(ExeParams params)
     output_desc.keepInitialState = true;
     output_desc.isUAV = true;
 
-    auto random = resource_allocator.create(output_desc);
-
     auto& stored_rng = params.get_runtime_storage<RNGStorage&>();
-    bool first_attempt = false;
-    if (stored_rng.random_number != random.Get()) {
-        stored_rng.random_number = random.Get();
-        first_attempt = true;
-    }
-
+    bool first_attempt = stored_rng.random_number == nullptr ||
+                         output_desc != stored_rng.random_number->getDesc();
     if (first_attempt) {
+        resource_allocator.destroy(stored_rng.random_number);
+        stored_rng.random_number = resource_allocator.create(output_desc);
     }
 
     nvrhi::BindingLayoutDescVector binding_layout_descs;

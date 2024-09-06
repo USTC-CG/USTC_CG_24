@@ -33,6 +33,9 @@ static void node_exec(ExeParams params)
     if (!previous) {
         previous = current;
     }
+    else {
+        assert(previous != current);
+    }
 
     auto& cam_status = params.get_runtime_storage<CameraState&>();
 

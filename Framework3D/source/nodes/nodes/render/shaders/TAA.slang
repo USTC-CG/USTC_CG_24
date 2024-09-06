@@ -34,7 +34,6 @@ void main(uint3 DTid: SV_DispatchThreadID)
     // Simple blending for TAA
     float blendFactor = (spp - 1) / spp;  // Adjust blend factor as needed
     float4 resultColor = lerp(currentColor, prevColor, blendFactor);
-
     // resultColor = float4(uv.x, uv.y, 1, 1);
     //  Output the result
     OutputFrame[pixelCoord] = resultColor;

@@ -40,6 +40,21 @@ ExeParams EagerNodeTreeExecutorRender::prepare_params(
     return result;
 }
 
+void EagerNodeTreeExecutorRender::try_storage()
+{
+    for (auto&& value : storage) {
+        resource_allocator.destroy(value.second);
+    }
+    EagerNodeTreeExecutor::try_storage();
+}
+
+void EagerNodeTreeExecutorRender::remove_storage(
+    const std::set<std::string>::value_type& key)
+{
+    resource_allocator.destroy(storage[key]);
+    EagerNodeTreeExecutor::remove_storage(key);
+}
+
 void EagerNodeTreeExecutorRender::set_global_param(RenderGlobalParams* param)
 {
     this->global_param = param;
