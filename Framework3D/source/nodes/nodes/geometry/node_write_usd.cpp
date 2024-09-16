@@ -90,11 +90,10 @@ static void node_exec(ExeParams params)
         }
     }
     else if (curve) {
-        pxr::UsdGeomBasisCurves usdgeom =
+        pxr::UsdGeomBasisCurves usd_curve =
             pxr::UsdGeomBasisCurves::Define(stage, sdf_path);
-        if (usdgeom) {
-            copy_prim(curve->get_usd_curve().GetPrim(), usdgeom.GetPrim());
-            usdgeom.CreateDoubleSidedAttr().Set(true);
+        if (usd_curve) {
+            copy_prim(curve->get_usd_curve().GetPrim(), usd_curve.GetPrim());
         }
     }
 

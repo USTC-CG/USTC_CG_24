@@ -180,7 +180,8 @@ bool Hd_USTC_CG_RenderBufferGL::Allocate(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
@@ -257,20 +258,28 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     auto texture = handle->texture_id;
     GLuint temp;
     glCreateFramebuffers(1, &temp);
-    // 绑定传入的纹理到帧缓冲
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    // 绑定自己的纹理到读取帧缓冲
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
+    glFramebufferTexture2D(
+        GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, temp);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    glFramebufferTexture2D(
+        GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
 
-    // 拷贝纹理数据到成员变量
     glBlitFramebuffer(
-        0, 0, _width, _height, 0, 0, _width, _height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        0,
+        0,
+        _width,
+        _height,
+        0,
+        0,
+        _width,
+        _height,
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST);
 
-    // 解绑定帧缓冲
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &temp);
 #elif defined(USTC_CG_BACKEND_NVRHI)
@@ -287,7 +296,8 @@ void Hd_USTC_CG_RenderBufferGL::Present(TextureHandle handle)
     nvrhi_device->waitForIdle();
 
     size_t pitch;
-    auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
+    auto mapped = nvrhi_device->mapStagingTexture(
+        staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
 
     for (int i = 0; i < handle->getDesc().height; ++i) {
         memcpy(
@@ -386,7 +396,12 @@ void *Hd_USTC_CG_RenderBufferGL::Map()
 {
 #ifdef USTC_CG_BACKEND_OPENGL
     glGetTextureImage(
-        tex, 0, _GetGLFormat(_format), _GetGLType(_format), GetbufSize(), _buffer.data());
+        tex,
+        0,
+        _GetGLFormat(_format),
+        _GetGLType(_format),
+        GetbufSize(),
+        _buffer.data());
 #endif
 
     _mappers++;
