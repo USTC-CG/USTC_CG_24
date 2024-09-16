@@ -1,11 +1,12 @@
 #pragma once
 
-#include"USTC_CG.h"
+#include <pxr/usd/sdf/path.h>
+#include <pxr/usd/usd/stage.h>
 
 #include <memory>
 #include <string>
-#include <pxr/usd/sdf/path.h>
-#include <pxr/usd/usd/stage.h>
+
+#include "USTC_CG.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
 struct GeometryComponent;
@@ -13,11 +14,8 @@ class Geometry;
 using GeometryHandle = std::shared_ptr<Geometry>;
 using GeometryComponentHandle = std::shared_ptr<GeometryComponent>;
 
-using GeometryBaseHandle = std::shared_ptr<Geometry>;
-
-class USTC_CG_API Geometry
-{
-public:
+class USTC_CG_API Geometry {
+   public:
     Geometry();
 
     virtual ~Geometry();
@@ -28,11 +26,12 @@ public:
     Geometry& operator=(const Geometry& operand);
     Geometry& operator=(Geometry&& operand) noexcept;
 
+    static Geometry CreateMesh();
 
     friend bool operator==(const Geometry& lhs, const Geometry& rhs)
     {
         return lhs.components_ == rhs.components_;
-               //&& lhs.stage == rhs.stage;
+        //&& lhs.stage == rhs.stage;
     }
 
     friend bool operator!=(const Geometry& lhs, const Geometry& rhs)
@@ -42,19 +41,18 @@ public:
 
     virtual std::string to_string() const;
 
-
     template<typename OperandType>
     std::shared_ptr<OperandType> get_component(size_t idx = 0) const;
     void attach_component(const GeometryComponentHandle& component);
     void detach_component(const GeometryComponentHandle& component);
 
-    [[nodiscard]] const std::vector<GeometryComponentHandle>&
-    get_components() const
+    [[nodiscard]] const std::vector<GeometryComponentHandle>& get_components()
+        const
     {
         return components_;
     }
 
-protected:
+   protected:
     std::vector<GeometryComponentHandle> components_;
 };
 
@@ -62,23 +60,18 @@ template<typename OperandType>
 std::shared_ptr<OperandType> Geometry::get_component(size_t idx) const
 {
     size_t counter = 0;
-    for (int i = 0; i < components_.size(); ++i)
-    {
+    for (int i = 0; i < components_.size(); ++i) {
         auto ptr = std::dynamic_pointer_cast<OperandType>(components_[i]);
-        if (ptr)
-        {
-            if (counter < idx)
-            {
+        if (ptr) {
+            if (counter < idx) {
                 counter++;
             }
-            else
-            {
+            else {
                 return ptr;
             }
         }
     }
     return nullptr;
 }
-
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

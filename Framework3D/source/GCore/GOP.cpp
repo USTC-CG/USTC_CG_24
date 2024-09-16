@@ -1,6 +1,7 @@
 #include "GCore/GOP.h"
 
 #include "GCore/Components.h"
+#include "GCore/Components/MeshOperand.h"
 #include "pxr/usd/usdGeom/xform.h"
 
 USTC_CG_NAMESPACE_OPEN_SCOPE
@@ -35,6 +36,15 @@ Geometry& Geometry::operator=(Geometry&& operand) noexcept
 {
     this->components_ = std::move(operand.components_);
     return *this;
+}
+
+Geometry Geometry::CreateMesh()
+{
+    Geometry geometry;
+    std::shared_ptr<MeshComponent> mesh =
+        std::make_shared<MeshComponent>(&geometry);
+    geometry.attach_component(mesh);
+    return std::move(geometry);
 }
 
 std::string Geometry::to_string() const
