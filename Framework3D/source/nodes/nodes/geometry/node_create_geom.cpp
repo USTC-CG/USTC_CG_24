@@ -68,9 +68,7 @@ void node_create_circle_declare(NodeDeclarationBuilder &b)
 
 void node_create_circle_exec(ExeParams params)
 {
-#include <cmath>  // 引入数学库，用于计算正弦和余弦
-
-    int resolution = params.get_input<int>("resolution") + 1;
+    int resolution = params.get_input<int>("resolution");
     float radius = params.get_input<float>("radius");
     Geometry geometry;
     std::shared_ptr<CurveComponent> curve =
@@ -79,21 +77,16 @@ void node_create_circle_exec(ExeParams params)
 
     pxr::VtArray<pxr::GfVec3f> points;
 
-    // 圆的圆心坐标，这里假设圆心在原点
     pxr::GfVec3f center(0.0f, 0.0f, 0.0f);
 
-    // 计算每个点的角度步长
     float angleStep = 2.0f * M_PI / resolution;
 
     for (int i = 0; i < resolution; ++i) {
-        // 计算当前点的角度
         float angle = i * angleStep;
-        // 计算当前点的坐标
         pxr::GfVec3f point(
-            radius * std::cos(angle) + center[0],  // X坐标
-            radius * std::sin(angle) + center[1],  // Y坐标
-            center[2]                              // Z坐标保持不变
-        );
+            radius * std::cos(angle) + center[0],
+            radius * std::sin(angle) + center[1],
+            center[2]);
         points.push_back(point);
     }
 
@@ -104,6 +97,53 @@ void node_create_circle_exec(ExeParams params)
         pxr::VtValue(pxr::UsdGeomTokens->periodic));
 
     params.set_output("Circle", std::move(geometry));
+}
+
+void node_create_spiral_declare(NodeDeclarationBuilder &b)
+{
+    b.add_input<decl::Int>("resolution").min(1).max(100).default_val(10);
+    b.add_input<decl::Float>("R1").min(0.1).max(10).default_val(1);
+    b.add_input<decl::Float>("R2").min(0.1).max(10).default_val(1);
+    b.add_input<decl::Float>("Circle Count").min(0.1).max(10).default_val(2);
+    b.add_input<decl::Float>("Height").min(0.1).max(10).default_val(1);
+    b.add_output<decl::Geometry>("Curve");
+}
+
+void node_create_spiral_exec(ExeParams params)
+{
+    int resolution = params.get_input<int>("resolution");
+    float R1 = params.get_input<float>("R1");
+    float R2 = params.get_input<float>("R2");
+    float circleCount = params.get_input<float>("Circle Count");
+    float height = params.get_input<float>("Height");
+
+    Geometry geometry;
+    std::shared_ptr<CurveComponent> curve =
+        std::make_shared<CurveComponent>(&geometry);
+    geometry.attach_component(curve);
+
+    pxr::VtArray<pxr::GfVec3f> points;
+
+    float angleStep = circleCount * 2.0f * M_PI / resolution;
+    float radiusIncrement = (R2 - R1) / (circleCount * M_PI * R1);
+    float heightIncrement = height / (circleCount * M_PI * R1);
+
+    for (int i = 0; i < resolution; ++i) {
+        float angle = i * angleStep;
+        float radius = R1 + radiusIncrement * (angle - M_PI);
+        float z = heightIncrement * (angle - M_PI);
+        pxr::GfVec3f point(
+            radius * std::cos(angle), radius * std::sin(angle), z);
+        points.push_back(point);
+    }
+
+    curve->set_vertices(points);
+    curve->set_vert_count({ resolution });
+
+    // Since a spiral is not periodic, we don't set a wrap attribute like we did
+    // for the circle.
+
+    params.set_output("Curve", std::move(geometry));
 }
 
 static void node_register()
@@ -119,6 +159,7 @@ static void node_register()
 
     CreateGeom(grid, Grid);
     CreateGeom(circle, Circle);
+    CreateGeom(spiral, Spiral);
     // CreateGeom(ico_sphere, Ico Sphere);
 }
 
