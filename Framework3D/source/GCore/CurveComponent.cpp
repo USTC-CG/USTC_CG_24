@@ -6,7 +6,7 @@ std::string CurveComponent::to_string() const
 {
     std::ostringstream out;
     // Loop over the vertices and print the data
-    out << "Points component. "
+    out << "Curve component. "
         << "Vertices count " << get_vertices().size()
         << ". Face vertices count "
         << ".";
@@ -24,6 +24,12 @@ GeometryComponentHandle CurveComponent::copy(Geometry* operand) const
 CurveComponent::CurveComponent(Geometry* attached_operand)
     : GeometryComponent(attached_operand)
 {
+    scratch_buffer_path = pxr::SdfPath(
+        "/scratch_buffer/curves_component_" +
+        std::to_string(reinterpret_cast<long long>(this)));
+    curves = pxr::UsdGeomBasisCurves::Define(
+        GlobalUsdStage::global_usd_stage, scratch_buffer_path);
+    pxr::UsdGeomImageable(curves).MakeInvisible();
 }
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

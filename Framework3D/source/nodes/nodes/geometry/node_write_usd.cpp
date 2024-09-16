@@ -1,4 +1,5 @@
 #include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/basisCurves.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
@@ -42,7 +43,6 @@ bool legal(const std::string& string)
 static void node_exec(ExeParams params)
 {
     auto global_params = params.get_global_params<GeomNodeGlobalParams>();
-    std::cout << global_params.prim_path.GetAsString();
 
     auto geometry = params.get_input<Geometry>("Geometry");
 
@@ -90,6 +90,12 @@ static void node_exec(ExeParams params)
         }
     }
     else if (curve) {
+        pxr::UsdGeomBasisCurves usdgeom =
+            pxr::UsdGeomBasisCurves::Define(stage, sdf_path);
+        if (usdgeom) {
+            copy_prim(curve->get_usd_curve().GetPrim(), usdgeom.GetPrim());
+            usdgeom.CreateDoubleSidedAttr().Set(true);
+        }
     }
 
     // Material and Texture

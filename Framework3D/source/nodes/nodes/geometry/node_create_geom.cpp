@@ -63,50 +63,47 @@ void node_create_circle_declare(NodeDeclarationBuilder &b)
 {
     b.add_input<decl::Int>("resolution").min(1).max(100).default_val(10);
     b.add_input<decl::Float>("radius").min(1).max(20);
+    b.add_output<decl::Geometry>("Circle");
 }
 
 void node_create_circle_exec(ExeParams params)
 {
+#include <cmath>  // 引入数学库，用于计算正弦和余弦
+
     int resolution = params.get_input<int>("resolution") + 1;
-    float size = params.get_input<float>("radius");
+    float radius = params.get_input<float>("radius");
     Geometry geometry;
     std::shared_ptr<CurveComponent> curve =
         std::make_shared<CurveComponent>(&geometry);
     geometry.attach_component(curve);
 
     pxr::VtArray<pxr::GfVec3f> points;
-    pxr::VtArray<pxr::GfVec2f> texcoord;
-    pxr::VtArray<int> faceVertexIndices;
-    pxr::VtArray<int> faceVertexCounts;
+
+    // 圆的圆心坐标，这里假设圆心在原点
+    pxr::GfVec3f center(0.0f, 0.0f, 0.0f);
+
+    // 计算每个点的角度步长
+    float angleStep = 2.0f * M_PI / resolution;
 
     for (int i = 0; i < resolution; ++i) {
-        for (int j = 0; j < resolution; ++j) {
-            float y = size * static_cast<float>(i) / (resolution - 1);
-            float z = size * static_cast<float>(j) / (resolution - 1);
-
-            float u = static_cast<float>(i) / (resolution - 1);
-            float v = static_cast<float>(j) / (resolution - 1);
-            points.push_back(pxr::GfVec3f(0, y, z));
-            texcoord.push_back(pxr::GfVec2f(u, v));
-        }
-    }
-
-    for (int i = 0; i < resolution - 1; ++i) {
-        for (int j = 0; j < resolution - 1; ++j) {
-            faceVertexCounts.push_back(4);
-            faceVertexIndices.push_back(i * resolution + j);
-            faceVertexIndices.push_back(i * resolution + j + 1);
-            faceVertexIndices.push_back((i + 1) * resolution + j + 1);
-            faceVertexIndices.push_back((i + 1) * resolution + j);
-        }
+        // 计算当前点的角度
+        float angle = i * angleStep;
+        // 计算当前点的坐标
+        pxr::GfVec3f point(
+            radius * std::cos(angle) + center[0],  // X坐标
+            radius * std::sin(angle) + center[1],  // Y坐标
+            center[2]                              // Z坐标保持不变
+        );
+        points.push_back(point);
     }
 
     curve->set_vertices(points);
-    curve->set_face_vertex_indices(faceVertexIndices);
-    curve->set_face_vertex_counts(faceVertexCounts);
-    curve->set_texcoords_array(texcoord);
+    curve->set_vert_count({ resolution });
 
-    params.set_output("Geometry", std::move(geometry));
+    curve->get_usd_curve().CreateWrapAttr(
+        pxr::VtValue(pxr::UsdGeomTokens->periodic));
+
+    params.set_output("Circle", std::move(geometry));
 }
 
 static void node_register()

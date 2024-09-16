@@ -3,6 +3,7 @@
 
 #include "GCore/Components.h"
 #include "GCore/GOP.h"
+#include "pxr/usd/usdGeom/basisCurves.h"
 #include "pxr/usd/usdGeom/curves.h"
 #include "pxr/usd/usdGeom/xform.h"
 
@@ -38,6 +39,19 @@ struct USTC_CG_API CurveComponent : public GeometryComponent {
         curves.CreateWidthsAttr().Set(width);
     }
 
+    pxr::VtArray<int> get_vert_count() const
+    {
+        pxr::VtArray<int> vert_count;
+        if (curves.GetCurveVertexCountsAttr())
+            curves.GetCurveVertexCountsAttr().Get(&vert_count);
+        return vert_count;
+    }
+
+    void set_vert_count(const pxr::VtArray<int>& vert_count)
+    {
+        curves.CreateCurveVertexCountsAttr().Set(vert_count);
+    }
+
     [[nodiscard]] pxr::VtArray<pxr::GfVec3f> get_display_color() const
     {
         pxr::VtArray<pxr::GfVec3f> displayColor;
@@ -51,8 +65,13 @@ struct USTC_CG_API CurveComponent : public GeometryComponent {
         curves.CreateDisplayColorAttr().Set(display_color);
     }
 
+    pxr::UsdGeomBasisCurves get_usd_curve() const
+    {
+        return curves;
+    }
+
    private:
-    pxr::UsdGeomCurves curves;
+    pxr::UsdGeomBasisCurves curves;
 
     GeometryComponentHandle copy(Geometry* operand) const override;
 };
