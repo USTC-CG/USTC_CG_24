@@ -154,6 +154,8 @@ def process_SDK(target):
     copytree_common_to_binaries("dxc/bin/x64", target=target)
     copytree_common_to_binaries("slang/prelude", dst="slang/prelude", target=target)
 
+    copytree_to_binaries("libtorch/lib", target=target)
+
     if os.name == "nt":
         copytree_common_to_binaries("slang/bin/windows-x64/release", target=target)
     else:

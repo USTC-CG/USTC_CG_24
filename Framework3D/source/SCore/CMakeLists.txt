@@ -1,6 +1,5 @@
 set(CPP_FILES 
 	SOP.cpp
-	SequencedComponent.cpp
 )
 add_library(SCore ${CPP_FILES})
 
