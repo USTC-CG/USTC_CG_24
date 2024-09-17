@@ -40,16 +40,16 @@ int main()
         auto list = bp::list(read_results);
         std::cout << len(list) << std::endl;
 
-        auto xyz = np::array(list[0]);
-        auto opacity = np::array(list[1]);
-        auto trbf_center = np::array(list[2]);
-        auto trbf_scale = np::array(list[3]);
-        auto motion = np::array(list[4]);
-        auto features_dc = np::array(list[5]);
-        auto scales = np::array(list[6]);
-        auto rots = np::array(list[7]);
-        auto omegas = np::array(list[8]);
-        auto fts = np::array(list[9]);
+        np::ndarray xyz = np::array(list[0]);
+        np::ndarray opacity = np::array(list[1]);
+        np::ndarray trbf_center = np::array(list[2]);
+        np::ndarray trbf_scale = np::array(list[3]);
+        np::ndarray motion = np::array(list[4]);
+        np::ndarray features_dc = np::array(list[5]);
+        np::ndarray scales = np::array(list[6]);
+        np::ndarray rots = np::array(list[7]);
+        np::ndarray omegas = np::array(list[8]);
+        np::ndarray fts = np::array(list[9]);
 
         print_array_info(xyz, "xyz");
         print_array_info(opacity, "opacity");
