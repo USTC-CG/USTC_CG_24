@@ -62,11 +62,10 @@ add_node_discovery(
   register_nodes 
 )
 
-message("shit ${nodes_generated}")
-
 add_library(nodes STATIC ${CPP_FILES} ${nodes_generated})
 
 add_library(nodes_cuda STATIC "${CUDA_FILES}")
+message("Torch has libraries: ${${TORCH_LIBRARIES}}")
 target_link_libraries(nodes_cuda PUBLIC "${TORCH_LIBRARIES}")
 target_link_libraries(nodes_cuda PUBLIC glm::glm-header-only)
 

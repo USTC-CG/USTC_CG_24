@@ -8,8 +8,7 @@
 #include "Nodes/node_register.h"
 #include "RCore/Backend.hpp"
 #include "nvrhi/utils.h"
-
-#include "cuda_rasterizer/forward.h"
+#include "rasterize_points.h"
 
 namespace USTC_CG::node_rasterize_gaussian_spheres {
 static void node_declare(NodeDeclarationBuilder& b)
@@ -40,6 +39,45 @@ static void node_exec(ExeParams params)
     auto output = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
     MARK_DESTROY_NVRHI_RESOURCE(m_CommandList);
+
+    torch::Tensor background;
+    torch::Tensor means3D;
+    torch::Tensor colors;
+    torch::Tensor opacity;
+    torch::Tensor scales;
+    torch::Tensor rotations;
+    float scale_modifier;
+    torch::Tensor cov3D_precomp;
+    torch::Tensor viewmatrix;
+    torch::Tensor projmatrix;
+    float tan_fovx;
+    float tan_fovy;
+    int image_height;
+    int image_width;
+    torch::Tensor sh;
+    int degree;
+    torch::Tensor campos;
+    bool prefiltered;
+
+    RasterizeGaussiansCUDA(
+        background,
+        means3D,
+        colors,
+        opacity,
+        scales,
+        rotations,
+        scale_modifier,
+        cov3D_precomp,
+        viewmatrix,
+        projmatrix,
+        tan_fovx,
+        tan_fovy,
+        image_height,
+        image_width,
+        sh,
+        degree,
+        campos,
+        prefiltered);
 
     params.set_output("Rasterized", output);
 }
