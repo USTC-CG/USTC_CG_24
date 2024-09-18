@@ -43,3 +43,5 @@ set(NVRHI_BUILD_SHARED ON CACHE INTERNAL "Override default shared build of nvrhi
 add_subdirectory(nvrhi)
 set_target_properties(nvrhi PROPERTIES ${OUTPUT_DIR})
 target_link_libraries(nvrhi PUBLIC NVAPI::NVAPI)
+
+add_subdirectory(glm)

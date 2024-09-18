@@ -14,6 +14,7 @@ option(USTC_CG_WITH_CUDA OFF)
 if(USTC_CG_WITH_CUDA)
 enable_language(CUDA)
 add_compile_definitions(USTC_CG_WITH_CUDA=1)
+set(CMAKE_CUDA_STANDARD 20)
 else()
 add_compile_definitions(USTC_CG_WITH_CUDA=0)
 endif()
@@ -26,6 +27,7 @@ set(CMAKE_CXX_STANDARD 20)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
 endif()
+set(CMAKE_CUDA_STANDARD 20)
 
 
 set(OUT_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Binaries/${CMAKE_BUILD_TYPE})
@@ -51,7 +53,6 @@ set(Imath_DIR SDK/${SDK_FOLDER}/Imath/lib/cmake/Imath)
 set(EMBREE_DIR SDK/common/embree/lib/cmake/embree-4.3.1) 
 set(Torch_DIR SDK/${SDK_FOLDER}/libtorch/share/cmake/Torch)
 find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 
 find_package(Python3 3.10 EXACT COMPONENTS Development Interpreter REQUIRED)
@@ -79,19 +80,11 @@ find_package(NVAPI REQUIRED)
 
 add_subdirectory(external)
 
-
-# Suppress warnings:
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-add_compile_options(/W3 /wd4100 /wd4996 /wd4819 /wd4267 /wd4244)
-add_compile_options(/wd4702 /wd4018 /wd4458 /wd4459 /wd4189)
-add_compile_options(/wd4305 /wd4456 /wd4312)
-add_compile_definitions(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
-add_compile_definitions(TBB_SUPPRESS_DEPRECATED_MESSAGES=1)
-
-
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/GCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/SCore)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/RCore)
+
+
 target_link_libraries(GCore PUBLIC "${TORCH_LIBRARIES}")
 target_link_libraries(SCore PUBLIC GCore)
 

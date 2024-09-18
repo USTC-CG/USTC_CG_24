@@ -1,8 +1,9 @@
-#include "Nodes/node_socket.hpp"
+#include "torch/torch.h"
 
 #include "Nodes/all_socket_types.hpp"
 #include "Nodes/node.hpp"
 #include "Nodes/node_register.h"
+#include "Nodes/node_socket.hpp"
 #include "RCore/Backend.hpp"
 #include "USTC_CG.h"
 #include "Utils/Macro/map.h"
@@ -194,8 +195,7 @@ static SocketTypeInfo* make_socket_type_Texture()
 
 static SocketTypeInfo* make_socket_type_Buffer()
 {
-    SocketTypeInfo* socket_type =
-        make_standard_socket_type(SocketType::Buffer);
+    SocketTypeInfo* socket_type = make_standard_socket_type(SocketType::Buffer);
     socket_type->cpp_type = entt::resolve<BufferHandle>();
     return socket_type;
 }
@@ -263,6 +263,14 @@ static SocketTypeInfo* make_socket_type_AnimatorSocket()
         make_standard_socket_type(SocketType::AnimatorSocket);
     socket_type->cpp_type =
         entt::resolve<std::shared_ptr<node_character_animation::Animator>>();
+    return socket_type;
+}
+
+static SocketTypeInfo* make_socket_type_TorchTensor()
+{
+    SocketTypeInfo* socket_type =
+        make_standard_socket_type(SocketType::TorchTensor);
+    socket_type->cpp_type = entt::resolve<torch::Tensor>();
     return socket_type;
 }
 

@@ -9,6 +9,8 @@
 #include "RCore/Backend.hpp"
 #include "nvrhi/utils.h"
 
+#include "cuda_rasterizer/forward.h"
+
 namespace USTC_CG::node_rasterize_gaussian_spheres {
 static void node_declare(NodeDeclarationBuilder& b)
 {
@@ -38,6 +40,8 @@ static void node_exec(ExeParams params)
     auto output = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
     MARK_DESTROY_NVRHI_RESOURCE(m_CommandList);
+
+    params.set_output("Rasterized", output);
 }
 
 static void node_register()

@@ -36,11 +36,24 @@ function(add_node_discovery
       ${DISCOVER_NODES_PATH}
   )
   set_source_files_properties(${output_file} PROPERTIES GENERATED TRUE)
-  add_library(${lib_name} STATIC ${output_file})
+  set(${lib_name} "${output_file}" PARENT_SCOPE)
 endfunction()
 
-file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
-file(GLOB_RECURSE NODE_FILES ${CMAKE_CURRENT_LIST_DIR}/nodes/*.cpp)
+file(GLOB_RECURSE 
+    CPP_FILES 
+    ${CMAKE_CURRENT_LIST_DIR}/*.cpp 
+)
+
+file(GLOB_RECURSE 
+    CUDA_FILES 
+    ${CMAKE_CURRENT_LIST_DIR}/*.cu
+)
+
+file(GLOB_RECURSE 
+    NODE_FILES 
+    ${CMAKE_CURRENT_LIST_DIR}/nodes/*.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/nodes/*.cu
+)
 
 add_node_discovery(
   nodes_generated
@@ -49,24 +62,29 @@ add_node_discovery(
   register_nodes 
 )
 
-add_library(nodes STATIC "${CPP_FILES}")
+message("shit ${nodes_generated}")
 
-target_link_libraries(nodes_generated nodes)
-target_link_libraries(nodes nodes_generated)
+add_library(nodes STATIC ${CPP_FILES} ${nodes_generated})
 
-target_link_libraries(nodes GCore RCore)
-target_link_libraries(nodes Eigen3::Eigen)
-target_link_libraries(nodes Python3::Python)
-target_link_libraries(nodes hioOpenVDB EnTT::EnTT)
-target_link_libraries(nodes hioOpenVDB)
-target_link_libraries(nodes nvrhi DXC::dxc)
+add_library(nodes_cuda STATIC "${CUDA_FILES}")
+target_link_libraries(nodes_cuda PUBLIC "${TORCH_LIBRARIES}")
+target_link_libraries(nodes_cuda PUBLIC glm::glm-header-only)
+
+
+target_link_libraries(nodes PUBLIC nodes_cuda)
+target_link_libraries(nodes PUBLIC GCore RCore)
+target_link_libraries(nodes PUBLIC Eigen3::Eigen)
+target_link_libraries(nodes PUBLIC Python3::Python)
+target_link_libraries(nodes PUBLIC hioOpenVDB EnTT::EnTT)
+target_link_libraries(nodes PUBLIC hioOpenVDB)
+target_link_libraries(nodes PUBLIC nvrhi DXC::dxc)
 
 target_include_directories(nodes PRIVATE ${CMAKE_CURRENT_LIST_DIR}/intern)
 target_include_directories(nodes PRIVATE ${PROJECT_SOURCE_DIR}/source/RCore/hd_USTC_CG_GL)
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(nodes OpenMP::OpenMP_CXX)
+    target_link_libraries(nodes PUBLIC OpenMP::OpenMP_CXX)
     message(STATUS "OpenMP found, building with it.")
 else()
     message(WARNING "OpenMP not found, building without it.")

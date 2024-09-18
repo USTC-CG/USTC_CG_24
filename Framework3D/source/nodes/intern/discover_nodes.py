@@ -46,7 +46,7 @@ function_to_generate = sys.argv[3]
 source_cpp_files = [
     os.path.join(source_root, path)
     for path in sys.argv[4:]
-    if path.endswith(".cpp")
+    if path.endswith(".cpp") or path.endswith(".cu")
 ]
 
 macro_name = "NOD_REGISTER_NODE"
