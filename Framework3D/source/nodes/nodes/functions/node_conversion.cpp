@@ -53,13 +53,17 @@ void node_exec_Texture_to_NumpyArray(ExeParams exe_params)
     nvrhi_device->executeCommandList(m_CommandList.Get());
 
     size_t pitch;
-    auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
+    auto mapped = nvrhi_device->mapStagingTexture(
+        staging, {}, nvrhi::CpuAccessMode::Read, &pitch);
 
     auto hd_format = HdFormat_from_nvrhi_format(handle->getDesc().format);
     for (int i = 0; i < handle->getDesc().height; ++i) {
-        auto copy_to_loc = arr.get_data() + i * width * HdDataSizeOfFormat(hd_format);
+        auto copy_to_loc =
+            arr.get_data() + i * width * HdDataSizeOfFormat(hd_format);
         memcpy(
-            copy_to_loc, (uint8_t*)mapped + i * pitch, width * pxr::HdDataSizeOfFormat(hd_format));
+            copy_to_loc,
+            (uint8_t*)mapped + i * pitch,
+            width * pxr::HdDataSizeOfFormat(hd_format));
     }
 
     nvrhi_device->unmapStagingTexture(staging);
@@ -91,33 +95,37 @@ void node_exec_NumpyArray_to_Texture(ExeParams exe_params)
 
     auto shape = np_array.get_shape();
     if (np_array.get_nd() != 3 || shape[2] != 4) {
-        throw std::runtime_error("Numpy array must have shape (height, width, 4).");
+        throw std::runtime_error(
+            "Numpy array must have shape (height, width, 4).");
     }
 
     auto width = shape[0];
     auto height = shape[1];
 
-    auto tex_desc = nvrhi::TextureDesc().setWidth(width).setHeight(height).setFormat(
-        nvrhi::Format::RGBA32_FLOAT);
+    auto tex_desc =
+        nvrhi::TextureDesc().setWidth(width).setHeight(height).setFormat(
+            nvrhi::Format::RGBA32_FLOAT);
 
     tex_desc.initialState = nvrhi::ResourceStates::CopyDest;
     tex_desc.keepInitialState = true;
     tex_desc.isUAV = true;
 
     auto texture = resource_allocator.create(tex_desc);
-    auto staging =
-        resource_allocator.create(StagingTextureDesc{ tex_desc }, nvrhi::CpuAccessMode::Write);
+    auto staging = resource_allocator.create(
+        StagingTextureDesc{ tex_desc }, nvrhi::CpuAccessMode::Write);
 
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
     auto nvrhi_device = resource_allocator.device;
 
     size_t pitch;
-    auto mapped = nvrhi_device->mapStagingTexture(staging, {}, nvrhi::CpuAccessMode::Write, &pitch);
+    auto mapped = nvrhi_device->mapStagingTexture(
+        staging, {}, nvrhi::CpuAccessMode::Write, &pitch);
 
     auto hd_format = HdFormat_from_nvrhi_format(tex_desc.format);
 
     for (int i = 0; i < height; ++i) {
-        auto copy_from_loc = np_array.get_data() + i * width * HdDataSizeOfFormat(hd_format);
+        auto copy_from_loc =
+            np_array.get_data() + i * width * HdDataSizeOfFormat(hd_format);
         memcpy(
             (uint8_t*)mapped + i * pitch,
             copy_from_loc,
@@ -138,6 +146,54 @@ void node_exec_NumpyArray_to_Texture(ExeParams exe_params)
     exe_params.set_output("Texture", texture);
 }
 
+void node_declare_NumpyArray_to_Buffer(NodeDeclarationBuilder& b)
+{
+    b.add_input<decl::NumpyArray>("NumpyArray");
+    b.add_output<decl::Buffer>("Buffer");
+}
+
+void node_exec_NumpyArray_to_Buffer(ExeParams params)
+{
+    auto np_array = params.get_input<bpn::ndarray>("NumpyArray");
+
+    if (np_array.get_dtype() != bpn::dtype::get_builtin<float>()) {
+        throw std::runtime_error("Numpy array must have dtype float.");
+    }
+
+    auto shape = np_array.get_shape();
+
+    auto byte_size = 1;
+
+    for (int i = 0; i < np_array.get_nd(); ++i) {
+        byte_size *= shape[i];
+    }
+
+    for (int i = 0; i < np_array.get_nd() - 1; ++i) {
+        assert(np_array.strides(i) > np_array.strides(i + 1));
+        // Make sure there are no surprises!
+    }
+
+    byte_size *= np_array.strides(-1);
+
+    auto buffer_desc =
+        nvrhi::BufferDesc()
+            .setByteSize(byte_size)
+            .setFormat(nvrhi::Format::R32_FLOAT)
+            .setCpuAccess(nvrhi::CpuAccessMode::Write);  // Just first use a
+                                                         // long float buffer
+
+    buffer_desc.initialState = nvrhi::ResourceStates::CopyDest;
+    buffer_desc.keepInitialState = true;
+
+    auto buffer = resource_allocator.create(buffer_desc);
+    auto nvrhi_device = resource_allocator.device;
+    auto mapped = nvrhi_device->mapBuffer(buffer, nvrhi::CpuAccessMode::Write);
+    memcpy(mapped, np_array.get_data(), byte_size);
+    nvrhi_device->unmapBuffer(buffer);
+
+    params.set_output("Buffer", buffer);
+}
+
 static void node_register()
 {
 #define CONVERSION(FROM, TO)                                                 \
@@ -153,11 +209,13 @@ static void node_register()
     ntype_##FROM##_to_##TO.conversion_to = SocketType::TO;                   \
     nodeRegisterType(&ntype_##FROM##_to_##TO);
 
-#define CONVERSION_TYPES Int_to_Float, Texture_to_NumpyArray, NumpyArray_to_Texture
+#define CONVERSION_TYPES \
+    Int_to_Float, Texture_to_NumpyArray, NumpyArray_to_Texture
 
     CONVERSION(Int, Float)
     CONVERSION(Texture, NumpyArray)
     CONVERSION(NumpyArray, Texture)
+    CONVERSION(NumpyArray, Buffer)
 }
 
 NOD_REGISTER_NODE(node_register)

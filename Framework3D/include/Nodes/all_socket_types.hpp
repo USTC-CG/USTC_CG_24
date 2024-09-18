@@ -3,7 +3,7 @@
 #include "USTC_CG.h"
 #define BASIC_SOCKET_TYPES Int, String, Float, Any
 
-#define STAGE_SOCKET_TYPES Layer, PyObj, NumpyArray, SocketGroup
+#define STAGE_SOCKET_TYPES Layer, PyObj, NumpyArray, TorchTensor, SocketGroup
 
 #define RENDER_SOCKET_TYPES \
     Lights, Camera, Texture, Meshes, Materials, AccelStruct, Buffer

@@ -16,6 +16,8 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::Camera>("Camera");
     b.add_input<decl::Meshes>("Meshes");
     b.add_input<decl::Materials>("Materials");
+
+    b.add_input<decl::Any>("Variable");
 }
 
 static void node_exec(ExeParams params)
@@ -31,7 +33,8 @@ static void node_exec(ExeParams params)
     }
 
     for (auto&& light : lights) {
-        std::cout << light->Get(HdTokens->transform).Cast<GfMatrix4d>() << std::endl;
+        std::cout << light->Get(HdTokens->transform).Cast<GfMatrix4d>()
+                  << std::endl;
     }
 
     for (auto&& mesh : meshes) {
@@ -41,9 +44,11 @@ static void node_exec(ExeParams params)
             std::cout << name.GetString() << std::endl;
         }
         logging(
-            "Mesh contained material: " + materials[mesh->GetMaterialId()]->GetId().GetString(),
+            "Mesh contained material: " +
+                materials[mesh->GetMaterialId()]->GetId().GetString(),
             Info);
     }
+
 }
 
 static void node_register()

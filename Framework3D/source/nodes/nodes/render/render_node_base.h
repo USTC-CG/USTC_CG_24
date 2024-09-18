@@ -2,6 +2,7 @@
 #include "Nodes/node.hpp"
 #include "Nodes/node_exec.hpp"
 #include "Nodes/socket_types/render_socket_types.hpp"
+#include "Nodes/socket_types/stage_socket_types.hpp"
 #include "camera.h"
 #include "rich_type_buffer.hpp"
 #include "node_global_params.h"
