@@ -31,3 +31,6 @@
 [submodule "Framework3D/external/nvapi"]
 	path = Framework3D/external/nvapi
 	url = https://github.com/NVIDIA/nvapi.git
+[submodule "Framework3D/external/glm"]
+	path = Framework3D/external/glm
+	url = https://github.com/g-truc/glm.git
