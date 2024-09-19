@@ -80,18 +80,19 @@ static void node_exec(ExeParams params)
         storage.rots = np::array(list[7]).copy();
         storage.omegas = np::array(list[8]).copy();
         storage.fts = np::array(list[9]).copy();
+        storage.initialized = true;
     }
 
     params.set_output("xyz", storage.xyz);
     params.set_output("opacity", storage.opacity);
-     params.set_output("trbf_center", storage.trbf_center);
-     params.set_output("trbf_scale", storage.trbf_scale);
-     params.set_output("motion", storage.motion);
-     params.set_output("features_dc", storage.features_dc);
-     params.set_output("scales", storage.scales);
-     params.set_output("rots", storage.rots);
-     params.set_output("omegas", storage.omegas);
-     params.set_output("fts", storage.fts);
+    params.set_output("trbf_center", storage.trbf_center);
+    params.set_output("trbf_scale", storage.trbf_scale);
+    params.set_output("motion", storage.motion);
+    params.set_output("features_dc", storage.features_dc);
+    params.set_output("scales", storage.scales);
+    params.set_output("rots", storage.rots);
+    params.set_output("omegas", storage.omegas);
+    params.set_output("fts", storage.fts);
 }
 
 static void node_register()

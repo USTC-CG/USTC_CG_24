@@ -1,4 +1,6 @@
-﻿#include "../render/resource_allocator_instance.hpp"
+﻿#include <torch/torch.h>
+
+#include "../render/resource_allocator_instance.hpp"
 #include "NODES_FILES_DIR.h"
 #include "Nodes/node.hpp"
 #include "Nodes/node_declare.hpp"
@@ -194,6 +196,57 @@ void node_exec_NumpyArray_to_Buffer(ExeParams params)
     params.set_output("Buffer", buffer);
 }
 
+void node_declare_NumpyArray_to_TorchTensor(NodeDeclarationBuilder& b)
+{
+    b.add_input<decl::NumpyArray>("arr");
+    b.add_output<decl::TorchTensor>("tensor");
+}
+
+inline torch::Dtype convert_dtype(const boost::python::numpy::dtype& np_dtype)
+{
+    if (np_dtype == boost::python::numpy::dtype::get_builtin<float>()) {
+        return torch::kFloat32;
+    }
+    else if (np_dtype == boost::python::numpy::dtype::get_builtin<double>()) {
+        return torch::kFloat64;
+    }
+    else if (np_dtype == boost::python::numpy::dtype::get_builtin<int>()) {
+        return torch::kInt32;
+    }
+    else if (np_dtype == boost::python::numpy::dtype::get_builtin<long>()) {
+        return torch::kInt64;
+    }
+    else {
+        throw std::invalid_argument("Unsupported numpy dtype");
+    }
+}
+
+void node_exec_NumpyArray_to_TorchTensor(ExeParams params)
+{
+    namespace np = boost::python::numpy;
+
+    // Get the input numpy array
+    np::ndarray arr = params.get_input<np::ndarray>("arr");
+
+    // Get the shape of the numpy array
+    Py_intptr_t const* shape = arr.get_shape();
+    int ndim = arr.get_nd();
+
+    // Convert the shape to a vector
+    std::vector<int64_t> tensor_shape(shape, shape + ndim);
+
+    // Get the data type of the numpy array
+    torch::Dtype dtype = convert_dtype(arr.get_dtype());
+
+    at::TensorOptions options;
+    options.dtype(dtype).device(torch::kCUDA).device_index(0);
+    // Create a torch tensor from the numpy array data
+    torch::Tensor tensor = torch::from_blob(
+        arr.get_data(), torch::IntArrayRef(tensor_shape), options);
+    // Set the tensor as output
+    params.set_output("tensor", tensor);
+}
+
 static void node_register()
 {
 #define CONVERSION(FROM, TO)                                                 \
@@ -216,6 +269,7 @@ static void node_register()
     CONVERSION(Texture, NumpyArray)
     CONVERSION(NumpyArray, Texture)
     CONVERSION(NumpyArray, Buffer)
+    CONVERSION(NumpyArray, TorchTensor)
 }
 
 NOD_REGISTER_NODE(node_register)

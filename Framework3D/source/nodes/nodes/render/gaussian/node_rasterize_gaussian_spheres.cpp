@@ -14,6 +14,15 @@ namespace USTC_CG::node_rasterize_gaussian_spheres {
 static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Buffer>("xyz");
+
+    b.add_input<decl::TorchTensor>("background");
+    b.add_input<decl::TorchTensor>("means3D");
+    b.add_input<decl::TorchTensor>("colors");
+    b.add_input<decl::TorchTensor>("opacity");
+    b.add_input<decl::TorchTensor>("scales");
+    b.add_input<decl::TorchTensor>("rotations");
+    b.add_input<decl::TorchTensor>("cov3D_precomp");
+
     b.add_output<decl::Texture>("Rasterized");
 }
 
@@ -39,7 +48,8 @@ static void node_exec(ExeParams params)
     auto output = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
     MARK_DESTROY_NVRHI_RESOURCE(m_CommandList);
-
+    params.set_output("Rasterized", output);
+    return;
     torch::Tensor background;
     torch::Tensor means3D;
     torch::Tensor colors;
@@ -48,6 +58,7 @@ static void node_exec(ExeParams params)
     torch::Tensor rotations;
     torch::Tensor cov3D_precomp;
 
+    
     torch::Tensor sh;
     int degree;
     float scale_modifier;
@@ -83,8 +94,6 @@ static void node_exec(ExeParams params)
         degree,
         campos,
         prefiltered);
-
-    params.set_output("Rasterized", output);
 }
 
 static void node_register()

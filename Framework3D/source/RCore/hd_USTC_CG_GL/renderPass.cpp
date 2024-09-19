@@ -53,7 +53,8 @@ Hd_USTC_CG_RenderPass::~Hd_USTC_CG_RenderPass()
     std::cout << "Destroying renderPass" << std::endl;
 }
 
-static GfRect2i _GetDataWindow(const HdRenderPassStateSharedPtr& renderPassState)
+static GfRect2i _GetDataWindow(
+    const HdRenderPassStateSharedPtr& renderPassState)
 {
     const CameraUtilFraming& framing = renderPassState->GetFraming();
     if (framing.IsValid()) {
@@ -69,7 +70,6 @@ void Hd_USTC_CG_RenderPass::_Execute(
     const HdRenderPassStateSharedPtr& renderPassState,
     const TfTokenVector& renderTags)
 {
-
     assert(glGetError() == GL_NO_ERROR);
 
     int currentSceneVersion = _sceneVersion->load();
@@ -97,7 +97,8 @@ void Hd_USTC_CG_RenderPass::_Execute(
     const GfRect2i dataWindow = _GetDataWindow(renderPassState);
     assert(glGetError() == GL_NO_ERROR);
 
-    if (_viewMatrix != view || _projMatrix != proj || _dataWindow != dataWindow) {
+    if (_viewMatrix != view || _projMatrix != proj ||
+        _dataWindow != dataWindow) {
         _viewMatrix = view;
         _projMatrix = proj;
         _dataWindow = dataWindow;
@@ -111,7 +112,8 @@ void Hd_USTC_CG_RenderPass::_Execute(
     // Determine whether we need to update the renderer AOV bindings.
     assert(glGetError() == GL_NO_ERROR);
 
-    HdRenderPassAovBindingVector aovBindings = renderPassState->GetAovBindings();
+    HdRenderPassAovBindingVector aovBindings =
+        renderPassState->GetAovBindings();
     if (_aovBindings != aovBindings) {
         _aovBindings = aovBindings;
         _renderThread->StopRender();
@@ -136,17 +138,17 @@ void Hd_USTC_CG_RenderPass::_Execute(
         _renderer->MarkAovBuffersUnconverged();
         _renderer->Clear();
         _renderer->Render(nullptr);
-        //needStartRender = false;
+        // needStartRender = false;
         //_renderThread->StartRender();
     }
-    
 }
 
 bool Hd_USTC_CG_RenderPass::IsConverged() const
 {
     // Otherwise, check the convergence of all attachments.
     for (size_t i = 0; i < _aovBindings.size(); ++i) {
-        if (_aovBindings[i].renderBuffer && !_aovBindings[i].renderBuffer->IsConverged()) {
+        if (_aovBindings[i].renderBuffer &&
+            !_aovBindings[i].renderBuffer->IsConverged()) {
             return false;
         }
     }
