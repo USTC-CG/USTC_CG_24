@@ -23,6 +23,7 @@ get_relative_paths(optix optixHeaders)
 
 pxr_plugin(${PXR_PACKAGE}
    LIBRARIES
+        Python3::Python
         plug
         tf
         vt

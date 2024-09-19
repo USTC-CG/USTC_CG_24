@@ -8,12 +8,12 @@
  *
  * For inquiries contact  george.drettakis@inria.fr
  */
+#include "rasterize_points.h"
 
 #include <cuda_runtime_api.h>
 #include <math.h>
 #include <stdio.h>
 #include <torch/extension.h>
-#include <torch/torch.h>
 
 #include <cstdio>
 #include <fstream>
@@ -26,7 +26,6 @@
 
 #include "cuda_rasterizer/config.h"
 #include "cuda_rasterizer/rasterizer.h"
-#include "rasterize_points.h"
 
 std::function<char*(size_t N)> resizeFunctional(torch::Tensor& t)
 {

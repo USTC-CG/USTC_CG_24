@@ -10,8 +10,8 @@
  */
 
 #pragma once
+#define Py_BUILD_CORE_BUILTIN
 #include <torch/extension.h>
-#include <torch/torch.h>
 
 #include <cstdio>
 #include <string>

@@ -68,9 +68,11 @@ add_library(nodes_cuda STATIC "${CUDA_FILES}")
 message("Torch has libraries: ${${TORCH_LIBRARIES}}")
 target_link_libraries(nodes_cuda PUBLIC "${TORCH_LIBRARIES}")
 target_link_libraries(nodes_cuda PUBLIC glm::glm-header-only)
+target_link_libraries(nodes_cuda PUBLIC Python3::Python)
 
 
 target_link_libraries(nodes PUBLIC nodes_cuda)
+target_link_libraries(nodes PUBLIC Python3::Python)
 target_link_libraries(nodes PUBLIC GCore RCore)
 target_link_libraries(nodes PUBLIC Eigen3::Eigen)
 target_link_libraries(nodes PUBLIC Python3::Python)

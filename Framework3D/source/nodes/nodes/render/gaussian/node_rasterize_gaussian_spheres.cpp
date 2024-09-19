@@ -46,20 +46,25 @@ static void node_exec(ExeParams params)
     torch::Tensor opacity;
     torch::Tensor scales;
     torch::Tensor rotations;
-    float scale_modifier;
     torch::Tensor cov3D_precomp;
+
+    torch::Tensor sh;
+    int degree;
+    float scale_modifier;
+
+    bool prefiltered = false;
+
+    // Calculated with the camera params
     torch::Tensor viewmatrix;
     torch::Tensor projmatrix;
+    torch::Tensor campos;
+
     float tan_fovx;
     float tan_fovy;
     int image_height;
     int image_width;
-    torch::Tensor sh;
-    int degree;
-    torch::Tensor campos;
-    bool prefiltered;
 
-    RasterizeGaussiansCUDA(
+    auto results = RasterizeGaussiansCUDA(
         background,
         means3D,
         colors,
