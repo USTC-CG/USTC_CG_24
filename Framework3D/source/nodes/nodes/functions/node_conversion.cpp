@@ -1,4 +1,7 @@
-﻿#include <torch/torch.h>
+﻿#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <d3d12.h>
+#include <torch/torch.h>
 
 #include "../render/resource_allocator_instance.hpp"
 #include "NODES_FILES_DIR.h"
@@ -8,6 +11,7 @@
 #include "Nodes/socket_types/render_socket_types.hpp"
 #include "Nodes/socket_types/stage_socket_types.hpp"
 #include "RCore/Backend.hpp"
+#include "Utils/CUDA/CUDAException.h"
 #include "boost/python/numpy.hpp"
 #include "func_node_base.h"
 #include "nvrhi/utils.h"
@@ -243,8 +247,468 @@ void node_exec_NumpyArray_to_TorchTensor(ExeParams params)
     // Create a torch tensor from the numpy array data
     torch::Tensor tensor = torch::from_blob(
         arr.get_data(), torch::IntArrayRef(tensor_shape), options);
+
     // Set the tensor as output
     params.set_output("tensor", tensor);
+}
+
+// Here the resourcetype could be texture or buffer now.
+template<typename ResourceType>
+HANDLE getSharedApiHandle(nvrhi::IDevice* device, ResourceType* texture_handle)
+{
+    return texture_handle->getNativeObject(nvrhi::ObjectTypes::SharedHandle);
+}
+
+void FetchD3DMemory(
+    nvrhi::IResource* resource_handle,
+    nvrhi::IDevice* device,
+    size_t& actualSize,
+    HANDLE sharedHandle,
+    cudaExternalMemoryHandleDesc& externalMemoryHandleDesc)
+{
+#ifdef _WIN64
+    ID3D12Resource* resource =
+        resource_handle->getNativeObject(nvrhi::ObjectTypes::D3D12_Resource);
+    ID3D12Device* native_device =
+        device->getNativeObject(nvrhi::ObjectTypes::D3D12_Device);
+
+    D3D12_RESOURCE_ALLOCATION_INFO d3d12ResourceAllocationInfo;
+
+    D3D12_RESOURCE_DESC texture_desc = resource->GetDesc();
+
+    d3d12ResourceAllocationInfo =
+        native_device->GetResourceAllocationInfo(0, 1, &texture_desc);
+    actualSize = d3d12ResourceAllocationInfo.SizeInBytes;
+
+    externalMemoryHandleDesc.type = cudaExternalMemoryHandleTypeD3D12Resource;
+    externalMemoryHandleDesc.handle.win32.handle = sharedHandle;
+    externalMemoryHandleDesc.size = actualSize;
+    externalMemoryHandleDesc.flags = cudaExternalMemoryDedicated;
+#else
+    throw std::runtime_error("D3D12 in Windows only.");
+#endif
+}
+
+cudaExternalMemory_t FetchExternalTextureMemory(
+    nvrhi::ITexture* image_handle,
+    nvrhi::IDevice* device,
+    size_t& actualSize,
+    HANDLE sharedHandle)
+{
+    cudaExternalMemoryHandleDesc externalMemoryHandleDesc;
+    memset(&externalMemoryHandleDesc, 0, sizeof(externalMemoryHandleDesc));
+
+    if (device->getGraphicsAPI() == nvrhi::GraphicsAPI::D3D12) {
+        FetchD3DMemory(
+            image_handle,
+            device,
+            actualSize,
+            sharedHandle,
+            externalMemoryHandleDesc);
+    }
+
+    cudaExternalMemory_t externalMemory;
+    CUDA_CHECK(
+        cudaImportExternalMemory(&externalMemory, &externalMemoryHandleDesc));
+    return externalMemory;
+}
+
+struct BitInformation {
+    int redBits;
+    int greenBits;
+    int blueBits;
+    int alphaBits;
+    int depthBits;
+    int stencilBits;
+};
+
+static std::unordered_map<nvrhi::Format, BitInformation> formatBitsInfo = {
+    { nvrhi::Format::UNKNOWN,
+      {
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R8_UINT,
+      {
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG8_UINT,
+      {
+          8,
+          8,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG8_UNORM,
+      {
+          8,
+          8,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R16_UINT,
+      {
+          16,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R16_UNORM,
+      {
+          16,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R16_FLOAT,
+      {
+          16,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA8_UNORM,
+      {
+          8,
+          8,
+          8,
+          8,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA8_SNORM,
+      {
+          8,
+          8,
+          8,
+          8,
+          0,
+          0,
+      } },
+    { nvrhi::Format::BGRA8_UNORM,
+      {
+          8,
+          8,
+          8,
+          8,
+          0,
+          0,
+      } },
+    { nvrhi::Format::SRGBA8_UNORM,
+      {
+          8,
+          8,
+          8,
+          8,
+          0,
+          0,
+      } },
+    { nvrhi::Format::SBGRA8_UNORM,
+      {
+          8,
+          8,
+          8,
+          8,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R10G10B10A2_UNORM,
+      {
+          10,
+          10,
+          10,
+          2,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R11G11B10_FLOAT,
+      {
+          11,
+          11,
+          10,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG16_UINT,
+      {
+          16,
+          16,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG16_FLOAT,
+      {
+          16,
+          16,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R32_UINT,
+      {
+          32,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::R32_FLOAT,
+      {
+          32,
+          0,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA16_FLOAT,
+      {
+          16,
+          16,
+          16,
+          16,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA16_UNORM,
+      {
+          16,
+          16,
+          16,
+          16,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA16_SNORM,
+      {
+          16,
+          16,
+          16,
+          16,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG32_UINT,
+      {
+          32,
+          32,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RG32_FLOAT,
+      {
+          32,
+          32,
+          0,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGB32_UINT,
+      {
+          32,
+          32,
+          32,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGB32_FLOAT,
+      {
+          32,
+          32,
+          32,
+          0,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA32_UINT,
+      {
+          32,
+          32,
+          32,
+          32,
+          0,
+          0,
+      } },
+    { nvrhi::Format::RGBA32_FLOAT,
+      {
+          32,
+          32,
+          32,
+          32,
+          0,
+          0,
+      } }
+};
+bool importTextureToMipmappedArray(
+    nvrhi::ITexture* image_handle,
+    cudaMipmappedArray_t& mipmappedArray,
+    uint32_t cudaUsageFlags,
+    nvrhi::IDevice* device)
+{
+    HANDLE sharedHandle = getSharedApiHandle(device, image_handle);
+    if (sharedHandle == NULL) {
+        throw std::runtime_error(
+            "FalcorCUDA::importTextureToMipmappedArray - texture shared handle "
+            "creation failed");
+        return false;
+    }
+
+    size_t actualSize;
+
+    cudaExternalMemory_t externalMemory = FetchExternalTextureMemory(
+        image_handle, device, actualSize, sharedHandle);
+
+    cudaExternalMemoryMipmappedArrayDesc mipDesc;
+    memset(&mipDesc, 0, sizeof(mipDesc));
+
+    nvrhi::Format format = image_handle->getDesc().format;
+    mipDesc.formatDesc.x = formatBitsInfo[format].redBits;
+    mipDesc.formatDesc.y = formatBitsInfo[format].greenBits;
+    mipDesc.formatDesc.z = formatBitsInfo[format].blueBits;
+    mipDesc.formatDesc.w = formatBitsInfo[format].alphaBits;
+    mipDesc.formatDesc.f =
+        (nvrhi::getFormatInfo(format).kind == nvrhi::FormatKind::Float)
+            ? cudaChannelFormatKindFloat
+            : cudaChannelFormatKindUnsigned;
+
+    mipDesc.extent.depth = 0;
+    mipDesc.extent.width = image_handle->getDesc().width;
+    mipDesc.extent.height = image_handle->getDesc().height;
+    mipDesc.flags = cudaUsageFlags;
+    mipDesc.numLevels = 1;
+    mipDesc.offset = 0;
+
+    CUDA_CHECK(cudaExternalMemoryGetMappedMipmappedArray(
+        &mipmappedArray, externalMemory, &mipDesc));
+
+    // CloseHandle(sharedHandle);
+    return true;
+}
+
+bool importTextureToBuffer(
+    nvrhi::ITexture* image_handle,
+    void*& devPtr,
+    uint32_t cudaUsageFlags,
+    nvrhi::IDevice* device)
+{
+    HANDLE sharedHandle = getSharedApiHandle(device, image_handle);
+    if (sharedHandle == NULL) {
+        throw std::runtime_error(
+            "FalcorCUDA::importTextureToMipmappedArray - texture shared handle "
+            "creation failed");
+        return false;
+    }
+
+    size_t actualSize;
+
+    cudaExternalMemory_t externalMemory = FetchExternalTextureMemory(
+        image_handle, device, actualSize, sharedHandle);
+
+    cudaExternalMemoryBufferDesc externalMemBufferDesc;
+    memset(&externalMemBufferDesc, 0, sizeof(externalMemBufferDesc));
+
+    externalMemBufferDesc.offset = 0;
+    externalMemBufferDesc.size = actualSize;
+    externalMemBufferDesc.flags = cudaUsageFlags;
+
+    CUDA_CHECK(cudaExternalMemoryGetMappedBuffer(
+        &devPtr, externalMemory, &externalMemBufferDesc));
+
+    return true;
+}
+
+CUdeviceptr mapTextureToCUDABuffer(
+    nvrhi::ITexture* pTex,
+    uint32_t cudaUsageFlags,
+    nvrhi::IDevice* device)
+{
+    // Create a mipmapped array from the texture
+
+    void* devicePtr;
+    if (!importTextureToBuffer(pTex, devicePtr, cudaUsageFlags, device)) {
+        throw std::runtime_error("Failed to import texture into a buffer");
+    }
+
+    return (CUdeviceptr)devicePtr;
+}
+
+void node_declare_TorchTensor_to_Texture(NodeDeclarationBuilder& b)
+{
+    b.add_input<decl::TorchTensor>("tensor");
+    b.add_output<decl::Texture>("texture");
+}
+
+void node_exec_TorchTensor_to_Texture(ExeParams exe_params)
+{
+    auto tensor = exe_params.get_input<torch::Tensor>("tensor");
+
+    if (tensor.dtype() != torch::kFloat) {
+        throw std::runtime_error("Numpy array must have dtype float.");
+    }
+
+    auto shape = tensor.sizes();
+    if (tensor.sizes().size() != 3 || shape[2] != 4) {
+        throw std::runtime_error(
+            "Numpy array must have shape (height, width, 4).");
+    }
+
+    auto width = shape[0];
+    auto height = shape[1];
+
+    auto tex_desc =
+        nvrhi::TextureDesc()
+            .setWidth(width)
+            .setHeight(height)
+            .setFormat(nvrhi::Format::RGBA32_FLOAT)
+            .setMipLevels(1)
+            .setSharedResourceFlags(nvrhi::SharedResourceFlags::Shared);
+
+    tex_desc.initialState = nvrhi::ResourceStates::CopyDest;
+    tex_desc.keepInitialState = true;
+    tex_desc.isUAV = true;
+
+    auto texture = resource_allocator.create(tex_desc);
+
+    auto device = resource_allocator.device;
+
+    auto cuda_ptr = mapTextureToCUDABuffer(texture, 0, device);
+    auto tensor_ptr = tensor.data_ptr();
+
+    cudaMemcpy(
+        (void*)cuda_ptr,
+        tensor.data_ptr(),
+        width * height * 4 * sizeof(float),
+        cudaMemcpyDeviceToDevice);
+
+    exe_params.set_output("texture", texture);
 }
 
 static void node_register()
@@ -270,6 +734,7 @@ static void node_register()
     CONVERSION(NumpyArray, Texture)
     CONVERSION(NumpyArray, Buffer)
     CONVERSION(NumpyArray, TorchTensor)
+    CONVERSION(TorchTensor, Texture)
 }
 
 NOD_REGISTER_NODE(node_register)

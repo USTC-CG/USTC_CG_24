@@ -23,7 +23,7 @@ static void node_declare(NodeDeclarationBuilder& b)
     b.add_input<decl::TorchTensor>("rotations");
     b.add_input<decl::TorchTensor>("cov3D_precomp");
 
-    b.add_output<decl::Texture>("Rasterized");
+    b.add_output<decl::TorchTensor>("Rasterized");
 }
 
 namespace bp = boost::python;
@@ -45,9 +45,23 @@ static void node_exec(ExeParams params)
     output_desc.keepInitialState = true;
     output_desc.isUAV = true;
 
-    auto output = resource_allocator.create(output_desc);
+    // auto output = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
     MARK_DESTROY_NVRHI_RESOURCE(m_CommandList);
+
+    at::TensorOptions option =
+        at::TensorOptions().device(torch::kCUDA).dtype(torch::kFloat);
+
+    auto color = torch::ones({ 4 }, std::nullopt, option);
+    color[0] = 0.8;
+    color[1] = 0.5;
+    color[2] = 0.3;
+    color[3] = 1.0;
+
+    auto output =
+        torch::zeros({ size[0], size[1], 4 }, std::nullopt, option) + color;
+
+    assert(output.is_cuda());
     params.set_output("Rasterized", output);
     return;
     torch::Tensor background;
@@ -58,7 +72,6 @@ static void node_exec(ExeParams params)
     torch::Tensor rotations;
     torch::Tensor cov3D_precomp;
 
-    
     torch::Tensor sh;
     int degree;
     float scale_modifier;
