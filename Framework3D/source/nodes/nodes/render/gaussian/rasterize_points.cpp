@@ -132,7 +132,7 @@ RasterizeGaussiansCUDA(
         geomBuffer,
         binningBuffer,
         imgBuffer,
-        out_depth);
+        out_depth); 
 }
 
 std::tuple<

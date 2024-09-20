@@ -64,11 +64,14 @@ add_node_discovery(
 
 add_library(nodes STATIC ${CPP_FILES} ${nodes_generated})
 
-add_library(nodes_cuda STATIC "${CUDA_FILES}")
+add_library(nodes_cuda SHARED "${CUDA_FILES}")
 message("Torch has libraries: ${${TORCH_LIBRARIES}}")
 target_link_libraries(nodes_cuda PUBLIC "${TORCH_LIBRARIES}")
 target_link_libraries(nodes_cuda PUBLIC glm::glm-header-only)
 target_link_libraries(nodes_cuda PUBLIC Python3::Python)
+target_include_directories(nodes_cuda PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_options(nodes_cuda PRIVATE -DUSTC_CG_BUILD_MODULE=1)
+set_target_properties(nodes_cuda PROPERTIES ${OUTPUT_DIR})
 
 
 target_link_libraries(nodes PUBLIC nodes_cuda)

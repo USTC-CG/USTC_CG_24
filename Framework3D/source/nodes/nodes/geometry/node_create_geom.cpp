@@ -125,13 +125,13 @@ void node_create_spiral_exec(ExeParams params)
     pxr::VtArray<pxr::GfVec3f> points;
 
     float angleStep = circleCount * 2.0f * M_PI / resolution;
-    float radiusIncrement = (R2 - R1) / (circleCount * M_PI * R1);
-    float heightIncrement = height / (circleCount * M_PI * R1);
+    float radiusIncrement = (R2 - R1) / resolution;
+    float heightIncrement = height / resolution;
 
     for (int i = 0; i < resolution; ++i) {
         float angle = i * angleStep;
-        float radius = R1 + radiusIncrement * (angle - M_PI);
-        float z = heightIncrement * (angle - M_PI);
+        float radius = R1 + radiusIncrement * i;
+        float z = heightIncrement * i;
         pxr::GfVec3f point(
             radius * std::cos(angle), radius * std::sin(angle), z);
         points.push_back(point);
