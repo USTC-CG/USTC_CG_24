@@ -88,7 +88,7 @@ static void node_exec(ExeParams params)
     int image_height;
     int image_width;
 
-    auto results = RasterizeGaussiansCUDA(
+    auto result = RasterizeGaussiansCUDA(
         background,
         means3D,
         colors,
