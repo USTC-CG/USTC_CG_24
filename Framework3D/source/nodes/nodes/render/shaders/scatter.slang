@@ -2,8 +2,8 @@
 // with the color, write the color to a texture with the specified id.
 
 // Input buffers
-Buffer<float4> inputColor : register(t0);
-Buffer<uint2> inputPixelID : register(t1);
+StructuredBuffer<float4> inputColor : register(t0);
+StructuredBuffer<uint2> inputPixelID : register(t1);
 
 // Output texture
 RWTexture2D<float4> outputTexture : register(u0);

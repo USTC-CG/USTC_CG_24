@@ -38,7 +38,8 @@ static void node_exec(ExeParams params)
         ShaderType::Compute,
         "shaders/scatter.slang",
         binding_layout_desc,
-        error_string);
+        error_string,
+        { ShaderMacro{ "SLANG_HLSL_ENABLE_NVAPI", "1" } });
 
     auto binding_layout = resource_allocator.create(binding_layout_desc[0]);
     MARK_DESTROY_NVRHI_RESOURCE(binding_layout);
@@ -46,9 +47,9 @@ static void node_exec(ExeParams params)
     // BindingSet and BindingSetLayout
     BindingSetDesc binding_set_desc;
     binding_set_desc.bindings = {
-        nvrhi::BindingSetItem::TypedBuffer_SRV(0, eval_buffer),
-        nvrhi::BindingSetItem::TypedBuffer_SRV(1, pixel_target_buffer),
-        nvrhi::BindingSetItem::Texture_UAV(2, source_texture)
+        nvrhi::BindingSetItem::StructuredBuffer_SRV(0, eval_buffer),
+        nvrhi::BindingSetItem::StructuredBuffer_SRV(1, pixel_target_buffer),
+        nvrhi::BindingSetItem::Texture_UAV(0, source_texture)
     };
 
     auto binding_set =
@@ -58,13 +59,10 @@ static void node_exec(ExeParams params)
         // Handle error
         return;
     }
-    auto bindingLayout = resource_allocator.create(binding_layout_desc[0]);
-    MARK_DESTROY_NVRHI_RESOURCE(bindingLayout);
-    ;
     // Execute the shader
     ComputePipelineDesc pipeline_desc;
     pipeline_desc.CS = compute_shader;
-    pipeline_desc.bindingLayouts = { bindingLayout };
+    pipeline_desc.bindingLayouts = { binding_layout };
     auto pipeline = resource_allocator.create(pipeline_desc);
     if (!pipeline) {
         // Handle error

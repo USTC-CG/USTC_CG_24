@@ -37,16 +37,26 @@ static void node_exec(ExeParams params)
     // The Eval, Pixel Target together should be the same size, and should
     // together be able to store the result of the material evaluation
 
-    // 'Sample' should be like {Next RayDesc, Weight}
+    auto buffer_desc = BufferDesc{}
+                           .setByteSize(length * sizeof(pxr::GfVec2i))
+                           .setStructStride(sizeof(pxr::GfVec2i))
+                           .setKeepInitialState(true)
+                           .setInitialState(ResourceStates::ShaderResource);
+    auto pixel_target_buffer = resource_allocator.create(buffer_desc);
+
+    buffer_desc.setByteSize(length * sizeof(pxr::GfVec4f))
+        .setStructStride(sizeof(pxr::GfVec4f));
+    auto eval_buffer = resource_allocator.create(buffer_desc);
+
+    // 'Sample' should be like {NextRayDesc, Weight}
+    buffer_desc.setByteSize(length * (sizeof(RayDesc) + sizeof(float)))
+        .setStructStride(sizeof(RayDesc) + sizeof(float));
+    auto sample_buffer = resource_allocator.create(buffer_desc);
 
     // 'Pdf Should be just like float...'
-
-    // Should this be a ray tracing pipeline or compute pipeline? Depending on:
-    // do we need the reordering function here?
-
-    // Yes!
-
-    // So it should be a ray tracing pipeline.
+    buffer_desc.setByteSize(length * sizeof(float))
+        .setStructStride(sizeof(float));
+    auto pdf_buffer = resource_allocator.create(buffer_desc);
 
     // Build the raytracing pipeline.
 
@@ -62,6 +72,7 @@ static void node_exec(ExeParams params)
     shader_compile_desc.shaderType = nvrhi::ShaderType::AllRayTracing;
 
     auto raytrace_compiled = resource_allocator.create(shader_compile_desc);
+    MARK_DESTROY_NVRHI_RESOURCE(raytrace_compiled);
 
     if (raytrace_compiled->get_error_string().empty()) {
         ShaderDesc shader_desc;
@@ -97,10 +108,12 @@ static void node_exec(ExeParams params)
         globalBindingLayoutDesc.visibility = nvrhi::ShaderType::All;
         globalBindingLayoutDesc.bindings = {
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
+            { 1, nvrhi::ResourceType::StructuredBuffer_SRV },
             { 0, nvrhi::ResourceType::StructuredBuffer_UAV },
-            { 1, nvrhi::ResourceType::Texture_UAV },
-            { 2, nvrhi::ResourceType::Texture_UAV },
-            { 3, nvrhi::ResourceType::StructuredBuffer_UAV }
+            { 1, nvrhi::ResourceType::StructuredBuffer_UAV },
+            { 2, nvrhi::ResourceType::StructuredBuffer_UAV },
+            { 3, nvrhi::ResourceType::StructuredBuffer_UAV },
+            { 4, nvrhi::ResourceType::StructuredBuffer_UAV }
         };
         auto globalBindingLayout =
             resource_allocator.create(globalBindingLayoutDesc);
@@ -155,6 +168,19 @@ static void node_exec(ExeParams params)
         resource_allocator.device
             ->waitForIdle();  // This is not fully efficient.
     }
+    else {
+        resource_allocator.destroy(pixel_target_buffer);
+        resource_allocator.destroy(eval_buffer);
+        resource_allocator.destroy(sample_buffer);
+        resource_allocator.destroy(pdf_buffer);
+        throw std::runtime_error(raytrace_compiled->get_error_string());
+    }
+
+    // 4. Get the result
+    params.set_output("PixelTarget", pixel_target_buffer);
+    params.set_output("Eval", eval_buffer);
+    params.set_output("Sample", sample_buffer);
+    params.set_output("Pdf", pdf_buffer);
 }
 
 static void node_register()

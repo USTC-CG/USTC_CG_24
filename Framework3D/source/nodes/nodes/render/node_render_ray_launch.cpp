@@ -42,15 +42,32 @@ static void node_exec(ExeParams params)
     auto rays = params.get_input<BufferHandle>("Rays");
 
     BufferDesc hit_objects_desc;
-    hit_objects_desc
-        .setByteSize(
-            1 +
-            rays->getDesc().byteSize / sizeof(RayDesc) * sizeof(HitObjectInfo))
-        .setCanHaveUAVs(true)
-        .setInitialState(nvrhi::ResourceStates::UnorderedAccess)
+    hit_objects_desc.setByteSize(sizeof(HitObjectInfo))
+        .setInitialState(nvrhi::ResourceStates::CopySource)
         .setKeepInitialState(true)
+        .setCpuAccess(nvrhi::CpuAccessMode::Write)
         .setStructStride(sizeof(HitObjectInfo));
 
+    auto upload_buffer = resource_allocator.create(hit_objects_desc);
+    MARK_DESTROY_NVRHI_RESOURCE(upload_buffer);
+
+    // Set the first object to be zero.
+    auto mem = resource_allocator.device->mapBuffer(
+        upload_buffer.Get(), nvrhi::CpuAccessMode::Write);
+    memset(mem, 0, sizeof(HitObjectInfo));
+    resource_allocator.device->unmapBuffer(upload_buffer.Get());
+
+    hit_objects_desc =
+        BufferDesc{}
+            .setByteSize(
+                1 + std::max(
+                        int(rays->getDesc().byteSize / sizeof(RayDesc)),
+                        size[0] * size[1]) *
+                        sizeof(HitObjectInfo))
+            .setCanHaveUAVs(true)
+            .setInitialState(nvrhi::ResourceStates::CopyDest)
+            .setKeepInitialState(true)
+            .setStructStride(sizeof(HitObjectInfo));
     auto hit_objects = resource_allocator.create(hit_objects_desc);
 
     // 2. Prepare the shader
@@ -140,15 +157,38 @@ static void node_exec(ExeParams params)
 
         m_CommandList->open();
 
+        m_CommandList->copyBuffer(
+            hit_objects, 0, upload_buffer, 0, sizeof(HitObjectInfo));
+
         m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
         args.width = size[0];
         args.height = size[1];
         m_CommandList->dispatchRays(args);
+
+        // Read out the hit object buffer info.
+        BufferDesc read_out_desc;
+        read_out_desc.setByteSize(sizeof(HitObjectInfo))
+            .setInitialState(nvrhi::ResourceStates::CopyDest)
+            .setKeepInitialState(true)
+            .setCpuAccess(nvrhi::CpuAccessMode::Read);
+        auto read_out = resource_allocator.create(read_out_desc);
+        MARK_DESTROY_NVRHI_RESOURCE(read_out);
+        m_CommandList->copyBuffer(
+            read_out, 0, hit_objects, 0, sizeof(HitObjectInfo));
+
         m_CommandList->close();
         resource_allocator.device->executeCommandList(m_CommandList);
         resource_allocator.device
             ->waitForIdle();  // This is not fully efficient.
+
+        auto cpu_read_out = resource_allocator.device->mapBuffer(
+            read_out, nvrhi::CpuAccessMode::Read);
+        HitObjectInfo info;
+        memcpy(&info, cpu_read_out, sizeof(HitObjectInfo));
+        resource_allocator.device->unmapBuffer(read_out);
+
+        logging("Buffer size: " + std::to_string(info.InstanceIndex));
 
         resource_allocator.destroy(raytracing_pipeline);
         resource_allocator.destroy(globalBindingLayout);

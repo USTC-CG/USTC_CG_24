@@ -20,6 +20,7 @@ endfunction()
 get_relative_paths(shaders RelativeShaderPaths)
 message("shit ${RelativeShaderPaths}")
 get_relative_paths(optix optixHeaders)
+get_relative_paths(nvapi nvapiHeaders)
 
 pxr_plugin(${PXR_PACKAGE}
    LIBRARIES
@@ -64,6 +65,7 @@ pxr_plugin(${PXR_PACKAGE}
         plugInfo.json
         ${RelativeShaderPaths}
         ${optixHeaders}
+        ${nvapiHeaders}
 )
 
 target_include_directories(${PXR_PACKAGE} PRIVATE ${CMAKE_CURRENT_LIST_DIR})

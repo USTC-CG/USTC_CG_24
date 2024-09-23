@@ -177,6 +177,9 @@ Slang::ComPtr<slang::IGlobalSession> createGlobal()
 {
     Slang::ComPtr<slang::IGlobalSession> globalSession;
     slang::createGlobalSession(globalSession.writeRef());
+
+    SlangShaderCompiler::addHLSLPrelude(globalSession);
+
     return globalSession;
 }
 
@@ -239,7 +242,7 @@ nvrhi::BindingLayoutDescVector shader_reflect(
 
         auto bindingRangeCount = typeLayout->getBindingRangeCount();
         assert(bindingRangeCount == 1);
-        auto type = typeLayout->getBindingRangeType(0);
+        slang::BindingType type = typeLayout->getBindingRangeType(0);
 
         nvrhi::BindingLayoutItem item;
 
@@ -304,6 +307,8 @@ void SlangCompileHLSLToDXIL(
     int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
     spSetTargetFlags(
         slangRequest, targetIndex, SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM);
+    SlangShaderCompiler::addHLSLHeaderInclude(slangRequest);
+    SlangShaderCompiler::addHLSLSupportPreDefine(slangRequest);
 
     // Add a translation unit to the compile request
     int translationUnitIndex = spAddTranslationUnit(
@@ -323,12 +328,9 @@ void SlangCompileHLSLToDXIL(
             slangRequest, define.name.c_str(), define.definition.c_str());
     }
 
-    int entry_point_index;
-
     // If an entry point is provided, set it
     if (entryPoint && *entryPoint) {
-        entry_point_index = slangRequest->addEntryPoint(
-            translationUnitIndex, entryPoint, stage);
+        slangRequest->addEntryPoint(translationUnitIndex, entryPoint, stage);
     }
 
     // Compile the request

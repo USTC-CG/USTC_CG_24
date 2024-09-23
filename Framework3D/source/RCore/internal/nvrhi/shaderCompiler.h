@@ -10,7 +10,10 @@ class SlangShaderCompiler {
     static std::filesystem::path find_root(const std::filesystem::path& p);
 
     static void save_file(const std::string& filename, const char* data);
-
+    static SlangResult addHLSLPrelude(slang::IGlobalSession* session);
+    static SlangResult addHLSLHeaderInclude(SlangCompileRequest* slangRequest);
+    static SlangResult addHLSLSupportPreDefine(
+        SlangCompileRequest* slangRequest);
 #if USTC_CG_WITH_CUDA
     static SlangResult addCUDAPrelude(slang::IGlobalSession* session);
 

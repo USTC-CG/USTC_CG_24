@@ -1,5 +1,6 @@
-#include "USTC_CG.h"
 #include "shaderCompiler.h"
+
+#include "USTC_CG.h"
 
 #ifdef _WIN32
 #include <codecvt>
@@ -48,6 +49,48 @@ SlangResult SlangShaderCompiler::addCUDAPrelude(slang::IGlobalSession* session)
     // std::cerr << prelude.str() << std::endl;
     session->setLanguagePrelude(
         SLANG_SOURCE_LANGUAGE_CUDA, prelude.str().c_str());
+    return SLANG_OK;
+}
+
+SlangResult SlangShaderCompiler::addHLSLPrelude(slang::IGlobalSession* session)
+{
+    std::filesystem::path includePath = ".";
+
+    auto root = find_root(includePath);
+
+    auto prelude_name = "/slang/prelude/slang-hlsl-prelude.h";
+    std::ostringstream prelude;
+    prelude << "#include \"" << root.generic_string() + prelude_name
+            << "\"\n\n";
+
+    // std::cerr << prelude.str() << std::endl;
+    session->setLanguagePrelude(
+        SLANG_SOURCE_LANGUAGE_HLSL, prelude.str().c_str());
+    return SLANG_OK;
+}
+
+SlangResult SlangShaderCompiler::addHLSLHeaderInclude(
+    SlangCompileRequest* slangRequest)
+{
+    auto hlsl_path = find_root(".") / "usd/hd_USTC_CG_GL/resources/nvapi/";
+
+    auto hlsl_path_name = "-I" + hlsl_path.generic_string();
+
+    // Inclusion in prelude should be passed to down stream compilers.....
+    const char* args[] = { "-Xdxc...", hlsl_path_name.c_str(), "-X." };
+    return slangRequest->processCommandLineArguments(
+        args, sizeof(args) / sizeof(const char*));
+}
+
+SlangResult SlangShaderCompiler::addHLSLSupportPreDefine(
+    SlangCompileRequest* slangRequest)
+{
+    // However, this predefine remains to dxc...
+    slangRequest->addPreprocessorDefine("SLANG_HLSL_ENABLE_NVAPI", "1");
+    slangRequest->addPreprocessorDefine(
+        "NV_SHADER_EXTN_REGISTER_SPACE", "space2");
+    slangRequest->addPreprocessorDefine(
+        "NV_SHADER_EXTN_SLOT", "u7");
     return SLANG_OK;
 }
 

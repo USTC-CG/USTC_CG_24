@@ -21,16 +21,16 @@
  */
 
 // ---[ Structures ]---
-
 #include "matrix_op.h"
 #include "utils/HitObject.h"
+#include "utils/ray.h"
 #include "view_cb.h"
 
 RaytracingAccelerationStructure SceneBVH : register(t0);
 RWStructuredBuffer<RayDesc> rays : register(u0);
 RWTexture2D<float4> BaryCentric : register(u1);
 RWTexture2D<float4> WorldPosition : register(u2);
-RWStructuredBuffer<HitObjectInfo> hitObjectInfo : register(u0);
+RWStructuredBuffer<HitObjectInfo> hitObjectInfo : register(u3);
 
 struct HitInfo {
     float2 barycentric;
@@ -73,18 +73,20 @@ void ClosestHit(
     payload.position = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
     // Push hit information into hitObjectInfo buffer
-    uint index = InterlockedAdd(hitObjectInfo[0].count, 1);
-    hitObjectInfo[index].barycentric = payload.barycentric;
-    hitObjectInfo[index].position = payload.position;
+    uint index = 0;
+    InterlockedAdd(hitObjectInfo[0].InstanceIndex, 1, index);
+    index += 1;
     hitObjectInfo[index].InstanceIndex = InstanceIndex();
     hitObjectInfo[index].GeometryIndex = GeometryIndex();
     hitObjectInfo[index].PrimitiveIndex = PrimitiveIndex();
     hitObjectInfo[index].HitKind = HitKind();
-    hitObjectInfo[index].RayContributionToHitGroupIndex = RayContributionToHitGroupIndex();
-    hitObjectInfo[index].MultiplierForGeometryContributionToHitGroupIndex = MultiplierForGeometryContributionToHitGroupIndex();
-    hitObjectInfo[index].Ray = rays[DispatchRaysIndex().y * DispatchRaysDimensions().x + DispatchRaysIndex().x];
-    // Assuming attributes are filled elsewhere or need to be set here
-    // hitObjectInfo[index].attributes = ...;
+
+    hitObjectInfo[index].RayContributionToHitGroupIndex = 0;
+    hitObjectInfo[index].MultiplierForGeometryContributionToHitGroupIndex = 0;
+    hitObjectInfo[index].Ray = {
+        WorldRayOrigin(), RayTMin(), WorldRayDirection(), RayTCurrent()
+    };
+    hitObjectInfo[index].attributes = payload.barycentric;
 }
 
 // ---[ Miss Shader ]---
