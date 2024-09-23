@@ -41,7 +41,7 @@ void RayGen()
         hitObject.Ray,
         { hitObject.attributes });
 
-    ReorderThread(object);
+    //ReorderThread(object);
 }
 
 // Closest hit shader

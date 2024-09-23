@@ -39,7 +39,8 @@ static void node_exec(ExeParams params)
         "shaders/scatter.slang",
         binding_layout_desc,
         error_string,
-        { ShaderMacro{ "SLANG_HLSL_ENABLE_NVAPI", "1" } });
+        {},
+        false);
 
     auto binding_layout = resource_allocator.create(binding_layout_desc[0]);
     MARK_DESTROY_NVRHI_RESOURCE(binding_layout);

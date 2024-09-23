@@ -13,6 +13,7 @@ ShaderHandle compile_shader(
     nvrhi::BindingLayoutDescVector& binding_layout_desc,
     std::string& error_string,
     const std::vector<ShaderMacro>& macro_defines = {},
+    bool nvapi_support = false,
     bool absolute = false);
 
 USTC_CG_NAMESPACE_CLOSE_SCOPE

@@ -12,6 +12,7 @@ ShaderHandle compile_shader(
     nvrhi::BindingLayoutDescVector& binding_layout_desc,
     std::string& error_string,
     const std::vector<ShaderMacro>& macro_defines,
+    bool nvapi_support,
     bool absolute)
 {
     ShaderCompileDesc shader_compile_desc;
@@ -26,6 +27,7 @@ ShaderHandle compile_shader(
         shader_compile_desc.define(macro_define.name, macro_define.definition);
     }
     shader_compile_desc.shaderType = shader_type;
+    shader_compile_desc.nvapi_support = nvapi_support;
     auto shader_compiled = resource_allocator.create(shader_compile_desc);
 
     if (!shader_compiled->get_error_string().empty()) {

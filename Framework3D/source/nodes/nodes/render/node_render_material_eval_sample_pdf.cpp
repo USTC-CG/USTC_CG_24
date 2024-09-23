@@ -75,6 +75,7 @@ static void node_exec(ExeParams params)
         std::filesystem::path(RENDER_NODES_FILES_DIR) /
         std::filesystem::path("shaders/material_eval_sample_pdf.slang"));
     shader_compile_desc.shaderType = nvrhi::ShaderType::AllRayTracing;
+    shader_compile_desc.nvapi_support = true;
 
     auto raytrace_compiled = resource_allocator.create(shader_compile_desc);
     MARK_DESTROY_NVRHI_RESOURCE(raytrace_compiled);
@@ -195,6 +196,7 @@ static void node_exec(ExeParams params)
     params.set_output("PixelTarget", pixel_target_buffer);
     params.set_output("Eval", eval_buffer);
     params.set_output("Sample", sample_buffer);
+    params.set_output("Weight", weight_buffer);
     params.set_output("Pdf", pdf_buffer);
 }
 
