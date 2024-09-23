@@ -105,7 +105,9 @@ struct ShaderCompileDesc {
         const ShaderCompileDesc& rhs)
     {
         return lhs.path == rhs.path && lhs.entry_name == rhs.entry_name &&
-               lhs.lastWriteTime == rhs.lastWriteTime;
+               lhs.lastWriteTime == rhs.lastWriteTime &&
+               lhs.shaderType == rhs.shaderType &&
+               lhs.nvapi_support == rhs.nvapi_support;
     }
 
     friend bool operator!=(
@@ -124,6 +126,7 @@ struct ShaderCompileDesc {
     void set_entry_name(const std::string& entry_name);
 
     nvrhi::ShaderType shaderType;
+    bool nvapi_support = false;
 
    private:
     void update_last_write_time(const std::filesystem::path& path);

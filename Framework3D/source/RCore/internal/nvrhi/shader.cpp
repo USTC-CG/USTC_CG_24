@@ -292,7 +292,8 @@ void SlangCompileHLSLToDXIL(
     const std::vector<ShaderMacro>& defines,  // List of macro defines
     nvrhi::BindingLayoutDescVector& shader_reflection,
     Slang::ComPtr<ISlangBlob>& ppResultBlob,
-    std::string& error_string)
+    std::string& error_string,
+    bool nvapi_support)
 {
     auto stage = ConvertShaderTypeToSlangStage(shaderType);
     // Ensure global session is created
@@ -307,8 +308,11 @@ void SlangCompileHLSLToDXIL(
     int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
     spSetTargetFlags(
         slangRequest, targetIndex, SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM);
-    SlangShaderCompiler::addHLSLHeaderInclude(slangRequest);
-    SlangShaderCompiler::addHLSLSupportPreDefine(slangRequest);
+
+    if (nvapi_support) {
+        SlangShaderCompiler::addHLSLHeaderInclude(slangRequest);
+        SlangShaderCompiler::addHLSLSupportPreDefine(slangRequest);
+    }
 
     // Add a translation unit to the compile request
     int translationUnitIndex = spAddTranslationUnit(
@@ -369,7 +373,8 @@ ShaderCompileHandle createShaderCompile(const ShaderCompileDesc& desc)
         desc.macros,
         ret->binding_layout_,
         ret->blob,
-        ret->error_string);
+        ret->error_string,
+        desc.nvapi_support);
     return ret;
 }
 

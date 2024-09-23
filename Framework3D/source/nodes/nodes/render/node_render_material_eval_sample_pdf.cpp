@@ -41,7 +41,8 @@ static void node_exec(ExeParams params)
                            .setByteSize(length * sizeof(pxr::GfVec2i))
                            .setStructStride(sizeof(pxr::GfVec2i))
                            .setKeepInitialState(true)
-                           .setInitialState(ResourceStates::ShaderResource);
+                           .setInitialState(ResourceStates::UnorderedAccess)
+                           .setCanHaveUAVs(true);
     auto pixel_target_buffer = resource_allocator.create(buffer_desc);
 
     buffer_desc.setByteSize(length * sizeof(pxr::GfVec4f))
@@ -49,8 +50,12 @@ static void node_exec(ExeParams params)
     auto eval_buffer = resource_allocator.create(buffer_desc);
 
     // 'Sample' should be like {NextRayDesc, Weight}
-    buffer_desc.setByteSize(length * (sizeof(RayDesc) + sizeof(float)))
-        .setStructStride(sizeof(RayDesc) + sizeof(float));
+    buffer_desc.setByteSize(length * sizeof(float))
+        .setStructStride(sizeof(float));
+    auto weight_buffer = resource_allocator.create(buffer_desc);
+
+    buffer_desc.setByteSize(length * sizeof(RayDesc))
+        .setStructStride(sizeof(RayDesc));
     auto sample_buffer = resource_allocator.create(buffer_desc);
 
     // 'Pdf Should be just like float...'
@@ -80,6 +85,7 @@ static void node_exec(ExeParams params)
         shader_desc.shaderType = nvrhi::ShaderType::RayGeneration;
         shader_desc.debugName = std::to_string(
             reinterpret_cast<long long>(raytrace_compiled->getBufferPointer()));
+        shader_desc.hlslExtensionsUAV = 7;
         auto raygen_shader = resource_allocator.create(
             shader_desc,
             raytrace_compiled->getBufferPointer(),
@@ -113,7 +119,8 @@ static void node_exec(ExeParams params)
             { 1, nvrhi::ResourceType::StructuredBuffer_UAV },
             { 2, nvrhi::ResourceType::StructuredBuffer_UAV },
             { 3, nvrhi::ResourceType::StructuredBuffer_UAV },
-            { 4, nvrhi::ResourceType::StructuredBuffer_UAV }
+            { 4, nvrhi::ResourceType::StructuredBuffer_UAV },
+            { 127, nvrhi::ResourceType::TypedBuffer_UAV },
         };
         auto globalBindingLayout =
             resource_allocator.create(globalBindingLayoutDesc);
@@ -133,6 +140,9 @@ static void node_exec(ExeParams params)
             nullptr,  // bindingLayout
             false     // isProceduralPrimitive
         } };
+
+        pipeline_desc.setHlslExtensionsUAV(7);
+
         auto m_TopLevelAS = params.get_input<AccelStructHandle>("Accel Struct");
         auto raytracing_pipeline = resource_allocator.create(pipeline_desc);
         MARK_DESTROY_NVRHI_RESOURCE(raytracing_pipeline);
@@ -140,8 +150,13 @@ static void node_exec(ExeParams params)
         BindingSetDesc binding_set_desc;
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
-            nvrhi::BindingSetItem::StructuredBuffer_UAV(
+            nvrhi::BindingSetItem::StructuredBuffer_SRV(
                 1, hit_info_buffer.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pixel_target_buffer),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(1, eval_buffer),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(2, sample_buffer),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(3, weight_buffer),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(4, pdf_buffer),
 
         };
         auto binding_set = resource_allocator.create(

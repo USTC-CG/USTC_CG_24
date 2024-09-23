@@ -39,6 +39,9 @@ target_compile_definitions(OpenMeshCore PUBLIC -D_USE_MATH_DEFINES=1)
 add_subdirectory(stb_image)
 
 add_subdirectory(entt)
+
+
+set(NVRHI_WITH_NVAPI ON)
 set(NVRHI_BUILD_SHARED ON CACHE INTERNAL "Override default shared build of nvrhi")
 add_subdirectory(nvrhi)
 set_target_properties(nvrhi PROPERTIES ${OUTPUT_DIR})

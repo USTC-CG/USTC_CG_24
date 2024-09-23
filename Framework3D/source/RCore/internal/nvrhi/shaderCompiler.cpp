@@ -88,9 +88,9 @@ SlangResult SlangShaderCompiler::addHLSLSupportPreDefine(
     // However, this predefine remains to dxc...
     slangRequest->addPreprocessorDefine("SLANG_HLSL_ENABLE_NVAPI", "1");
     slangRequest->addPreprocessorDefine(
-        "NV_SHADER_EXTN_REGISTER_SPACE", "space2");
+        "NV_SHADER_EXTN_REGISTER_SPACE", "space0");
     slangRequest->addPreprocessorDefine(
-        "NV_SHADER_EXTN_SLOT", "u7");
+        "NV_SHADER_EXTN_SLOT", "u127");
     return SLANG_OK;
 }
 
