@@ -30,7 +30,7 @@ class UsdviewEngineImpl {
     struct Status {
         CamType cam_type =
             CamType::First;  // 0 for 1st personal, 1 for 3rd personal
-        unsigned renderer_id = 0;
+        unsigned renderer_id = 1;
     } engine_status;
 
     float timecode = 0;

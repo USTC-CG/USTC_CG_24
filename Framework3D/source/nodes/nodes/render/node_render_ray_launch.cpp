@@ -44,6 +44,7 @@ static void node_exec(ExeParams params)
     BufferDesc hit_objects_desc;
     hit_objects_desc
         .setByteSize(
+            1 +
             rays->getDesc().byteSize / sizeof(RayDesc) * sizeof(HitObjectInfo))
         .setCanHaveUAVs(true)
         .setInitialState(nvrhi::ResourceStates::UnorderedAccess)

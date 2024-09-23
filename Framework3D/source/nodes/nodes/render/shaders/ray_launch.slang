@@ -71,6 +71,20 @@ void ClosestHit(
 {
     payload.barycentric = attrib.uv;
     payload.position = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+
+    // Push hit information into hitObjectInfo buffer
+    uint index = InterlockedAdd(hitObjectInfo[0].count, 1);
+    hitObjectInfo[index].barycentric = payload.barycentric;
+    hitObjectInfo[index].position = payload.position;
+    hitObjectInfo[index].InstanceIndex = InstanceIndex();
+    hitObjectInfo[index].GeometryIndex = GeometryIndex();
+    hitObjectInfo[index].PrimitiveIndex = PrimitiveIndex();
+    hitObjectInfo[index].HitKind = HitKind();
+    hitObjectInfo[index].RayContributionToHitGroupIndex = RayContributionToHitGroupIndex();
+    hitObjectInfo[index].MultiplierForGeometryContributionToHitGroupIndex = MultiplierForGeometryContributionToHitGroupIndex();
+    hitObjectInfo[index].Ray = rays[DispatchRaysIndex().y * DispatchRaysDimensions().x + DispatchRaysIndex().x];
+    // Assuming attributes are filled elsewhere or need to be set here
+    // hitObjectInfo[index].attributes = ...;
 }
 
 // ---[ Miss Shader ]---
