@@ -13,11 +13,12 @@
 namespace USTC_CG::node_render_material_eval_sample_pdf {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::Buffer>("PixelTarget");
     b.add_input<decl::AccelStruct>("Accel Struct");
-
     b.add_input<decl::Buffer>("HitInfo");
 
     b.add_output<decl::Buffer>("PixelTarget");
+    b.add_input<decl::Int>("Buffer Size").min(1).max(10).default_val(4);
     b.add_output<decl::Buffer>("Eval");
     b.add_output<decl::Buffer>("Sample");
     b.add_output<decl::Buffer>("Weight");
@@ -31,6 +32,7 @@ static void node_exec(ExeParams params)
     // 0. Get the 'HitObjectInfos'
 
     auto hit_info_buffer = params.get_input<BufferHandle>("HitInfo");
+    auto in_pixel_target_buffer = params.get_input<BufferHandle>("PixelTarget");
 
     auto length = hit_info_buffer->getDesc().byteSize / sizeof(HitObjectInfo);
 
@@ -49,14 +51,13 @@ static void node_exec(ExeParams params)
         .setStructStride(sizeof(pxr::GfVec4f));
     auto eval_buffer = resource_allocator.create(buffer_desc);
 
-    // 'Sample' should be like {NextRayDesc, Weight}
-    buffer_desc.setByteSize(length * sizeof(float))
-        .setStructStride(sizeof(float));
-    auto weight_buffer = resource_allocator.create(buffer_desc);
-
     buffer_desc.setByteSize(length * sizeof(RayDesc))
         .setStructStride(sizeof(RayDesc));
     auto sample_buffer = resource_allocator.create(buffer_desc);
+
+    buffer_desc.setByteSize(length * sizeof(float))
+        .setStructStride(sizeof(float));
+    auto weight_buffer = resource_allocator.create(buffer_desc);
 
     // 'Pdf Should be just like float...'
     buffer_desc.setByteSize(length * sizeof(float))
@@ -80,13 +81,15 @@ static void node_exec(ExeParams params)
     auto raytrace_compiled = resource_allocator.create(shader_compile_desc);
     MARK_DESTROY_NVRHI_RESOURCE(raytrace_compiled);
 
+    auto buffer_size = params.get_input<int>("Buffer Size");
+
     if (raytrace_compiled->get_error_string().empty()) {
         ShaderDesc shader_desc;
         shader_desc.entryName = "RayGen";
         shader_desc.shaderType = nvrhi::ShaderType::RayGeneration;
         shader_desc.debugName = std::to_string(
             reinterpret_cast<long long>(raytrace_compiled->getBufferPointer()));
-        shader_desc.hlslExtensionsUAV = 7;
+        shader_desc.hlslExtensionsUAV = 127;
         auto raygen_shader = resource_allocator.create(
             shader_desc,
             raytrace_compiled->getBufferPointer(),
@@ -116,6 +119,7 @@ static void node_exec(ExeParams params)
         globalBindingLayoutDesc.bindings = {
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
             { 1, nvrhi::ResourceType::StructuredBuffer_SRV },
+            { 2, nvrhi::ResourceType::StructuredBuffer_SRV },
             { 0, nvrhi::ResourceType::StructuredBuffer_UAV },
             { 1, nvrhi::ResourceType::StructuredBuffer_UAV },
             { 2, nvrhi::ResourceType::StructuredBuffer_UAV },
@@ -142,7 +146,7 @@ static void node_exec(ExeParams params)
             false     // isProceduralPrimitive
         } };
 
-        pipeline_desc.setHlslExtensionsUAV(7);
+        pipeline_desc.setHlslExtensionsUAV(127);
 
         auto m_TopLevelAS = params.get_input<AccelStructHandle>("Accel Struct");
         auto raytracing_pipeline = resource_allocator.create(pipeline_desc);
@@ -153,12 +157,15 @@ static void node_exec(ExeParams params)
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
             nvrhi::BindingSetItem::StructuredBuffer_SRV(
                 1, hit_info_buffer.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_SRV(
+                2, in_pixel_target_buffer.Get()),
+
             nvrhi::BindingSetItem::StructuredBuffer_UAV(0, pixel_target_buffer),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(1, eval_buffer),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(2, sample_buffer),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(3, weight_buffer),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(4, pdf_buffer),
-
+            nvrhi::BindingSetItem::TypedBuffer_UAV(127, nullptr)
         };
         auto binding_set = resource_allocator.create(
             binding_set_desc, globalBindingLayout.Get());
@@ -176,7 +183,7 @@ static void node_exec(ExeParams params)
 
         m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
-        args.width = length;
+        args.width = buffer_size;
         args.height = 1;
         m_CommandList->dispatchRays(args);
         m_CommandList->close();
@@ -188,6 +195,7 @@ static void node_exec(ExeParams params)
         resource_allocator.destroy(pixel_target_buffer);
         resource_allocator.destroy(eval_buffer);
         resource_allocator.destroy(sample_buffer);
+        resource_allocator.destroy(weight_buffer);
         resource_allocator.destroy(pdf_buffer);
         throw std::runtime_error(raytrace_compiled->get_error_string());
     }

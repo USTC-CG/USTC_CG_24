@@ -14,11 +14,13 @@
 namespace USTC_CG::node_scene_ray_launch {
 static void node_declare(NodeDeclarationBuilder& b)
 {
+    b.add_input<decl::Buffer>("Pixel Target");
     b.add_input<decl::Buffer>("Rays");
     b.add_input<decl::AccelStruct>("Accel Struct");
-    b.add_output<decl::Texture>("Barycentric");
-    b.add_output<decl::Texture>("World Position");
+
+    b.add_output<decl::Buffer>("Pixel Target");
     b.add_output<decl::Buffer>("Hit Objects");
+    b.add_output<decl::Int>("Buffer Size");
 }
 
 static void node_exec(ExeParams params)
@@ -27,48 +29,44 @@ static void node_exec(ExeParams params)
         params.get_global_params<RenderGlobalParams>().camera;
     auto size = free_camera->dataWindow.GetSize();
 
-    // 0. Prepare the output texture
-    nvrhi::TextureDesc output_desc;
-    output_desc.width = size[0];
-    output_desc.height = size[1];
-    output_desc.format = nvrhi::Format::RGBA32_FLOAT;
-    output_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
-    output_desc.keepInitialState = true;
-    output_desc.isUAV = true;
-    auto barycentric_texture = resource_allocator.create(output_desc);
-    auto position_texture = resource_allocator.create(output_desc);
     auto m_CommandList = resource_allocator.create(CommandListDesc{});
 
     auto rays = params.get_input<BufferHandle>("Rays");
+    auto length = rays->getDesc().byteSize / sizeof(RayDesc);
+
+    auto input_pixel_target_buffer =
+        params.get_input<BufferHandle>("Pixel Target");
 
     BufferDesc hit_objects_desc;
-    hit_objects_desc.setByteSize(sizeof(HitObjectInfo))
-        .setInitialState(nvrhi::ResourceStates::CopySource)
-        .setKeepInitialState(true)
-        .setCpuAccess(nvrhi::CpuAccessMode::Write)
-        .setStructStride(sizeof(HitObjectInfo));
 
-    auto upload_buffer = resource_allocator.create(hit_objects_desc);
-    MARK_DESTROY_NVRHI_RESOURCE(upload_buffer);
-
-    // Set the first object to be zero.
-    auto mem = resource_allocator.device->mapBuffer(
-        upload_buffer.Get(), nvrhi::CpuAccessMode::Write);
-    memset(mem, 0, sizeof(HitObjectInfo));
-    resource_allocator.device->unmapBuffer(upload_buffer.Get());
+    auto maximum_hit_object_count = size[0] * size[1];
 
     hit_objects_desc =
         BufferDesc{}
-            .setByteSize(
-                1 + std::max(
-                        int(rays->getDesc().byteSize / sizeof(RayDesc)),
-                        size[0] * size[1]) *
-                        sizeof(HitObjectInfo))
+            .setByteSize((1 + maximum_hit_object_count) * sizeof(HitObjectInfo))
             .setCanHaveUAVs(true)
             .setInitialState(nvrhi::ResourceStates::CopyDest)
             .setKeepInitialState(true)
             .setStructStride(sizeof(HitObjectInfo));
     auto hit_objects = resource_allocator.create(hit_objects_desc);
+
+    auto pixel_buffer_desc =
+        BufferDesc{}
+            .setByteSize(maximum_hit_object_count * sizeof(pxr::GfVec2i))
+            .setStructStride(sizeof(pxr::GfVec2i))
+            .setKeepInitialState(true)
+            .setInitialState(nvrhi::ResourceStates::UnorderedAccess)
+            .setCanHaveUAVs(true);
+    auto pixel_target_buffer = resource_allocator.create(pixel_buffer_desc);
+
+    // Read out the hit object buffer info.
+    BufferDesc read_out_desc;
+    read_out_desc.setByteSize(sizeof(HitObjectInfo))
+        .setInitialState(nvrhi::ResourceStates::CopyDest)
+        .setKeepInitialState(true)
+        .setCpuAccess(nvrhi::CpuAccessMode::Read);
+    auto read_out = resource_allocator.create(read_out_desc);
+    MARK_DESTROY_NVRHI_RESOURCE(read_out);
 
     // 2. Prepare the shader
 
@@ -111,10 +109,10 @@ static void node_exec(ExeParams params)
         globalBindingLayoutDesc.visibility = nvrhi::ShaderType::All;
         globalBindingLayoutDesc.bindings = {
             { 0, nvrhi::ResourceType::RayTracingAccelStruct },
+            { 1, nvrhi::ResourceType::StructuredBuffer_SRV },
             { 0, nvrhi::ResourceType::StructuredBuffer_UAV },
-            { 1, nvrhi::ResourceType::Texture_UAV },
-            { 2, nvrhi::ResourceType::Texture_UAV },
-            { 3, nvrhi::ResourceType::StructuredBuffer_UAV }
+            { 1, nvrhi::ResourceType::StructuredBuffer_UAV },
+            { 2, nvrhi::ResourceType::StructuredBuffer_UAV }
         };
         auto globalBindingLayout =
             resource_allocator.create(globalBindingLayoutDesc);
@@ -139,10 +137,12 @@ static void node_exec(ExeParams params)
         BindingSetDesc binding_set_desc;
         binding_set_desc.bindings = nvrhi::BindingSetItemArray{
             nvrhi::BindingSetItem::RayTracingAccelStruct(0, m_TopLevelAS.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_SRV(
+                1, input_pixel_target_buffer.Get()),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(0, rays.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(1, barycentric_texture.Get()),
-            nvrhi::BindingSetItem::Texture_UAV(2, position_texture.Get()),
-            nvrhi::BindingSetItem::StructuredBuffer_UAV(3, hit_objects.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(1, hit_objects.Get()),
+            nvrhi::BindingSetItem::StructuredBuffer_UAV(
+                2, pixel_target_buffer.Get()),
         };
         auto binding_set = resource_allocator.create(
             binding_set_desc, globalBindingLayout.Get());
@@ -156,39 +156,30 @@ static void node_exec(ExeParams params)
         state.setShaderTable(sbt).addBindingSet(binding_set);
 
         m_CommandList->open();
-
-        m_CommandList->copyBuffer(
-            hit_objects, 0, upload_buffer, 0, sizeof(HitObjectInfo));
+        HitObjectInfo info;
+        info.InstanceIndex = 0;
+        m_CommandList->writeBuffer(
+            hit_objects,
+            &info,
+            sizeof(HitObjectInfo),
+            maximum_hit_object_count * sizeof(HitObjectInfo));
 
         m_CommandList->setRayTracingState(state);
         nvrhi::rt::DispatchRaysArguments args;
-        args.width = size[0];
-        args.height = size[1];
+        args.width = length;
         m_CommandList->dispatchRays(args);
 
-        // Read out the hit object buffer info.
-        BufferDesc read_out_desc;
-        read_out_desc.setByteSize(sizeof(HitObjectInfo))
-            .setInitialState(nvrhi::ResourceStates::CopyDest)
-            .setKeepInitialState(true)
-            .setCpuAccess(nvrhi::CpuAccessMode::Read);
-        auto read_out = resource_allocator.create(read_out_desc);
-        MARK_DESTROY_NVRHI_RESOURCE(read_out);
         m_CommandList->copyBuffer(
-            read_out, 0, hit_objects, 0, sizeof(HitObjectInfo));
+            read_out,
+            0,
+            hit_objects,
+            maximum_hit_object_count * sizeof(HitObjectInfo),
+            sizeof(HitObjectInfo));
 
         m_CommandList->close();
         resource_allocator.device->executeCommandList(m_CommandList);
         resource_allocator.device
             ->waitForIdle();  // This is not fully efficient.
-
-        auto cpu_read_out = resource_allocator.device->mapBuffer(
-            read_out, nvrhi::CpuAccessMode::Read);
-        HitObjectInfo info;
-        memcpy(&info, cpu_read_out, sizeof(HitObjectInfo));
-        resource_allocator.device->unmapBuffer(read_out);
-
-        logging("Buffer size: " + std::to_string(info.InstanceIndex));
 
         resource_allocator.destroy(raytracing_pipeline);
         resource_allocator.destroy(globalBindingLayout);
@@ -202,9 +193,17 @@ static void node_exec(ExeParams params)
     auto error = raytrace_compiled->get_error_string();
     resource_allocator.destroy(raytrace_compiled);
 
-    params.set_output("Barycentric", barycentric_texture);
-    params.set_output("World Position", position_texture);
     params.set_output("Hit Objects", hit_objects);
+    params.set_output("Pixel Target", pixel_target_buffer);
+
+    auto cpu_read_out = resource_allocator.device->mapBuffer(
+        read_out, nvrhi::CpuAccessMode::Read);
+    HitObjectInfo info;
+    memcpy(&info, cpu_read_out, sizeof(HitObjectInfo));
+    resource_allocator.device->unmapBuffer(read_out);
+
+    logging("Buffer size: " + std::to_string(info.InstanceIndex));
+    params.set_output("Buffer Size", static_cast<int>(info.InstanceIndex));
     if (error.size()) {
         throw std::runtime_error(error);
     }

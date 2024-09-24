@@ -15,6 +15,7 @@ static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Buffer>("PixelTarget");
     b.add_input<decl::Buffer>("Eval");
+    b.add_input<decl::Int>("Buffer Size");
     b.add_input<decl::Texture>("Source Texture");
 
     b.add_output<decl::Texture>("Result Texture");
@@ -27,9 +28,7 @@ static void node_exec(ExeParams params)
     auto pixel_target_buffer = params.get_input<BufferHandle>("PixelTarget");
     auto eval_buffer = params.get_input<BufferHandle>("Eval");
     auto source_texture = params.get_input<TextureHandle>("Source Texture");
-
-    auto length =
-        pixel_target_buffer->getDesc().byteSize / sizeof(pxr::GfVec2i);
+    auto length = params.get_input<int>("Buffer Size");
 
     std::string error_string;
     nvrhi::BindingLayoutDescVector binding_layout_desc;
@@ -41,6 +40,19 @@ static void node_exec(ExeParams params)
         error_string,
         {},
         false);
+    MARK_DESTROY_NVRHI_RESOURCE(compute_shader);
+
+    // Constant buffer contains the size of the length (single float), and I can
+    // write if from CPU
+    auto cb_desc = BufferDesc{}
+                       .setByteSize(sizeof(float))
+                       .setInitialState(ResourceStates::CopyDest)
+                       .setKeepInitialState(true)
+                       .setCpuAccess(CpuAccessMode::Write)
+                       .setIsConstantBuffer(true);
+
+    auto cb = resource_allocator.create(cb_desc);
+    MARK_DESTROY_NVRHI_RESOURCE(cb);
 
     auto binding_layout = resource_allocator.create(binding_layout_desc[0]);
     MARK_DESTROY_NVRHI_RESOURCE(binding_layout);
@@ -50,6 +62,7 @@ static void node_exec(ExeParams params)
     binding_set_desc.bindings = {
         nvrhi::BindingSetItem::StructuredBuffer_SRV(0, eval_buffer),
         nvrhi::BindingSetItem::StructuredBuffer_SRV(1, pixel_target_buffer),
+        nvrhi::BindingSetItem::ConstantBuffer(0, cb),
         nvrhi::BindingSetItem::Texture_UAV(0, source_texture)
     };
 
@@ -65,6 +78,8 @@ static void node_exec(ExeParams params)
     pipeline_desc.CS = compute_shader;
     pipeline_desc.bindingLayouts = { binding_layout };
     auto pipeline = resource_allocator.create(pipeline_desc);
+
+    MARK_DESTROY_NVRHI_RESOURCE(pipeline);
     if (!pipeline) {
         // Handle error
         return;
@@ -76,7 +91,10 @@ static void node_exec(ExeParams params)
 
     CommandListHandle command_list =
         resource_allocator.create(CommandListDesc{});
+    MARK_DESTROY_NVRHI_RESOURCE(command_list);
+
     command_list->open();
+    command_list->writeBuffer(cb, &length, sizeof(length));
     command_list->setComputeState(compute_state);
     command_list->dispatch(div_ceil(length, 64), 1, 1);
     command_list->close();

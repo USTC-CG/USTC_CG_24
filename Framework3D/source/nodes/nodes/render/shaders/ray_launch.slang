@@ -27,10 +27,10 @@
 #include "view_cb.h"
 
 RaytracingAccelerationStructure SceneBVH : register(t0);
+StructuredBuffer<int2> inPixelTarget : register(t1);
 RWStructuredBuffer<RayDesc> rays : register(u0);
-RWTexture2D<float4> BaryCentric : register(u1);
-RWTexture2D<float4> WorldPosition : register(u2);
-RWStructuredBuffer<HitObjectInfo> hitObjectInfo : register(u3);
+RWStructuredBuffer<HitObjectInfo> hitObjectInfo : register(u1);
+RWStructuredBuffer<int2> PixelTarget : register(u2);
 
 struct HitInfo {
     float2 barycentric;
@@ -47,10 +47,10 @@ struct Attributes {
 [shader("raygeneration")]
 void RayGen()
 {
-    uint2 LaunchIndex = DispatchRaysIndex().xy;
-    uint2 LaunchDimensions = DispatchRaysDimensions().xy;
+    uint LaunchIndex = DispatchRaysIndex().x;
+    uint LaunchDimensions = DispatchRaysDimensions().x;
     // Setup the ray
-    RayDesc ray = rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x];
+    RayDesc ray = rays[LaunchIndex];
 
     // Trace the ray
     HitInfo payload;
@@ -58,8 +58,6 @@ void RayGen()
 
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     var color = payload.ShadedColorAndHitT.rgb;
-    BaryCentric[LaunchIndex.xy] = float4(payload.barycentric, 0, 1);
-    WorldPosition[LaunchIndex.xy] = float4(payload.position, 1);
 }
 
 // ---[ Closest Hit Shader ]---
@@ -73,9 +71,15 @@ void ClosestHit(
     payload.position = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
     // Push hit information into hitObjectInfo buffer
+    uint stride_count = 0;
+    uint stride_size = 0;
+    hitObjectInfo.GetDimensions(stride_count, stride_size);
+
     uint index = 0;
-    InterlockedAdd(hitObjectInfo[0].InstanceIndex, 1, index);
-    index += 1;
+    InterlockedAdd(hitObjectInfo[stride_count - 1].InstanceIndex, 1, index);
+
+
+    PixelTarget[index] = inPixelTarget[DispatchRaysIndex().x];
     hitObjectInfo[index].InstanceIndex = InstanceIndex();
     hitObjectInfo[index].GeometryIndex = GeometryIndex();
     hitObjectInfo[index].PrimitiveIndex = PrimitiveIndex();

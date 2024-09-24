@@ -5,13 +5,18 @@
 StructuredBuffer<float4> inputColor : register(t0);
 StructuredBuffer<uint2> inputPixelID : register(t1);
 
+ConstantBuffer<uint> bufferLength : register(b0);
+
 // Output texture
 RWTexture2D<float4> outputTexture : register(u0);
 
 [numthreads(64, 1, 1)]
 void main(uint3 DTid: SV_DispatchThreadID)
 {
-    var pixelID = inputPixelID[DTid.x];
+    if (DTid.x >= bufferLength) {
+        return;
+    }
+    uint2 pixelID = inputPixelID[DTid.x];
     float4 color = inputColor[DTid.x];
-    outputTexture[DTid.xy] += color;
+    outputTexture[pixelID] += color;
 }

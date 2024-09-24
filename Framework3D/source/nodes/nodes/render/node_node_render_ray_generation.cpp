@@ -16,6 +16,8 @@ static void node_declare(NodeDeclarationBuilder& b)
 {
     b.add_input<decl::Camera>("Camera");
     b.add_input<decl::Texture>("random seeds");
+
+    b.add_output<decl::Buffer>("Pixel Target");
     b.add_output<decl::Buffer>("Rays");
 }
 
@@ -32,6 +34,17 @@ static void node_exec(ExeParams params)
     ray_buffer_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
     ray_buffer_desc.keepInitialState = true;
     auto result_rays = resource_allocator.create(ray_buffer_desc);
+
+    // Prepare the pixel target buffer
+    auto pixel_target_buffer_desc =
+        BufferDesc{}
+            .setByteSize(size[0] * size[1] * sizeof(pxr::GfVec2i))
+            .setStructStride(sizeof(pxr::GfVec2i))
+            .setCanHaveUAVs(true)
+            .setInitialState(nvrhi::ResourceStates::UnorderedAccess)
+            .setKeepInitialState(true);
+    auto pixel_target_buffer =
+        resource_allocator.create(pixel_target_buffer_desc);
 
     // 2. Prepare the shader
     nvrhi::BindingLayoutDescVector binding_layout_desc_vec;
@@ -75,6 +88,7 @@ static void node_exec(ExeParams params)
     binding_set_desc.bindings = {
         nvrhi::BindingSetItem::StructuredBuffer_UAV(0, result_rays),
         nvrhi::BindingSetItem::Texture_UAV(1, random_seeds),
+        nvrhi::BindingSetItem::StructuredBuffer_UAV(2, pixel_target_buffer),
         nvrhi::BindingSetItem::ConstantBuffer(0, constant_buffer)
     };
     auto binding_set =
@@ -94,6 +108,7 @@ static void node_exec(ExeParams params)
 
     resource_allocator.device->executeCommandList(command_list);
     params.set_output("Rays", result_rays);
+    params.set_output("Pixel Target", pixel_target_buffer);
 }
 
 static void node_register()

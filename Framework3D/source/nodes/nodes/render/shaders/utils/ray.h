@@ -7,8 +7,8 @@ struct RayDesc {
     USING_PXR_MATH_TYPES
 
     float3 Origin;
-    float3 Direction;
     float TMin;
+    float3 Direction;
     float TMax;
 };
 #endif

@@ -6,14 +6,15 @@
 RaytracingAccelerationStructure SceneBVH : register(t0);
 
 StructuredBuffer<HitObjectInfo> hitObjects : register(t1);
+StructuredBuffer<uint2> in_PixelTarget : register(t2);
 
-RWStructuredBuffer<HitObjectInfo> PixelTarget : register(u0);
-RWStructuredBuffer<HitObjectInfo> Eval : register(u1);
-RWStructuredBuffer<HitObjectInfo> Sample : register(u2);
-RWStructuredBuffer<HitObjectInfo> Weight : register(u3);
-RWStructuredBuffer<HitObjectInfo> Pdf : register(u4);
+RWStructuredBuffer<uint2> PixelTarget : register(u0);
+RWStructuredBuffer<float4> Eval : register(u1);
+RWStructuredBuffer<RayDesc> Sample : register(u2);
+RWStructuredBuffer<float> Weight : register(u3);
+RWStructuredBuffer<float> Pdf : register(u4);
 
-struct HitInfo {
+struct Payload {
     int foo;
 };
 
@@ -25,11 +26,10 @@ struct Attributes {
 [shader("raygeneration")]
 void RayGen()
 {
-    int2 id = DispatchRaysIndex().xy;
+    int id = DispatchRaysIndex().x;
 
-    HitObjectInfo hitObject = hitObjects[id.x];
+    HitObjectInfo hitObject = hitObjects[id];
 
-    // Ray generation logic here
     HitObject object = HitObject.MakeHit<Attributes>(
         SceneBVH,
         hitObject.InstanceIndex,
@@ -41,21 +41,30 @@ void RayGen()
         hitObject.Ray,
         { hitObject.attributes });
 
-    //ReorderThread(object);
+    ReorderThread(object);
+
+    Payload payload;
+    object.Invoke(SceneBVH, object, payload);
 }
 
 // Closest hit shader
 [shader("closesthit")]
 void ClosestHit(
-    inout HitInfo payload: SV_RayPayload,
+    inout Payload payload: SV_RayPayload,
     Attributes attrib: SV_IntersectionAttributes)
 {
-    // Closest hit logic here
+    uint id = DispatchRaysIndex().x;
+    PixelTarget[id] = in_PixelTarget[id];
+    Eval[id] = float4(attrib.uv, 0, 1);
+
+    // Acquire the material information here.
 }
 
 // Miss shader
 [shader("miss")]
-void Miss(inout HitInfo payload: SV_RayPayload)
+void Miss(inout Payload payload: SV_RayPayload)
 {
-    // Miss logic here
+    uint id = DispatchRaysIndex().x;
+    PixelTarget[id] = in_PixelTarget[id];
+    Eval[id] = float4(1, 0, 1, 1);
 }

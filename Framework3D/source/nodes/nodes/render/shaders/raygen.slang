@@ -28,6 +28,7 @@
 
 RWStructuredBuffer<RayDesc> rays : register(u0);
 RWTexture2D<uint> random_seeds : register(u1);
+RWStructuredBuffer<uint2> pixel_targets : register(u2);
 
 // ---[ Constant Buffers ]---
 ConstantBuffer<PlanarViewConstants> viewConstant : register(b0);
@@ -66,6 +67,8 @@ void main(uint3 DTid: SV_DispatchThreadID)
         RayDesc ray = setupPrimaryRay(LaunchIndex, viewConstant, seed);
 
         rays[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x] = ray;
+        pixel_targets[LaunchIndex.y * LaunchDimensions.x + LaunchIndex.x] =
+            LaunchIndex;
         random_seeds[LaunchIndex] = seed;
     }
 }
