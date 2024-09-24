@@ -14,6 +14,8 @@ RWStructuredBuffer<RayDesc> Sample : register(u2);
 RWStructuredBuffer<float> Weight : register(u3);
 RWStructuredBuffer<float> Pdf : register(u4);
 
+import Rendering.Materials.BSDFs.StandardBSDF;
+
 struct Payload {
     int foo;
 };

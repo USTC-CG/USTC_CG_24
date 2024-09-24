@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+#include "../../../nodes/nodes/functions/NODES_FILES_DIR.h"
 #include "RCore/Backend.hpp"
 #include "shaderCompiler.h"
 #include "slang-com-ptr.h"
@@ -301,8 +302,24 @@ void SlangCompileHLSLToDXIL(
         globalSession = createGlobal();
     }
 
+    Slang::ComPtr<slang::ISession> pSlangSession;
+
+    slang::SessionDesc sessionDesc;
+    std::vector<std::string> searchPaths = { RENDER_NODES_FILES_DIR +
+                                             std::string("/shaders/") };
+    std::vector<const char*> slangSearchPaths;
+    for (auto& path : searchPaths) {
+        slangSearchPaths.push_back(path.data());
+    }
+    sessionDesc.searchPaths = slangSearchPaths.data();
+    sessionDesc.searchPathCount = (SlangInt)slangSearchPaths.size();
+    auto result =
+        globalSession->createSession(sessionDesc, pSlangSession.writeRef());
+    assert(result == SLANG_OK);
+
     // Create a compile request
-    SlangCompileRequest* slangRequest = spCreateCompileRequest(globalSession);
+    SlangCompileRequest* slangRequest = nullptr;
+    result = pSlangSession->createCompileRequest(&slangRequest);
 
     // Set the code generation target to DXIL
     int targetIndex = slangRequest->addCodeGenTarget(SLANG_DXIL);
