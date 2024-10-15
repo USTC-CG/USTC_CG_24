@@ -9,7 +9,7 @@
 在Part 1中我们说过，弹簧质点系统中每一根弹簧的能量可以定义为（Liu的论文中使用 $\mathbf{p}$ 表示顶点位置）:
 
 $$
-E_i = \frac{1}{2} k (\|\mathbf{x}_{i}\| -L)^2  \tag{1}
+E_i = \frac{1}{2} k (\|\mathbf{x}_{i}\| -L)^2  \quad(1)
 $$
 
 其中 $\mathbf{x}_i = \mathbf{x} _{i1} - \mathbf{x} _{i2}$ 。总的弹性能为 $E = \sum_i E_i$ ，这是一个非凸的能量。
@@ -25,13 +25,13 @@ $$
 那么， 通过将单根弹簧的能量写为包含  $\mathbf{x}_ i$   与 $\mathbf{d }_ i$  两个变量的函数  $E _ i = \frac{1}{2} k \|\mathbf{x} _ {i} -\mathbf{d} _ i\|^2$  , 总能量可以写为：
 
 $$
-E = \sum_i E_i = \frac{1}{2} \sum_i k_i \|\mathbf{x}_i - \mathbf{d}_i \|^2 \tag{2}
+E = \sum_i E_i = \frac{1}{2} \sum_i k_i \|\mathbf{x}_i - \mathbf{d}_i \|^2 \quad(2)
 $$
 
 将二范数展开： $\|\mathbf{x}_i - \mathbf{d}_i \|^2  = (\mathbf{x}_i - \mathbf{d}_i)^\top (\mathbf{x}_i - \mathbf{d}_i )$ , 可以将公式(2)整理为矩阵相乘的形式（建议也自己推导一下）：
 
 $$
-E = \frac{1}{2} \mathbf{x}^\top \mathbf{L}\mathbf{x} - \mathbf{x}^\top \mathbf{J} \mathbf{d}  \tag{3}
+E = \frac{1}{2} \mathbf{x}^\top \mathbf{L}\mathbf{x} - \mathbf{x}^\top \mathbf{J} \mathbf{d} \quad(3)
 $$
 
 其中 $\mathbf{L} \in \mathbb{R}^{3n\times 3n}, \mathbf{J} \in \mathbb{R}^{3n \times 3s}$ ,  $n$ 为顶点个数， $s$ 为弹簧个数（边的个数）,  $\mathbf{d} \in \mathbb{R}^{3s \times 1}$ 为所有 $\mathbf{d}_i$按顺序拼起来的长向量 ：
@@ -81,7 +81,7 @@ $$
 其中 $C$是与优化变量无关的常数， 由于是一个最优化问题，我们可以舍去系数，最后要优化的问题为：
 
 $$
-\min_{\mathbf{x}, \mathbf{d}} g(\mathbf{x}) =\min_{\mathbf{x}, \mathbf{d}} \quad \frac{1}{2}\mathbf{x}^\top(\mathbf{M} + h^2 \mathbf{L})\mathbf{x} - \mathbf{x}^\top(h^2 \mathbf{J}\mathbf{d} + \mathbf{M}\mathbf{y}) \tag{4}
+\min_{\mathbf{x}, \mathbf{d}} g(\mathbf{x}) =\min_{\mathbf{x}, \mathbf{d}} \quad \frac{1}{2}\mathbf{x}^\top(\mathbf{M} + h^2 \mathbf{L})\mathbf{x} - \mathbf{x}^\top(h^2 \mathbf{J}\mathbf{d} + \mathbf{M}\mathbf{y}) \quad(4)
 $$
 
 由于引入了新的变量，那么为我们带来了新的求解这个优化问题的新思路：之前是单向调整 $\mathbf{x}$ ，现在可以让 $\mathbf{x}$ 和 $\mathbf{d}$ 从两个方向“双向奔赴”，和ARAP参数化原理十分类似！
