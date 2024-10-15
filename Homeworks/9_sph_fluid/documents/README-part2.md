@@ -31,7 +31,7 @@ $$
 我们希望施加压力后，带来的流体粒子的速度改变量正好可以抵消流体的密度误差。已知压力带来的流体粒子的速度改变量为：（注意这个时候分母用的还是 $\rho(t)$ ,而不是 $\rho^*$ ）
 
 $$ 
-\Delta  \mathbf{v} = -\Delta t \frac{1}{\rho(t)} \nabla p \tag{1}
+\Delta  \mathbf{v} = -\Delta t \frac{1}{\rho(t)} \nabla p \quad(1)
 $$ 
 
 由于 $\frac{D \rho}{D t} = -\rho(t) \nabla \cdot \mathbf{v}$ ,
@@ -51,7 +51,7 @@ $$
 写到一起并整理，得：
 
 $$
-\nabla^2 p =  \frac{\rho_0 - \rho^*}{(\Delta t)^2} \tag{2}
+\nabla^2 p =  \frac{\rho_0 - \rho^*}{(\Delta t)^2} \quad(2)
 $$
 
 因此可以构建出一个关于 $p$ 的泊松方程。
@@ -63,7 +63,7 @@ $$
 首先我们回顾一下 $\nabla p$ :
 
 $$
- \nabla p_i = \rho_i \sum_j m_j \left(\frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \nabla W_{ij} \tag{3}
+ \nabla p_i = \rho_i \sum_j m_j \left(\frac{p_i}{\rho_i^2} + \frac{p_j}{\rho_j^2} \right) \nabla W_{ij} \quad(3)
 $$
 
 我们记压力带来的加速度为 $\mathbf{a}^p_i = -\frac{1}{\rho_i} \nabla p_i$ 
@@ -81,7 +81,7 @@ $$
 让 $\rho_i \approx \rho_j$ ，那么：
 
 $$
-\nabla^2 p_i \approx \sum_j m_j (\mathbf{a}^p_i - \mathbf{a}^p_j) \cdot \nabla W_{ij} \tag{4}
+\nabla^2 p_i \approx \sum_j m_j (\mathbf{a}^p_i - \mathbf{a}^p_j) \cdot \nabla W_{ij} \quad(4)
 $$
 
 > 这里的 $\mathbf{a}^p_i$ 就是原论文中的 $\frac{F^p_i(t)}{m_i}$ ， 对应原论文公式(5)
@@ -105,7 +105,7 @@ $$
 写成每个元素的形式:
 
 $$
-\mathbf{x} _ i^{(k+1)}=\frac{1}{a_{i i}}\left(b_i-\sum_{j \neq i} a_{i j} \mathbf{x}_j^{(k)}\right), \quad i=1,2, \ldots, n \tag{5}
+\mathbf{x} _ i^{(k+1)}=\frac{1}{a_{i i}}\left(b_i-\sum_{j \neq i} a_{i j} \mathbf{x}_j^{(k)}\right), \quad i=1,2, \ldots, n \quad(5)
 $$
 
 为了提高收敛效率，可以使用松弛Jacobi迭代：
@@ -127,7 +127,7 @@ $$
 \mathbf{x}_ i^{(k+1)} &=\mathbf{x} _ i^{(k)} + \frac{\omega}{a _ {i i}}\left(b_i- \sum_{j} a_{i j} \mathbf{x}_ j^{(k)}\right), \\ 
 &= \mathbf{x}_ i^{(k)} + \frac{\omega}{a_{i i}}\left(b_i- (\mathbf{A}\mathbf{x}^{(k)})_i \right),
 \quad i=1,2, \ldots, n
-\end{aligned} \tag{6}
+\end{aligned} \quad(6)
 $$
 
 其中  $(\mathbf{A}\mathbf{x}^{(k)})_i$  表示  $(\mathbf{A}\mathbf{x}^{(k)})$ 这个向量的第 $i$ 个元素。
@@ -176,7 +176,7 @@ $$
 \nabla^2 p 
 &= \sum_j m_j (\mathbf{a}^p_i - \mathbf{a}^p_j) \cdot \nabla W_{ij} \\
 & = - \sum_j m_j \left((\mathbf{d} _ {ii} p_i + \mathbf{d} _ {ij} p_j) - (\mathbf{d}_ {jj} p_j + \mathbf{d} _ {jk} p_k )\right) \cdot \nabla W_{ij}
-\end{aligned} \tag{4}
+\end{aligned} \quad(4)
 > $$
 > 
 > 为了求 $a_{ii}$，只需要关注 $k = i$ 的时候，然后挑出这些系数：
