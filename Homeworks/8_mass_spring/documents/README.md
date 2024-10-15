@@ -34,13 +34,13 @@
 为了让物体运动起来，一种思路是我们可以让每个顶点有一个运动的速度。如果使用半隐式时间积分：
 
 $$
-\mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n+1} \tag{1}
+\mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n+1}  \quad(1)
 $$
 
 那么速度 $\mathbf{v}^{n+1} \in \mathbb{R}^{3n\times 1}$ 要怎么确定呢? 根据牛顿第二定律，我们有：
 
 $$
-\mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^n) + \mathbf{f} _ {\text{ext}} )  \tag{2}
+\mathbf{v}^{n+1} =\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^n) + \mathbf{f} _ {\text{ext}} )   \quad(2)
 $$
 
 其中的 $\mathbf{M} \in \mathbb{R}^{3n \times 3n}$ 为系统的质量矩阵，这里我们将其简单地设置为一个对角矩阵（每个顶点对应的 $\mathbb{R}^{3\times 3}$ = `mass_per_vertex`乘3x3单位矩阵  ）。
@@ -73,7 +73,7 @@ $$
 可以求出其梯度为：
 
 $$
-\nabla E = \sum_i k (\|\mathbf{x}_i\| - L)\frac{\mathbf{x}_i}{\|\mathbf{x}_i\|} \tag{3}
+\nabla E = \sum_i k (\|\mathbf{x}_i\| - L)\frac{\mathbf{x}_i}{\|\mathbf{x}_i\|} \quad(3)
 $$
 
 只要在`MassSpring.cpp`（(在文件夹[`Framework3D\source\nodes\nodes\geometry\mass_spring\`](../../../Framework3D/source/nodes/nodes/geometry/mass_spring/)中)的 `computeGrad` 函数中填上这一部分梯度的计算:
@@ -174,7 +174,7 @@ $$
 \begin{align}
 \mathbf{x}^{n+1} &= \mathbf{x}^{n} + h \mathbf{v}^{n+1} \\
 \mathbf{v}^{n+1} &=\mathbf{v}^{n} + h \mathbf{M}^{-1} (\mathbf{f} _ {\text{int}}(\mathbf{x}^{n+1}) + \mathbf{f}_{\text{ext}} ) 
-\end{align} \tag{3}
+\end{align} \quad(4)
 $$
 
 但是发现这个问题需要变成一个关于 $\mathbf{x}^{n+1}$ 的方程。
@@ -184,12 +184,12 @@ $$
 整理一下：
 
 $$
-\mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n} + h^2 \mathbf{M}^{-1} (-\nabla E(\mathbf{x^{n+1}}) + \mathbf{f}_{\text{ext}} ) \tag{4}
+\mathbf{x}^{n+1} = \mathbf{x}^{n} + h \mathbf{v}^{n} + h^2 \mathbf{M}^{-1} (-\nabla E(\mathbf{x^{n+1}}) + \mathbf{f}_{\text{ext}} ) \quad(5)
 $$
 
 我们定义 $\mathbf{y} := \mathbf{x}^n + h \mathbf{v}^n + h^2 \mathbf{M}^{-1} \mathbf{f}_{\text{ext}}$
 
-可以把上面的公式(4)转变为：
+可以把上面的公式(5)转变为：
 
 $$
 \frac{1}{h^2} \mathbf{M} (\mathbf{x}^{n+1} - \mathbf{y}) + \nabla E(\mathbf{x}^{n+1}) = \mathbf{0}
@@ -199,7 +199,7 @@ $$
 那么其实是在优化这个问题（记 $\mathbf{x} = \mathbf{x}^{n+1} \in \mathbf{R}^{3n \times 1}$ ）：
 
 $$
-\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \tag{5}
+\min_{\mathbf{x}} \quad g(\mathbf{x}) = \frac{1}{2 h^2}(\mathbf{x} - \mathbf{y})^\top   \mathbf{M} (\mathbf{x} - \mathbf{y}) + E(\mathbf{x}) \quad(6)
 $$
 
 这回到了大家（可能）学过的最优化领域。
@@ -226,7 +226,7 @@ $$
 $$
 % \begin{align}
 \mathbf{H}_i = \nabla^2 E_i  
-=k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}+k\left(1-\frac{L}{\|\mathbf{x}_i\|}\right)\left(\mathbf{I}-\frac{\mathbf{x}_i \mathbf{x}_i^{\mathrm{T}}}{\|\mathbf{x}_i\|^2}\right)  \tag{6}
+=k \frac{\mathbf{x}_i {\mathbf{x}_i}^\top}{\|\mathbf{x}_i\|^2}+k\left(1-\frac{L}{\|\mathbf{x}_i\|}\right)\left(\mathbf{I}-\frac{\mathbf{x}_i \mathbf{x}_i^{\mathrm{T}}}{\|\mathbf{x}_i\|^2}\right)  \quad(7)
 % \end{align}
 $$
 
@@ -253,7 +253,7 @@ $$
 那么这里需要求解的方程组为: 
 
 $$ 
-\nabla^2 g \Delta \mathbf{x} = -\nabla g \tag{7}
+\nabla^2 g \Delta \mathbf{x} = -\nabla g \quad(8)
 $$ 
 
 在最优化中，求解一个优化问题可能需要迭代多次，直到收敛（ $\|\nabla g\|$ 小于阈值 ），我们这里出于效率考虑，在一个时间步内只进行一次牛顿法的迭代，你也可以尝试在一个时间步内让牛顿法迭代多次直到收敛，并比较两种做法的仿真结果。
@@ -286,7 +286,7 @@ Eigen::SparseMatrix<double> MassSpring::computeHessianSparse(double stiffness)
     return H;
 }
 ```
-然后实现`step`函数中隐式时间积分部分的代码，你需要构建出方程组(7)然后求解 $\Delta \mathbf{x}$ , 然后更新 $\mathbf{x}$ 。在求解方程组时，我们提供了`flatten`与`unflatten`函数将 $\mathbf{R}^{n \times 3}$ 与 $\mathbf{R}^{3n}$ 的向量进行互相转换: 
+然后实现`step`函数中隐式时间积分部分的代码，你需要构建出方程组(8)然后求解 $\Delta \mathbf{x}$ , 然后更新 $\mathbf{x}$ 。在求解方程组时，我们提供了`flatten`与`unflatten`函数将 $\mathbf{R}^{n \times 3}$ 与 $\mathbf{R}^{3n}$ 的向量进行互相转换: 
 
 ```C++
     if(time_integrator == IMPLICIT_EULER)
